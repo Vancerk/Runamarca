@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#15110e">
+  <title>Criador de cartas · RunaMarca</title>
+  <link rel="stylesheet" href="/editor.css">
+  <script src="/editor.js" defer></script>
+</head>
+<body>
+  <header class="editor-topbar">
+    <div class="editor-brand"><span class="brand-seal">◈</span><div><strong>RUNAMARCA</strong><small>ATELIÊ DE CARTAS</small></div></div>
+    <div class="top-actions"><span class="focus-pill">FOCO ATUAL · CRIADOR DE CARTAS</span><a href="/" class="back-link">Voltar à mesa ↗</a></div>
+  </header>
+  <main class="editor-layout">
+    <section class="controls" aria-labelledby="editor-title">
+      <p class="eyebrow">01 / COMPOSIÇÃO</p>
+      <h1 id="editor-title">Criar uma carta</h1>
+      <p class="intro">Preencha os campos para ver a carta pronta em tempo real. Patronos usam um modelo próprio com arte, moldura e habilidades configuráveis.</p>
+      <form id="card-form">
+        <div class="form-row"><label>Nome da carta<input id="card-name" maxlength="60" required placeholder="Ex.: Caçadora do Véu"></label><label>Quantidade no deck<input id="card-quantity" type="number" min="1" max="60" value="1"></label></div>
+        <div class="form-row"><label>Tipo<select id="card-kind"><option value="creature">Criatura</option><option value="spell">Magia</option><option value="rune">Terreno · Runa</option><option value="patron">Patrono</option></select></label><label>Classificação<input id="card-subtype" maxlength="45" placeholder="Ex.: Caçadora · Humana"></label></div>
+        <label>Ilustração<input id="card-art" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <div class="art-controls"><label>Zoom da imagem<input id="art-zoom" type="range" min="100" max="230" value="100"></label><label>Horizontal<input id="art-x" type="range" min="0" max="100" value="50"></label><label>Vertical<input id="art-y" type="range" min="0" max="100" value="50"></label></div>
+        <fieldset id="energy-fields"><legend id="energy-legend">Custos de energia</legend><p id="energy-hint" class="field-hint">Cada símbolo é aplicado diretamente na faixa da carta.</p><div class="cost-grid"><label><span class="neutral-icon">◯</span> Neutra<input id="cost-generic" type="number" min="0" max="20" value="0"></label><label><span class="energy-dot ruptura"></span> Ruptura<input id="cost-ruptura" type="number" min="0" max="12" value="0"></label><label><span class="energy-dot forja"></span> Forja<input id="cost-forja" type="number" min="0" max="12" value="0"></label><label><span class="energy-dot fluxo"></span> Fluxo<input id="cost-fluxo" type="number" min="0" max="12" value="0"></label></div></fieldset>
+        <label id="rules-field">Texto da carta<textarea id="card-rules" maxlength="850" rows="5" placeholder="Descreva o efeito da carta..."></textarea></label>
+        <div id="creature-stats" class="form-row"><label>Ataque<input id="card-power" type="number" min="0" max="30" value="1"></label><label>Vida<input id="card-health" type="number" min="0" max="30" value="1"></label></div>
+        <fieldset id="patron-controls" hidden><legend>Ateliê do Patrono</legend><p class="field-hint">Modelo próprio inspirado nos Patronos do Canva: arte inteira, ornamentos e três habilidades numeradas.</p>
+          <div class="patron-style-grid"><label>Cor da moldura<input id="patron-frame" type="color" value="#65439d"></label><label>Cor dos ornamentos<input id="patron-ornament" type="color" value="#c9b1e8"></label><label>Cor do texto destacado<input id="patron-accent" type="color" value="#e9d3fa"></label></div>
+          <div class="form-row"><label>Letra do nome<select id="patron-font"><option value="display">Majestosa</option><option value="script">Caligrafada</option><option value="classic">Clássica</option></select></label><label>Painel escuro<input id="patron-opacity" type="range" min="45" max="95" value="72"></label></div>
+          <label>Ornamentos<select id="patron-flourish"><option value="elaborate">Elaborados</option><option value="subtle">Discretos</option><option value="none">Sem ornamentos</option></select></label>
+          <div class="patron-abilities">
+            <fieldset><legend>Habilidade I</legend><div class="form-row"><label>Valor<input id="patron-cost-0" type="number" min="0" max="20" value="2"></label><label>Nome ou frase<input id="patron-title-0" maxlength="60" placeholder="Ex.: Por minha conta!"></label></div><label>Efeito<input id="patron-effect-0" maxlength="210" placeholder="Descreva a habilidade..."></label></fieldset>
+            <fieldset><legend>Habilidade II</legend><div class="form-row"><label>Valor<input id="patron-cost-1" type="number" min="0" max="20" value="3"></label><label>Nome ou frase<input id="patron-title-1" maxlength="60" placeholder="Ex.: Martingale...?"></label></div><label>Efeito<input id="patron-effect-1" maxlength="210" placeholder="Descreva a habilidade..."></label></fieldset>
+            <fieldset><legend>Habilidade III</legend><div class="form-row"><label>Valor<input id="patron-cost-2" type="number" min="0" max="20" value="5"></label><label>Nome ou frase<input id="patron-title-2" maxlength="60" placeholder="Ex.: Boa tentativa, mas não."></label></div><label>Efeito<input id="patron-effect-2" maxlength="210" placeholder="Descreva a habilidade..."></label></fieldset>
+          </div><p class="field-hint">Os valores e efeitos ficam visíveis e editáveis. A execução automática dessas habilidades ainda depende das regras da mesa.</p>
+        </fieldset>
+        <details id="auto-abilities" class="abilities"><summary>Habilidades automáticas da mesa</summary><p class="field-hint">Configure apenas efeitos já suportados. Escreva também a habilidade no texto visível da carta.</p>
+          <label class="check-row"><input id="card-agile" type="checkbox"> Esta criatura tem Ágil</label>
+          <div class="ability-pair"><label>Comprar cartas<select id="draw-trigger"><option value="">Sem compra automática</option><option value="enter">Ao entrar em campo</option><option value="reveal">Ao revelar</option><option value="turnStart">No início do seu turno</option><option value="agileAttack">Quando uma criatura Ágil atacar</option></select></label><label>Quantidade<input id="draw-count" type="number" min="1" max="7" value="1"></label></div>
+          <label class="check-row"><input id="draw-power-four" type="checkbox"> Comprar só se controlar criatura com poder 4 ou mais</label>
+          <div class="ability-pair"><label>Energia ao girar criatura<select id="energy-resource"><option value="">Sem geração automática</option><option value="any">Energia à escolha</option><option value="ruptura">Ruptura</option><option value="forja">Forja</option><option value="fluxo">Fluxo</option></select></label><label>Quantidade<input id="energy-amount" type="number" min="1" max="5" value="1"></label></div>
+          <div class="ability-pair"><label>Bônus se controlar poder 4+<select id="energy-boost"><option value="">Sem bônus</option><option value="powerAtLeast4">Ativar bônus</option></select></label><label>Energia com bônus<input id="energy-boosted" type="number" min="1" max="5" value="2"></label></div>
+          <label>Desconto se controlar criatura Ágil<input id="agile-discount" type="number" min="0" max="5" value="0"></label>
+        </details>
+        <div class="form-actions"><button class="primary" type="submit">Guardar no projeto</button><button class="secondary" id="new-card" type="button">Nova carta</button></div>
+      </form>
+      <p id="editor-status" class="editor-status" role="status" aria-live="polite">Seu trabalho fica salvo neste navegador.</p>
+    </section>
+    <section class="preview-pane" aria-labelledby="preview-title"><div class="preview-head"><div><p class="eyebrow">02 / PRÉVIA</p><h2 id="preview-title">Carta pronta para impressão</h2></div><span>900 × 1260 px</span></div><div class="canvas-wrap"><canvas id="card-canvas" width="900" height="1260" aria-label="Prévia da carta"></canvas></div><div class="preview-actions"><button id="download-png" type="button" class="primary">Baixar PNG desta carta ↓</button><p>O PNG usa a arte e os dados preenchidos acima. Para jogar, exporte também o deck em JSON.</p></div></section>
+    <aside class="project-pane" aria-labelledby="project-title"><p class="eyebrow">03 / PROJETO</p><h2 id="project-title">Suas cartas</h2><p class="project-count" id="project-count">0 modelos · 0 cartas no deck</p><div id="project-list" class="project-list"><p class="empty-project">Guarde a primeira carta para montar seu deck.</p></div><div class="project-actions"><button id="download-deck" type="button" class="primary">Exportar deck para a mesa ↓</button><button id="download-project" type="button" class="secondary">Baixar projeto editável ↓</button><label class="import-label">Importar projeto editável<input id="import-project" type="file" accept=".json,application/json" hidden></label></div><p class="compat-note">A mesa aceita o JSON exportado na <strong>tela de escolha do deck → Importar JSON</strong>. Hoje ela calcula o gasto pela soma das energias; a separação por tipo está registrada para as próximas regras.</p></aside>
+  </main>
+</body>
+</html>

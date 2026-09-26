@@ -1,0 +1,642 @@
+{
+    "igni":  {
+                 "title":  "Ruptura",
+                 "color":  "red",
+                 "cards":  [
+                               {
+                                   "name":  "Runa de Ruptura",
+                                   "quantity":  25,
+                                   "kind":  "rune",
+                                   "cost":  {
+                                                "colored":  0,
+                                                "generic":  0
+                                            },
+                                   "image":  "/decks/igni/runa.png"
+                               },
+                               {
+                                   "name":  "Emboscador Tardio",
+                                   "quantity":  2,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  0
+                                            },
+                                   "image":  "/decks/igni/image1.png",
+                                   "power":  1,
+                                   "health":  1
+                               },
+                               {
+                                   "name":  "Carnívora Ocultadora",
+                                   "quantity":  2,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  1
+                                            },
+                                   "image":  "/decks/igni/image10.png",
+                                   "power":  1,
+                                   "health":  1
+                               },
+                               {
+                                   "name":  "Rasteiro das Florestas Gélidas",
+                                   "quantity":  4,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  1
+                                            },
+                                   "image":  "/decks/igni/image4.png",
+                                   "power":  2,
+                                   "health":  1
+                               },
+                               {
+                                   "name":  "Licantropo andarilho",
+                                   "quantity":  2,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  2
+                                            },
+                                   "image":  "/decks/igni/image6.png",
+                                   "power":  3,
+                                   "health":  3
+                               },
+                               {
+                                   "name":  "Cascarrocha Enraivecido",
+                                   "quantity":  2,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  2
+                                            },
+                                   "image":  "/decks/igni/image14.png",
+                                   "power":  0,
+                                   "health":  4
+                               },
+                               {
+                                   "name":  "Líder da Matilha",
+                                   "quantity":  1,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  2
+                                            },
+                                   "image":  "/decks/igni/image8.png",
+                                   "power":  3,
+                                   "health":  3
+                               },
+                               {
+                                   "name":  "Matriarca canina",
+                                   "quantity":  2,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  2
+                                            },
+                                   "image":  "/decks/igni/image11.png",
+                                   "power":  2,
+                                   "health":  2
+                               },
+                               {
+                                   "name":  "Emissário do Psiconauta",
+                                   "quantity":  1,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  4
+                                            },
+                                   "image":  "/decks/igni/image9.png",
+                                   "power":  5,
+                                   "health":  3,
+                                   "agile":  true
+                               },
+                               {
+                                   "name":  "Mesonoctal",
+                                   "quantity":  1,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  4
+                                            },
+                                   "image":  "/decks/igni/image2.png",
+                                   "power":  4,
+                                   "health":  4,
+                                   "agile":  true
+                               },
+                               {
+                                   "name":  "Aberração Temerária",
+                                   "quantity":  2,
+                                   "kind":  "creature",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  5
+                                            },
+                                   "image":  "/decks/igni/image16.png",
+                                   "power":  4,
+                                   "health":  4,
+                                   "agile":  true
+                               },
+                               {
+                                   "name":  "Mordida",
+                                   "quantity":  3,
+                                   "kind":  "spell",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  0
+                                            },
+                                   "image":  "/decks/igni/image12.png"
+                               },
+                               {
+                                   "name":  "Uivo da Convocação",
+                                   "quantity":  4,
+                                   "kind":  "spell",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  2
+                                            },
+                                   "image":  "/decks/igni/image7.png"
+                               },
+                               {
+                                   "name":  "Bote Planejado",
+                                   "quantity":  2,
+                                   "kind":  "spell",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  0
+                                            },
+                                   "image":  "/decks/igni/image5.png"
+                               },
+                               {
+                                   "name":  "Avanço Combinado",
+                                   "quantity":  2,
+                                   "kind":  "spell",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  2
+                                            },
+                                   "image":  "/decks/igni/image3.png"
+                               },
+                               {
+                                   "name":  "Repreensão Fáunica",
+                                   "quantity":  3,
+                                   "kind":  "spell",
+                                   "cost":  {
+                                                "colored":  1,
+                                                "generic":  0
+                                            },
+                                   "image":  "/decks/igni/image13.png"
+                               },
+                               {
+                                   "name":  "Conjuração Anciã de Igni",
+                                   "quantity":  2,
+                                   "kind":  "spell",
+                                   "cost":  {
+                                                "colored":  2,
+                                                "generic":  4
+                                            },
+                                   "image":  "/decks/igni/image15.png"
+                               }
+                           ]
+             },
+    "ventus":  {
+                   "title":  "Forja",
+                   "color":  "green",
+                   "cards":  [
+                                 {
+                                     "name":  "Runa de Forja",
+                                     "quantity":  25,
+                                     "kind":  "rune",
+                                     "cost":  {
+                                                  "colored":  0,
+                                                  "generic":  0
+                                              },
+                                     "image":  "/decks/ventus/runa.png"
+                                 },
+                                 {
+                                     "name":  "Sintético Próspero",
+                                     "quantity":  3,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  1
+                                              },
+                                     "image":  "/decks/ventus/image4.png",
+                                     "power":  1,
+                                     "health":  1
+                                 },
+                                 {
+                                     "name":  "Rúnico Solidário",
+                                     "quantity":  2,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  1
+                                              },
+                                     "image":  "/decks/ventus/image16.png",
+                                     "power":  1,
+                                     "health":  1,
+                                     "energyEffect":  { "trigger": "tap", "amount": 1, "resource": "forja" }
+                                 },
+                                 {
+                                     "name":  "Rúnico Transbordante",
+                                     "quantity":  4,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  1
+                                              },
+                                     "image":  "/decks/ventus/image8.png",
+                                     "power":  1,
+                                     "health":  1,
+                                     "energyEffect":  { "trigger": "tap", "amount": 1, "boostedAmount": 2, "condition": "powerAtLeast4", "resource": "any" }
+                                 },
+                                 {
+                                     "name":  "Rompe-Problema",
+                                     "quantity":  2,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  2
+                                              },
+                                     "image":  "/decks/ventus/image7.png",
+                                     "power":  4,
+                                     "health":  2
+                                 },
+                                 {
+                                     "name":  "Formação Engreno-Organizada",
+                                     "quantity":  4,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  3
+                                              },
+                                     "image":  "/decks/ventus/image1.png",
+                                     "power":  3,
+                                     "health":  3
+                                 },
+                                 {
+                                     "name":  "Matracatron",
+                                     "quantity":  1,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  3
+                                              },
+                                     "image":  "/decks/ventus/image12.png",
+                                     "power":  2,
+                                     "health":  2
+                                 },
+                                 {
+                                     "name":  "G.0.L.1.A.5, o Terror Náutico",
+                                     "quantity":  2,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  5,
+                                                  "generic":  0
+                                              },
+                                     "image":  "/decks/ventus/image3.png",
+                                     "power":  10,
+                                     "health":  10
+                                 },
+                                 {
+                                     "name":  "Torreta de Vigia",
+                                     "quantity":  2,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  2,
+                                                  "generic":  2
+                                              },
+                                     "image":  "/decks/ventus/image13.png",
+                                     "power":  4,
+                                     "health":  4
+                                 },
+                                 {
+                                     "name":  "Trituratriz",
+                                     "quantity":  1,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  3
+                                              },
+                                     "image":  "/decks/ventus/image5.png",
+                                     "power":  3,
+                                     "health":  3
+                                 },
+                                 {
+                                     "name":  "Aranha Sentinela",
+                                     "quantity":  2,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  2,
+                                                  "generic":  3
+                                              },
+                                     "image":  "/decks/ventus/image9.png",
+                                     "power":  4,
+                                     "health":  4
+                                 },
+                                 {
+                                     "name":  "Mecânico Proativo",
+                                     "quantity":  2,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  5
+                                              },
+                                     "image":  "/decks/ventus/image14.png",
+                                     "power":  4,
+                                     "health":  4
+                                 },
+                                 {
+                                     "name":  "V.3.R.0.N.1.C.4",
+                                     "quantity":  2,
+                                     "kind":  "creature",
+                                     "cost":  {
+                                                  "colored":  2,
+                                                  "generic":  5
+                                              },
+                                     "image":  "/decks/ventus/image6.png",
+                                     "power":  7,
+                                     "health":  7
+                                 },
+                                 {
+                                     "name":  "Condutor de Raios Indetectáveis",
+                                     "quantity":  3,
+                                     "kind":  "spell",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  1
+                                              },
+                                     "image":  "/decks/ventus/image2.png"
+                                 },
+                                 {
+                                     "name":  "Atualização Forçada",
+                                     "quantity":  2,
+                                     "kind":  "spell",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  0
+                                              },
+                                     "image":  "/decks/ventus/image11.png"
+                                 },
+                                 {
+                                     "name":  "Sobrecarga Evolutiva",
+                                     "quantity":  2,
+                                     "kind":  "spell",
+                                     "cost":  {
+                                                  "colored":  1,
+                                                  "generic":  2
+                                              },
+                                     "image":  "/decks/ventus/image10.png",
+                                     "drawEffect":  {
+                                                        "trigger":  "turnStart",
+                                                        "count":  1,
+                                                        "condition":  "powerAtLeast4"
+                                                    }
+                                 },
+                                 {
+                                     "name":  "Protocolo: DESTRUIR!",
+                                     "quantity":  1,
+                                     "kind":  "spell",
+                                     "cost":  {
+                                                  "colored":  2,
+                                                  "generic":  4
+                                              },
+                                     "image":  "/decks/ventus/image15.png"
+                                 }
+                             ]
+               },
+    "glacies":  {
+                    "title":  "Fluxo",
+                    "color":  "blue",
+                    "cards":  [
+                                  {
+                                      "name":  "Runa de Fluxo",
+                                      "quantity":  25,
+                                      "kind":  "rune",
+                                      "cost":  {
+                                                   "colored":  0,
+                                                   "generic":  0
+                                               },
+                                      "image":  "/decks/glacies/runa.png"
+                                  },
+                                  {
+                                      "name":  "Totem do Touro",
+                                      "quantity":  2,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  0
+                                               },
+                                      "image":  "/decks/glacies/image6.png",
+                                      "power":  0,
+                                      "health":  4
+                                  },
+                                  {
+                                      "name":  "Mago de Combate",
+                                      "quantity":  2,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  1
+                                               },
+                                      "image":  "/decks/glacies/image12.png",
+                                      "power":  1,
+                                      "health":  3
+                                  },
+                                  {
+                                      "name":  "Auralis",
+                                      "quantity":  3,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  1
+                                               },
+                                      "image":  "/decks/glacies/image16.png",
+                                      "power":  2,
+                                      "health":  1
+                                  },
+                                  {
+                                      "name":  "Vidente Vaelita Cinéreo",
+                                      "quantity":  3,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  2
+                                               },
+                                      "image":  "/decks/glacies/image14.png",
+                                      "power":  2,
+                                      "health":  1,
+                                      "agile":  true,
+                                      "drawEffect":  {
+                                                         "trigger":  "enter",
+                                                         "count":  1
+                                                     }
+                                  },
+                                  {
+                                      "name":  "Vaelita Conjurador",
+                                      "quantity":  3,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  2
+                                               },
+                                      "image":  "/decks/glacies/image1.png",
+                                      "power":  2,
+                                      "health":  2,
+                                      "agile":  true
+                                  },
+                                  {
+                                      "name":  "Octoprofeta, Aquele que VÃª",
+                                      "quantity":  2,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  3
+                                               },
+                                      "image":  "/decks/glacies/image2.png",
+                                      "power":  3,
+                                      "health":  3
+                                  },
+                                  {
+                                      "name":  "Gênio da Postura Trovão",
+                                      "quantity":  2,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  2,
+                                                   "generic":  3
+                                               },
+                                      "image":  "/decks/glacies/image9.png",
+                                      "power":  4,
+                                      "health":  3,
+                                      "agile":  true
+                                  },
+                                  {
+                                      "name":  "Altair, o Mensageiro",
+                                      "quantity":  2,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  4
+                                               },
+                                      "image":  "/decks/glacies/image13.png",
+                                      "power":  3,
+                                      "health":  3,
+                                      "agile":  true
+                                  },
+                                  {
+                                      "name":  "HidroNaja, a Regicida",
+                                      "quantity":  1,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  2,
+                                                   "generic":  4
+                                               },
+                                      "image":  "/decks/glacies/image8.png",
+                                      "power":  4,
+                                      "health":  6
+                                  },
+                                  {
+                                      "name":  "Esfinge, Guardiã da Verdade",
+                                      "quantity":  2,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  2,
+                                                   "generic":  4
+                                               },
+                                      "image":  "/decks/glacies/image4.png",
+                                      "power":  5,
+                                      "health":  5,
+                                      "agile":  true
+                                  },
+                                  {
+                                      "name":  "Esfinge Sussurrante das Constelações",
+                                      "quantity":  1,
+                                      "kind":  "creature",
+                                      "cost":  {
+                                                   "colored":  2,
+                                                   "generic":  5
+                                               },
+                                      "image":  "/decks/glacies/image7.png",
+                                      "power":  3,
+                                      "health":  7,
+                                      "agile":  true,
+                                      "drawEffect":  {
+                                                         "trigger":  "agileAttack",
+                                                         "count":  1
+                                                     }
+                                  },
+                                  {
+                                      "name":  "Todas Minhas!",
+                                      "quantity":  1,
+                                      "kind":  "spell",
+                                      "cost":  {
+                                                   "colored":  3,
+                                                   "generic":  4
+                                               },
+                                      "image":  "/decks/glacies/image5.png",
+                                      "drawEffect":  {
+                                                         "trigger":  "enter",
+                                                         "count":  7
+                                                     }
+                                  },
+                                  {
+                                      "name":  "Talismã de Barreira",
+                                      "quantity":  3,
+                                      "kind":  "spell",
+                                      "cost":  {
+                                                   "colored":  2,
+                                                   "generic":  1
+                                               },
+                                      "image":  "/decks/glacies/image17.png"
+                                  },
+                                  {
+                                      "name":  "TÃ¡ com sono aÃ­?",
+                                      "quantity":  1,
+                                      "kind":  "spell",
+                                      "cost":  {
+                                                   "colored":  2,
+                                                   "generic":  2
+                                               },
+                                      "image":  "/decks/glacies/image11.png"
+                                  },
+                                  {
+                                      "name":  "Passo Célere",
+                                      "quantity":  2,
+                                      "kind":  "spell",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  2
+                                               },
+                                      "image":  "/decks/glacies/image3.png",
+                                      "drawEffect":  {
+                                                         "trigger":  "enter",
+                                                         "count":  2
+                                                     },
+                                      "costDiscount":  {
+                                                           "condition":  "agileCreature",
+                                                           "amount":  1
+                                                       }
+                                  },
+                                  {
+                                      "name":  "Cobertura Natural",
+                                      "quantity":  2,
+                                      "kind":  "spell",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  1
+                                               },
+                                      "image":  "/decks/glacies/image15.png"
+                                  },
+                                  {
+                                      "name":  "Extinguir",
+                                      "quantity":  3,
+                                      "kind":  "spell",
+                                      "cost":  {
+                                                   "colored":  1,
+                                                   "generic":  1
+                                               },
+                                      "image":  "/decks/glacies/image10.png"
+                                  }
+                              ]
+                }
+}

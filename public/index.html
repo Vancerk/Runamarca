@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#161a17">
+  <title>RunaMarca — mesa de cartas</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/zones.css">
+  <link rel="stylesheet" href="/theme.css">
+  <script src="/app-v2.js" defer></script>
+</head>
+<body>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="card-hover-preview" class="card-hover-preview hidden" aria-hidden="true"></div>
+  <dialog id="card-detail" class="card-detail" aria-label="Carta ampliada"><button id="close-card-detail" class="detail-close" type="button" aria-label="Fechar ampliação">×</button><div id="card-detail-content"></div></dialog>
+  <main id="welcome" class="welcome">
+    <div class="welcome-art" aria-hidden="true"><div class="seal">✦</div><div class="wanted">PROCURADO<br><span>VIVO OU MORTO</span></div></div>
+    <section class="welcome-panel">
+      <p class="eyebrow">Crônicas dos mercenários</p>
+      <h1>RunaMarca</h1>
+      <p class="lead">Marque seu alvo, descubra sua força e siga o rastro da próxima recompensa.</p>
+      <a class="editor-entry" href="/editor.html">✦ Abrir criador de cartas</a>
+      <div class="welcome-grid">
+        <form id="create-form" class="entry-card">
+          <span class="step">01 / Abrir uma mesa</span>
+          <h2>Criar sala</h2>
+          <label for="create-name">Seu nome na mesa</label>
+          <input id="create-name" name="name" maxlength="30" placeholder="Ex.: Aelra, a Caçadora" required>
+          <button class="primary" type="submit">Criar mesa <span>↗</span></button>
+        </form>
+        <form id="join-form" class="entry-card">
+          <span class="step">02 / Aceitar o contrato</span>
+          <h2>Entrar na sala</h2>
+          <label for="join-name">Seu nome na mesa</label>
+          <input id="join-name" name="name" maxlength="30" placeholder="Ex.: Brann, o Errante" required>
+          <label for="room-code">Código da sala</label>
+          <input id="room-code" name="code" maxlength="6" placeholder="ABC123" required autocapitalize="characters">
+          <button class="secondary" type="submit">Entrar na mesa <span>→</span></button>
+        </form>
+      </div>
+      <p class="welcome-foot">Protótipo de regras livres · 2 jogadores · cada mão é privada</p>
+    </section>
+  </main>
+
+  <main id="game" class="game hidden">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">◈</span><div><strong>RUNAMARCA</strong><small>Mesa dos caçadores</small></div></div>
+      <div class="room-info"><span class="eyebrow">SALA</span><strong id="room-label">------</strong><button id="copy-link" class="icon-button" title="Copiar convite" aria-label="Copiar convite">↗</button></div>
+      <div class="turn-info"><span id="round-label" class="round">Rodada 1</span><span id="turn-label" class="turn">Aguardando...</span><button id="end-turn" class="primary small">Encerrar turno <span>→</span></button></div>
+    </header>
+
+    <section id="match-gate" class="match-gate" aria-live="polite" hidden>
+      <div class="gate-panel">
+        <span class="eyebrow">RITUAL DE ABERTURA</span>
+        <h2 id="gate-title">Escolha seu deck</h2>
+        <p id="gate-description" class="gate-description">Selecione um arsenal para esta partida.</p>
+        <div id="gate-decks" class="gate-decks"><div id="preset-decks" class="preset-decks"></div></div>
+        <div id="gate-custom" class="gate-custom"><span>OU USE SEU PRÓPRIO DECK</span><label class="upload-button">Importar imagens<input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label><label class="upload-button">Importar JSON<input id="json-upload" type="file" accept=".json,application/json" hidden></label></div>
+        <button id="confirm-deck" class="primary gate-confirm" type="button" disabled>Confirmar deck</button>
+        <div id="gate-coin" class="gate-coin" hidden><div class="coin-stage"><div id="coin-face" class="coin-face">◈</div></div><p id="coin-result">A moeda está no ar...</p><div id="coin-decisions" class="coin-decisions" hidden><button id="choose-first" class="primary" type="button">Começar em primeiro</button><button id="choose-second" class="secondary" type="button">Jogar em segundo</button></div></div>
+        <button id="gate-restart" class="secondary gate-confirm" type="button" hidden>Nova partida · escolher decks</button>
+        <p id="gate-players" class="gate-players"></p>
+      </div>
+    </section>
+
+    <div class="game-layout">
+      <aside class="left-rail">
+        <section class="rail-section"><span class="eyebrow">SEU ARSENAL</span><h2 id="self-name">Mercenário</h2><div class="deck-display"><div class="deck-visual" role="img" aria-label="Verso da carta RunaMarca"></div><div><strong id="deck-count">0</strong><span>no baralho</span></div></div><div class="mini-stats"><span>Descarte <b id="discard-count">0</b></span></div></section>
+        <section class="rail-section ether-section"><span class="eyebrow">RESERVA DE ENERGIA</span><div class="ether-display"><span id="energy-icon" class="energy-icon hidden" aria-hidden="true"></span><strong id="ether-count">0</strong><span id="ether-color">Vire uma Runa para ganhar energia</span></div><p class="small-note">O custo da carta é pago ao colocá-la em campo.</p></section>
+        <section class="rail-section"><span class="eyebrow">AÇÕES RÁPIDAS</span><button id="draw-one" class="rail-button">Comprar carta <kbd>1</kbd></button><p id="draw-status" class="small-note draw-status">Escolha um deck para comprar cartas.</p><button id="shuffle" class="rail-button">Embaralhar baralho</button></section>
+        <section class="rail-section"><span class="eyebrow">PARTIDA</span><p id="active-deck-name" class="small-note">Deck confirmado</p><button id="reset-match" class="rail-button danger">Reiniciar partida e escolher decks</button></section>
+        <section class="rail-section help"><a class="editor-entry rail-editor-entry" href="/editor.html" target="_blank" rel="noopener">✦ Criador de cartas ↗</a><details class="rail-details"><summary>ATALHOS</summary><p><kbd>1</kbd> comprar · <kbd>Espaço</kbd> passar turno<br><kbd>F</kbd> virar · <kbd>R</kbd> voltar à mão · <kbd>D</kbd> descartar</p></details></section>
+      </aside>
+
+      <section class="table-column">
+        <div class="opponent-bar"><div class="avatar">?</div><div><span class="eyebrow">ADVERSÁRIO</span><strong id="opponent-name">Aguardando rival...</strong></div><div class="opponent-stats"><span id="opponent-deck">0 no baralho</span><span id="opponent-hand">0 na mão</span></div></div>
+        <div id="board" class="board zoned-board" aria-label="Mesa de cartas">
+          <div class="field-side opponent-side"><div class="patron-slot" id="opponent-patron"></div><div class="field-main"><div class="lower-zones"><div class="field-zone"><div class="zone-heading">TERRENOS · RUNAS</div><div id="opponent-runes" class="zone-cards compact"></div></div><div class="field-zone"><div class="zone-heading">MAGIAS</div><div id="opponent-spells" class="zone-cards compact"></div></div></div><div class="field-zone creature-zone"><div class="zone-heading">CRIATURAS DO RIVAL</div><div id="opponent-creatures" class="zone-cards"></div></div></div></div>
+          <div class="field-divider"><span>✦</span></div>
+          <div class="field-side self-side"><div class="patron-slot" id="self-patron"></div><div class="field-main"><div class="field-zone creature-zone"><div class="zone-heading">SUAS CRIATURAS <span id="placement-hint"></span></div><div id="self-creatures" class="zone-cards"></div></div><div class="lower-zones"><div class="field-zone"><div class="zone-heading">TERRENOS · RUNAS</div><div id="self-runes" class="zone-cards compact"></div></div><div class="field-zone"><div class="zone-heading">MAGIAS</div><div id="self-spells" class="zone-cards compact"></div></div></div></div></div>
+        </div>
+        <div class="hand-area"><div class="hand-heading"><h2>Sua mão <span id="hand-heading-count">(0)</span></h2><span class="hand-hint">Selecione uma carta para escolher sua área</span></div><div id="hand-cards" class="hand-cards"></div></div>
+      </section>
+
+      <aside class="right-rail"><section class="selection-panel"><span class="eyebrow">CARTA SELECIONADA</span><div id="selection" class="selection-empty"><span class="selection-glyph">✧</span><p>Selecione uma carta para ver suas ações.</p></div></section><section class="log-panel"><span class="eyebrow">REGISTRO DA PARTIDA</span><div id="log" class="log"></div></section></aside>
+    </div>
+  </main>
+</body>
+</html>
