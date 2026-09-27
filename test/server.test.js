@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { server } from '../server.js';
-import { scoreDice } from '../dice-game.js';
+import { scoreDice, scoreDiceDetailed } from '../dice-game.js';
 
 test('combinações de seis dados e poderes das insígnias', () => {
   assert.equal(scoreDice([1]),100);
@@ -21,6 +21,12 @@ test('combinações de seis dados e poderes das insígnias', () => {
   assert.equal(scoreDice([1,3,5],{sacerdote:true}),1000);
   assert.equal(scoreDice([2,2],{casamento:true}),100);
   assert.equal(scoreDice([2,2,2],{imperador:true}),300);
+  assert.equal(scoreDice([1,2,3,4,5],{noSingles:true}),500);
+  assert.equal(scoreDice([1],{noSingles:true}),0);
+  assert.equal(scoreDice([2,3,4,5,6],{noSingles:true}),750);
+  assert.equal(scoreDice([2,2,5],{casamentoCharges:1}),150);
+  assert.deepEqual(scoreDiceDetailed([2,2,5],{casamentoCharges:1}),{score:150,marriagesUsed:1});
+  assert.equal(scoreDice([1,1,1,1,1,1]),8000);
 });
 
 test('hub, cartas automáticas, ataque e mesa de dados online', async () => {
@@ -150,4 +156,32 @@ test('efeito de fichas pode contar cópias no descarte', async () => {
     const after = (await call(`${route}/state`, undefined, starterToken)).data.players.find(player => player.id === start.you);
     assert.equal(after.tokens.length, 3);
   } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('Seis Ossos valida proposta, insígnia perdida e seleção pontuável no servidor', async () => {
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base=`http://127.0.0.1:${server.address().port}`;
+  const call=async(path,data,secret)=>{const r=await fetch(base+path,{method:data?'POST':'GET',headers:{...(data?{'content-type':'application/json'}:{}),...(secret?{'x-player-token':secret}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,data:await r.json()}};
+  try {
+    const a=(await call('/api/dice/rooms',{name:'A'})).data;
+    const b=(await call(`/api/dice/rooms/${a.code}/join`,{name:'B'})).data;
+    const path=`/api/dice/rooms/${a.code}`;
+    assert.equal((await call(`${path}/action`,{type:'propose',insignia:'casamento',legendary:'diabo'},a.token)).status,200);
+    assert.equal((await call(`${path}/action`,{type:'accept',insignia:'imperador'},b.token)).status,400);
+    assert.equal((await call(`${path}/action`,{type:'accept',insignia:'imperador',legendary:'lagrima-da-santa'},b.token)).status,200);
+    const initial=(await call(`${path}/state`,undefined,a.token)).data;
+    assert.equal(initial.players[0].legendary,'diabo');
+    assert.equal(initial.players[1].legendary,'lagrima-da-santa');
+    const roller=initial.turn===initial.players[0].id?a:b;
+    assert.equal((await call(`${path}/action`,{type:'roll'},roller.token)).status,200);
+    const rolled=(await call(`${path}/state`,undefined,roller.token)).data;
+    if(rolled.roll.length&&!rolled.bust){
+      assert.ok(rolled.choices.length>0);
+      const choice=rolled.choices[0];
+      assert.ok(choice.score>0);
+      assert.equal((await call(`${path}/action`,{type:'keep',indices:choice.indices},roller.token)).status,200);
+      const kept=(await call(`${path}/state`,undefined,roller.token)).data;
+      assert.equal(kept.turnPoints,choice.score);
+    }
+  } finally {await new Promise(resolve=>server.close(resolve));}
 });
