@@ -15,49 +15,53 @@ async function body(req) { let raw = ''; for await (const chunk of req) { raw +=
 const fail = message => { throw Error(message); };
 
 export function scoreDiceDetailed(values, powers = {}) {
-  if (!Array.isArray(values) || !values.length || values.length > 7 || values.some(n => !Number.isInteger(n) || n < 1 || n > 6)) return { score:0, marriagesUsed:0 };
+  if (!Array.isArray(values) || !values.length || values.length > 7 || values.some(n => !Number.isInteger(n) || n < 1 || n > 6)) return { score:0, marriagesUsed:0, groups:[] };
   const counts = Array(7).fill(0); values.forEach(n => counts[n]++);
   const memo = new Map();
   const marriageCharges = Math.max(0, Math.min(3, Number(powers.casamentoCharges ?? (powers.casamento ? 1 : 0)) || 0));
   const search = (left, marriagesLeft) => {
     const key = `${left.join('')}:${marriagesLeft}`; if (memo.has(key)) return memo.get(key);
-    if (left.slice(1).every(n => n === 0)) return { score:0, marriagesUsed:0 };
-    let best = { score:-Infinity, marriagesUsed:0 };
-    const use = (required, value, marriage = false) => {
+    if (left.slice(1).every(n => n === 0)) return { score:0, marriagesUsed:0, groups:[] };
+    let best = { score:-Infinity, marriagesUsed:0, groups:[] };
+    const use = (required, value, label, marriage = false) => {
       if (required.some((n, i) => n > left[i])) return;
       if (marriage && marriagesLeft < 1) return;
       const rest = left.map((n, i) => n - required[i]);
       const tail = search(rest, marriagesLeft - Number(marriage));
-      const candidate = { score:tail.score + value, marriagesUsed:tail.marriagesUsed + Number(marriage) };
+      const candidate = { score:tail.score + value, marriagesUsed:tail.marriagesUsed + Number(marriage), groups:[`${label} (${value})`,...tail.groups] };
       if (candidate.score > best.score || (candidate.score === best.score && candidate.marriagesUsed < best.marriagesUsed)) best = candidate;
     };
     const req = (...nums) => { const a = Array(7).fill(0); nums.forEach(n => a[n]++); return a; };
-    if (!powers.noSingles && left[1]) use(req(1), powers.tique ? 200 : 100);
-    if (!powers.noSingles && left[5]) use(req(5), powers.tique ? 100 : 50);
-    if (powers.prophetFace && left[powers.prophetFace]) use(req(powers.prophetFace), 0);
+    if (!powers.noSingles && left[1]) use(req(1), powers.tique ? 200 : 100, powers.tique?'1 individual ×2':'1 individual');
+    if (!powers.noSingles && left[5]) use(req(5), powers.tique ? 100 : 50, powers.tique?'5 individual ×2':'5 individual');
+    if (powers.prophetFace && left[powers.prophetFace]) use(req(powers.prophetFace), 0, `face ${powers.prophetFace} do Profeta`);
     for (let n = 1; n <= 6; n++) for (let count = 3; count <= Math.min(6, left[n]); count++) {
       const triple = n === 1 ? 1000 : n * 100;
-      use(req(...Array(count).fill(n)), triple * (2 ** (count - 3)) + (powers.imperador ? 100 : 0));
+      use(req(...Array(count).fill(n)), triple * (2 ** (count - 3)) + (powers.imperador ? 100 : 0), `${['','','','trinca','quadra','quina','sena'][count]} de ${n}${powers.imperador?' + Imperador':''}`);
     }
-    use(req(1,2,3,4,5), 500); use(req(2,3,4,5,6), 750); use(req(1,2,3,4,5,6), 1500);
-    if (powers.carpinteiro) use(req(3,5), 100);
-    if (powers.carrasco) use(req(4,5,6), 300);
-    if (powers.sacerdote) use(req(1,3,5), 1000);
-    if (marriagesLeft) for (let n = 1; n <= 6; n++) use(req(n,n), 100, true);
+    use(req(1,2,3,4,5), 500, 'sequência 1–5'); use(req(2,3,4,5,6), 750, 'sequência 2–6'); use(req(1,2,3,4,5,6), 1500, 'sequência 1–6');
+    if (powers.carpinteiro) use(req(3,5), 100, 'Carpinteiro 3+5');
+    if (powers.carrasco) use(req(4,5,6), 300, 'Carrasco 4+5+6');
+    if (powers.sacerdote) use(req(1,3,5), 1000, 'Sacerdote 1+3+5');
+    if (marriagesLeft) for (let n = 1; n <= 6; n++) use(req(n,n), 100, `Casamento: par de ${n}`, true);
     memo.set(key, best); return best;
   };
   const result = search(counts, marriageCharges);
-  return { score: Math.max(0, result.score + (result.score > -Infinity && powers.prophetFace ? counts[powers.prophetFace] * 100 : 0)), marriagesUsed:result.score > -Infinity ? result.marriagesUsed : 0 };
+  const bonus=result.score > -Infinity && powers.prophetFace ? counts[powers.prophetFace] * 100 : 0;
+  return { score: Math.max(0, result.score + bonus), marriagesUsed:result.score > -Infinity ? result.marriagesUsed : 0, groups:result.score > -Infinity ? [...result.groups,...(bonus?[`Olho do Profeta: ${counts[powers.prophetFace]} × 100 (${bonus})`]:[])] : [] };
 }
 export function scoreDice(values, powers = {}) { return scoreDiceDetailed(values, powers).score; }
 function hasScoring(values, powers) { for (let mask=1; mask<(1<<values.length); mask++) { const choice=values.filter((_,i)=>mask&(1<<i)); if (scoreDice(choice,powers)>0) return true; } return false; }
 
-function player(room, req) { const p = room.players.find(p => p.token === req.headers['x-player-token']); if (!p) fail('Acesso à sala inválido.'); return p; }
+function participant(name){return {id:randomUUID(),token:token(),name,score:0,insignia:null,charges:0,legendary:null,legendaryCharges:0,insigniasLocked:false,skipNextTurn:false,lastCommonUsed:null};}
+function player(room, req) { const p = [...room.players,...room.spectators].find(p => p.token === req.headers['x-player-token']); if (!p) fail('Acesso à sala inválido.'); return p; }
 const other = (room, p) => room.players.find(q => q.id !== p.id);
+function startMatch(room){if(room.players.length!==2||room.phase!=='lobby')return;room.phase='active';room.turn=room.players[randomInt(0,2)].id;log(room,`${room.players[0].name} e ${room.players[1].name} ocuparam a mesa. A partida começou.`);}
+function resetMatch(room){room.phase='lobby';room.turn=null;room.winner=null;room.round=1;room.roll=[];room.available=6;room.turnPoints=0;room.lastKeep=0;room.bust=false;room.proposal=null;room.rollMultiplier=1;room.prophetFace=0;room.pendingProphet=0;room.pendingCoin=null;room.extraTurn=false;room.hourglassArmed=null;room.diaboRisk=null;room.eclipseTarget=null;room.eclipseOwner=null;room.shackleTarget=null;room.shackled=false;room.noSingles=false;room.lastBust=null;for(const q of room.players){q.score=0;q.insignia=null;q.charges=0;q.legendary=null;q.legendaryCharges=0;q.insigniasLocked=false;q.skipNextTurn=false;q.lastCommonUsed=null;}}
 function hasPower(room, p, family) { if (!p.insignia || familyOf(p.insignia) !== family) return false; const rival = other(room,p); return !(rival?.insignia && familyOf(rival.insignia) === 'defesa' && gradeOf(rival.insignia) === gradeOf(p.insignia)); }
 function powers(room, p) { const enabled=!room.extraTurn&&!p.insigniasLocked;return { tique:enabled&&hasPower(room,p,'tique'), imperador:enabled&&hasPower(room,p,'imperador'), carpinteiro:enabled&&hasPower(room,p,'vantagem-do-carpinteiro'), carrasco:enabled&&hasPower(room,p,'vantagem-do-carrasco'), sacerdote:enabled&&hasPower(room,p,'vantagem-do-sacerdote'), casamentoCharges:enabled&&hasPower(room,p,'casamento') ? p.charges : 0, noSingles:room.noSingles, prophetFace:room.prophetFace }; }
 function choices(room,p) { if (room.turn!==p.id || room.bust) return []; const out=[]; for(let mask=1;mask<(1<<room.roll.length);mask++){const indices=room.roll.map((_,i)=>i).filter(i=>mask&(1<<i));const detail=scoreDiceDetailed(indices.map(i=>room.roll[i]),powers(room,p));if(detail.score>0)out.push({indices,score:detail.score*room.rollMultiplier});} return out; }
-function view(room, p) { return { code:room.code, target:room.target, stake:room.stake, phase:room.phase, turn:room.turn, winner:room.winner, round:room.round, roll:room.roll, available:room.available, turnPoints:room.turnPoints, lastKeep:room.lastKeep, bust:room.bust, choices:choices(room,p), extraTurn:room.extraTurn, hourglassArmed:room.hourglassArmed===p.id, proposal:room.proposal, log:room.log.slice(-30), players:room.players.map(q => ({ id:q.id,name:q.name,score:q.score,insignia:q.insignia,insigniaActive:q.insignia?hasPower(room,q,familyOf(q.insignia)):false,charges:q.charges,legendary:q.legendary,legendaryCharges:q.legendaryCharges,insigniasLocked:q.insigniasLocked,lastCommonUsed:q.lastCommonUsed })), you:p.id }; }
+function view(room, p) { return { code:room.code, target:room.target, stake:room.stake, phase:room.phase, turn:room.turn, winner:room.winner, round:room.round, roll:room.roll, available:room.available, turnPoints:room.turnPoints, lastKeep:room.lastKeep, bust:room.bust, choices:choices(room,p), extraTurn:room.extraTurn, hourglassArmed:room.hourglassArmed===p.id, lastBust:room.lastBust, proposal:room.proposal, log:room.log.slice(-30), players:room.players.map(q => ({ id:q.id,name:q.name,score:q.score,insignia:q.insignia,insigniaActive:q.insignia?hasPower(room,q,familyOf(q.insignia)):false,charges:q.charges,legendary:q.legendary,legendaryCharges:q.legendaryCharges,insigniasLocked:q.insigniasLocked,lastCommonUsed:q.lastCommonUsed })), spectators:room.spectators.map(q=>({id:q.id,name:q.name})), spectator:room.spectators.includes(p), you:p.id }; }
 function emit(room) { for (const c of room.clients) c.res.write(`data: ${JSON.stringify(view(room,c.player))}\n\n`); }
 function log(room, message) { room.log.push(message); if (room.log.length > 100) room.log.shift(); }
 function next(room, p, message) {
@@ -67,8 +71,10 @@ function next(room, p, message) {
   room.turn=candidate.id;room.round++;room.roll=[];room.available=room.shackleTarget===candidate.id?5:6;room.shackled=room.available===5;if(room.shackled)room.shackleTarget=null;room.turnPoints=0;room.lastKeep=0;room.bust=false;room.rollMultiplier=1;room.prophetFace=0;room.pendingCoin=null;room.pendingProphet=0;room.diaboRisk=null;
   room.noSingles=room.eclipseTarget===candidate.id; if(room.noSingles){room.eclipseTarget=room.eclipseOwner;room.eclipseOwner=room.eclipseOwner===candidate.id?null:room.eclipseOwner;if(!room.eclipseOwner)room.eclipseTarget=null;}
 }
-function bust(room,p) {
-  if(p.legendary==='lagrima-da-santa'&&p.legendaryCharges>0&&!p.insigniasLocked&&!room.extraTurn){const saved=Math.ceil(room.turnPoints/2);p.score+=saved;p.legendaryCharges=0;if(p.score>=room.target){room.phase='finished';room.winner=p.id;room.turn=null;log(room,`${p.name} venceu ao salvar ${saved} pontos com Lágrima da Santa.`);}else next(room,p,`${p.name} salvou ${saved} pontos com Lágrima da Santa na primeira falha.`);return;}
+function bust(room,p,reason='Sem combinação pontuável') {
+  room.lastBust={id:randomUUID(),at:Date.now(),player:p.name,dice:[...room.roll],atRisk:room.turnPoints,reason};
+  log(room,`${p.name} rolou ${room.roll.join(', ')}: ${reason.toLowerCase()}. ${room.turnPoints} pontos do turno em risco.`);
+  if(p.legendary==='lagrima-da-santa'&&p.legendaryCharges>0&&!p.insigniasLocked&&!room.extraTurn){const saved=Math.ceil(room.turnPoints/2);p.score+=saved;p.legendaryCharges=0;room.lastBust.saved=saved;if(p.score>=room.target){room.phase='finished';room.winner=p.id;room.turn=null;log(room,`${p.name} venceu ao salvar ${saved} pontos com Lágrima da Santa.`);}else next(room,p,`${p.name} salvou ${saved} pontos com Lágrima da Santa na primeira falha.`);return;}
   room.bust=true;
   const recover=(hasPower(room,p,'ressurreicao')&&p.charges>0)||(['fortuna','troca','transmutacao'].some(f=>hasPower(room,p,f))&&p.charges>0)||(p.legendaryCharges>0&&!p.insigniasLocked&&['mao-do-homem-morto','lagrima-da-santa','diabo'].includes(p.legendary));
   if(recover) log(room,`${p.name} falhou. Escolha uma insígnia de recuperação ou aceite a falha.`);
@@ -156,6 +162,18 @@ function activateLost(room,p,data) {
 }
 function act(room,p,data) {
   const type=data.type;
+  if(type==='leave'||type==='spectate'){
+    const index=room.players.indexOf(p);
+    if(index>=0){if(room.phase!=='lobby')resetMatch(room);room.players.splice(index,1);if(type==='spectate')room.spectators.push(p);log(room,`${p.name} ${type==='spectate'?'foi para a arquibancada':'saiu da sala'}.`);}
+    else if(type==='leave'){room.spectators.splice(room.spectators.indexOf(p),1);log(room,`${p.name} saiu da arquibancada.`);}
+    return;
+  }
+  if(type==='takeSeat'){
+    if(!room.spectators.includes(p))fail('Você já está na mesa.');
+    if(room.phase!=='lobby'||room.players.length>=2)fail('As duas vagas estão ocupadas. Aguarde uma vaga no saguão.');
+    room.spectators.splice(room.spectators.indexOf(p),1);room.players.push(p);log(room,`${p.name} saiu da arquibancada e ocupou uma vaga.`);startMatch(room);return;
+  }
+  if(!room.players.includes(p))fail('Espectadores podem assistir, mas não jogar os dados.');
   if (type==='propose') {
     if (room.phase!=='active' || room.proposal || room.players.some(q=>q.insignia||q.legendary) || room.roll.length || room.bust || room.turnPoints || room.round!==1) fail('A proposta deve ser feita antes da primeira rolagem.');
     const id=String(data.insignia||''), legendary=String(data.legendary||''); if ((id&&!allowed.has(id))||(legendary&&!lost.has(legendary))||(!id&&!legendary)) fail('Escolha uma insígnia válida.');
@@ -187,21 +205,21 @@ function act(room,p,data) {
     room.roll=rollDice(room.available); room.lastKeep=0;
     room.rollMultiplier=1;room.prophetFace=room.pendingProphet;room.pendingProphet=0;
     if(room.prophetFace&&!room.roll.includes(room.prophetFace))room.turnPoints=Math.max(0,room.turnPoints-100);
-    if(room.pendingCoin){const parity=room.roll.reduce((a,b)=>a+b,0)%2===0?'par':'impar';if(parity!==room.pendingCoin){room.pendingCoin=null;bust(room,p);return;}room.rollMultiplier=2;room.pendingCoin=null;}
+    if(room.pendingCoin){const parity=room.roll.reduce((a,b)=>a+b,0)%2===0?'par':'impar';if(parity!==room.pendingCoin){room.pendingCoin=null;bust(room,p,'A aposta da Moeda falhou');return;}room.rollMultiplier=2;room.pendingCoin=null;}
     if (!hasScoring(room.roll,powers(room,p))) bust(room,p);
     else log(room,`${p.name} lançou ${room.roll.length} dados.`);
     return;
   }
   if (type==='keep') {
     const indices=data.indices, values=selected(room,indices);
-    const result=scoreDiceDetailed(values,powers(room,p));let score=result.score*room.rollMultiplier;
+    const result=scoreDiceDetailed(values,powers(room,p));const multiplier=room.rollMultiplier;let score=result.score*multiplier;
     if (!score) fail('Os dados escolhidos não formam uma pontuação válida.');
     p.charges-=result.marriagesUsed;if(result.marriagesUsed)p.lastCommonUsed=p.insignia;
     const brokeShackle=room.shackled&&indices.length===room.available;
     room.turnPoints+=score; room.lastKeep=score; room.available-=indices.length; room.roll=[];
     if (room.available===0){room.available=6;if(brokeShackle){room.shackled=false;log(room,`O Grilhão de ${p.name} foi quebrado.`);}}
     room.rollMultiplier=1;room.prophetFace=0;
-    log(room,`${p.name} guardou ${score} pontos; total do turno: ${room.turnPoints}.`); return;
+    log(room,`${p.name} guardou ${score} pontos com ${values.join(', ')}: ${result.groups.join(' + ')}${multiplier>1?' ×2 pela Moeda':''}. Turno: ${room.turnPoints}.`); return;
   }
   if (type==='bank') {
     if (!room.turnPoints || room.roll.length) fail('Guarde uma combinação antes de encerrar.');
@@ -220,19 +238,21 @@ export async function handleDice(req,res,url) {
   try {
     if (req.method==='POST' && url.pathname==='/api/dice/rooms') {
       const data=await body(req), name=String(data.name||'Jogador').trim().slice(0,30)||'Jogador';
+      const role=String(data.role||'player');if(!['player','spectator'].includes(role))fail('Escolha jogador ou espectador.');
       const target=Math.max(1000,Math.min(50000,Math.trunc(Number(data.target)||5000)));
       let roomCode; do { roomCode=code(); } while (rooms.has(roomCode));
-      const p={id:randomUUID(),token:token(),name,score:0,insignia:null,charges:0,legendary:null,legendaryCharges:0,insigniasLocked:false,skipNextTurn:false,lastCommonUsed:null};
-      const room={code:roomCode,target,stake:String(data.stake||'').trim().slice(0,80),phase:'lobby',players:[p],turn:null,winner:null,round:1,roll:[],available:6,turnPoints:0,lastKeep:0,bust:false,proposal:null,log:[],clients:new Set(),rollMultiplier:1,prophetFace:0,pendingProphet:0,pendingCoin:null,extraTurn:false,hourglassArmed:null,diaboRisk:null,eclipseTarget:null,eclipseOwner:null,shackleTarget:null,shackled:false,noSingles:false};
+      const p=participant(name);
+      const room={code:roomCode,target,stake:String(data.stake||'').trim().slice(0,80),phase:'lobby',players:role==='player'?[p]:[],spectators:role==='spectator'?[p]:[],turn:null,winner:null,round:1,roll:[],available:6,turnPoints:0,lastKeep:0,bust:false,proposal:null,log:[],clients:new Set(),rollMultiplier:1,prophetFace:0,pendingProphet:0,pendingCoin:null,extraTurn:false,hourglassArmed:null,diaboRisk:null,eclipseTarget:null,eclipseOwner:null,shackleTarget:null,shackled:false,noSingles:false,lastBust:null};
       rooms.set(roomCode,room); response(res,200,{code:roomCode,token:p.token}); return true;
     }
     const match=url.pathname.match(/^\/api\/dice\/rooms\/([A-Za-z0-9]+)\/(join|state|events|action)$/);
     if (!match) { response(res,404,{error:'Não encontrado.'}); return true; }
     const room=rooms.get(match[1].toUpperCase()), op=match[2]; if (!room) fail('Sala não encontrada.');
     if (op==='join' && req.method==='POST') {
-      if (room.players.length!==1 || room.phase!=='lobby') fail('Sala já está completa.');
-      const data=await body(req); const p={id:randomUUID(),token:token(),name:String(data.name||'Jogador').trim().slice(0,30)||'Jogador',score:0,insignia:null,charges:0,legendary:null,legendaryCharges:0,insigniasLocked:false,skipNextTurn:false,lastCommonUsed:null};
-      room.players.push(p); room.phase='active'; room.turn=room.players[randomInt(0,2)].id; log(room,`${p.name} entrou na mesa. A partida começou.`);
+      const data=await body(req),role=String(data.role||'player');if(!['player','spectator'].includes(role))fail('Escolha jogador ou espectador.');
+      if(role==='player'&&(room.phase!=='lobby'||room.players.length>=2))fail('As vagas de jogador estão ocupadas. Entre na arquibancada.');
+      const p=participant(String(data.name||'Jogador').trim().slice(0,30)||'Jogador');
+      if(role==='spectator'){room.spectators.push(p);log(room,`${p.name} entrou na arquibancada.`);}else{room.players.push(p);log(room,`${p.name} ocupou uma vaga de jogador.`);startMatch(room);}
       response(res,200,{code:room.code,token:p.token}); emit(room); return true;
     }
     const p=player(room,req);
@@ -242,7 +262,7 @@ export async function handleDice(req,res,url) {
       const c={res,player:p}; room.clients.add(c); res.write(`data: ${JSON.stringify(view(room,p))}\n\n`);
       const heartbeat=setInterval(()=>res.write(': ping\n\n'),20000); req.on('close',()=>{clearInterval(heartbeat);room.clients.delete(c);}); return true;
     }
-    if (op==='action' && req.method==='POST') { act(room,p,await body(req)); response(res,200,{ok:true}); emit(room); return true; }
+    if (op==='action' && req.method==='POST') {const data=await body(req);act(room,p,data);response(res,200,{ok:true});emit(room);if(data.type==='leave'&&!room.players.length&&!room.spectators.length)rooms.delete(room.code);return true; }
     response(res,405,{error:'Método inválido.'}); return true;
   } catch(error) { response(res,400,{error:error.message||'Erro inesperado.'}); return true; }
 }

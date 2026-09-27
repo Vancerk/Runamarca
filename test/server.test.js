@@ -25,7 +25,8 @@ test('combinações de seis dados e poderes das insígnias', () => {
   assert.equal(scoreDice([1],{noSingles:true}),0);
   assert.equal(scoreDice([2,3,4,5,6],{noSingles:true}),750);
   assert.equal(scoreDice([2,2,5],{casamentoCharges:1}),150);
-  assert.deepEqual(scoreDiceDetailed([2,2,5],{casamentoCharges:1}),{score:150,marriagesUsed:1});
+  assert.equal(scoreDiceDetailed([2,2,5],{casamentoCharges:1}).marriagesUsed,1);
+  assert.match(scoreDiceDetailed([1,2,3,4,5]).groups.join(' '),/sequência 1–5/);
   assert.equal(scoreDice([1,1,1,1,1,1]),8000);
 });
 
@@ -182,6 +183,36 @@ test('Seis Ossos valida proposta, insígnia perdida e seleção pontuável no se
       assert.equal((await call(`${path}/action`,{type:'keep',indices:choice.indices},roller.token)).status,200);
       const kept=(await call(`${path}/state`,undefined,roller.token)).data;
       assert.equal(kept.turnPoints,choice.score);
+      assert.match(kept.log.at(-1),/guardou .* pontos com .*Turno:/);
     }
+  } finally {await new Promise(resolve=>server.close(resolve));}
+});
+
+test('Seis Ossos permite anfitrião espectador, ocupar vaga, arquibancada e sair da sala', async () => {
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const base=`http://127.0.0.1:${server.address().port}`;
+  const call=async(path,data,secret)=>{const r=await fetch(base+path,{method:data?'POST':'GET',headers:{...(data?{'content-type':'application/json'}:{}),...(secret?{'x-player-token':secret}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,data:await r.json()}};
+  try {
+    const host=(await call('/api/dice/rooms',{name:'Anfitrião',role:'spectator'})).data;
+    const path=`/api/dice/rooms/${host.code}`;
+    let state=(await call(`${path}/state`,undefined,host.token)).data;
+    assert.equal(state.spectator,true);assert.equal(state.players.length,0);assert.equal(state.spectators.length,1);
+    const first=(await call(`${path}/join`,{name:'Primeiro',role:'player'})).data;
+    const second=(await call(`${path}/join`,{name:'Segundo',role:'player'})).data;
+    const audience=(await call(`${path}/join`,{name:'Plateia',role:'spectator'})).data;
+    state=(await call(`${path}/state`,undefined,host.token)).data;
+    assert.equal(state.phase,'active');assert.equal(state.players.length,2);assert.equal(state.spectators.length,2);
+    assert.equal((await call(`${path}/action`,{type:'roll'},host.token)).status,400);
+    assert.equal((await call(`${path}/action`,{type:'takeSeat'},host.token)).status,400);
+    assert.equal((await call(`${path}/action`,{type:'spectate'},first.token)).status,200);
+    state=(await call(`${path}/state`,undefined,host.token)).data;
+    assert.equal(state.phase,'lobby');assert.equal(state.players.length,1);
+    assert.equal((await call(`${path}/action`,{type:'takeSeat'},host.token)).status,200);
+    state=(await call(`${path}/state`,undefined,host.token)).data;
+    assert.equal(state.phase,'active');assert.equal(state.spectator,false);
+    assert.equal((await call(`${path}/action`,{type:'leave'},host.token)).status,200);
+    assert.equal((await call(`${path}/state`,undefined,host.token)).status,400);
+    assert.equal((await call(`${path}/state`,undefined,audience.token)).data.spectator,true);
+    assert.equal((await call(`${path}/action`,{type:'leave'},second.token)).status,200);
   } finally {await new Promise(resolve=>server.close(resolve));}
 });
