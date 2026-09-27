@@ -36,6 +36,12 @@ test('hub, cartas automáticas, ataque e mesa de dados online', async () => {
   const call=async(path,data,secret)=>{const r=await fetch(base+path,{method:data?'POST':'GET',headers:{...(data?{'content-type':'application/json'}:{}),...(secret?{'x-player-token':secret}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,data:r.headers.get('content-type')?.includes('application/json')?await r.json():await r.text()}};
   try {
     for(const page of ['/','/runamarca','/dados','/editor.html','/dice.js','/hub.css','/insignias/defesa-estanho.png']) assert.equal((await call(page)).status,200,page);
+    for(const audioFile of ['dice-on-wood.flac','dice-on-wood-1.flac','dice-on-wood-2.flac','dice-on-wood-4.flac','combo-win.wav']){
+      const response=await fetch(base+'/audio/'+audioFile);
+      assert.equal(response.status,200,audioFile);
+      assert.match(response.headers.get('content-type'),/audio\/(flac|wav)/);
+      await response.arrayBuffer();
+    }
     assert.match((await call('/')).data,/Jogos Elysium/);
     assert.match((await call('/runamarca')).data,/RUNAMARCA/i);
     const a=(await call('/api/rooms',{name:'A'})).data;
@@ -87,6 +93,8 @@ test('hub, cartas automáticas, ataque e mesa de dados online', async () => {
     assert.equal((await call(`${dr}/action`,{type:'roll'},roller.token)).status,200);
     ds=(await call(`${dr}/state`,undefined,roller.token)).data;
     assert.equal(ds.roll.length===6||ds.round===2,true);
+    assert.equal(typeof ds.rollId,'string');
+    assert.ok(ds.rolledAt>0);
     assert.equal((await call(`${dr}/action`,{type:'keep',indices:[99]},roller.token)).status,400);
   } finally { await new Promise(resolve=>server.close(resolve)); }
 });

@@ -57,11 +57,11 @@ function participant(name){return {id:randomUUID(),token:token(),name,score:0,in
 function player(room, req) { const p = [...room.players,...room.spectators].find(p => p.token === req.headers['x-player-token']); if (!p) fail('Acesso à sala inválido.'); return p; }
 const other = (room, p) => room.players.find(q => q.id !== p.id);
 function startMatch(room){if(room.players.length!==2||room.phase!=='lobby')return;room.phase='active';room.turn=room.players[randomInt(0,2)].id;log(room,`${room.players[0].name} e ${room.players[1].name} ocuparam a mesa. A partida começou.`);}
-function resetMatch(room){room.phase='lobby';room.turn=null;room.winner=null;room.round=1;room.roll=[];room.available=6;room.turnPoints=0;room.lastKeep=0;room.bust=false;room.proposal=null;room.rollMultiplier=1;room.prophetFace=0;room.pendingProphet=0;room.pendingCoin=null;room.extraTurn=false;room.hourglassArmed=null;room.diaboRisk=null;room.eclipseTarget=null;room.eclipseOwner=null;room.shackleTarget=null;room.shackled=false;room.noSingles=false;room.lastBust=null;for(const q of room.players){q.score=0;q.insignia=null;q.charges=0;q.legendary=null;q.legendaryCharges=0;q.insigniasLocked=false;q.skipNextTurn=false;q.lastCommonUsed=null;}}
+function resetMatch(room){room.phase='lobby';room.turn=null;room.winner=null;room.round=1;room.roll=[];room.available=6;room.turnPoints=0;room.lastKeep=0;room.bust=false;room.proposal=null;room.rollMultiplier=1;room.prophetFace=0;room.pendingProphet=0;room.pendingCoin=null;room.extraTurn=false;room.hourglassArmed=null;room.diaboRisk=null;room.eclipseTarget=null;room.eclipseOwner=null;room.shackleTarget=null;room.shackled=false;room.noSingles=false;room.lastBust=null;room.rollId=null;room.rolledAt=0;room.lastScoreEvent=null;for(const q of room.players){q.score=0;q.insignia=null;q.charges=0;q.legendary=null;q.legendaryCharges=0;q.insigniasLocked=false;q.skipNextTurn=false;q.lastCommonUsed=null;}}
 function hasPower(room, p, family) { if (!p.insignia || familyOf(p.insignia) !== family) return false; const rival = other(room,p); return !(rival?.insignia && familyOf(rival.insignia) === 'defesa' && gradeOf(rival.insignia) === gradeOf(p.insignia)); }
 function powers(room, p) { const enabled=!room.extraTurn&&!p.insigniasLocked;return { tique:enabled&&hasPower(room,p,'tique'), imperador:enabled&&hasPower(room,p,'imperador'), carpinteiro:enabled&&hasPower(room,p,'vantagem-do-carpinteiro'), carrasco:enabled&&hasPower(room,p,'vantagem-do-carrasco'), sacerdote:enabled&&hasPower(room,p,'vantagem-do-sacerdote'), casamentoCharges:enabled&&hasPower(room,p,'casamento') ? p.charges : 0, noSingles:room.noSingles, prophetFace:room.prophetFace }; }
 function choices(room,p) { if (room.turn!==p.id || room.bust) return []; const out=[]; for(let mask=1;mask<(1<<room.roll.length);mask++){const indices=room.roll.map((_,i)=>i).filter(i=>mask&(1<<i));const detail=scoreDiceDetailed(indices.map(i=>room.roll[i]),powers(room,p));if(detail.score>0)out.push({indices,score:detail.score*room.rollMultiplier});} return out; }
-function view(room, p) { return { code:room.code, target:room.target, stake:room.stake, phase:room.phase, turn:room.turn, winner:room.winner, round:room.round, roll:room.roll, available:room.available, turnPoints:room.turnPoints, lastKeep:room.lastKeep, bust:room.bust, choices:choices(room,p), extraTurn:room.extraTurn, hourglassArmed:room.hourglassArmed===p.id, lastBust:room.lastBust, proposal:room.proposal, log:room.log.slice(-30), players:room.players.map(q => ({ id:q.id,name:q.name,score:q.score,insignia:q.insignia,insigniaActive:q.insignia?hasPower(room,q,familyOf(q.insignia)):false,charges:q.charges,legendary:q.legendary,legendaryCharges:q.legendaryCharges,insigniasLocked:q.insigniasLocked,lastCommonUsed:q.lastCommonUsed })), spectators:room.spectators.map(q=>({id:q.id,name:q.name})), spectator:room.spectators.includes(p), you:p.id }; }
+function view(room, p) { return { code:room.code, target:room.target, stake:room.stake, phase:room.phase, turn:room.turn, winner:room.winner, round:room.round, roll:room.roll, rollId:room.rollId, rolledAt:room.rolledAt, lastScoreEvent:room.lastScoreEvent, available:room.available, turnPoints:room.turnPoints, lastKeep:room.lastKeep, bust:room.bust, choices:choices(room,p), extraTurn:room.extraTurn, hourglassArmed:room.hourglassArmed===p.id, lastBust:room.lastBust, proposal:room.proposal, log:room.log.slice(-30), players:room.players.map(q => ({ id:q.id,name:q.name,score:q.score,insignia:q.insignia,insigniaActive:q.insignia?hasPower(room,q,familyOf(q.insignia)):false,charges:q.charges,legendary:q.legendary,legendaryCharges:q.legendaryCharges,insigniasLocked:q.insigniasLocked,lastCommonUsed:q.lastCommonUsed })), spectators:room.spectators.map(q=>({id:q.id,name:q.name})), spectator:room.spectators.includes(p), you:p.id }; }
 function emit(room) { for (const c of room.clients) c.res.write(`data: ${JSON.stringify(view(room,c.player))}\n\n`); }
 function log(room, message) { room.log.push(message); if (room.log.length > 100) room.log.shift(); }
 function next(room, p, message) {
@@ -91,7 +91,7 @@ function activate(room,p,data) {
   const grade=gradeOf(id), index=Number(data.index);
   if (family==='ressurreicao') {
     if (!room.bust) fail('Ressurreição só pode ser usada após perder a rolagem.');
-    room.bust=false; room.roll=rollDice(room.available); p.charges--;p.lastCommonUsed=id; log(room,`${p.name} usou Ressurreição e rolou novamente.`);
+    room.bust=false; room.roll=rollDice(room.available);room.rollId=randomUUID();room.rolledAt=Date.now(); p.charges--;p.lastCommonUsed=id; log(room,`${p.name} usou Ressurreição e rolou novamente.`);
     if (!hasScoring(room.roll,powers(room,p))) bust(room,p);
     return;
   }
@@ -106,7 +106,7 @@ function activate(room,p,data) {
   }
   if (family==='poder' || family==='rei-dos-passaros') {
     if (!room.roll.length || room.roll.length>=7) fail('Role os dados antes de ganhar um dado extra.');
-    room.roll.push(...rollDice(1)); room.available++; p.charges--; p.lastCommonUsed=id; log(room,`${p.name} ganhou um dado extra na rolagem.`); return;
+    room.roll.push(...rollDice(1));room.rollId=randomUUID();room.rolledAt=Date.now(); room.available++; p.charges--; p.lastCommonUsed=id; log(room,`${p.name} ganhou um dado extra na rolagem.`); return;
   }
   if (!room.roll.length) fail('Role os dados antes de usar esta insígnia.');
   if (family==='fortuna' || family==='troca') {
@@ -114,7 +114,7 @@ function activate(room,p,data) {
     const max=family==='fortuna'?(grade==='ouro'?3:grade==='prata'?2:1):(grade==='ouro'?2:1);
     const values=selected(room,indices);
     if (indices.length>max || (family==='troca' && grade==='ouro' && (indices.length!==2 || values[0]!==values[1]))) fail('Escolha os dados permitidos por esta insígnia.');
-    for (const i of indices) room.roll[i]=randomInt(1,7);
+    for (const i of indices) room.roll[i]=randomInt(1,7);room.rollId=randomUUID();room.rolledAt=Date.now();
     p.charges--; p.lastCommonUsed=id; log(room,`${p.name} usou ${family==='fortuna'?'Fortuna':'Troca'} para rolar novamente.`); room.bust=false;if(!hasScoring(room.roll,powers(room,p))) bust(room,p); return;
   }
   if (family==='transmutacao') {
@@ -202,7 +202,7 @@ function act(room,p,data) {
   if (type==='roll') {
     if (room.roll.length) fail('Guarde uma combinação antes de rolar novamente.');
     if(room.hourglassArmed===p.id)fail('Encerre o turno para acionar a Ampulheta Quebrada.');
-    room.roll=rollDice(room.available); room.lastKeep=0;
+    room.roll=rollDice(room.available);room.rollId=randomUUID();room.rolledAt=Date.now();room.lastKeep=0;
     room.rollMultiplier=1;room.prophetFace=room.pendingProphet;room.pendingProphet=0;
     if(room.prophetFace&&!room.roll.includes(room.prophetFace))room.turnPoints=Math.max(0,room.turnPoints-100);
     if(room.pendingCoin){const parity=room.roll.reduce((a,b)=>a+b,0)%2===0?'par':'impar';if(parity!==room.pendingCoin){room.pendingCoin=null;bust(room,p,'A aposta da Moeda falhou');return;}room.rollMultiplier=2;room.pendingCoin=null;}
@@ -217,6 +217,7 @@ function act(room,p,data) {
     p.charges-=result.marriagesUsed;if(result.marriagesUsed)p.lastCommonUsed=p.insignia;
     const brokeShackle=room.shackled&&indices.length===room.available;
     room.turnPoints+=score; room.lastKeep=score; room.available-=indices.length; room.roll=[];
+    if(score>=750)room.lastScoreEvent={id:randomUUID(),at:Date.now(),player:p.name,score,groups:result.groups};
     if (room.available===0){room.available=6;if(brokeShackle){room.shackled=false;log(room,`O Grilhão de ${p.name} foi quebrado.`);}}
     room.rollMultiplier=1;room.prophetFace=0;
     log(room,`${p.name} guardou ${score} pontos com ${values.join(', ')}: ${result.groups.join(' + ')}${multiplier>1?' ×2 pela Moeda':''}. Turno: ${room.turnPoints}.`); return;
@@ -242,7 +243,7 @@ export async function handleDice(req,res,url) {
       const target=Math.max(1000,Math.min(50000,Math.trunc(Number(data.target)||5000)));
       let roomCode; do { roomCode=code(); } while (rooms.has(roomCode));
       const p=participant(name);
-      const room={code:roomCode,target,stake:String(data.stake||'').trim().slice(0,80),phase:'lobby',players:role==='player'?[p]:[],spectators:role==='spectator'?[p]:[],turn:null,winner:null,round:1,roll:[],available:6,turnPoints:0,lastKeep:0,bust:false,proposal:null,log:[],clients:new Set(),rollMultiplier:1,prophetFace:0,pendingProphet:0,pendingCoin:null,extraTurn:false,hourglassArmed:null,diaboRisk:null,eclipseTarget:null,eclipseOwner:null,shackleTarget:null,shackled:false,noSingles:false,lastBust:null};
+      const room={code:roomCode,target,stake:String(data.stake||'').trim().slice(0,80),phase:'lobby',players:role==='player'?[p]:[],spectators:role==='spectator'?[p]:[],turn:null,winner:null,round:1,roll:[],rollId:null,rolledAt:0,lastScoreEvent:null,available:6,turnPoints:0,lastKeep:0,bust:false,proposal:null,log:[],clients:new Set(),rollMultiplier:1,prophetFace:0,pendingProphet:0,pendingCoin:null,extraTurn:false,hourglassArmed:null,diaboRisk:null,eclipseTarget:null,eclipseOwner:null,shackleTarget:null,shackled:false,noSingles:false,lastBust:null};
       rooms.set(roomCode,room); response(res,200,{code:roomCode,token:p.token}); return true;
     }
     const match=url.pathname.match(/^\/api\/dice\/rooms\/([A-Za-z0-9]+)\/(join|state|events|action)$/);
