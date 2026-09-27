@@ -9,7 +9,7 @@ if ((Split-Path -Parent $archivePath) -ne $projectRoot -or (Split-Path -Parent $
   throw 'O pacote precisa permanecer na pasta do projeto.'
 }
 
-$rootFiles = @('.dockerignore', '.gitignore', 'ANDAMENTO.md', 'COMO_TESTAR.md', 'Dockerfile', 'HOSPEDAGEM.md', 'INICIAR_WINDOWS.bat', 'package.json', 'README.md', 'server.js')
+$rootFiles = @('.dockerignore', '.gitignore', 'ANDAMENTO.md', 'COMO_TESTAR.md', 'Dockerfile', 'HOSPEDAGEM.md', 'INICIAR_WINDOWS.bat', 'package.json', 'README.md', 'server.js', 'dice-game.js')
 $files = foreach ($name in $rootFiles) { Get-Item -LiteralPath (Join-Path $projectRoot $name) }
 foreach ($folder in @('public', 'scripts', 'test')) {
   $files += Get-ChildItem -LiteralPath (Join-Path $projectRoot $folder) -File -Recurse
@@ -26,7 +26,7 @@ try {
 
 $check = [System.IO.Compression.ZipFile]::OpenRead($temporaryPath)
 try {
-  foreach ($required in @('server.js', 'Dockerfile', 'HOSPEDAGEM.md', 'public/editor.html', 'public/index.html', 'public/decks/catalog.json')) {
+  foreach ($required in @('server.js', 'dice-game.js', 'Dockerfile', 'HOSPEDAGEM.md', 'public/hub.html', 'public/dice.html', 'public/editor.html', 'public/index.html', 'public/decks/catalog.json', 'public/decks/effects.json')) {
     if (-not $check.GetEntry($required)) { throw "Arquivo ausente do pacote: $required" }
   }
   Write-Host "Pacote com $($check.Entries.Count) arquivos."

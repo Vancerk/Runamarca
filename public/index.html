@@ -8,15 +8,19 @@
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/zones.css">
   <link rel="stylesheet" href="/theme.css">
+  <link rel="stylesheet" href="/layout-v3.css">
   <script src="/app-v2.js" defer></script>
 </head>
 <body>
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="card-hover-preview" class="card-hover-preview hidden" aria-hidden="true"></div>
+  <div id="card-effect-tooltip" class="card-effect-tooltip hidden" role="tooltip"></div>
+  <div id="draw-animation-layer" aria-hidden="true"></div>
   <dialog id="card-detail" class="card-detail" aria-label="Carta ampliada"><button id="close-card-detail" class="detail-close" type="button" aria-label="Fechar ampliação">×</button><div id="card-detail-content"></div></dialog>
   <main id="welcome" class="welcome">
     <div class="welcome-art" aria-hidden="true"><div class="seal">✦</div><div class="wanted">PROCURADO<br><span>VIVO OU MORTO</span></div></div>
     <section class="welcome-panel">
+      <a class="elysium-back welcome-back" href="/">← Jogos Elysium</a>
       <p class="eyebrow">Crônicas dos mercenários</p>
       <h1>RunaMarca</h1>
       <p class="lead">Marque seu alvo, descubra sua força e siga o rastro da próxima recompensa.</p>
@@ -39,15 +43,14 @@
           <button class="secondary" type="submit">Entrar na mesa <span>→</span></button>
         </form>
       </div>
-      <p class="welcome-foot">Protótipo de regras livres · 2 jogadores · cada mão é privada</p>
+      <p class="welcome-foot">Dois jogadores · demais participantes assistem · cada mão é privada</p>
     </section>
   </main>
 
   <main id="game" class="game hidden">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">◈</span><div><strong>RUNAMARCA</strong><small>Mesa dos caçadores</small></div></div>
-      <div class="room-info"><span class="eyebrow">SALA</span><strong id="room-label">------</strong><button id="copy-link" class="icon-button" title="Copiar convite" aria-label="Copiar convite">↗</button></div>
-      <div class="turn-info"><span id="round-label" class="round">Rodada 1</span><span id="turn-label" class="turn">Aguardando...</span><button id="end-turn" class="primary small">Encerrar turno <span>→</span></button></div>
+      <div class="brand-group"><a class="elysium-back" href="/">← Jogos Elysium</a><div class="brand"><span class="brand-mark">◈</span><div><strong>RUNAMARCA</strong><small>Mesa dos caçadores</small></div></div></div>
+      <div class="room-info"><span id="spectator-label" class="spectator-label hidden">MODO ESPECTADOR</span><span class="eyebrow">SALA</span><strong id="room-label">------</strong><button id="copy-link" class="icon-button" title="Copiar convite" aria-label="Copiar convite">↗</button></div>
     </header>
 
     <section id="match-gate" class="match-gate" aria-live="polite" hidden>
@@ -65,25 +68,26 @@
     </section>
 
     <div class="game-layout">
-      <aside class="left-rail">
-        <section class="rail-section"><span class="eyebrow">SEU ARSENAL</span><h2 id="self-name">Mercenário</h2><div class="deck-display"><div class="deck-visual" role="img" aria-label="Verso da carta RunaMarca"></div><div><strong id="deck-count">0</strong><span>no baralho</span></div></div><div class="mini-stats"><span>Descarte <b id="discard-count">0</b></span></div></section>
+      <aside class="left-rail" aria-label="Informações do seu arsenal"><button id="toggle-left-rail" class="rail-toggle" type="button" aria-expanded="true" aria-label="Recolher painel esquerdo" title="Recolher painel esquerdo"><span class="rail-toggle-icon">◂</span><span class="rail-toggle-label">Arsenal</span></button><div class="rail-body">
+        <section class="rail-section"><span class="eyebrow">SEU ARSENAL</span><h2 id="self-name">Mercenário</h2><div class="deck-display"><div class="deck-visual" role="img" aria-label="Verso da carta RunaMarca"></div><div><strong id="deck-count">0</strong><span>no baralho</span></div></div><div class="mini-stats"><span>Descarte <b id="discard-count">0</b></span></div><div id="discard-zone" class="discard-zone" aria-label="Zona de descarte"></div></section>
         <section class="rail-section ether-section"><span class="eyebrow">RESERVA DE ENERGIA</span><div class="ether-display"><span id="energy-icon" class="energy-icon hidden" aria-hidden="true"></span><strong id="ether-count">0</strong><span id="ether-color">Vire uma Runa para ganhar energia</span></div><p class="small-note">O custo da carta é pago ao colocá-la em campo.</p></section>
-        <section class="rail-section"><span class="eyebrow">AÇÕES RÁPIDAS</span><button id="draw-one" class="rail-button">Comprar carta <kbd>1</kbd></button><p id="draw-status" class="small-note draw-status">Escolha um deck para comprar cartas.</p><button id="shuffle" class="rail-button">Embaralhar baralho</button></section>
+        <section class="rail-section"><span class="eyebrow">AÇÕES RÁPIDAS</span><p id="draw-status" class="small-note draw-status">As cartas chegam automaticamente à sua mão.</p><button id="shuffle" class="rail-button">Embaralhar baralho</button></section>
         <section class="rail-section"><span class="eyebrow">PARTIDA</span><p id="active-deck-name" class="small-note">Deck confirmado</p><button id="reset-match" class="rail-button danger">Reiniciar partida e escolher decks</button></section>
-        <section class="rail-section help"><a class="editor-entry rail-editor-entry" href="/editor.html" target="_blank" rel="noopener">✦ Criador de cartas ↗</a><details class="rail-details"><summary>ATALHOS</summary><p><kbd>1</kbd> comprar · <kbd>Espaço</kbd> passar turno<br><kbd>F</kbd> virar · <kbd>R</kbd> voltar à mão · <kbd>D</kbd> descartar</p></details></section>
-      </aside>
+        <section class="rail-section help"><a class="editor-entry rail-editor-entry" href="/editor.html" target="_blank" rel="noopener">✦ Criador de cartas ↗</a><details class="rail-details"><summary>ATALHOS</summary><p><kbd>Espaço</kbd> passar turno<br><kbd>F</kbd> virar · <kbd>R</kbd> voltar à mão · <kbd>D</kbd> descartar</p></details></section>
+        <section class="rail-section log-panel"><span class="eyebrow">REGISTRO DA PARTIDA</span><div id="log" class="log"></div></section>
+      </div></aside>
 
       <section class="table-column">
-        <div class="opponent-bar"><div class="avatar">?</div><div><span class="eyebrow">ADVERSÁRIO</span><strong id="opponent-name">Aguardando rival...</strong></div><div class="opponent-stats"><span id="opponent-deck">0 no baralho</span><span id="opponent-hand">0 na mão</span></div></div>
+        <div class="opponent-bar"><div class="avatar">?</div><div><span id="opponent-role" class="eyebrow">ADVERSÁRIO</span><strong id="opponent-name">Aguardando rival...</strong></div><div class="opponent-stats"><span id="opponent-deck">0 no baralho</span><span id="opponent-hand">0 na mão</span></div></div>
         <div id="board" class="board zoned-board" aria-label="Mesa de cartas">
-          <div class="field-side opponent-side"><div class="patron-slot" id="opponent-patron"></div><div class="field-main"><div class="lower-zones"><div class="field-zone"><div class="zone-heading">TERRENOS · RUNAS</div><div id="opponent-runes" class="zone-cards compact"></div></div><div class="field-zone"><div class="zone-heading">MAGIAS</div><div id="opponent-spells" class="zone-cards compact"></div></div></div><div class="field-zone creature-zone"><div class="zone-heading">CRIATURAS DO RIVAL</div><div id="opponent-creatures" class="zone-cards"></div></div></div></div>
-          <div class="field-divider"><span>✦</span></div>
-          <div class="field-side self-side"><div class="patron-slot" id="self-patron"></div><div class="field-main"><div class="field-zone creature-zone"><div class="zone-heading">SUAS CRIATURAS <span id="placement-hint"></span></div><div id="self-creatures" class="zone-cards"></div></div><div class="lower-zones"><div class="field-zone"><div class="zone-heading">TERRENOS · RUNAS</div><div id="self-runes" class="zone-cards compact"></div></div><div class="field-zone"><div class="zone-heading">MAGIAS</div><div id="self-spells" class="zone-cards compact"></div></div></div></div></div>
+          <div class="field-side opponent-side"><div class="patron-slot" id="opponent-patron"></div><div class="field-main"><div class="field-zone creature-zone"><div id="opponent-creature-label" class="zone-heading">CRIATURAS DO RIVAL</div><div id="opponent-creatures" class="zone-cards"></div></div><div class="field-zone spell-zone"><div class="zone-heading">MAGIAS</div><div id="opponent-spells" class="zone-cards compact"></div></div><div class="field-zone rune-zone"><div class="zone-heading">TERRENOS · RUNAS</div><div id="opponent-runes" class="zone-cards compact"></div></div></div></div>
+          <div class="field-divider"><div id="attack-lane" class="attack-lane" aria-label="Ataque declarado"></div><div class="turn-info"><span id="round-label" class="round">Rodada 1</span><span id="turn-label" class="turn">Aguardando...</span><button id="end-turn" class="primary small">Encerrar turno <span>→</span></button></div></div>
+          <div class="field-side self-side"><div class="patron-slot" id="self-patron"></div><div class="field-main"><div class="field-zone creature-zone"><div class="zone-heading"><span id="self-creature-label">SUAS CRIATURAS</span> <span id="placement-hint"></span></div><div id="self-creatures" class="zone-cards"></div></div><div class="field-zone spell-zone"><div class="zone-heading">MAGIAS</div><div id="self-spells" class="zone-cards compact"></div></div><div class="field-zone rune-zone"><div class="zone-heading">TERRENOS · RUNAS</div><div id="self-runes" class="zone-cards compact"></div></div></div></div>
         </div>
-        <div class="hand-area"><div class="hand-heading"><h2>Sua mão <span id="hand-heading-count">(0)</span></h2><span class="hand-hint">Selecione uma carta para escolher sua área</span></div><div id="hand-cards" class="hand-cards"></div></div>
+        <div class="hand-area"><div class="hand-heading"><h2>Sua mão <span id="hand-heading-count">(0)</span></h2><span class="hand-hint">Arraste para organizar · selecione para jogar</span></div><div class="hand-content"><div id="hand-cards" class="hand-cards"></div><div id="token-pocket" class="token-pocket"><span>FICHAS <b id="token-count">0</b></span><div id="token-cards" class="token-cards"></div></div></div></div>
       </section>
 
-      <aside class="right-rail"><section class="selection-panel"><span class="eyebrow">CARTA SELECIONADA</span><div id="selection" class="selection-empty"><span class="selection-glyph">✧</span><p>Selecione uma carta para ver suas ações.</p></div></section><section class="log-panel"><span class="eyebrow">REGISTRO DA PARTIDA</span><div id="log" class="log"></div></section></aside>
+      <aside class="right-rail" aria-label="Carta selecionada"><button id="toggle-right-rail" class="rail-toggle" type="button" aria-expanded="true" aria-label="Recolher painel direito" title="Recolher painel direito"><span class="rail-toggle-icon">▸</span><span class="rail-toggle-label">Carta</span></button><div class="rail-body"><section class="selection-panel"><span class="eyebrow">CARTA SELECIONADA</span><div id="selection" class="selection-empty"><span class="selection-glyph">✧</span><p>Selecione uma carta para ver suas ações.</p></div></section></div></aside>
     </div>
   </main>
 </body>

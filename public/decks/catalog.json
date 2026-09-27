@@ -23,7 +23,9 @@
                                             },
                                    "image":  "/decks/igni/image1.png",
                                    "power":  1,
-                                   "health":  1
+                                   "health":  1,
+                                   "rules":  "Quando esta criatura for bloqueada, crie uma ficha de Lobo 1/1.",
+                                   "tokenEffect":  { "trigger": "block", "count": 1, "name": "Lobo", "power": 1, "health": 1 }
                                },
                                {
                                    "name":  "Carnívora Ocultadora",
@@ -95,7 +97,9 @@
                                             },
                                    "image":  "/decks/igni/image11.png",
                                    "power":  2,
-                                   "health":  2
+                                   "health":  2,
+                                   "rules":  "Ao entrar no campo de batalha, crie duas fichas de Lobo 1/1.",
+                                   "tokenEffect":  { "trigger": "enter", "count": 2, "name": "Lobo", "power": 1, "health": 1 }
                                },
                                {
                                    "name":  "Emissário do Psiconauta",
@@ -154,7 +158,9 @@
                                                 "colored":  1,
                                                 "generic":  2
                                             },
-                                   "image":  "/decks/igni/image7.png"
+                                   "image":  "/decks/igni/image7.png",
+                                   "rules":  "Crie um número de Lobos 1/1 igual a 2 mais o número de Uivo da Convocação no seu descarte.",
+                                   "tokenEffect":  { "trigger": "enter", "count": 2, "name": "Lobo", "power": 1, "health": 1, "extraPerDiscardName": "Uivo da Convocação" }
                                },
                                {
                                    "name":  "Bote Planejado",

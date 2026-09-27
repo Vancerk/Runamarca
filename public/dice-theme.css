@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+:root{--gold:#d9b46a;--line:#71512a;--bright-gold:#f1d493}
+body{background:radial-gradient(ellipse 1100px 650px at 50% -15%,#24170e 0%,#0b0807 60%);font-family:'EB Garamond',Georgia,serif;font-size:17px;color:#eadfca}
+button,input,select{font-family:'Source Sans 3',sans-serif}
+button:focus-visible,input:focus-visible,select:focus-visible,.back:focus-visible{outline:2px solid var(--bright-gold);outline-offset:3px}
+.top{background:linear-gradient(180deg,#1b120d,#0d0908);border-bottom-color:#9c7539;box-shadow:0 2px 0 #302010,0 5px 15px #0009}
+.back{color:#d8b477;font:600 11px 'Cinzel',Georgia,serif;text-decoration:none}.back:hover{color:#ffe1a2;text-decoration:underline}
+.brand{color:#f0d7a1}.brand .brand-mark{font-size:28px;color:#e7c47e;text-shadow:0 0 12px #d69b4b90}.brand strong{font-size:17px;letter-spacing:.1em}.brand small{color:#a6906e}
+.quiet{border-color:#74532b;color:#e7c27c;background:#1b120d}.quiet:hover{background:#48311a;border-color:#d3a55e}
+.eyebrow{color:#c9a769;letter-spacing:.13em}.landing h1{color:#f0d69b;text-shadow:0 2px 18px #b9813840}.landing h1 em{color:#f0d69b}.landing>p:not(.eyebrow){font-size:19px;color:#c3b297}
+.panel,.side-panel{position:relative;background:linear-gradient(160deg,#21170f,#130e0b);border-color:#76552a;border-radius:3px;box-shadow:inset 0 0 0 4px #140e0b,inset 0 0 0 5px #65472080,0 15px 35px #0006}
+.panel h2,.side-panel h2,.log-panel h2{color:#f0d79e}.panel label,dialog label{color:#c9b697}.panel input,dialog input,dialog select{background:#0d0a09;border-color:#6e502d;border-radius:2px;color:#f5e9d3}
+.panel button,#confirm-insignia,.dice-actions button,.insignia-action{background:linear-gradient(180deg,#f0d08a,#c8984e);border-color:#f2d995;color:#24170d;border-radius:2px;box-shadow:inset 0 1px #fff6}.panel button:hover,#confirm-insignia:hover,.dice-actions button:hover:not(:disabled),.insignia-action:hover{background:linear-gradient(180deg,#f6dda6,#dca95a)}
+.table-head h1{color:#f0d79e}.table-head p,.side-panel p,dialog p,dialog li{color:#bcaa8e}.player{background:linear-gradient(90deg,#24190f,#19110e);border-color:#6b4d29;border-radius:3px}.player.active{border-color:#e8bb73;box-shadow:inset 0 0 0 2px #28190d,0 0 17px #d39d4a50}.player strong{color:#e8d3ab}.player span{color:#f3d496}.player small{color:#aa9679}
+.notice{border-left-color:#d7ad6c;background:linear-gradient(90deg,#3c2917,#24180f);color:#eddbb9}
+.felt{position:relative;isolation:isolate;border:10px solid #24190f;border-radius:18px;background:radial-gradient(ellipse at center,#31241b 0%,#211811 53%,#100d0b 100%);box-shadow:inset 0 0 0 1px #a47a41,inset 0 0 0 5px #160f0a,inset 0 0 0 6px #5c4325,inset 0 0 65px #000b,0 20px 45px #0009}
+.felt::before{content:'◈';position:absolute;z-index:-1;inset:0;display:grid;place-items:center;color:#d6a75a;font:220px 'Cinzel',Georgia,serif;opacity:.07;pointer-events:none}.felt::after{content:'';position:absolute;inset:13px;z-index:-1;border:1px solid #d0a76b2e;pointer-events:none}
+.felt-top,.felt-bottom{color:#d7b477}.die{background:radial-gradient(circle at 35% 25%,#f5e8ca,#c8aa78);border:3px double #9c713d;border-radius:8px;color:#392815;box-shadow:inset 0 0 0 2px #ead6ad,3px 7px 0 #24170e,0 11px 20px #0008;transition:transform .18s,box-shadow .18s}.die:hover:not(:disabled){transform:translateY(-5px)}.die.selected{transform:translateY(-14px);border-color:#f6cf83;box-shadow:inset 0 0 0 2px #ead6ad,0 0 20px #d6a156,0 12px 20px #0008}.empty-dice{font-family:'Cinzel',Georgia,serif;color:#d8bd8a}.empty-dice strong{font-size:45px;letter-spacing:.2em;color:#d9af6b}
+.dice-actions .secondary{background:linear-gradient(180deg,#332316,#20170f);color:#ecd8b8;border-color:#75542e}.dice-actions .secondary:hover{background:#45301d}
+.insignia-active{border-color:#71512a;border-radius:2px;background:#130e0b}.log-panel li{color:#bba989}.insignia-choice{background:linear-gradient(135deg,#2c1d12,#160f0b);border-color:#75542e;border-radius:3px;color:#ecd8b8}.insignia-choice.chosen{border-color:#efc77d;box-shadow:0 0 0 2px #efc77d66,inset 0 0 22px #bd8b4159}.insignia-choice:hover{border-color:#d6aa69}
+dialog{background:linear-gradient(135deg,#21160e,#100b09);border-color:#d5ae69;border-radius:4px;box-shadow:inset 0 0 0 5px #140e0b,inset 0 0 0 6px #71512a,0 25px 70px #000d}
+.toast{background:#382017;border-color:#e0a47a;color:#fff1da}
+@media(max-width:650px){.felt{border-width:7px}.felt::before{font-size:130px}.top .brand strong{font-size:13px}.back{font-size:9px}}

@@ -11,14 +11,14 @@
 <body>
   <header class="editor-topbar">
     <div class="editor-brand"><span class="brand-seal">◈</span><div><strong>RUNAMARCA</strong><small>ATELIÊ DE CARTAS</small></div></div>
-    <div class="top-actions"><span class="focus-pill">FOCO ATUAL · CRIADOR DE CARTAS</span><a href="/" class="back-link">Voltar à mesa ↗</a></div>
+    <div class="top-actions"><span class="focus-pill">FOCO ATUAL · CRIADOR DE CARTAS</span><a href="/runamarca" class="back-link">Voltar à mesa ↗</a></div>
   </header>
   <main class="editor-layout">
     <section class="controls" aria-labelledby="editor-title">
       <p class="eyebrow">01 / COMPOSIÇÃO</p>
       <h1 id="editor-title">Criar uma carta</h1>
       <p class="intro">Preencha os campos para ver a carta pronta em tempo real. Patronos usam um modelo próprio com arte, moldura e habilidades configuráveis.</p>
-      <form id="card-form">
+      <form id="card-form" novalidate>
         <div class="form-row"><label>Nome da carta<input id="card-name" maxlength="60" required placeholder="Ex.: Caçadora do Véu"></label><label>Quantidade no deck<input id="card-quantity" type="number" min="1" max="60" value="1"></label></div>
         <div class="form-row"><label>Tipo<select id="card-kind"><option value="creature">Criatura</option><option value="spell">Magia</option><option value="rune">Terreno · Runa</option><option value="patron">Patrono</option></select></label><label>Classificação<input id="card-subtype" maxlength="45" placeholder="Ex.: Caçadora · Humana"></label></div>
         <label>Ilustração<input id="card-art" type="file" accept="image/png,image/jpeg,image/webp"></label>
@@ -38,7 +38,10 @@
         </fieldset>
         <details id="auto-abilities" class="abilities"><summary>Habilidades automáticas da mesa</summary><p class="field-hint">Configure apenas efeitos já suportados. Escreva também a habilidade no texto visível da carta.</p>
           <label class="check-row"><input id="card-agile" type="checkbox"> Esta criatura tem Ágil</label>
+          <label class="check-row"><input id="card-quick-attack" type="checkbox"> Esta criatura tem Ataque Rápido (pode atacar no turno em que entra)</label>
           <div class="ability-pair"><label>Comprar cartas<select id="draw-trigger"><option value="">Sem compra automática</option><option value="enter">Ao entrar em campo</option><option value="reveal">Ao revelar</option><option value="turnStart">No início do seu turno</option><option value="agileAttack">Quando uma criatura Ágil atacar</option></select></label><label>Quantidade<input id="draw-count" type="number" min="1" max="7" value="1"></label></div>
+          <div class="ability-pair"><label>Criar fichas<select id="token-trigger"><option value="">Sem fichas</option><option value="enter">Ao entrar em campo</option><option value="reveal">Ao revelar</option><option value="attack">Ao declarar ataque</option><option value="block">Ao bloquear · acionamento manual</option></select></label><label>Quantidade<input id="token-amount" type="number" min="1" max="12" value="1"></label></div>
+          <div class="ability-pair"><label>Nome da ficha<input id="token-name" maxlength="40" placeholder="Ex.: Lobo"></label><label>Força / vida da ficha<span class="form-row"><input id="token-power" type="number" min="0" max="30" value="1" aria-label="Força da ficha"><input id="token-health" type="number" min="0" max="30" value="1" aria-label="Vida da ficha"></span></label></div>
           <label class="check-row"><input id="draw-power-four" type="checkbox"> Comprar só se controlar criatura com poder 4 ou mais</label>
           <div class="ability-pair"><label>Energia ao girar criatura<select id="energy-resource"><option value="">Sem geração automática</option><option value="any">Energia à escolha</option><option value="ruptura">Ruptura</option><option value="forja">Forja</option><option value="fluxo">Fluxo</option></select></label><label>Quantidade<input id="energy-amount" type="number" min="1" max="5" value="1"></label></div>
           <div class="ability-pair"><label>Bônus se controlar poder 4+<select id="energy-boost"><option value="">Sem bônus</option><option value="powerAtLeast4">Ativar bônus</option></select></label><label>Energia com bônus<input id="energy-boosted" type="number" min="1" max="5" value="2"></label></div>
@@ -51,5 +54,6 @@
     <section class="preview-pane" aria-labelledby="preview-title"><div class="preview-head"><div><p class="eyebrow">02 / PRÉVIA</p><h2 id="preview-title">Carta pronta para impressão</h2></div><span>900 × 1260 px</span></div><div class="canvas-wrap"><canvas id="card-canvas" width="900" height="1260" aria-label="Prévia da carta"></canvas></div><div class="preview-actions"><button id="download-png" type="button" class="primary">Baixar PNG desta carta ↓</button><p>O PNG usa a arte e os dados preenchidos acima. Para jogar, exporte também o deck em JSON.</p></div></section>
     <aside class="project-pane" aria-labelledby="project-title"><p class="eyebrow">03 / PROJETO</p><h2 id="project-title">Suas cartas</h2><p class="project-count" id="project-count">0 modelos · 0 cartas no deck</p><div id="project-list" class="project-list"><p class="empty-project">Guarde a primeira carta para montar seu deck.</p></div><div class="project-actions"><button id="download-deck" type="button" class="primary">Exportar deck para a mesa ↓</button><button id="download-project" type="button" class="secondary">Baixar projeto editável ↓</button><label class="import-label">Importar projeto editável<input id="import-project" type="file" accept=".json,application/json" hidden></label></div><p class="compat-note">A mesa aceita o JSON exportado na <strong>tela de escolha do deck → Importar JSON</strong>. Hoje ela calcula o gasto pela soma das energias; a separação por tipo está registrada para as próximas regras.</p></aside>
   </main>
+  <div id="editor-alert" class="editor-alert" role="alert" hidden></div>
 </body>
 </html>

@@ -11,18 +11,43 @@ const energyCrops = {
 };
 const kindNames = { creature: 'Criatura', spell: 'Magia', rune: 'Terreno · Runa', patron: 'Patrono' };
 const fields = { name: 'card-name', kind: 'card-kind', subtype: 'card-subtype', rules: 'card-rules', quantity: 'card-quantity', power: 'card-power', health: 'card-health', generic: 'cost-generic', ruptura: 'cost-ruptura', forja: 'cost-forja', fluxo: 'cost-fluxo', artZoom: 'art-zoom', artX: 'art-x', artY: 'art-y' };
-const blank = () => ({ id: crypto.randomUUID(), name: '', kind: 'creature', subtype: '', rules: '', quantity: 1, power: 1, health: 1, generic: 0, ruptura: 0, forja: 0, fluxo: 0, art: '', artZoom: 100, artX: 50, artY: 50, agile: false, drawTrigger: '', drawCount: 1, drawPowerFour: false, energyResource: '', energyAmount: 1, energyBoost: '', energyBoosted: 2, agileDiscount: 0, patronFrame: '#65439d', patronOrnament: '#c9b1e8', patronAccent: '#e9d3fa', patronFont: 'display', patronOpacity: 72, patronFlourish: 'elaborate', patronAbilities: [{ cost: 2, title: '', effect: '' }, { cost: 3, title: '', effect: '' }, { cost: 5, title: '', effect: '' }] });
+const blank = () => ({ id: crypto.randomUUID(), name: '', kind: 'creature', subtype: '', rules: '', quantity: 1, power: 1, health: 1, generic: 0, ruptura: 0, forja: 0, fluxo: 0, art: '', artZoom: 100, artX: 50, artY: 50, agile: false, quickAttack: false, drawTrigger: '', drawCount: 1, drawPowerFour: false, tokenTrigger: '', tokenAmount: 1, tokenName: '', tokenPower: 1, tokenHealth: 1, energyResource: '', energyAmount: 1, energyBoost: '', energyBoosted: 2, agileDiscount: 0, patronFrame: '#65439d', patronOrnament: '#c9b1e8', patronAccent: '#e9d3fa', patronFont: 'display', patronOpacity: 72, patronFlourish: 'elaborate', patronAbilities: [{ cost: 2, title: '', effect: '' }, { cost: 3, title: '', effect: '' }, { cost: 5, title: '', effect: '' }] });
 let draft = blank();
 let project = [];
 let db = null;
 let renderSerial = 0;
+let alertTimer = null;
 const imageCache = new Map();
 
 function number(value, min, max, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.max(min, Math.min(max, Math.trunc(parsed))) : fallback;
 }
-function status(message, error = false) { $('editor-status').textContent = message; $('editor-status').classList.toggle('error', error); }
+function status(message, error = false) {
+  $('editor-status').textContent = message;
+  $('editor-status').classList.toggle('error', error);
+  const alert = $('editor-alert');
+  clearTimeout(alertTimer);
+  alert.hidden = !error;
+  if (error) { alert.textContent = message; alertTimer = setTimeout(() => { alert.hidden = true; }, 6500); }
+}
+function validateDesign(card) {
+  if (!card.name?.trim()) return ['Informe o nome da carta.', 'card-name'];
+  if (!['creature','spell','rune','patron'].includes(card.kind)) return ['Escolha o tipo da carta.', 'card-kind'];
+  if (!card.art) return ['Escolha uma ilustração para a carta.', 'card-art'];
+  if (card.kind === 'patron' && !card.patronAbilities?.some(ability => ability.title?.trim() && ability.effect?.trim())) return ['Preencha o nome e o efeito de ao menos uma habilidade do Patrono.', 'patron-title-0'];
+  if (card.kind === 'spell' && !card.rules?.trim()) return ['Escreva o efeito da Magia.', 'card-rules'];
+  if (card.kind === 'rune' && !card.rules?.trim() && !runeTokens(card).length) return ['Informe a energia gerada pela Runa ou escreva seu efeito.', 'cost-forja'];
+  if (card.tokenTrigger && !card.tokenName?.trim()) return ['Dê um nome à ficha criada por esta carta.', 'token-name'];
+  if (!Number.isInteger(Number(card.quantity)) || Number(card.quantity) < 1 || Number(card.quantity) > 60) return ['A quantidade deve ficar entre 1 e 60.', 'card-quantity'];
+  return null;
+}
+function reportInvalid(result, focus = true) {
+  if (!result) return false;
+  status(result[0], true);
+  if (focus) $(result[1])?.focus();
+  return true;
+}
 function img(src) {
   if (!src) return Promise.resolve(null);
   if (!imageCache.has(src)) imageCache.set(src, new Promise((resolve, reject) => {
@@ -279,9 +304,15 @@ function readForm() {
   draft.subtype = draft.subtype.trim().slice(0, 45);
   draft.rules = draft.rules.slice(0, 850);
   draft.agile = $('card-agile').checked;
+  draft.quickAttack = $('card-quick-attack').checked;
   draft.drawTrigger = $('draw-trigger').value;
   draft.drawCount = number($('draw-count').value, 1, 7, 1);
   draft.drawPowerFour = $('draw-power-four').checked && draft.drawTrigger === 'turnStart';
+  draft.tokenTrigger = $('token-trigger').value;
+  draft.tokenAmount = number($('token-amount').value, 1, 12, 1);
+  draft.tokenName = $('token-name').value.trim().slice(0, 40);
+  draft.tokenPower = number($('token-power').value, 0, 30, 1);
+  draft.tokenHealth = number($('token-health').value, 0, 30, 1);
   draft.energyResource = $('energy-resource').value;
   draft.energyAmount = number($('energy-amount').value, 1, 5, 1);
   draft.energyBoost = $('energy-boost').value;
@@ -315,20 +346,28 @@ function readForm() {
 function syncAbilityUI() {
   const creature = $('card-kind').value === 'creature';
   $('card-agile').disabled = !creature;
+  $('card-quick-attack').disabled = !creature;
   $('energy-resource').disabled = !creature;
   $('energy-amount').disabled = !creature || !$('energy-resource').value;
   $('energy-boost').disabled = !creature || !$('energy-resource').value;
   $('energy-boosted').disabled = !creature || !$('energy-resource').value || !$('energy-boost').value;
   $('draw-count').disabled = !$('draw-trigger').value;
   $('draw-power-four').disabled = $('draw-trigger').value !== 'turnStart';
+  for (const id of ['token-amount','token-name','token-power','token-health']) $(id).disabled = !$('token-trigger').value;
 }
 function populate(card) {
   draft = structuredClone(card);
   for (const [key,id] of Object.entries(fields)) $(id).value = draft[key] ?? blank()[key];
   $('card-agile').checked = Boolean(draft.agile);
+  $('card-quick-attack').checked = Boolean(draft.quickAttack);
   $('draw-trigger').value = draft.drawTrigger || '';
   $('draw-count').value = draft.drawCount ?? 1;
   $('draw-power-four').checked = Boolean(draft.drawPowerFour);
+  $('token-trigger').value = draft.tokenTrigger || '';
+  $('token-amount').value = draft.tokenAmount ?? 1;
+  $('token-name').value = draft.tokenName || '';
+  $('token-power').value = draft.tokenPower ?? 1;
+  $('token-health').value = draft.tokenHealth ?? 1;
   $('energy-resource').value = draft.energyResource || '';
   $('energy-amount').value = draft.energyAmount ?? 1;
   $('energy-boost').value = draft.energyBoost || '';
@@ -423,10 +462,7 @@ async function projectList() {
 }
 async function saveCard(event) {
   event.preventDefault(); readForm();
-  if (!draft.name) return status('Informe o nome da carta.',true);
-  if (!draft.art) return status('Escolha uma ilustração para guardar a carta.',true);
-  if (draft.kind === 'patron' && !draft.patronAbilities.some(ability => ability.title && ability.effect)) return status('Preencha ao menos uma habilidade do Patrono.', true);
-  if (draft.kind !== 'patron' && !draft.rules.trim() && !(draft.kind === 'rune' && runeTokens(draft).length)) return status('Escreva o texto da carta ou informe a energia gerada pela Runa.',true);
+  if (reportInvalid(validateDesign(draft))) return;
   const copy=structuredClone(draft);const index=project.findIndex(c=>c.id===copy.id);
   if (index>=0) project[index]=copy; else project.push(copy);
   try { if(db) await transact('readwrite',store=>store.put(copy)); status(`${copy.name} guardada neste navegador.`); }
@@ -434,8 +470,7 @@ async function saveCard(event) {
   projectList();
 }
 async function pngCard() {
-  readForm(); if(!draft.name) return status('Informe o nome antes de baixar.',true);
-  if(!draft.art) return status('Insira a ilustração antes de baixar.',true);
+  readForm(); if (reportInvalid(validateDesign(draft))) return;
   const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1260;
   try {await document.fonts.ready;await drawCard(canvas,draft);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw new Error('Falha ao gerar PNG.');download(blob,filename(draft.name,'png'));status(`PNG de ${draft.name} baixado.`);}catch(error){status(error.message,true);}
 }
@@ -447,12 +482,14 @@ async function exportDeck() {
   try{
     await document.fonts.ready;
     for(const design of project){
+      const invalid = validateDesign(design);
+      if (invalid) throw new Error(`${design.name || 'Carta sem nome'}: ${invalid[0]}`);
       const canvas=document.createElement('canvas');canvas.width=600;canvas.height=840;await drawCard(canvas,design);
       const image=canvas.toDataURL('image/jpeg',.8);
       if(image.length>2_000_000)throw new Error(`${design.name} ficou acima de 2 MB na exportação.`);
       const energies=Object.fromEntries(energyIds.map(id=>[id,number(design[id],0,12)]));
       const colored=Object.values(energies).reduce((a,b)=>a+b,0);
-      const card={name:design.name,kind:design.kind,subtype:design.subtype,rules:design.kind==='patron'?'':design.rules,cost:design.kind==='rune'?{generic:0,colored:0,energies:{ruptura:0,forja:0,fluxo:0}}:{generic:design.generic,colored,energies},power:design.kind==='creature'?design.power:0,health:design.kind==='creature'?design.health:0,agile:design.kind==='creature' && Boolean(design.agile),image};
+      const card={name:design.name,kind:design.kind,subtype:design.subtype,rules:design.kind==='patron'?'':design.rules,cost:design.kind==='rune'?{generic:0,colored:0,energies:{ruptura:0,forja:0,fluxo:0}}:{generic:design.generic,colored,energies},power:design.kind==='creature'?design.power:0,health:design.kind==='creature'?design.health:0,agile:design.kind==='creature' && Boolean(design.agile),quickAttack:design.kind==='creature' && Boolean(design.quickAttack),image};
       if (design.kind==='rune') card.runeEnergy = {generic:number(design.generic,0,20),...energies};
       if (design.kind==='patron') {
         card.cost = {generic:0,colored:0,energies:{ruptura:0,forja:0,fluxo:0}};
@@ -460,6 +497,7 @@ async function exportDeck() {
         card.patronAbilities = design.patronAbilities;
       }
       if (design.kind !== 'patron' && design.drawTrigger) card.drawEffect = { trigger: design.drawTrigger, count: number(design.drawCount,1,7,1), ...(design.drawTrigger==='turnStart' && design.drawPowerFour ? { condition: 'powerAtLeast4' } : {}) };
+      if (design.kind !== 'patron' && design.tokenTrigger) card.tokenEffect = { trigger: design.tokenTrigger, count: number(design.tokenAmount,1,12,1), name: String(design.tokenName || 'Criatura').slice(0,40), power: number(design.tokenPower,0,30,1), health: number(design.tokenHealth,0,30,1) };
       if (design.kind==='creature' && design.energyResource) card.energyEffect = { trigger:'tap', amount:number(design.energyAmount,1,5,1),resource:design.energyResource,...(design.energyBoost==='powerAtLeast4' ? {condition:'powerAtLeast4',boostedAmount:number(design.energyBoosted,1,5,2)} : {}) };
       if (design.kind !== 'patron' && number(design.agileDiscount,0,5)) card.costDiscount = { condition:'agileCreature',amount:number(design.agileDiscount,0,5) };
       for(let i=0;i<design.quantity;i++){cards.push(card);estimated+=image.length+500;}
@@ -484,6 +522,7 @@ $('card-form').addEventListener('submit',saveCard);
 $('card-form').addEventListener('input',renderPreview);
 $('card-kind').addEventListener('change',renderPreview);
 $('draw-trigger').addEventListener('change',syncAbilityUI);
+$('token-trigger').addEventListener('change',syncAbilityUI);
 $('energy-resource').addEventListener('change',syncAbilityUI);
 $('energy-boost').addEventListener('change',syncAbilityUI);
 $('card-art').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{draft.art=await shrinkArt(file);renderPreview();status(`Ilustração “${file.name}” carregada.`);}catch(error){status(error.message,true);}});

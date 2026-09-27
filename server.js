@@ -3,9 +3,11 @@ import { readFile } from 'node:fs/promises';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { handleDice } from './dice-game.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'catalog.json'), 'utf8'));
+const presetEffects = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'effects.json'), 'utf8'));
 const energyCatalog = JSON.parse(await readFile(path.join(here, 'public', 'energies.json'), 'utf8'));
 const rooms = new Map();
 const MAX_BODY = 25 * 1024 * 1024;
@@ -34,6 +36,21 @@ function playerFor(room, secret) {
   return room.players.find(p => p.token === secret);
 }
 
+function viewerFor(room, secret) {
+  return playerFor(room, secret) || room.spectators?.find(p => p.token === secret);
+}
+
+function tokenEffectFromRules(rules) {
+  const text = String(rules || '');
+  const match = text.match(/(?:cria|crie|criar)\s+(?:(\d+|uma?|dois|duas|tr[eê]s)\s+)?(?:fichas?\s+(?:de\s+)?)?(?:criaturas?\s+(?:de\s+)?)?([\p{L}][\p{L}\s-]{0,35}?)(?:\s+(\d+)\s*\/\s*(\d+))?(?=[.,;\n]|$)/iu);
+  if (!match) return undefined;
+  const numbers = { um: 1, uma: 1, dois: 2, duas: 2, três: 3, tres: 3 };
+  const count = Math.min(12, Number(match[1]) || numbers[match[1]?.toLowerCase()] || 1);
+  const before = text.slice(Math.max(0, match.index - 85), match.index);
+  const trigger = /bloquead[ao]|bloqueia/i.test(before) ? 'block' : /atac[ao]|declarar ataque/i.test(before) ? 'attack' : /virad[ao]|revelad[ao]/i.test(before) ? 'reveal' : 'enter';
+  return { trigger, count, name: match[2].trim(), power: Number(match[3]) || 1, health: Number(match[4]) || 1 };
+}
+
 export function viewFor(room, playerId) {
   return {
     code: room.code,
@@ -43,7 +60,10 @@ export function viewFor(room, playerId) {
     firstPlayer: room.firstPlayer || null,
     turn: room.turn,
     round: room.round,
+    turnNumber: room.turnNumber || 0,
     log: room.log.slice(-25),
+    spectator: !room.players.some(p => p.id === playerId),
+    spectatorCount: room.spectators?.length || 0,
     players: room.players.map(p => ({
       id: p.id,
       name: p.name,
@@ -60,6 +80,7 @@ export function viewFor(room, playerId) {
       turnDrawRemaining: p.turnDrawRemaining,
       bonusDraws: p.bonusDraws,
       hand: p.id === playerId ? p.hand : undefined,
+      tokens: p.id === playerId ? (p.tokens || []) : undefined,
       discard: p.discard
     })),
     board: room.board.map(c => c.faceUp || c.ownerId === playerId
@@ -95,7 +116,7 @@ function tapRune(room, player, card) {
 
 function requireRoomPlayer(req, res, roomCode) {
   const room = rooms.get(roomCode?.toUpperCase());
-  const player = room && playerFor(room, req.headers['x-player-token']);
+  const player = room && viewerFor(room, req.headers['x-player-token']);
   if (!room || !player) { send(res, 403, { error: 'Sala ou acesso inválido.' }); return null; }
   return { room, player };
 }
@@ -115,7 +136,9 @@ function normalizeCards(cards) {
     const generic = Math.max(0, Math.min(20, Number(card.cost?.generic) || 0));
     const power = Math.max(0, Math.min(30, Math.trunc(Number(card.power) || 0)));
     const health = Math.max(0, Math.min(30, Math.trunc(Number(card.health) || 0)));
-    const agile = card.agile === true;
+    const rules = String(card.rules || '');
+    const agile = card.agile === true || /^(?:Ágil|Agil)\b|^Ataque Rápido e (?:Ágil|Agil)\b/im.test(rules);
+    const quickAttack = card.quickAttack === true || /^(?:Ataque Rápido|Ataque Rapido|Ímpeto|Impeto)\b/im.test(rules) || /\besta criatura (?:tem|ganha) (?:Ataque Rápido|Ataque Rapido|Ímpeto|Impeto)\b/i.test(rules) || (/\besta criatura pode atacar no turno em que entra\b/i.test(rules) && !/\bnão pode atacar no turno em que entra\b/i.test(rules));
     const effect = card.drawEffect;
     const drawEffect = effect && ['enter', 'reveal', 'turnStart', 'agileAttack'].includes(effect.trigger)
       ? { trigger: effect.trigger, count: Math.max(1, Math.min(7, Math.trunc(Number(effect.count) || 1))), condition: effect.condition === 'powerAtLeast4' ? 'powerAtLeast4' : undefined }
@@ -137,7 +160,10 @@ function normalizeCards(cards) {
     const patronStyle = kind === 'patron' && card.patronStyle && typeof card.patronStyle === 'object'
       ? Object.fromEntries(['frame','ornament','accent','font','opacity','flourish'].map(key => [key, String(card.patronStyle[key] ?? '').slice(0, 30)]))
       : undefined;
-    return { id: randomUUID(), name, image, kind, subtype: String(card.subtype || '').slice(0, 45), rules: String(card.rules || '').slice(0, 850), cost: { colored, generic, ...(energies ? { energies } : {}) }, power, health, agile, drawEffect, costDiscount, energyEffect, runeEnergy, patronAbilities, patronStyle };
+    const tokenEffect = card.tokenEffect && ['enter','attack','reveal','block'].includes(card.tokenEffect.trigger)
+      ? { trigger: card.tokenEffect.trigger, count: Math.max(1, Math.min(12, Math.trunc(Number(card.tokenEffect.count) || 1))), name: String(card.tokenEffect.name || 'Criatura').slice(0, 40), power: Math.max(0, Math.min(30, Math.trunc(Number(card.tokenEffect.power) || 1))), health: Math.max(0, Math.min(30, Math.trunc(Number(card.tokenEffect.health) || 1))), extraPerDiscardName: String(card.tokenEffect.extraPerDiscardName || '').slice(0, 80) || undefined }
+      : tokenEffectFromRules(rules);
+    return { id: randomUUID(), name, image, kind, subtype: String(card.subtype || '').slice(0, 45), rules: rules.slice(0, 850), cost: { colored, generic, ...(energies ? { energies } : {}) }, power, health, agile, quickAttack, drawEffect, costDiscount, energyEffect, runeEnergy, patronAbilities, patronStyle, tokenEffect };
   });
 }
 
@@ -149,6 +175,7 @@ function shuffle(cards) {
 }
 
 export function act(room, player, data) {
+  if (!room.players.includes(player)) throw new Error('Espectadores não podem alterar a partida.');
   const other = room.players.find(p => p.id !== player.id);
   const mine = player.id;
   const phase = room.phase || 'active';
@@ -156,18 +183,26 @@ export function act(room, player, data) {
   if (phase === 'coin' && !['decideFirst','resetMatch','clear'].includes(data.type)) throw new Error('Aguarde o resultado da moeda e a decisão de quem começa.');
   if (phase === 'finished' && !['resetMatch','clear'].includes(data.type)) throw new Error('A partida terminou. Inicie uma nova para jogar novamente.');
   if (phase === 'active' && ['chooseDeck','import','decideFirst'].includes(data.type)) throw new Error('Para trocar de deck, reinicie a partida.');
-  const handCard = () => player.hand.find(c => c.id === data.cardId);
+  const handCard = () => [...player.hand, ...(player.tokens || [])].find(c => c.id === data.cardId);
   const cardOnBoard = () => {
     const card = room.board.find(c => c.id === data.cardId);
     if (!card || card.ownerId !== mine) throw new Error('Você só pode mover suas cartas.');
     return card;
   };
-  const unplay = card => ({ id: card.id, name: card.name, image: card.image, kind: card.kind, subtype: card.subtype, rules: card.rules, cost: card.cost, power: card.power, health: card.health, agile: card.agile, drawEffect: card.drawEffect, costDiscount: card.costDiscount, energyEffect: card.energyEffect, runeEnergy: card.runeEnergy, patronAbilities: card.patronAbilities, patronStyle: card.patronStyle });
+  const unplay = card => ({ id: card.id, name: card.name, image: card.image, kind: card.kind, subtype: card.subtype, rules: card.rules, cost: card.cost, power: card.power, health: card.health, agile: card.agile, quickAttack: card.quickAttack, drawEffect: card.drawEffect, costDiscount: card.costDiscount, energyEffect: card.energyEffect, runeEnergy: card.runeEnergy, patronAbilities: card.patronAbilities, patronStyle: card.patronStyle, tokenEffect: card.tokenEffect, isToken: card.isToken });
   const grantDraws = (recipient, count, source) => {
-    recipient.bonusDraws += count;
-    log(room, `${source}: ${recipient.name} pode comprar ${count} carta(s) extra.`);
+    const actual = Math.min(Math.max(0, count), recipient.deck.length);
+    for (let index = 0; index < actual; index++) recipient.hand.push(recipient.deck.pop());
+    log(room, `${source}: ${recipient.name} comprou ${actual} carta(s) automaticamente.`);
+  };
+  const createTokens = (recipient, effect, source) => {
+    recipient.tokens ||= [];
+    const count = Math.min(20, effect.count + (effect.extraPerDiscardName ? recipient.discard.filter(card => card.name === effect.extraPerDiscardName).length : 0));
+    for (let index = 0; index < count; index++) recipient.tokens.push({ id: randomUUID(), name: `Ficha de ${effect.name}`, kind: 'creature', rules: `Ficha criada por ${source}.`, image: '', cost: { colored: 0, generic: 0 }, power: effect.power, health: effect.health, isToken: true });
+    log(room, `${source}: ${recipient.name} recebeu ${count} ficha(s) de ${effect.name}.`);
   };
   const triggerVisibleEntry = card => {
+    if (card.faceUp && card.tokenEffect?.trigger === 'enter' && !card.tokenTriggered) { card.tokenTriggered = true; createTokens(player, card.tokenEffect, card.name); }
     if (card.faceUp && !card.entryTriggered && card.drawEffect?.trigger === 'enter') {
       card.entryTriggered = true;
       grantDraws(player, card.drawEffect.count, card.name);
@@ -176,26 +211,27 @@ export function act(room, player, data) {
   const prepareDeck = cards => {
     player.deck = cards;
     player.hand = [];
+    player.tokens = [];
     player.discard = [];
     player.ether = 0;
     player.life = 20;
     player.runePlayed = false;
     player.deckReady = true;
-    player.openingRemaining = Math.min(7, cards.length);
+    player.openingRemaining = 0;
     player.turnDrawRemaining = 0;
     player.bonusDraws = 0;
     shuffle(player.deck);
   };
   const resetMatch = () => {
     for (const participant of room.players) {
-      participant.deck = []; participant.hand = []; participant.discard = [];
+      participant.deck = []; participant.hand = []; participant.tokens = []; participant.discard = [];
       participant.ether = 0; participant.life = 20; participant.deckColor = null;
       participant.deckChoice = null; participant.runePlayed = false;
       participant.deckReady = false; participant.openingRemaining = 0;
       participant.turnDrawRemaining = 0; participant.bonusDraws = 0;
     }
     room.board = []; room.phase = 'lobby'; room.turn = null;
-    room.firstPlayer = null; room.coinWinner = null; room.winner = null; room.round = 1;
+    room.firstPlayer = null; room.coinWinner = null; room.winner = null; room.round = 1; room.turnNumber = 0;
     log(room, `${player.name} reiniciou a partida. Escolham novos decks.`);
   };
   const startCoin = () => {
@@ -224,7 +260,10 @@ export function act(room, player, data) {
       if (player.deckReady) throw new Error('Seu deck já foi confirmado. Reinicie a partida para trocar.');
       const preset = catalog[data.deck];
       if (!preset) throw new Error('Deck desconhecido.');
-      const cards = preset.cards.flatMap(entry => Array.from({ length: entry.quantity }, () => ({ id: randomUUID(), name: entry.name, image: entry.image, kind: entry.kind, cost: entry.cost, power: entry.power || 0, health: entry.health || 0, agile: entry.agile || false, drawEffect: entry.drawEffect, costDiscount: entry.costDiscount, energyEffect: entry.energyEffect })));
+      const cards = preset.cards.flatMap(entry => {
+        const effect = presetEffects[data.deck]?.[path.basename(entry.image, '.png')] || {};
+        return Array.from({ length: entry.quantity }, () => ({ id: randomUUID(), name: entry.name, image: entry.image, kind: entry.kind, cost: entry.cost, power: entry.power || 0, health: entry.health || 0, agile: entry.agile || false, quickAttack: entry.quickAttack || effect.quickAttack || false, drawEffect: entry.drawEffect, costDiscount: entry.costDiscount, energyEffect: entry.energyEffect, rules: effect.rules || entry.rules || '', tokenEffect: entry.tokenEffect || tokenEffectFromRules(effect.rules || entry.rules) }));
+      });
       prepareDeck(cards);
       player.deckColor = preset.color;
       player.deckChoice = data.deck;
@@ -236,22 +275,14 @@ export function act(room, player, data) {
       if (room.coinWinner !== mine) throw new Error('Quem venceu a moeda escolhe o primeiro jogador.');
       if (!['first','second'].includes(data.position)) throw new Error('Escolha começar em primeiro ou em segundo.');
       room.firstPlayer = data.position === 'first' ? mine : other.id;
-      room.turn = room.firstPlayer; room.phase = 'active'; room.round = 1;
+      room.turn = room.firstPlayer; room.phase = 'active'; room.round = 1; room.turnNumber = 1;
+      for (const participant of room.players) grantDraws(participant, 7, 'Mão inicial');
       const starter = room.players.find(p => p.id === room.firstPlayer);
       log(room, `${player.name} venceu a moeda e escolheu ${data.position === 'first' ? 'começar' : 'jogar em segundo'}. ${starter.name} começa.`);
       break;
     }
     case 'draw': {
-      if (!player.deck.length) throw new Error('Seu baralho acabou.');
-      if (data.count !== undefined && Number(data.count) !== 1) throw new Error('Compre uma carta por clique.');
-      let source;
-      if (player.openingRemaining > 0) { player.openingRemaining--; source = 'mão inicial'; }
-      else if (player.bonusDraws > 0) { player.bonusDraws--; source = 'efeito de carta'; }
-      else if (room.turn === mine && player.turnDrawRemaining > 0) { player.turnDrawRemaining--; source = 'turno'; }
-      else throw new Error('Você não tem compras de carta disponíveis.');
-      player.hand.push(player.deck.pop());
-      log(room, `${player.name} comprou uma carta (${source}).`);
-      break;
+      throw new Error('As compras de carta agora são automáticas.');
     }
     case 'shuffle':
       shuffle(player.deck);
@@ -277,8 +308,9 @@ export function act(room, player, data) {
           insertion = room.board.findIndex(c => c.id === neighbor.id) + (data.side === 'right' ? 1 : 0);
         }
       }
-      const played = { ...card, ownerId: mine, zone, faceUp: data.faceUp !== false, tapped: false, attackedThisTurn: false, entryTriggered: false, powerModifier: 0, healthModifier: 0 };
+      const played = { ...card, ownerId: mine, zone, faceUp: data.faceUp !== false, tapped: false, attackedThisTurn: false, summonedTurnNumber: room.turnNumber || 1, entryTriggered: false, powerModifier: 0, healthModifier: 0 };
       player.hand = player.hand.filter(c => c.id !== card.id);
+      player.tokens = (player.tokens || []).filter(c => c.id !== card.id);
       player.ether -= cost;
       if (zone === 'rune') player.runePlayed = true;
       room.board.splice(insertion, 0, played);
@@ -292,6 +324,7 @@ export function act(room, player, data) {
       log(room, `${player.name} ${card.faceUp ? 'revelou' : 'ocultou'} uma carta.`);
       if (card.faceUp) {
         triggerVisibleEntry(card);
+        if (card.tokenEffect?.trigger === 'reveal') createTokens(player, card.tokenEffect, card.name);
         if (!card.entryTriggered && card.drawEffect?.trigger === 'reveal') {
           card.entryTriggered = true;
           grantDraws(player, card.drawEffect.count, card.name);
@@ -303,9 +336,12 @@ export function act(room, player, data) {
       const card = cardOnBoard();
       if (room.turn !== mine || card.zone !== 'creature' || !card.faceUp) throw new Error('Escolha uma criatura revelada no seu turno.');
       if (card.attackedThisTurn || card.tapped) throw new Error('Esta criatura já foi usada neste turno.');
+      if (!card.quickAttack && card.summonedTurnNumber === room.turnNumber) throw new Error('Esta criatura entrou neste turno e ainda não pode atacar.');
       card.attackedThisTurn = true;
       card.tapped = true;
+      card.attacking = true;
       log(room, `${player.name} declarou ataque com ${card.name}.`);
+      if (card.tokenEffect?.trigger === 'attack') createTokens(player, card.tokenEffect, card.name);
       if (card.agile) {
         for (const sphinx of room.board) {
           if (!sphinx.faceUp || sphinx.drawEffect?.trigger !== 'agileAttack') continue;
@@ -313,6 +349,14 @@ export function act(room, player, data) {
           if (recipient) grantDraws(recipient, sphinx.drawEffect.count, sphinx.name);
         }
       }
+      break;
+    }
+    case 'triggerBlock': {
+      const card = cardOnBoard();
+      if (!card.faceUp || card.zone !== 'creature' || card.tokenEffect?.trigger !== 'block') throw new Error('Esta criatura não tem efeito de bloqueio disponível.');
+      if (card.lastBlockTurn === room.turnNumber) throw new Error('O efeito de bloqueio já foi usado neste turno.');
+      card.lastBlockTurn = room.turnNumber;
+      createTokens(player, card.tokenEffect, card.name);
       break;
     }
     case 'stat': {
@@ -354,11 +398,15 @@ export function act(room, player, data) {
     case 'return': {
       const card = cardOnBoard();
       room.board = room.board.filter(c => c.id !== card.id);
-      player.hand.push(unplay(card));
+      if (card.isToken) player.tokens.push(unplay(card));
+      else player.hand.push(unplay(card));
       log(room, `${player.name} devolveu uma carta à mão.`);
       break;
     }
     case 'discard': {
+      const tokenIndex = (player.tokens || []).findIndex(c => c.id === data.cardId);
+      if (tokenIndex >= 0) player.discard.push(player.tokens.splice(tokenIndex, 1)[0]);
+      else {
       const index = player.hand.findIndex(c => c.id === data.cardId);
       if (index >= 0) player.discard.push(player.hand.splice(index, 1)[0]);
       else {
@@ -366,22 +414,26 @@ export function act(room, player, data) {
         room.board = room.board.filter(c => c.id !== card.id);
         player.discard.push(unplay(card));
       }
+      }
       log(room, `${player.name} descartou uma carta.`);
       break;
     }
     case 'endTurn':
       if (room.turn !== mine) throw new Error('Ainda não é seu turno.');
       if (!other) throw new Error('Aguarde o outro jogador.');
-      if (room.players.some(p => !p.deckReady || p.openingRemaining > 0)) throw new Error('Os dois jogadores precisam concluir as 7 compras iniciais.');
+      if (room.players.some(p => !p.deckReady)) throw new Error('Os dois jogadores precisam confirmar os decks.');
       player.turnDrawRemaining = 0;
       player.bonusDraws = 0;
+      for (const card of room.board) if (card.ownerId === mine) card.attacking = false;
       room.turn = other.id;
+      room.turnNumber = (room.turnNumber || 1) + 1;
       if (room.firstPlayer === room.turn || (!room.firstPlayer && room.players[0].id === room.turn)) room.round++;
       other.ether = 0;
       other.runePlayed = false;
-      other.turnDrawRemaining = 1;
+      other.turnDrawRemaining = 0;
       for (const card of room.board) if (card.ownerId === other.id) { card.tapped = false; card.attackedThisTurn = false; }
       log(room, `${player.name} encerrou o turno.`);
+      grantDraws(other, 1, 'Início do turno');
       const hasPowerFour = room.board.some(card => card.ownerId === other.id && card.zone === 'creature' && card.faceUp && currentStat(card, 'power') >= 4);
       for (const card of room.board) {
         if (card.ownerId !== other.id || !card.faceUp || card.drawEffect?.trigger !== 'turnStart') continue;
@@ -405,7 +457,13 @@ export function act(room, player, data) {
 }
 
 const files = {
-  '/': ['index.html', 'text/html; charset=utf-8'],
+  '/': ['hub.html', 'text/html; charset=utf-8'],
+  '/runamarca': ['index.html', 'text/html; charset=utf-8'],
+  '/dados': ['dice.html', 'text/html; charset=utf-8'],
+  '/hub.css': ['hub.css', 'text/css; charset=utf-8'],
+  '/dice.css': ['dice.css', 'text/css; charset=utf-8'],
+  '/dice-theme.css': ['dice-theme.css', 'text/css; charset=utf-8'],
+  '/dice.js': ['dice.js', 'text/javascript; charset=utf-8'],
   '/editor.html': ['editor.html', 'text/html; charset=utf-8'],
   '/editor.css': ['editor.css', 'text/css; charset=utf-8'],
   '/editor.js': ['editor.js', 'text/javascript; charset=utf-8'],
@@ -413,6 +471,7 @@ const files = {
   '/style.css': ['style.css', 'text/css; charset=utf-8'],
   '/zones.css': ['zones.css', 'text/css; charset=utf-8'],
   '/theme.css': ['theme.css', 'text/css; charset=utf-8'],
+  '/layout-v3.css': ['layout-v3.css', 'text/css; charset=utf-8'],
   '/card-back.png': ['card-back.png', 'image/png'],
   '/energies.png': ['energies.png', 'image/png']
 };
@@ -421,8 +480,17 @@ export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://local');
     if (req.method === 'GET' && url.pathname === '/health') { send(res, 200, { ok: true }); return; }
+    if (await handleDice(req, res, url)) return;
+    const insignia = url.pathname.match(/^\/insignias\/([a-z0-9-]+)\.png$/);
+    if (req.method === 'GET' && insignia) {
+      res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400', 'x-content-type-options': 'nosniff' });
+      res.end(await readFile(path.join(here, 'public', 'insignias', insignia[1] + '.png')));
+      return;
+    }
     if (req.method === 'GET' && files[url.pathname]) {
-      const [file, type] = files[url.pathname];
+      const [file, type] = url.pathname === '/' && url.searchParams.has('s')
+        ? ['index.html', 'text/html; charset=utf-8']
+        : files[url.pathname];
       res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
       res.end(await readFile(path.join(here, 'public', file)));
       return;
@@ -446,7 +514,7 @@ export const server = http.createServer(async (req, res) => {
       const name = String(data.name || 'Mercenário').trim().slice(0, 30);
       let roomCode; do { roomCode = code(); } while (rooms.has(roomCode));
       const player = { id: randomUUID(), token: token(), name, deck: [], hand: [], discard: [], ether: 0, deckColor: null, life: 20, runePlayed: false, deckReady: false, openingRemaining: 0, turnDrawRemaining: 0, bonusDraws: 0 };
-      const room = { code: roomCode, players: [player], board: [], phase: 'lobby', turn: null, firstPlayer: null, coinWinner: null, winner: null, round: 1, log: [], clients: new Set() };
+      const room = { code: roomCode, players: [player], spectators: [], board: [], phase: 'lobby', turn: null, firstPlayer: null, coinWinner: null, winner: null, round: 1, turnNumber: 0, log: [], clients: new Set() };
       rooms.set(roomCode, room);
       send(res, 200, { code: roomCode, token: player.token });
       return;
@@ -456,8 +524,17 @@ export const server = http.createServer(async (req, res) => {
     const [, roomCode, operation] = match;
     if (operation === 'join' && req.method === 'POST') {
       const room = rooms.get(roomCode.toUpperCase());
-      if (!room || room.players.length >= 2) { send(res, 400, { error: 'Sala inexistente ou lotada.' }); return; }
+      if (!room) { send(res, 400, { error: 'Sala inexistente.' }); return; }
       const data = await body(req);
+      if (room.players.length >= 2) {
+        const spectator = { id: randomUUID(), token: token(), name: String(data.name || 'Espectador').trim().slice(0, 30) };
+        room.spectators ||= [];
+        room.spectators.push(spectator);
+        log(room, `${spectator.name} entrou para assistir à partida.`);
+        send(res, 200, { code: room.code, token: spectator.token, spectator: true });
+        emit(room);
+        return;
+      }
       const player = { id: randomUUID(), token: token(), name: String(data.name || 'Mercenário').trim().slice(0, 30), deck: [], hand: [], discard: [], ether: 0, deckColor: null, life: 20, runePlayed: false, deckReady: false, openingRemaining: 0, turnDrawRemaining: 0, bonusDraws: 0 };
       room.players.push(player);
       log(room, `${player.name} entrou na sala.`);
@@ -479,6 +556,7 @@ export const server = http.createServer(async (req, res) => {
       return;
     }
     if (operation === 'action' && req.method === 'POST') {
+      if (!room.players.includes(player)) { send(res, 403, { error: 'Espectadores não podem alterar a partida.' }); return; }
       act(room, player, await body(req));
       send(res, 200, { ok: true });
       emit(room);
