@@ -21,3 +21,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,.back:focus-visibl
 dialog{background:linear-gradient(135deg,#21160e,#100b09);border-color:#d5ae69;border-radius:4px;box-shadow:inset 0 0 0 5px #140e0b,inset 0 0 0 6px #71512a,0 25px 70px #000d}
 .toast{background:#382017;border-color:#e0a47a;color:#fff1da}
 @media(max-width:650px){.felt{border-width:7px}.felt::before{font-size:130px}.top .brand strong{font-size:13px}.back{font-size:9px}}
+.invite-intro{display:none}
+body.in-room .top .back,body.invitation .top .back{display:none}
+body.invitation #create-form{display:none}
+body.invitation .landing{max-width:590px}
+body.invitation .landing>p:not(.eyebrow):not(.invite-intro){display:none}
+body.invitation .invite-intro{display:block;color:#ddc9a4;font-size:18px;line-height:1.45}
+body.invitation .entry-grid{grid-template-columns:1fr}
+body.invitation #join-code{color:#f1d59b;letter-spacing:.2em;cursor:default}

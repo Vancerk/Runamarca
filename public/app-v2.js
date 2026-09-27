@@ -15,6 +15,7 @@ let coinAnimationDone = false;
 let handOrder = [];
 let handDrag = null;
 let suppressHandClickUntil = 0;
+let invitationCode = null;
 const railPreferenceKey = 'runamarca-rail-layout';
 
 function setRailCollapsed(side, collapsed) {
@@ -243,9 +244,11 @@ async function action(type, extra = {}) {
 }
 
 function enter(data) {
-  session = data;
+  session = { ...data, invited: data.invited === true || Boolean(invitationCode) };
+  document.body.classList.toggle('invitation', session.invited);
+  document.body.classList.add('in-room');
   try { handOrder = JSON.parse(sessionStorage.getItem(`runamarca-hand-order-${data.code}-${data.token}`) || '[]'); } catch { handOrder = []; }
-  sessionStorage.setItem('procurados-session', JSON.stringify(data));
+  sessionStorage.setItem('procurados-session', JSON.stringify(session));
   history.replaceState(null, '', `/runamarca?s=${data.code}`);
   $('welcome').classList.add('hidden');
   $('game').classList.remove('hidden');
@@ -261,10 +264,16 @@ async function connect() {
     try {
       const response = await fetch(`/api/rooms/${session.code}/events`, { headers: { 'x-player-token': session.token }, signal: controller.signal });
       if (response.status === 403) {
+        const invite = session.invited ? session.code : invitationCode;
         sessionStorage.removeItem('procurados-session');
         session = null;
         state = null;
-        history.replaceState(null, '', '/runamarca');
+        invitationCode = invite;
+        history.replaceState(null, '', invite ? `/runamarca?convite=${invite}` : '/runamarca');
+        document.body.classList.toggle('invitation', Boolean(invite));
+        document.body.classList.remove('in-room');
+        $('room-code').value = invite || '';
+        $('room-code').readOnly = Boolean(invite);
         $('game').classList.add('hidden');
         $('welcome').classList.remove('hidden');
         toast('A sala foi encerrada. Crie outra sala para continuar.');
@@ -890,7 +899,7 @@ $('join-form').addEventListener('submit', async event => {
   catch (error) { toast(error.message); }
 });
 $('copy-link').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(`${location.origin}/runamarca?s=${session.code}`); toast('Link de convite copiado.'); }
+  try { await navigator.clipboard.writeText(`${location.origin}/runamarca?convite=${session.code}`); toast('Link de convite copiado.'); }
   catch { toast(`Código da sala: ${session.code}`); }
 });
 const handContainer = $('hand-cards');
@@ -986,10 +995,15 @@ document.addEventListener('keydown', event => {
 });
 
 Promise.all([loadDecks(), request('/api/energies').then(data => { energyCatalog = data; render(); })]).catch(error => toast(error.message));
-const saved = sessionStorage.getItem('procurados-session');
-if (saved) {
-  try { enter(JSON.parse(saved)); } catch { sessionStorage.removeItem('procurados-session'); }
-} else {
-  const code = new URLSearchParams(location.search).get('s');
-  if (code) $('room-code').value = code.toUpperCase();
+const params = new URLSearchParams(location.search);
+const linkCode = (params.get('convite') || params.get('s') || '').trim().toUpperCase();
+let savedSession = null;
+try { savedSession = JSON.parse(sessionStorage.getItem('procurados-session') || 'null'); }
+catch { sessionStorage.removeItem('procurados-session'); }
+if (savedSession && (!linkCode || savedSession.code === linkCode)) enter(savedSession);
+else if (linkCode) {
+  invitationCode = linkCode;
+  document.body.classList.add('invitation');
+  $('room-code').value = linkCode;
+  $('room-code').readOnly = true;
 }

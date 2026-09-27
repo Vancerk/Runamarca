@@ -50,3 +50,12 @@
 .game.spectating .hand-area,.game.spectating #end-turn,.game.spectating .ether-section,.game.spectating #shuffle,.game.spectating #reset-match{display:none}
 @media(max-width:750px){.token-pocket{width:86px}.card-effect-tooltip{display:none}.field-divider:has(.attack-lane.occupied){height:105px}.attack-lane{max-width:52%}}
 @media(prefers-reduced-motion:reduce){.hand-cards .card{transition:none}.hand-cards .card:hover{transform:none}}
+.invite-intro{display:none}
+body.in-room #game .elysium-back{display:none}
+body.invitation .welcome{grid-template-columns:1fr}
+body.invitation .welcome-art,body.invitation .welcome-back,body.invitation .welcome .editor-entry,body.invitation .welcome .lead,body.invitation #create-form,body.invitation .welcome-foot,body.invitation .rail-editor-entry{display:none}
+body.invitation .welcome-panel{width:min(100%,590px);margin:auto;padding:40px 24px}
+body.invitation .welcome-grid{grid-template-columns:1fr;width:100%}
+body.invitation .welcome-grid .entry-card{min-height:0}
+body.invitation .invite-intro{display:block;color:#e5d2aa;font-size:16px;line-height:1.5;margin:0 0 25px}
+body.invitation #room-code{color:#e8cf9a;letter-spacing:.18em;cursor:default}
