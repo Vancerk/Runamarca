@@ -31,7 +31,7 @@
     "image2": { "rules": "Uma criatura sua causa dano igual ao próprio poder a uma criatura inimiga." },
     "image11": { "rules": "Coloque um marcador +1/+1 em uma criatura sua e desvire-a." },
     "image10": { "rules": "No início do seu turno, se controlar criatura com poder 4 ou mais, compre uma carta." },
-    "image15": { "rules": "A criatura encantada ganha +5/+5 e Transpassar." }
+    "image15": { "rules": "A criatura encantada ganha +5/+5 e Transpassar.", "attachment": { "type": "aura", "powerDelta": 5, "healthDelta": 5, "trample": true } }
   },
   "glacies": {
     "image6": { "rules": "Ao entrar no campo de batalha, use Vidência." },
@@ -45,7 +45,7 @@
     "image4": { "rules": "Ágil. Ao entrar, você pode devolver uma criatura inimiga à mão do dono." },
     "image7": { "rules": "Ágil. Quando uma criatura com Ágil atacar, você pode comprar uma carta." },
     "image5": { "rules": "O jogador escolhido compra sete cartas." },
-    "image17": { "rules": "Ao ser conjurado, vire a criatura encantada. Ela não desvira durante a etapa de desvirar do controlador." },
+    "image17": { "rules": "Ao ser conjurado, vire a criatura encantada. Ela não desvira durante a etapa de desvirar do controlador.", "attachment": { "type": "aura", "tapOnEnter": true, "lockUntap": true } },
     "image11": { "rules": "Vire todas as criaturas do oponente. Elas não desviram na próxima etapa de desvirar." },
     "image3": { "rules": "Custa 1 energia a menos se controlar criatura com Ágil. Compre duas cartas." },
     "image15": { "rules": "Uma criatura ganha +0/+3 e resistência a magia até o fim do turno." },

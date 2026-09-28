@@ -1,11 +1,11 @@
 {
   "energies": [
-    { "id": "ruptura", "name": "Ruptura", "color": "#be4034", "description": "Quebra e penetração. Rasga estruturas mágicas e físicas, ignorando defesas." },
-    { "id": "fluxo", "name": "Fluxo", "color": "#3d8dd3", "description": "Movimento e redirecionamento. Altera trajetórias, velocidades e posições." },
-    { "id": "eco", "name": "Eco", "color": "#3ab6b2", "description": "Repetição e amplificação. Replica padrões, dobra efeitos ou estende durações." },
-    { "id": "forja", "name": "Forja", "color": "#d2a332", "description": "Solidificação e criação. Materializa estruturas, fortalece aliados, cria obstáculos." },
-    { "id": "veu", "name": "Véu", "color": "#9f65c5", "description": "Ocultação e distorção. Esconde, falsifica e confunde a percepção." },
-    { "id": "vazio", "name": "Vazio", "color": "#697687", "description": "Anulação e consumo. Apaga efeitos, suprime recursos, cria zonas de ausência." }
+    { "id": "ruptura", "name": "Ruptura", "color": "#be4034", "icon": "/energy-icons/ruptura.png", "description": "Quebra e penetração. Rasga estruturas mágicas e físicas, ignorando defesas." },
+    { "id": "fluxo", "name": "Fluxo", "color": "#3d8dd3", "icon": "/energy-icons/fluxo.png", "description": "Movimento e redirecionamento. Altera trajetórias, velocidades e posições." },
+    { "id": "eco", "name": "Eco", "color": "#3ab6b2", "icon": "/energy-icons/eco.png", "description": "Repetição e amplificação. Replica padrões, dobra efeitos ou estende durações." },
+    { "id": "forja", "name": "Forja", "color": "#d2a332", "icon": "/energy-icons/forja.png", "description": "Solidificação e criação. Materializa estruturas, fortalece aliados, cria obstáculos." },
+    { "id": "veu", "name": "Véu", "color": "#9f65c5", "icon": "/energy-icons/veu.png", "description": "Ocultação e distorção. Esconde, falsifica e confunde a percepção." },
+    { "id": "vazio", "name": "Vazio", "color": "#697687", "icon": "/energy-icons/vazio.png", "description": "Anulação e consumo. Apaga efeitos, suprime recursos, cria zonas de ausência." }
   ],
   "deckEnergy": { "igni": "ruptura", "ventus": "forja", "glacies": "fluxo" },
   "legacyColorEnergy": { "red": "ruptura", "green": "forja", "blue": "fluxo" }

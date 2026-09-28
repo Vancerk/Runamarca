@@ -64,12 +64,15 @@ export function viewFor(room, playerId) {
     log: room.log.slice(-25),
     spectator: !room.players.some(p => p.id === playerId),
     spectatorCount: room.spectators?.length || 0,
+    spectators: (room.spectators || []).map(p => ({ id: p.id, name: p.name })),
+    combatPhase: room.combatPhase || null,
     players: room.players.map(p => ({
       id: p.id,
       name: p.name,
       deckCount: p.deck.length,
       handCount: p.hand.length,
       discardCount: p.discard.length,
+      exileCount: (p.exile || []).length,
       ether: p.ether,
       deckColor: p.deckColor,
       deckChoice: p.deckChoice || null,
@@ -81,7 +84,8 @@ export function viewFor(room, playerId) {
       bonusDraws: p.bonusDraws,
       hand: p.id === playerId ? p.hand : undefined,
       tokens: p.id === playerId ? (p.tokens || []) : undefined,
-      discard: p.discard
+      discard: p.discard,
+      exile: p.exile || []
     })),
     board: room.board.map(c => c.faceUp || c.ownerId === playerId
       ? c
@@ -105,8 +109,23 @@ function currentStat(card, stat) {
   return (card[stat] || 0) + (card[`${stat}Modifier`] || 0);
 }
 
+function costAdjustment(room, playerId, card) {
+  let adjustment = card.costDiscount?.condition === 'agileCreature' && room.board.some(c => c.ownerId === playerId && c.zone === 'creature' && c.faceUp && c.agile)
+    ? -card.costDiscount.amount : 0;
+  if (card.kind === 'creature' || card.kind === 'spell') {
+    for (const source of room.board) {
+      if (source.ownerId === playerId && source.zone === 'creature' && source.faceUp && (source.costAura?.target === card.kind || (source.costAura?.target === 'agileCreature' && card.kind === 'creature' && card.agile))) adjustment -= source.costAura.amount;
+    }
+  }
+  return adjustment;
+}
+
+function freshPlayer(name) {
+  return { id: randomUUID(), token: token(), name, deck: [], hand: [], tokens: [], discard: [], exile: [], ether: 0, deckColor: null, life: 20, runePlayed: false, deckReady: false, openingRemaining: 0, turnDrawRemaining: 0, bonusDraws: 0 };
+}
+
 function tapRune(room, player, card) {
-  if (card.zone !== 'rune' || card.ownerId !== player.id || card.tapped) throw new Error('Escolha uma Runa sua que ainda não foi virada.');
+  if (card.zone !== 'rune' || card.ownerId !== player.id || card.tapped) throw new Error('Escolha uma Essência sua que ainda não foi virada.');
   card.tapped = true;
   const resource = card.runeEnergy;
   const amount = resource ? Object.values(resource).reduce((sum, value) => sum + value, 0) : 1;
@@ -147,6 +166,12 @@ function normalizeCards(cards) {
     const costDiscount = discount?.condition === 'agileCreature'
       ? { condition: 'agileCreature', amount: Math.max(0, Math.min(5, Math.trunc(Number(discount.amount) || 0))) }
       : undefined;
+    const costAura = ['agileCreature','creature','spell'].includes(card.costAura?.target)
+      ? { target: card.costAura.target, amount: Math.max(-5, Math.min(5, Math.trunc(Number(card.costAura.amount) || 0))) }
+      : undefined;
+    const attachment = kind === 'spell' && ['aura','artifact'].includes(card.attachment?.type)
+      ? { type: card.attachment.type, powerDelta: Math.max(-20, Math.min(20, Math.trunc(Number(card.attachment.powerDelta) || 0))), healthDelta: Math.max(-20, Math.min(20, Math.trunc(Number(card.attachment.healthDelta) || 0))), tapOnEnter: card.attachment.tapOnEnter === true, lockUntap: card.attachment.lockUntap === true, trample: card.attachment.trample === true }
+      : undefined;
     const energy = card.energyEffect;
     const energyEffect = kind === 'creature' && energy?.trigger === 'tap'
       ? { trigger: 'tap', amount: Math.max(1, Math.min(5, Math.trunc(Number(energy.amount) || 1))), boostedAmount: energy.condition === 'powerAtLeast4' ? Math.max(1, Math.min(5, Math.trunc(Number(energy.boostedAmount) || 1))) : undefined, condition: energy.condition === 'powerAtLeast4' ? 'powerAtLeast4' : undefined, resource: ['forja','ruptura','fluxo','any'].includes(energy.resource) ? energy.resource : 'any' }
@@ -163,7 +188,7 @@ function normalizeCards(cards) {
     const tokenEffect = card.tokenEffect && ['enter','attack','reveal','block'].includes(card.tokenEffect.trigger)
       ? { trigger: card.tokenEffect.trigger, count: Math.max(1, Math.min(12, Math.trunc(Number(card.tokenEffect.count) || 1))), name: String(card.tokenEffect.name || 'Criatura').slice(0, 40), power: Math.max(0, Math.min(30, Math.trunc(Number(card.tokenEffect.power) || 1))), health: Math.max(0, Math.min(30, Math.trunc(Number(card.tokenEffect.health) || 1))), extraPerDiscardName: String(card.tokenEffect.extraPerDiscardName || '').slice(0, 80) || undefined }
       : tokenEffectFromRules(rules);
-    return { id: randomUUID(), name, image, kind, subtype: String(card.subtype || '').slice(0, 45), rules: rules.slice(0, 850), cost: { colored, generic, ...(energies ? { energies } : {}) }, power, health, agile, quickAttack, drawEffect, costDiscount, energyEffect, runeEnergy, patronAbilities, patronStyle, tokenEffect };
+    return { id: randomUUID(), name, image, kind, subtype: String(card.subtype || '').slice(0, 45), rules: rules.slice(0, 850), cost: { colored, generic, ...(energies ? { energies } : {}) }, power, health, agile, quickAttack, drawEffect, costDiscount, costAura, attachment, energyEffect, runeEnergy, patronAbilities, patronStyle, tokenEffect };
   });
 }
 
@@ -175,6 +200,29 @@ function shuffle(cards) {
 }
 
 export function act(room, player, data) {
+  if (data.type === 'spectate' || data.type === 'takeSeat' || data.type === 'leave') {
+    const seated = room.players.includes(player);
+    if (data.type === 'takeSeat') {
+      if (seated) throw new Error('Você já está na mesa.');
+      if (room.players.length >= 2 || room.phase !== 'lobby') throw new Error('As vagas estão ocupadas ou a partida já começou.');
+      room.spectators = room.spectators.filter(p => p !== player);
+      Object.assign(player, freshPlayer(player.name), { id: player.id, token: player.token });
+      room.players.push(player);
+      log(room, `${player.name} ocupou uma vaga de jogador.`);
+    } else {
+      if (seated) {
+        room.players = room.players.filter(p => p !== player);
+        if (room.phase !== 'lobby') {
+          room.phase = 'lobby'; room.board = []; room.turn = null; room.combatPhase = null;
+          room.firstPlayer = null; room.coinWinner = null; room.winner = null;
+          for (const remaining of room.players) { remaining.deckReady = false; remaining.deck = []; remaining.hand = []; remaining.tokens = []; }
+        }
+        if (data.type === 'spectate') room.spectators.push(player);
+      } else if (data.type === 'leave') room.spectators = room.spectators.filter(p => p !== player);
+      log(room, `${player.name} ${data.type === 'leave' ? 'saiu da sala' : 'foi para a arquibancada'}.`);
+    }
+    return;
+  }
   if (!room.players.includes(player)) throw new Error('Espectadores não podem alterar a partida.');
   const other = room.players.find(p => p.id !== player.id);
   const mine = player.id;
@@ -183,13 +231,24 @@ export function act(room, player, data) {
   if (phase === 'coin' && !['decideFirst','resetMatch','clear'].includes(data.type)) throw new Error('Aguarde o resultado da moeda e a decisão de quem começa.');
   if (phase === 'finished' && !['resetMatch','clear'].includes(data.type)) throw new Error('A partida terminou. Inicie uma nova para jogar novamente.');
   if (phase === 'active' && ['chooseDeck','import','decideFirst'].includes(data.type)) throw new Error('Para trocar de deck, reinicie a partida.');
+  if (room.combatPhase === 'defense' && !['block','endTurn','resetMatch','clear'].includes(data.type)) throw new Error('Aguarde a atribuição dos bloqueadores.');
   const handCard = () => [...player.hand, ...(player.tokens || [])].find(c => c.id === data.cardId);
   const cardOnBoard = () => {
     const card = room.board.find(c => c.id === data.cardId);
     if (!card || card.ownerId !== mine) throw new Error('Você só pode mover suas cartas.');
     return card;
   };
-  const unplay = card => ({ id: card.id, name: card.name, image: card.image, kind: card.kind, subtype: card.subtype, rules: card.rules, cost: card.cost, power: card.power, health: card.health, agile: card.agile, quickAttack: card.quickAttack, drawEffect: card.drawEffect, costDiscount: card.costDiscount, energyEffect: card.energyEffect, runeEnergy: card.runeEnergy, patronAbilities: card.patronAbilities, patronStyle: card.patronStyle, tokenEffect: card.tokenEffect, isToken: card.isToken });
+  const unplay = card => ({ id: card.id, name: card.name, image: card.image, kind: card.kind, subtype: card.subtype, rules: card.rules, cost: card.cost, power: card.power, health: card.health, agile: card.agile, quickAttack: card.quickAttack, drawEffect: card.drawEffect, costDiscount: card.costDiscount, costAura: card.costAura, attachment: card.attachment, energyEffect: card.energyEffect, runeEnergy: card.runeEnergy, patronAbilities: card.patronAbilities, patronStyle: card.patronStyle, tokenEffect: card.tokenEffect, isToken: card.isToken });
+  const removeFromBoard = (card, destination = 'discard') => {
+    for (const attached of room.board.filter(item => item.attachedTo === card.id)) removeFromBoard(attached);
+    if (card.attachedTo) {
+      const target = room.board.find(item => item.id === card.attachedTo);
+      if (target) { target.powerModifier -= card.attachment?.powerDelta || 0; target.healthModifier -= card.attachment?.healthDelta || 0; }
+    }
+    room.board = room.board.filter(item => item.id !== card.id);
+    const owner = room.players.find(p => p.id === card.ownerId);
+    if (owner) { owner[destination] ||= []; owner[destination].push(unplay(card)); }
+  };
   const grantDraws = (recipient, count, source) => {
     const actual = Math.min(Math.max(0, count), recipient.deck.length);
     for (let index = 0; index < actual; index++) recipient.hand.push(recipient.deck.pop());
@@ -213,6 +272,7 @@ export function act(room, player, data) {
     player.hand = [];
     player.tokens = [];
     player.discard = [];
+    player.exile = [];
     player.ether = 0;
     player.life = 20;
     player.runePlayed = false;
@@ -224,13 +284,13 @@ export function act(room, player, data) {
   };
   const resetMatch = () => {
     for (const participant of room.players) {
-      participant.deck = []; participant.hand = []; participant.tokens = []; participant.discard = [];
+      participant.deck = []; participant.hand = []; participant.tokens = []; participant.discard = []; participant.exile = [];
       participant.ether = 0; participant.life = 20; participant.deckColor = null;
       participant.deckChoice = null; participant.runePlayed = false;
       participant.deckReady = false; participant.openingRemaining = 0;
       participant.turnDrawRemaining = 0; participant.bonusDraws = 0;
     }
-    room.board = []; room.phase = 'lobby'; room.turn = null;
+    room.board = []; room.phase = 'lobby'; room.turn = null; room.combatPhase = null;
     room.firstPlayer = null; room.coinWinner = null; room.winner = null; room.round = 1; room.turnNumber = 0;
     log(room, `${player.name} reiniciou a partida. Escolham novos decks.`);
   };
@@ -262,7 +322,7 @@ export function act(room, player, data) {
       if (!preset) throw new Error('Deck desconhecido.');
       const cards = preset.cards.flatMap(entry => {
         const effect = presetEffects[data.deck]?.[path.basename(entry.image, '.png')] || {};
-        return Array.from({ length: entry.quantity }, () => ({ id: randomUUID(), name: entry.name, image: entry.image, kind: entry.kind, cost: entry.cost, power: entry.power || 0, health: entry.health || 0, agile: entry.agile || false, quickAttack: entry.quickAttack || effect.quickAttack || false, drawEffect: entry.drawEffect, costDiscount: entry.costDiscount, energyEffect: entry.energyEffect, rules: effect.rules || entry.rules || '', tokenEffect: entry.tokenEffect || tokenEffectFromRules(effect.rules || entry.rules) }));
+        return Array.from({ length: entry.quantity }, () => ({ id: randomUUID(), name: entry.name, image: entry.image, kind: entry.kind, cost: entry.cost, power: entry.power || 0, health: entry.health || 0, agile: entry.agile || false, quickAttack: entry.quickAttack || effect.quickAttack || false, drawEffect: entry.drawEffect, costDiscount: entry.costDiscount, costAura: entry.costAura, attachment: entry.attachment || effect.attachment, energyEffect: entry.energyEffect, rules: effect.rules || entry.rules || '', tokenEffect: entry.tokenEffect || tokenEffectFromRules(effect.rules || entry.rules) }));
       });
       prepareDeck(cards);
       player.deckColor = preset.color;
@@ -294,10 +354,12 @@ export function act(room, player, data) {
       const zone = card.kind === 'flex' ? data.zone : card.kind;
       if (!['rune','creature','spell','patron'].includes(zone)) throw new Error('Escolha uma área para a carta.');
       if (zone !== 'spell' && room.turn !== mine) throw new Error('Aguarde seu turno para jogar essa carta.');
-      if (zone === 'rune' && player.runePlayed) throw new Error('Você já jogou uma Runa neste turno.');
+      if (zone === 'rune' && player.runePlayed) throw new Error('Você já jogou uma Essência neste turno.');
       if (zone === 'patron' && room.board.some(c => c.ownerId === mine && c.zone === 'patron')) throw new Error('Você já tem um Patrono em campo.');
+      const target = card.attachment && room.board.find(c => c.id === data.targetId && c.zone === 'creature' && c.faceUp);
+      if (card.attachment && !target) throw new Error('Escolha uma criatura revelada para anexar esta Aura ou Artefato.');
       let cost = zone === 'rune' ? 0 : (card.cost?.colored || 0) + (card.cost?.generic || 0);
-      if (card.costDiscount?.condition === 'agileCreature' && room.board.some(c => c.ownerId === mine && c.zone === 'creature' && c.faceUp && c.agile)) cost = Math.max(0, cost - card.costDiscount.amount);
+      cost = Math.max(0, cost + costAdjustment(room, mine, card));
       if (player.ether < cost) throw new Error(`Energia insuficiente: precisa de ${cost}, possui ${player.ether}.`);
       let insertion = room.board.length;
       if (zone === 'creature') {
@@ -308,18 +370,27 @@ export function act(room, player, data) {
           insertion = room.board.findIndex(c => c.id === neighbor.id) + (data.side === 'right' ? 1 : 0);
         }
       }
-      const played = { ...card, ownerId: mine, zone, faceUp: data.faceUp !== false, tapped: false, attackedThisTurn: false, summonedTurnNumber: room.turnNumber || 1, entryTriggered: false, powerModifier: 0, healthModifier: 0 };
+      const played = { ...card, ownerId: mine, zone, faceUp: card.attachment ? true : data.faceUp !== false, tapped: false, attackedThisTurn: false, summonedTurnNumber: room.turnNumber || 1, readyTurnNumber: (room.turnNumber || 1) + 2, entryTriggered: false, powerModifier: 0, healthModifier: 0 };
       player.hand = player.hand.filter(c => c.id !== card.id);
       player.tokens = (player.tokens || []).filter(c => c.id !== card.id);
       player.ether -= cost;
       if (zone === 'rune') player.runePlayed = true;
       room.board.splice(insertion, 0, played);
-      log(room, `${player.name} colocou ${played.faceUp ? card.name : 'uma carta oculta'} em ${zone === 'rune' ? 'Terrenos' : zone === 'spell' ? 'Magias' : zone === 'patron' ? 'Patrono' : 'Criaturas'}.`);
+      if (target) {
+        played.attachedTo = target.id;
+        target.powerModifier = (target.powerModifier || 0) + (card.attachment.powerDelta || 0);
+        target.healthModifier = (target.healthModifier || 0) + (card.attachment.healthDelta || 0);
+        if (card.attachment.tapOnEnter) target.tapped = true;
+        log(room, `${card.name} foi anexado a ${target.name}.`);
+      }
+      log(room, `${player.name} colocou ${played.faceUp ? card.name : 'uma carta oculta'} em ${zone === 'rune' ? 'Essências' : zone === 'spell' ? 'Magias' : zone === 'patron' ? 'Patrono' : 'Criaturas'}.`);
       triggerVisibleEntry(played);
       break;
     }
     case 'flip': {
       const card = cardOnBoard();
+      if (card.attachedTo) throw new Error('Descarte a Aura ou Artefato para retirar o efeito da criatura.');
+      if (room.turnNumber < card.readyTurnNumber) throw new Error('Esta carta ainda está adormecida; aguarde uma rodada para virá-la.');
       card.faceUp = !card.faceUp;
       log(room, `${player.name} ${card.faceUp ? 'revelou' : 'ocultou'} uma carta.`);
       if (card.faceUp) {
@@ -351,12 +422,20 @@ export function act(room, player, data) {
       }
       break;
     }
-    case 'triggerBlock': {
-      const card = cardOnBoard();
-      if (!card.faceUp || card.zone !== 'creature' || card.tokenEffect?.trigger !== 'block') throw new Error('Esta criatura não tem efeito de bloqueio disponível.');
-      if (card.lastBlockTurn === room.turnNumber) throw new Error('O efeito de bloqueio já foi usado neste turno.');
-      card.lastBlockTurn = room.turnNumber;
-      createTokens(player, card.tokenEffect, card.name);
+    case 'block': {
+      if (room.combatPhase !== 'defense' || room.turn !== mine) throw new Error('Aguarde a etapa de defesa.');
+      const defender = cardOnBoard();
+      const attacker = room.board.find(c => c.id === data.attackerId && c.attacking && c.ownerId !== mine);
+      if (!attacker || defender.zone !== 'creature' || !defender.faceUp || defender.tapped) throw new Error('Escolha uma criatura preparada e um atacante válido.');
+      if (attacker.agile && !defender.agile && !/\bProntid[aã]o\b/i.test(defender.rules || '')) throw new Error('Uma criatura Ágil só pode ser bloqueada por outra Ágil ou com Prontidão.');
+      defender.blockingTarget = defender.blockingTarget === attacker.id ? null : attacker.id;
+      log(room, `${player.name} ${defender.blockingTarget ? `posicionou ${defender.name} para defender de ${attacker.name}` : `retirou ${defender.name} da defesa`}.`);
+      if (defender.blockingTarget && defender.tokenEffect?.trigger === 'block' && defender.lastBlockTurn !== room.turnNumber) { defender.lastBlockTurn = room.turnNumber; createTokens(player, defender.tokenEffect, defender.name); }
+      if (defender.blockingTarget && attacker.tokenEffect?.trigger === 'block' && !attacker.blockTriggered) {
+        const attackerOwner = room.players.find(p => p.id === attacker.ownerId);
+        if (attackerOwner) createTokens(attackerOwner, attacker.tokenEffect, attacker.name);
+        attacker.blockTriggered = true;
+      }
       break;
     }
     case 'stat': {
@@ -371,10 +450,12 @@ export function act(room, player, data) {
     }
     case 'tap': {
       const card = cardOnBoard();
+      if (card.tapped && room.board.some(aura => aura.attachedTo === card.id && aura.attachment?.lockUntap)) throw new Error('Um encantamento impede esta criatura de desvirar.');
       if (card.zone === 'rune') {
         const amount = tapRune(room, player, card);
-        log(room, `${player.name} virou uma Runa e ganhou ${amount} energia${amount === 1 ? '' : 's'}.`);
+        log(room, `${player.name} virou uma Essência e ganhou ${amount} energia${amount === 1 ? '' : 's'}.`);
       } else if (card.zone === 'creature' && card.energyEffect) {
+        if (room.turnNumber < card.readyTurnNumber) throw new Error('Esta criatura ainda está adormecida; aguarde uma rodada para gerar energia.');
         if (!card.faceUp || card.tapped || card.attackedThisTurn) throw new Error('Esta criatura não pode gerar energia agora.');
         card.tapped = true;
         const effect = card.energyEffect;
@@ -382,25 +463,28 @@ export function act(room, player, data) {
         const amount = boosted ? effect.boostedAmount : effect.amount;
         player.ether += amount;
         log(room, `${player.name} girou ${card.name} e ganhou ${amount} energia${effect.resource === 'any' ? ' à escolha' : ` de ${effect.resource}`}.`);
-      } else card.tapped = !card.tapped;
+      } else {
+        if (room.turnNumber < card.readyTurnNumber && /\b(?:vire|virar|ao ser virad)/i.test(card.rules || '')) throw new Error('Esta carta ainda está adormecida; aguarde uma rodada para ativar o efeito.');
+        card.tapped = !card.tapped;
+      }
       break;
     }
     case 'tapGroup': {
       const ids = data.cardIds;
-      if (!Array.isArray(ids) || ids.length < 1 || ids.length > 3 || new Set(ids).size !== ids.length) throw new Error('Escolha de 1 a 3 Runas diferentes.');
+      if (!Array.isArray(ids) || ids.length < 1 || ids.length > 3 || new Set(ids).size !== ids.length) throw new Error('Escolha de 1 a 3 Essências diferentes.');
       const cards = ids.map(id => room.board.find(c => c.id === id));
-      if (cards.some(c => !c || c.ownerId !== mine || c.zone !== 'rune' || c.tapped)) throw new Error('Grupo de Runas inválido.');
-      if (cards.some(c => c.name !== cards[0].name || c.image !== cards[0].image || c.faceUp !== cards[0].faceUp)) throw new Error('O grupo deve conter Runas iguais.');
+      if (cards.some(c => !c || c.ownerId !== mine || c.zone !== 'rune' || c.tapped)) throw new Error('Grupo de Essências inválido.');
+      if (cards.some(c => c.name !== cards[0].name || c.image !== cards[0].image || c.faceUp !== cards[0].faceUp)) throw new Error('O grupo deve conter Essências iguais.');
       const amount = cards.reduce((sum, card) => sum + tapRune(room, player, card), 0);
-      log(room, `${player.name} virou ${cards.length} Runa(s) e ganhou ${amount} energia${amount === 1 ? '' : 's'}.`);
+      log(room, `${player.name} virou ${cards.length} Essência(s) e ganhou ${amount} energia${amount === 1 ? '' : 's'}.`);
       break;
     }
-    case 'return': {
+    case 'moveCard': {
       const card = cardOnBoard();
-      room.board = room.board.filter(c => c.id !== card.id);
-      if (card.isToken) player.tokens.push(unplay(card));
-      else player.hand.push(unplay(card));
-      log(room, `${player.name} devolveu uma carta à mão.`);
+      const neighbor = room.board.find(c => c.id === data.neighborId && c.ownerId === mine && c.zone === card.zone && c.id !== card.id && !c.attachedTo);
+      if (!neighbor || !['left','right'].includes(data.side) || !['creature','spell','rune'].includes(card.zone) || card.attachedTo) throw new Error('Escolha outra carta sua na mesma área para reposicionar.');
+      room.board.splice(room.board.indexOf(card), 1);
+      room.board.splice(room.board.indexOf(neighbor) + (data.side === 'right' ? 1 : 0), 0, card);
       break;
     }
     case 'discard': {
@@ -411,34 +495,84 @@ export function act(room, player, data) {
       if (index >= 0) player.discard.push(player.hand.splice(index, 1)[0]);
       else {
         const card = cardOnBoard();
-        room.board = room.board.filter(c => c.id !== card.id);
-        player.discard.push(unplay(card));
+        removeFromBoard(card);
       }
       }
       log(room, `${player.name} descartou uma carta.`);
+      break;
+    }
+    case 'exile': {
+      const tokenIndex = (player.tokens || []).findIndex(c => c.id === data.cardId);
+      if (tokenIndex >= 0) { player.exile ||= []; player.exile.push(player.tokens.splice(tokenIndex, 1)[0]); }
+      else {
+        const index = player.hand.findIndex(c => c.id === data.cardId);
+        if (index >= 0) { player.exile ||= []; player.exile.push(player.hand.splice(index, 1)[0]); }
+        else removeFromBoard(cardOnBoard(), 'exile');
+      }
+      log(room, `${player.name} exilou uma carta.`);
       break;
     }
     case 'endTurn':
       if (room.turn !== mine) throw new Error('Ainda não é seu turno.');
       if (!other) throw new Error('Aguarde o outro jogador.');
       if (room.players.some(p => !p.deckReady)) throw new Error('Os dois jogadores precisam confirmar os decks.');
-      player.turnDrawRemaining = 0;
-      player.bonusDraws = 0;
-      for (const card of room.board) if (card.ownerId === mine) card.attacking = false;
-      room.turn = other.id;
+      if (room.combatPhase === 'defense') {
+        for (const attacker of room.board.filter(c => c.attacking && c.ownerId === other.id)) {
+          const blockers = room.board.filter(c => c.blockingTarget === attacker.id);
+          if (!blockers.length) {
+            player.life = Math.max(0, player.life - Math.max(0, currentStat(attacker, 'power')));
+            log(room, `${attacker.name} atingiu o Patrono de ${player.name} por ${Math.max(0, currentStat(attacker, 'power'))}.`);
+          } else {
+            const attackPower = Math.max(0, currentStat(attacker, 'power'));
+            const defensePower = blockers.reduce((sum, blocker) => sum + Math.max(0, currentStat(blocker, 'power')), 0);
+            let remaining = attackPower;
+            for (const blocker of blockers) {
+              const damage = Math.min(remaining, Math.max(0, currentStat(blocker, 'health')));
+              blocker.healthModifier = (blocker.healthModifier || 0) - damage;
+              remaining -= damage;
+            }
+            if (remaining > 0 && room.board.some(aura => aura.attachedTo === attacker.id && aura.attachment?.trample)) {
+              player.life = Math.max(0, player.life - remaining);
+              log(room, `${attacker.name} causou ${remaining} de dano excedente ao Patrono de ${player.name} com Transpassar.`);
+            }
+            attacker.healthModifier = (attacker.healthModifier || 0) - defensePower;
+            log(room, `${blockers.map(c => c.name).join(' + ')} bloquearam ${attacker.name} (${attackPower} × ${defensePower}).`);
+          }
+        }
+        const fallen = room.board.filter(c => c.zone === 'creature' && currentStat(c, 'health') <= 0);
+        for (const card of fallen) {
+          removeFromBoard(card);
+          log(room, `${card.name} foi para o descarte após o combate.`);
+        }
+        for (const card of room.board) { card.attacking = false; card.blockingTarget = null; card.blockTriggered = false; }
+        room.combatPhase = null;
+        if (player.life === 0) { room.phase = 'finished'; room.winner = other.id; room.turn = null; log(room, `${other.name} venceu a partida!`); break; }
+        log(room, `${player.name} concluiu a defesa. Seu turno começa.`);
+      } else {
+        const attackers = room.board.filter(card => card.ownerId === mine && card.attacking);
+        if (attackers.length) {
+          room.combatPhase = 'defense'; room.turn = other.id;
+          log(room, `${player.name} passou o ataque. ${other.name} pode escolher bloqueadores antes de iniciar o turno.`);
+          break;
+        }
+        player.turnDrawRemaining = 0;
+        player.bonusDraws = 0;
+        room.turn = other.id;
+      }
       room.turnNumber = (room.turnNumber || 1) + 1;
       if (room.firstPlayer === room.turn || (!room.firstPlayer && room.players[0].id === room.turn)) room.round++;
-      other.ether = 0;
-      other.runePlayed = false;
-      other.turnDrawRemaining = 0;
-      for (const card of room.board) if (card.ownerId === other.id) { card.tapped = false; card.attackedThisTurn = false; }
-      log(room, `${player.name} encerrou o turno.`);
-      grantDraws(other, 1, 'Início do turno');
-      const hasPowerFour = room.board.some(card => card.ownerId === other.id && card.zone === 'creature' && card.faceUp && currentStat(card, 'power') >= 4);
+      const nextPlayer = room.players.find(p => p.id === room.turn);
+      nextPlayer.ether = 0;
+      nextPlayer.runePlayed = false;
+      nextPlayer.turnDrawRemaining = 0;
+      for (const card of room.board) if (card.ownerId === nextPlayer.id) { if (!room.board.some(aura => aura.attachedTo === card.id && aura.attachment?.lockUntap)) card.tapped = false; card.attackedThisTurn = false; }
+      log(room, `${nextPlayer.name} iniciou o turno.`);
+      grantDraws(nextPlayer, 1, 'Início do turno');
+      const hasPowerFour = room.board.some(card => card.ownerId === nextPlayer.id && card.zone === 'creature' && card.faceUp && currentStat(card, 'power') >= 4);
       for (const card of room.board) {
-        if (card.ownerId !== other.id || !card.faceUp || card.drawEffect?.trigger !== 'turnStart') continue;
+        if (card.ownerId !== nextPlayer.id || !card.faceUp || card.drawEffect?.trigger !== 'turnStart') continue;
         if (card.drawEffect.condition === 'powerAtLeast4' && !hasPowerFour) continue;
-        grantDraws(other, card.drawEffect.count, card.name);
+        grantDraws(nextPlayer, card.drawEffect.count, card.name);
       }
       break;
     case 'life': {
@@ -478,6 +612,7 @@ const files = {
   '/theme.css': ['theme.css', 'text/css; charset=utf-8'],
   '/layout-v3.css': ['layout-v3.css', 'text/css; charset=utf-8'],
   '/card-back.png': ['card-back.png', 'image/png'],
+  '/attack-shield.png': ['attack-shield.png', 'image/png'],
   '/energies.png': ['energies.png', 'image/png']
 };
 
@@ -486,6 +621,12 @@ export const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://local');
     if (req.method === 'GET' && url.pathname === '/health') { send(res, 200, { ok: true }); return; }
     if (await handleDice(req, res, url)) return;
+    const energyIcon = url.pathname.match(/^\/energy-icons\/(ruptura|forja|fluxo|vazio|veu|eco)\.png$/);
+    if (req.method === 'GET' && energyIcon) {
+      res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400', 'x-content-type-options': 'nosniff' });
+      res.end(await readFile(path.join(here, 'public', 'energy-icons', energyIcon[1] + '.png')));
+      return;
+    }
     const insignia = url.pathname.match(/^\/insignias\/([a-z0-9-]+)\.png$/);
     if (req.method === 'GET' && insignia) {
       res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400', 'x-content-type-options': 'nosniff' });
@@ -517,9 +658,10 @@ export const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/rooms') {
       const data = await body(req);
       const name = String(data.name || 'Mercenário').trim().slice(0, 30);
+      const role = data.role === 'spectator' ? 'spectator' : 'player';
       let roomCode; do { roomCode = code(); } while (rooms.has(roomCode));
-      const player = { id: randomUUID(), token: token(), name, deck: [], hand: [], discard: [], ether: 0, deckColor: null, life: 20, runePlayed: false, deckReady: false, openingRemaining: 0, turnDrawRemaining: 0, bonusDraws: 0 };
-      const room = { code: roomCode, players: [player], spectators: [], board: [], phase: 'lobby', turn: null, firstPlayer: null, coinWinner: null, winner: null, round: 1, turnNumber: 0, log: [], clients: new Set() };
+      const player = freshPlayer(name);
+      const room = { code: roomCode, players: role === 'player' ? [player] : [], spectators: role === 'spectator' ? [player] : [], board: [], phase: 'lobby', turn: null, firstPlayer: null, coinWinner: null, winner: null, round: 1, turnNumber: 0, log: [], clients: new Set() };
       rooms.set(roomCode, room);
       send(res, 200, { code: roomCode, token: player.token });
       return;
@@ -531,8 +673,8 @@ export const server = http.createServer(async (req, res) => {
       const room = rooms.get(roomCode.toUpperCase());
       if (!room) { send(res, 400, { error: 'Sala inexistente.' }); return; }
       const data = await body(req);
-      if (room.players.length >= 2) {
-        const spectator = { id: randomUUID(), token: token(), name: String(data.name || 'Espectador').trim().slice(0, 30) };
+      if (data.role === 'spectator' || room.players.length >= 2 || room.phase !== 'lobby') {
+        const spectator = freshPlayer(String(data.name || 'Espectador').trim().slice(0, 30));
         room.spectators ||= [];
         room.spectators.push(spectator);
         log(room, `${spectator.name} entrou para assistir à partida.`);
@@ -540,7 +682,7 @@ export const server = http.createServer(async (req, res) => {
         emit(room);
         return;
       }
-      const player = { id: randomUUID(), token: token(), name: String(data.name || 'Mercenário').trim().slice(0, 30), deck: [], hand: [], discard: [], ether: 0, deckColor: null, life: 20, runePlayed: false, deckReady: false, openingRemaining: 0, turnDrawRemaining: 0, bonusDraws: 0 };
+      const player = freshPlayer(String(data.name || 'Mercenário').trim().slice(0, 30));
       room.players.push(player);
       log(room, `${player.name} entrou na sala.`);
       send(res, 200, { code: room.code, token: player.token });
@@ -561,10 +703,12 @@ export const server = http.createServer(async (req, res) => {
       return;
     }
     if (operation === 'action' && req.method === 'POST') {
-      if (!room.players.includes(player)) { send(res, 403, { error: 'Espectadores não podem alterar a partida.' }); return; }
-      act(room, player, await body(req));
+      const data = await body(req);
+      if (!room.players.includes(player) && !['takeSeat','leave'].includes(data.type)) { send(res, 403, { error: 'Espectadores não podem alterar a partida.' }); return; }
+      act(room, player, data);
       send(res, 200, { ok: true });
       emit(room);
+      if (data.type === 'leave' && !room.players.length && !room.spectators.length) rooms.delete(room.code);
       return;
     }
     send(res, 405, { error: 'Método inválido.' });

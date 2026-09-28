@@ -489,7 +489,11 @@
                                       "image":  "/decks/glacies/image1.png",
                                       "power":  2,
                                       "health":  2,
-                                      "agile":  true
+                                      "agile":  true,
+                                      "costAura":  {
+                                                         "target":  "agileCreature",
+                                                         "amount":  1
+                                                     }
                                   },
                                   {
                                       "name":  "Octoprofeta, Aquele que VÃª",

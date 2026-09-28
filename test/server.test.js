@@ -75,6 +75,10 @@ test('hub, cartas automáticas, ataque e mesa de dados online', async () => {
     assert.equal((await call(`${route}/action`,{type:'attack',cardId:agileOnly.id},starter.token)).status,400);
     assert.equal((await call(`${route}/action`,{type:'endTurn'},starter.token)).status,200);
     let secondState=(await call(`${route}/state`,undefined,second.token)).data;
+    assert.equal(secondState.combatPhase,'defense');
+    assert.equal(secondState.players[second.index].hand.length,7);
+    assert.equal((await call(`${route}/action`,{type:'endTurn'},second.token)).status,200);
+    secondState=(await call(`${route}/state`,undefined,second.token)).data;
     assert.equal(secondState.players[second.index].hand.length,8);
     assert.equal((await call(`${route}/action`,{type:'endTurn'},second.token)).status,200);
     assert.equal((await call(`${route}/action`,{type:'attack',cardId:normal.id},starter.token)).status,200);
@@ -136,8 +140,77 @@ test('espectadores não veem mãos; fichas, ataque e descarte ficam sincronizado
     assert.equal(discarded.at(-1).name, 'Ficha de Lobo');
     assert.equal((await call(`${route}/action`, { type: 'endTurn' }, winnerToken)).status, 200);
     const afterTurn = (await call(`${route}/state`, undefined, audience.token)).data.board.find(item => item.id === card.id);
-    assert.equal(afterTurn.attacking, false);
-    assert.equal(afterTurn.tapped, true);
+    assert.equal(afterTurn.attacking, true);
+    const defenderToken = winnerToken === first.token ? second.token : first.token;
+    assert.equal((await call(`${route}/action`, { type: 'endTurn' }, defenderToken)).status, 200);
+    const afterDefense = (await call(`${route}/state`, undefined, audience.token)).data.board.find(item => item.id === card.id);
+    assert.equal(afterDefense.attacking, false);
+    assert.equal(afterDefense.tapped, true);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('RunaMarca: defesa múltipla, sono e desconto de custo são validados pelo servidor', async () => {
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const call = async (route, data, token) => { const response = await fetch(base + route, { method: data ? 'POST' : 'GET', headers: { ...(data ? { 'content-type': 'application/json' } : {}), ...(token ? { 'x-player-token': token } : {}) }, body: data ? JSON.stringify(data) : undefined }); return { status: response.status, data: await response.json() }; };
+  try {
+    const first = (await call('/api/rooms', { name: 'A' })).data;
+    const path = `/api/rooms/${first.code}`;
+    const second = (await call(`${path}/join`, { name: 'B' })).data;
+    const aura = { name: 'Vaelita de teste', kind: 'creature', agile: true, rules: 'Vire: ganhe um efeito.', costAura: { target: 'agileCreature', amount: 1 }, power: 1, health: 3 };
+    const attacker = { name: 'Ágil de teste', kind: 'creature', agile: true, cost: { generic: 1 }, power: 2, health: 3 };
+    const blocker = { name: 'Guarda de teste', kind: 'creature', agile: true, power: 1, health: 2 };
+    assert.equal((await call(`${path}/action`, { type: 'import', cards: [...Array(4).fill(aura), ...Array(4).fill(attacker)] }, first.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'import', cards: Array(8).fill(blocker) }, second.token)).status, 200);
+    const coin = (await call(`${path}/state`, undefined, first.token)).data;
+    assert.equal((await call(`${path}/action`, { type: 'decideFirst', position: coin.coinWinner === coin.players[0].id ? 'first' : 'second' }, coin.coinWinner === coin.players[0].id ? first.token : second.token)).status, 200);
+    let state = (await call(`${path}/state`, undefined, first.token)).data;
+    const auraCard = state.players[0].hand.find(c => c.name === aura.name);
+    const agileCard = state.players[0].hand.find(c => c.name === attacker.name);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: agileCard.id }, first.token)).status, 400);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: auraCard.id }, first.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'tap', cardId: auraCard.id }, first.token)).status, 400);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: agileCard.id, neighborId: auraCard.id, side: 'right' }, first.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'return', cardId: agileCard.id }, first.token)).status, 400);
+    assert.equal((await call(`${path}/action`, { type: 'endTurn' }, first.token)).status, 200);
+    state = (await call(`${path}/state`, undefined, second.token)).data;
+    const guards = state.players[1].hand.slice(0, 2);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: guards[0].id }, second.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: guards[1].id, neighborId: guards[0].id, side: 'right' }, second.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'endTurn' }, second.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'tap', cardId: auraCard.id }, first.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'attack', cardId: agileCard.id }, first.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'endTurn' }, first.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'block', cardId: guards[0].id, attackerId: agileCard.id }, second.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'block', cardId: guards[1].id, attackerId: agileCard.id }, second.token)).status, 200);
+    state = (await call(`${path}/state`, undefined, second.token)).data;
+    assert.equal(state.board.filter(c => c.blockingTarget === agileCard.id).length, 2);
+    assert.equal((await call(`${path}/action`, { type: 'endTurn' }, second.token)).status, 200);
+    state = (await call(`${path}/state`, undefined, second.token)).data;
+    assert.equal(state.combatPhase, null);
+    assert.equal(state.players[1].life, 20);
+    assert.equal(state.board.some(c => c.id === guards[0].id), false);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('RunaMarca permite anfitrião espectador e troca de vaga na sala', async () => {
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const call = async (route, data, token) => { const response = await fetch(base + route, { method: data ? 'POST' : 'GET', headers: { ...(data ? { 'content-type': 'application/json' } : {}), ...(token ? { 'x-player-token': token } : {}) }, body: data ? JSON.stringify(data) : undefined }); return { status: response.status, data: await response.json() }; };
+  try {
+    const host = (await call('/api/rooms', { name: 'Anfitrião', role: 'spectator' })).data;
+    const path = `/api/rooms/${host.code}`;
+    let state = (await call(`${path}/state`, undefined, host.token)).data;
+    assert.equal(state.spectator, true);
+    assert.equal(state.players.length, 0);
+    assert.equal((await call(`${path}/action`, { type: 'takeSeat' }, host.token)).status, 200);
+    state = (await call(`${path}/state`, undefined, host.token)).data;
+    assert.equal(state.spectator, false);
+    assert.equal((await call(`${path}/action`, { type: 'spectate' }, host.token)).status, 200);
+    state = (await call(`${path}/state`, undefined, host.token)).data;
+    assert.equal(state.spectator, true);
+    assert.equal((await call(`${path}/action`, { type: 'leave' }, host.token)).status, 200);
+    assert.equal((await call(`${path}/state`, undefined, host.token)).status, 403);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
 
@@ -223,4 +296,115 @@ test('Seis Ossos permite anfitrião espectador, ocupar vaga, arquibancada e sair
     assert.equal((await call(`${path}/state`,undefined,audience.token)).data.spectator,true);
     assert.equal((await call(`${path}/action`,{type:'leave'},second.token)).status,200);
   } finally {await new Promise(resolve=>server.close(resolve));}
+});
+
+test('Aura fica anexada, modifica atributos e acompanha o alvo ao descarte', async () => {
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const call = async (path, data, secret) => {
+    const response = await fetch(base + path, { method: data ? 'POST' : 'GET', headers: { ...(data ? { 'content-type': 'application/json' } : {}), ...(secret ? { 'x-player-token': secret } : {}) }, body: data ? JSON.stringify(data) : undefined });
+    return { status: response.status, data: await response.json() };
+  };
+  try {
+    const a = (await call('/api/rooms', { name: 'A' })).data;
+    const path = `/api/rooms/${a.code}`;
+    const b = (await call(`${path}/join`, { name: 'B' })).data;
+    const cards = [
+      ...Array.from({ length: 4 }, () => ({ name: 'Sentinela', kind: 'creature', power: 2, health: 3 })),
+      ...Array.from({ length: 4 }, () => ({ name: 'Aura de teste', kind: 'spell', attachment: { type: 'aura', powerDelta: 2, healthDelta: 1, lockUntap: true } }))
+    ];
+    assert.equal((await call(`${path}/action`, { type: 'import', cards }, a.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'import', cards }, b.token)).status, 200);
+    const coin = (await call(`${path}/state`, undefined, a.token)).data;
+    const starter = coin.coinWinner === coin.players[0].id ? a : b;
+    assert.equal((await call(`${path}/action`, { type: 'decideFirst', position: 'first' }, starter.token)).status, 200);
+    const initial = (await call(`${path}/state`, undefined, starter.token)).data;
+    const hand = initial.players.find(p => p.id === initial.you).hand;
+    const creatures = hand.filter(c => c.kind === 'creature');
+    const aura = hand.find(c => c.kind === 'spell');
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: creatures[0].id }, starter.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: creatures[1].id, neighborId: creatures[0].id, side: 'right' }, starter.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'moveCard', cardId: creatures[1].id, neighborId: creatures[0].id, side: 'left' }, starter.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: aura.id }, starter.token)).status, 400);
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: aura.id, targetId: creatures[0].id }, starter.token)).status, 200);
+    const after = (await call(`${path}/state`, undefined, starter.token)).data;
+    const target = after.board.find(c => c.id === creatures[0].id);
+    assert.equal(target.power + target.powerModifier, 4);
+    assert.equal(target.health + target.healthModifier, 4);
+    assert.equal(after.board.find(c => c.id === aura.id).attachedTo, target.id);
+    assert.equal((await call(`${path}/action`, { type: 'tap', cardId: target.id }, starter.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'tap', cardId: target.id }, starter.token)).status, 400);
+    assert.equal((await call(`${path}/action`, { type: 'discard', cardId: target.id }, starter.token)).status, 200);
+    const discarded = (await call(`${path}/state`, undefined, starter.token)).data;
+    assert.equal(discarded.board.some(c => c.id === aura.id), false);
+    assert.ok(discarded.players.find(p => p.id === initial.you).discard.some(c => c.id === aura.id));
+    assert.equal((await call(`${path}/action`, { type: 'exile', cardId: creatures[1].id }, starter.token)).status, 200);
+    const exiled = (await call(`${path}/state`, undefined, starter.token)).data;
+    assert.equal(exiled.board.some(c => c.id === creatures[1].id), false);
+    assert.ok(exiled.players.find(p => p.id === initial.you).exile.some(c => c.id === creatures[1].id));
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('Runa pode gerar energia no mesmo turno em que entra', async () => {
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const call = async (path, data, secret) => {
+    const response = await fetch(base + path, { method: data ? 'POST' : 'GET', headers: { ...(data ? { 'content-type': 'application/json' } : {}), ...(secret ? { 'x-player-token': secret } : {}) }, body: data ? JSON.stringify(data) : undefined });
+    return { status: response.status, data: await response.json() };
+  };
+  try {
+    const a = (await call('/api/rooms', { name: 'A' })).data;
+    const path = `/api/rooms/${a.code}`;
+    const b = (await call(`${path}/join`, { name: 'B' })).data;
+    const cards = Array.from({ length: 8 }, () => ({ name: 'Runa de Vazio', kind: 'rune', runeEnergy: { generic: 1 } }));
+    await call(`${path}/action`, { type: 'import', cards }, a.token);
+    await call(`${path}/action`, { type: 'import', cards }, b.token);
+    const coin = (await call(`${path}/state`, undefined, a.token)).data;
+    const starter = coin.coinWinner === coin.players[0].id ? a : b;
+    await call(`${path}/action`, { type: 'decideFirst', position: 'first' }, starter.token);
+    const initial = (await call(`${path}/state`, undefined, starter.token)).data;
+    const rune = initial.players.find(p => p.id === initial.you).hand[0];
+    assert.equal((await call(`${path}/action`, { type: 'play', cardId: rune.id }, starter.token)).status, 200);
+    assert.equal((await call(`${path}/action`, { type: 'tap', cardId: rune.id }, starter.token)).status, 200);
+    const after = (await call(`${path}/state`, undefined, starter.token)).data;
+    assert.equal(after.players.find(p => p.id === initial.you).ether, 1);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('Seis Ossos permite iniciar uma nova partida após a vitória', async () => {
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const call = async (path, data, secret) => {
+    const response = await fetch(base + path, { method: data ? 'POST' : 'GET', headers: { ...(data ? { 'content-type': 'application/json' } : {}), ...(secret ? { 'x-player-token': secret } : {}) }, body: data ? JSON.stringify(data) : undefined });
+    return { status: response.status, data: await response.json() };
+  };
+  try {
+    const a = (await call('/api/dice/rooms', { name: 'A', target: 1000 })).data;
+    const path = `/api/dice/rooms/${a.code}`;
+    const b = (await call(`${path}/join`, { name: 'B' })).data;
+    assert.equal((await call(`${path}/action`, { type: 'rematch' }, a.token)).status, 400);
+    let state;
+    for (let turn = 0; turn < 80; turn++) {
+      state = (await call(`${path}/state`, undefined, a.token)).data;
+      if (state.phase === 'finished') break;
+      const token = state.turn === state.players[0].id ? a.token : b.token;
+      const actingTurn = state.turn;
+      await call(`${path}/action`, { type: 'roll' }, token);
+      state = (await call(`${path}/state`, undefined, token)).data;
+      if (state.turn !== actingTurn) continue;
+      if (state.bust) await call(`${path}/action`, { type: 'acceptBust' }, token);
+      else {
+        const choice = state.choices.reduce((best, item) => item.score > best.score ? item : best);
+        assert.equal((await call(`${path}/action`, { type: 'keep', indices: choice.indices }, token)).status, 200);
+        assert.equal((await call(`${path}/action`, { type: 'bank' }, token)).status, 200);
+      }
+    }
+    state = (await call(`${path}/state`, undefined, a.token)).data;
+    assert.equal(state.phase, 'finished');
+    assert.equal((await call(`${path}/action`, { type: 'rematch' }, a.token)).status, 200);
+    const restarted = (await call(`${path}/state`, undefined, a.token)).data;
+    assert.equal(restarted.phase, 'active');
+    assert.equal(restarted.players.every(p => p.score === 0), true);
+    assert.equal(restarted.round, 1);
+  } finally { await new Promise(resolve => server.close(resolve)); }
 });

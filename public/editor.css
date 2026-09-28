@@ -18,3 +18,18 @@
 .patron-abilities{display:grid;gap:10px;margin:14px 0 10px}
 .patron-abilities fieldset{border-color:#695478;background:#1b1520}
 .patron-abilities .form-row{grid-template-columns:72px minmax(0,1fr);margin-bottom:8px}
+.neutral-icon{display:inline-block;border-radius:50%}
+.controls .check-row{display:flex;align-items:center;gap:7px}
+.font-size-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.font-size-grid label{font-size:9px;text-align:center}
+.font-size-grid input{text-align:center}
+.type-sizes{padding-bottom:9px}
+.neutral-icon,.energy-dot{width:18px;height:18px;flex:none;border:0;box-shadow:none;background-size:contain;background-position:center;background-repeat:no-repeat}
+.neutral-icon{background-image:url('/energy-icons/vazio.png')}
+.energy-dot.ruptura,.energy-dot.forja,.energy-dot.fluxo{background-size:contain;background-position:center;background-repeat:no-repeat}
+.energy-dot.ruptura{background-image:url('/energy-icons/ruptura.png')}
+.energy-dot.forja{background-image:url('/energy-icons/forja.png')}
+.energy-dot.fluxo{background-image:url('/energy-icons/fluxo.png')}
+.controls .check-row input{width:auto!important}
+.rules-fit-warning{color:#f1a594;font-size:11px;line-height:1.35;font-weight:600}
+.canvas-wrap{padding:0;border:0;background:transparent;box-shadow:none}

@@ -173,6 +173,10 @@ function act(room,p,data) {
     if(room.phase!=='lobby'||room.players.length>=2)fail('As duas vagas estão ocupadas. Aguarde uma vaga no saguão.');
     room.spectators.splice(room.spectators.indexOf(p),1);room.players.push(p);log(room,`${p.name} saiu da arquibancada e ocupou uma vaga.`);startMatch(room);return;
   }
+  if(type==='rematch'){
+    if(!room.players.includes(p)||room.phase!=='finished')fail('A revanche fica disponível depois que a partida termina.');
+    resetMatch(room);log(room,`${p.name} iniciou uma nova partida de Seis Ossos.`);startMatch(room);return;
+  }
   if(!room.players.includes(p))fail('Espectadores podem assistir, mas não jogar os dados.');
   if (type==='propose') {
     if (room.phase!=='active' || room.proposal || room.players.some(q=>q.insignia||q.legendary) || room.roll.length || room.bust || room.turnPoints || room.round!==1) fail('A proposta deve ser feita antes da primeira rolagem.');

@@ -15,8 +15,27 @@ let coinAnimationDone = false;
 let handOrder = [];
 let handDrag = null;
 let suppressHandClickUntil = 0;
+let suppressBoardClickUntil = 0;
 let invitationCode = null;
+let cardAudio = null;
+let lastHoverSound = 0;
 const railPreferenceKey = 'runamarca-rail-layout';
+
+function paperSound(kind) {
+  try {
+    cardAudio ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (cardAudio.state === 'suspended') cardAudio.resume();
+    const length = Math.round(cardAudio.sampleRate * (kind === 'draw' ? .28 : .1));
+    const buffer = cardAudio.createBuffer(1, length, cardAudio.sampleRate);
+    const values = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) values[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / length);
+    const source = cardAudio.createBufferSource(); source.buffer = buffer;
+    const filter = cardAudio.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = kind === 'draw' ? 1150 : 1800; filter.Q.value = .7;
+    const volume = cardAudio.createGain(); volume.gain.value = kind === 'draw' ? .06 : .017;
+    source.connect(filter).connect(volume).connect(cardAudio.destination); source.start();
+  } catch {}
+}
+window.addEventListener('pointerdown', () => { try { if (cardAudio?.state === 'suspended') cardAudio.resume(); } catch {} }, { passive: true });
 
 function setRailCollapsed(side, collapsed) {
   const target = $('game');
@@ -43,9 +62,10 @@ function drawFlight(source, destination, index, opponent = false) {
   const dy = to.top + to.height / 2 - (from.top + from.height / 2);
   const animation = card.animate([
     { transform: 'translate(0,0) scale(.66) rotate(-14deg)', opacity: 0 },
-    { transform: `translate(${dx * .5}px,${dy * .35 - 48}px) scale(1.08) rotate(9deg)`, opacity: 1, offset: .5 },
+    { transform: `translate(${dx * .52}px,${dy * .43 - 54}px) scale(1.2) rotate(6deg)`, opacity: 1, offset: .54 },
     { transform: `translate(${dx}px,${dy}px) scale(${opponent ? .5 : .8}) rotate(0deg)`, opacity: 0 }
-  ], { duration: 1250, delay: index * 170, easing: 'cubic-bezier(.22,.7,.25,1)', fill: 'forwards' });
+  ], { duration: 1850, delay: index * 220, easing: 'cubic-bezier(.22,.7,.25,1)', fill: 'forwards' });
+  if (!opponent) setTimeout(() => paperSound('draw'), index * 220 + 400);
   animation.onfinish = () => {
     card.remove();
     const burst = document.createElement('div');
@@ -80,7 +100,7 @@ function costParts(card, energyName = 'energia específica') {
   const generic = card.cost?.generic || 0;
   const colored = card.cost?.colored || 0;
   const parts = [];
-  if (generic) parts.push(`${generic} neutra${generic === 1 ? '' : 's'}`);
+  if (generic) parts.push(`${generic} de Vazio`);
   if (card.cost?.energies) {
     for (const [id, name] of [['ruptura','Ruptura'],['forja','Forja'],['fluxo','Fluxo']]) {
       const amount = card.cost.energies[id] || 0;
@@ -97,9 +117,9 @@ function runeAmount(card) {
 function runeParts(card) {
   if (!card.runeEnergy) return '1 energia';
   const parts = [];
-  for (const [id, name] of [['generic','neutra'],['ruptura','Ruptura'],['forja','Forja'],['fluxo','Fluxo']]) {
+  for (const [id, name] of [['generic','Vazio'],['ruptura','Ruptura'],['forja','Forja'],['fluxo','Fluxo']]) {
     const amount = Number(card.runeEnergy[id]) || 0;
-    if (amount) parts.push(`${amount} ${id === 'generic' ? `energia${amount === 1 ? '' : 's'} neutra${amount === 1 ? '' : 's'}` : `de ${name}`}`);
+    if (amount) parts.push(`${amount} de ${name}`);
   }
   return parts.join(' + ') || '0 energias';
 }
@@ -194,9 +214,10 @@ function effectExplanation(card, back) {
   const lines = [];
   if (card.rules) lines.push(card.rules);
   if (card.drawEffect) lines.push(`Compra automática: ${card.drawEffect.count} carta(s) ao ${card.drawEffect.trigger === 'enter' ? 'entrar em campo' : card.drawEffect.trigger === 'reveal' ? 'ser revelada' : card.drawEffect.trigger === 'turnStart' ? 'começar o turno' : 'atacar com criatura ágil'}.`);
-  if (card.tokenEffect) lines.push(`Cria ${card.tokenEffect.count} ficha(s) de ${card.tokenEffect.name} ${card.tokenEffect.power}/${card.tokenEffect.health}${card.tokenEffect.extraPerDiscardName ? `, mais 1 por ${card.tokenEffect.extraPerDiscardName} no descarte` : ''} ao ${card.tokenEffect.trigger === 'enter' ? 'entrar em campo' : card.tokenEffect.trigger === 'attack' ? 'atacar' : card.tokenEffect.trigger === 'reveal' ? 'ser revelada' : 'bloquear (acionamento manual)'}.`);
+  if (card.tokenEffect) lines.push(`Cria ${card.tokenEffect.count} ficha(s) de ${card.tokenEffect.name} ${card.tokenEffect.power}/${card.tokenEffect.health}${card.tokenEffect.extraPerDiscardName ? `, mais 1 por ${card.tokenEffect.extraPerDiscardName} no descarte` : ''} ao ${card.tokenEffect.trigger === 'enter' ? 'entrar em campo' : card.tokenEffect.trigger === 'attack' ? 'atacar' : card.tokenEffect.trigger === 'reveal' ? 'ser revelada' : 'bloquear ou ser bloqueada'}.`);
   if (card.energyEffect) lines.push(`Ao girar: gera ${card.energyEffect.amount} energia(s).`);
   if (card.costDiscount) lines.push(`Desconto de ${card.costDiscount.amount} energia(s) quando você controla uma criatura Ágil.`);
+  if (card.costAura) lines.push(`Enquanto esta carta estiver em campo, ${card.costAura.target === 'agileCreature' ? 'suas criaturas com Ágil' : card.costAura.target === 'creature' ? 'suas criaturas' : 'suas magias'} custam ${Math.abs(card.costAura.amount)} energia(s) ${card.costAura.amount >= 0 ? 'a menos' : 'a mais'} para conjurar.`);
   const keywordText = [
     [/\bAtaque Rápido\b/i, 'Ataque Rápido: pode atacar e virar no turno em que entra em campo.'],
     [/\bÁgil\b/i, 'Ágil: só pode ser atingida por outra criatura com Ágil ou Prontidão.'],
@@ -314,10 +335,12 @@ function selectedHandCard() { return [...(me()?.hand || []), ...(me()?.tokens ||
 function costOf(card) {
   let cost = (card.cost?.colored || 0) + (card.cost?.generic || 0);
   if (card.costDiscount?.condition === 'agileCreature' && state.board.some(c => c.ownerId === state.you && c.zone === 'creature' && c.faceUp && c.agile)) cost = Math.max(0, cost - card.costDiscount.amount);
+  cost = Math.max(0, cost - state.board.filter(c => c.ownerId === state.you && c.zone === 'creature' && c.faceUp && (c.costAura?.target === card.kind || (c.costAura?.target === 'agileCreature' && card.kind === 'creature' && card.agile))).reduce((sum, c) => sum + c.costAura.amount, 0));
   return cost;
 }
 function canPlay(card, zone) {
   if (!card || !zone) return false;
+  if (state.combatPhase === 'defense') return false;
   if (zone !== 'spell' && state.turn !== state.you) return false;
   if (zone === 'rune' && me().runePlayed) return false;
   if (zone === 'patron' && state.board.some(c => c.ownerId === state.you && c.zone === 'patron')) return false;
@@ -328,6 +351,15 @@ function cardNode(card, { back = false, selected = false } = {}) {
   const el = document.createElement('div');
   el.className = `card${back ? ' back' : ''}${selected ? ' selected' : ''}${card.tapped ? ' tapped' : ''}${!back && card.faceUp === false ? ' face-down-own' : ''}`;
   if (card.isToken) el.classList.add('token-card');
+  if (!back && card.zone === 'creature' && state?.turnNumber < card.readyTurnNumber) {
+    el.classList.add('sleeping');
+    const sleep = document.createElement('span'); sleep.className = 'sleep-z'; sleep.textContent = 'z z z'; sleep.setAttribute('aria-label', 'Criatura recém jogada'); el.append(sleep);
+  }
+  if (!back && !card.zone && !state?.spectator) {
+    const printed = (card.cost?.colored || 0) + (card.cost?.generic || 0);
+    const adjustment = costOf(card) - printed;
+    if (adjustment) { const badge = document.createElement('span'); badge.className = `cost-adjustment${adjustment > 0 ? ' increase' : ''}`; badge.textContent = adjustment > 0 ? `+${adjustment}` : String(adjustment); badge.title = `Custo atual: ${costOf(card)} energias`; el.append(badge); }
+  }
   el.setAttribute('role', 'button');
   el.tabIndex = 0;
   el.setAttribute('aria-label', back ? 'Carta virada para baixo' : card.name);
@@ -357,11 +389,12 @@ function cardNode(card, { back = false, selected = false } = {}) {
   }
   el.addEventListener('pointerenter', event => {
     if (event.pointerType !== 'mouse') return;
+    if (performance.now() - lastHoverSound > 180) { paperSound('hover'); lastHoverSound = performance.now(); }
     hideCardHover();
     hoverSource = el;
     hoverTimer = setTimeout(() => {
       if (hoverSource === el) showCardHover(card, back, el);
-    }, el.closest('.hand-cards') ? 850 : 400);
+    }, el.closest('.hand-cards') ? 425 : 200);
   });
   el.addEventListener('pointerleave', hideCardHover);
   el.addEventListener('pointercancel', hideCardHover);
@@ -378,6 +411,43 @@ function button(label, onClick, disabled = false) {
 }
 
 function choose(cardId) { selection = cardId; render(); }
+
+function enableBoardConveyor(el, card) {
+  el.dataset.boardId = card.id;
+  if (card.ownerId !== state.you || state.spectator || !['creature','spell','rune'].includes(card.zone)) return;
+  let drag = null;
+  el.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    drag = { id: event.pointerId, x: event.clientX, active: false };
+    el.setPointerCapture(event.pointerId);
+  });
+  el.addEventListener('pointermove', event => {
+    if (!drag || event.pointerId !== drag.id) return;
+    const distance = event.clientX - drag.x;
+    if (!drag.active && Math.abs(distance) < 7) return;
+    drag.active = true;
+    hideCardHover();
+    el.classList.add('board-moving');
+    el.style.transform = `translateX(${distance}px)`;
+  });
+  const finish = event => {
+    if (!drag || event.pointerId !== drag.id) return;
+    const moved = drag.active;
+    drag = null;
+    el.classList.remove('board-moving');
+    el.style.transform = '';
+    if (!moved || event.type === 'pointercancel') return;
+    suppressBoardClickUntil = performance.now() + 350;
+    const siblings = [...el.closest('.zone-cards').querySelectorAll('.card[data-board-id]')]
+      .filter(other => other !== el && state.board.find(c => c.id === other.dataset.boardId)?.ownerId === card.ownerId);
+    if (!siblings.length) return;
+    const target = siblings.reduce((best, other) => Math.abs(other.getBoundingClientRect().left + other.offsetWidth / 2 - event.clientX) < Math.abs(best.getBoundingClientRect().left + best.offsetWidth / 2 - event.clientX) ? other : best);
+    const midpoint = target.getBoundingClientRect().left + target.offsetWidth / 2;
+    action('moveCard', { cardId: card.id, neighborId: target.dataset.boardId, side: event.clientX < midpoint ? 'left' : 'right' });
+  };
+  el.addEventListener('pointerup', finish);
+  el.addEventListener('pointercancel', finish);
+}
 
 function statValue(card, stat) { return (card[stat] || 0) + (card[`${stat}Modifier`] || 0); }
 function signed(value) { return value > 0 ? `+${value}` : String(value); }
@@ -416,19 +486,14 @@ function creatureStats(card, editable = false) {
 function creatureBadge(card) {
   const badge = document.createElement('div');
   badge.className = 'creature-badge';
-  if (!card.faceUp) {
-    badge.textContent = '? / ?';
-    badge.setAttribute('aria-label', 'Atributos ocultos');
-    return badge;
-  }
-  badge.setAttribute('aria-label', `Ataque ${statValue(card, 'power')}, vida ${statValue(card, 'health')}`);
-  badge.title = `Ataque ${statValue(card, 'power')} (${signed(card.powerModifier || 0)}); vida ${statValue(card, 'health')} (${signed(card.healthModifier || 0)})`;
-  for (const [index, stat] of ['power', 'health'].entries()) {
-    if (index) { const slash = document.createElement('span'); slash.textContent = '/'; badge.append(slash); }
+  badge.setAttribute('aria-label', card.faceUp ? `Ataque ${statValue(card, 'power')}, vida ${statValue(card, 'health')}` : 'Atributos ocultos');
+  if (card.faceUp) badge.title = `Ataque ${statValue(card, 'power')} (${signed(card.powerModifier || 0)}); vida ${statValue(card, 'health')} (${signed(card.healthModifier || 0)})`;
+  for (const stat of ['power', 'health']) {
     const value = document.createElement('span');
-    const modifier = card[`${stat}Modifier`] || 0;
-    value.className = modifier > 0 ? 'stat-up' : modifier < 0 ? 'stat-down' : '';
-    value.textContent = String(statValue(card, stat));
+    const modifier = card.faceUp ? card[`${stat}Modifier`] || 0 : 0;
+    value.className = `stat-emblem ${stat === 'power' ? 'sword' : 'heart'}${modifier > 0 ? ' stat-up' : modifier < 0 ? ' stat-down' : ''}`;
+    const icon = document.createElement('span'); icon.className = 'stat-icon'; icon.textContent = stat === 'power' ? '' : '♥'; value.append(icon);
+    const amount = document.createElement('b'); amount.textContent = card.faceUp ? String(statValue(card, stat)) : '?'; value.append(amount);
     if (modifier) { const marker = document.createElement('small'); marker.textContent = signed(modifier); value.append(marker); }
     badge.append(value);
   }
@@ -482,38 +547,39 @@ function insertionSlot(neighborId, side) {
 }
 
 function runePiles(cards) {
-  const buckets = new Map();
+  const piles = [];
   for (const card of cards) {
-    const key = JSON.stringify([card.faceUp ? card.name : 'oculta', card.faceUp ? card.image : '', card.tapped, card.faceUp]);
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(card);
+    const last = piles.at(-1);
+    if (last && last.length < 3 && last[0].name === card.name && last[0].image === card.image && last[0].tapped === card.tapped && last[0].faceUp === card.faceUp) last.push(card);
+    else piles.push([card]);
   }
-  return [...buckets.values()].flatMap(bucket => {
-    const piles = [];
-    for (let i = 0; i < bucket.length; i += 3) piles.push(bucket.slice(i, i + 3));
-    return piles;
-  });
+  return piles;
+}
+
+function belongsInRelics(card) {
+  return Boolean(card?.isToken || card?.attachment?.type === 'artifact' || /\b(?:artefato|equipamento)\b/i.test(card?.subtype || ''));
 }
 
 function renderZone(id, ownerId, zone) {
   const target = $(id);
   target.replaceChildren();
-  const cards = state.board.filter(c => c.ownerId === ownerId && c.zone === zone && !c.attacking);
+  const cards = state.board.filter(c => c.ownerId === ownerId && !c.attacking && (zone === 'relic' ? belongsInRelics(c) : c.zone === zone && !belongsInRelics(c) && !c.attachedTo));
   const own = ownerId === state.you;
   const hand = selectedHandCard();
   const placing = own && zone === 'creature' && hand && (hand.kind === 'creature' || hand.kind === 'flex') && canPlay(hand, 'creature');
   const placingRune = own && zone === 'rune' && hand && (hand.kind === 'rune' || hand.kind === 'flex') && canPlay(hand, 'rune');
-  const placingSpell = own && zone === 'spell' && hand && (hand.kind === 'spell' || hand.kind === 'flex') && canPlay(hand, 'spell');
+  const placingSpell = own && zone === 'spell' && hand && !hand.attachment && (hand.kind === 'spell' || hand.kind === 'flex') && canPlay(hand, 'spell');
   target.closest('.field-zone').classList.toggle('zone-target', Boolean(placingRune || placingSpell));
   if (zone === 'rune') {
     for (const pile of runePiles(cards)) {
       const top = pile.find(card => card.id === selection) || pile[0];
       const holder = document.createElement('div');
       holder.className = `rune-pile${pile.length > 1 ? ' stacked' : ''}${top.tapped ? ' tapped-pile' : ''}`;
-      holder.title = `${top.faceUp ? top.name : 'Runa oculta'} · ${pile.length} ${top.tapped ? 'virada(s)' : 'preparada(s)'}`;
+      holder.title = `${top.faceUp ? top.name : 'Essência oculta'} · ${pile.length} ${top.tapped ? 'virada(s)' : 'preparada(s)'}`;
       const el = cardNode(top, { back: !top.faceUp, selected: pile.some(card => card.id === selection) });
-      el.addEventListener('click', () => choose(top.id));
+      el.addEventListener('click', () => { if (performance.now() >= suppressBoardClickUntil) choose(top.id); });
       el.addEventListener('keydown', event => { if (event.key === 'Enter') choose(top.id); });
+      enableBoardConveyor(el, top);
       if (own && !top.tapped) el.addEventListener('dblclick', () => action('tap', { cardId: top.id }));
       holder.append(el);
       if (pile.length > 1) {
@@ -529,21 +595,36 @@ function renderZone(id, ownerId, zone) {
   for (let i = 0; zone !== 'rune' && i < cards.length; i++) {
     const card = cards[i];
     const el = cardNode(card, { back: !card.faceUp, selected: card.id === selection });
-    el.addEventListener('click', () => choose(card.id));
+    el.addEventListener('click', () => {
+      if (performance.now() < suppressBoardClickUntil) return;
+      const attaching = selectedHandCard();
+      if (zone === 'creature' && attaching?.attachment && card.faceUp && canPlay(attaching, 'spell')) action('play', { cardId: attaching.id, zone: 'spell', targetId: card.id, faceUp: true });
+      else choose(card.id);
+    });
     el.addEventListener('keydown', event => { if (event.key === 'Enter') choose(card.id); });
+    enableBoardConveyor(el, card);
     if (zone === 'creature') {
       const unit = document.createElement('div');
       unit.className = 'creature-unit';
+      if (hand?.attachment && card.faceUp && canPlay(hand, 'spell')) unit.classList.add('attach-target');
+      for (const aura of state.board.filter(item => item.attachedTo === card.id && !belongsInRelics(item))) {
+        const attached = cardNode(aura, { back: !aura.faceUp, selected: aura.id === selection });
+        attached.classList.add('attached-card');
+        attached.title = `${aura.name} · anexado a ${card.name}`;
+        attached.addEventListener('click', event => { event.stopPropagation(); choose(aura.id); });
+        unit.append(attached);
+      }
       unit.append(creatureBadge(card), el);
+      if (card.blockingTarget) { unit.classList.add('blocking'); const block = document.createElement('span'); block.className = 'block-mark'; block.textContent = 'DEFESA'; block.title = `Defende ${state.board.find(c => c.id === card.blockingTarget)?.name || 'atacante'}`; unit.append(block); }
       target.append(unit);
     } else target.append(el);
     if (placing) target.append(insertionSlot(card.id, 'right'));
   }
-  if (placing && !cards.length) target.append(insertionSlot(null, 'right'));
+  if (placing && !cards.length) target.append(insertionSlot(state.board.find(c => c.ownerId === ownerId && c.zone === 'creature')?.id || null, 'right'));
   if (placingRune) {
     const slot = button('+', () => action('play', { cardId: hand.id, zone: 'rune', faceUp: !playFaceDown }));
     slot.className = 'placement-slot rune-placement-slot';
-    slot.title = 'Colocar Runa em Terrenos';
+    slot.title = 'Colocar Essência';
     slot.setAttribute('aria-label', slot.title);
     target.append(slot);
   }
@@ -553,12 +634,6 @@ function renderZone(id, ownerId, zone) {
     slot.title = 'Colocar Mágica em Magias';
     slot.setAttribute('aria-label', slot.title);
     target.append(slot);
-  }
-  if (!cards.length && !placing && !placingRune && !placingSpell) {
-    const empty = document.createElement('span');
-    empty.className = 'zone-empty';
-    empty.textContent = zone === 'creature' ? 'Nenhuma criatura' : zone === 'rune' ? 'Nenhuma Runa' : 'Nenhuma magia';
-    target.append(empty);
   }
 }
 
@@ -613,7 +688,7 @@ function renderSelection() {
     if (card.kind !== 'rune' && me().ether < costOf(card)) {
       const missing = document.createElement('p');
       missing.className = 'cost-warning';
-      missing.textContent = `Faltam ${costOf(card) - me().ether} de energia. Coloque e vire uma Runa para abastecer a reserva.`;
+      missing.textContent = `Faltam ${costOf(card) - me().ether} de energia. Coloque e vire uma Essência para abastecer a reserva.`;
       actions.append(missing);
     }
     const hide = document.createElement('label');
@@ -626,42 +701,60 @@ function renderSelection() {
     actions.append(hide);
     const zones = card.kind === 'flex' ? ['rune','creature','spell','patron'] : [card.kind];
     for (const zone of zones) {
-      const label = { rune: 'Colocar em Terrenos', creature: 'Invocar criatura', spell: 'Colocar em Magias', patron: 'Colocar como Patrono' }[zone];
+      const label = { rune: 'Colocar em Essências', creature: 'Invocar criatura', spell: 'Colocar em Magias', patron: 'Colocar como Patrono' }[zone];
       if (zone === 'creature' && ownCreatures().length) {
         const hint = document.createElement('p'); hint.className = 'cost-note'; hint.textContent = 'Escolha um + ao lado das criaturas em campo.'; actions.append(hint);
-      } else actions.append(button(label, () => action('play', { cardId: card.id, zone, faceUp: !playFaceDown }), !canPlay(card, zone)));
-      if (zone === 'spell' && canPlay(card, zone)) {
+      } else if (!(zone === 'spell' && card.attachment)) actions.append(button(label, () => action('play', { cardId: card.id, zone, faceUp: !playFaceDown }), !canPlay(card, zone)));
+      if (zone === 'spell' && card.attachment && canPlay(card, zone)) {
+        const hint = document.createElement('p'); hint.className = 'cost-note'; hint.textContent = 'Clique na criatura alvo no tabuleiro. A carta ficará sob ela e aplicará seu efeito.'; actions.append(hint);
+      } else if (zone === 'spell' && canPlay(card, zone)) {
         const hint = document.createElement('p'); hint.className = 'cost-note';
-        hint.textContent = 'Clique no + em Magias ou use o botão acima. A carta ficará na mesa até você descartá-la ou devolvê-la à mão.';
+        hint.textContent = 'Clique no + em Magias ou use o botão acima. A carta ficará na mesa até ser descartada.';
         actions.append(hint);
       }
     }
     actions.append(button('Descartar da mão', () => action('discard', { cardId: card.id })));
+    actions.append(button('Exilar da mão', () => action('exile', { cardId: card.id })));
   } else {
-    actions.append(button(card.faceUp ? 'Virar para baixo' : 'Revelar carta', () => action('flip', { cardId: card.id })));
+    const sleeping = state.turnNumber < card.readyTurnNumber;
+    actions.append(button(card.faceUp ? 'Virar para baixo' : 'Revelar carta', () => action('flip', { cardId: card.id }), sleeping || Boolean(card.attachedTo)));
     if (card.zone === 'rune') {
       const pile = runePiles(state.board.filter(c => c.ownerId === state.you && c.zone === 'rune')).find(group => group.some(c => c.id === card.id)) || [card];
       const oneAmount = runeAmount(card);
-      actions.append(button(`Virar 1 Runa · +${oneAmount} energia${oneAmount === 1 ? '' : 's'}`, () => { selection = pile.find(c => c.id !== card.id)?.id || card.id; action('tap', { cardId: card.id }); }, card.tapped));
+      actions.append(button(`Virar 1 Essência · +${oneAmount} energia${oneAmount === 1 ? '' : 's'}`, () => { selection = pile.find(c => c.id !== card.id)?.id || card.id; action('tap', { cardId: card.id }); }, card.tapped));
       if (pile.length > 1) {
         const groupAmount = pile.reduce((sum, rune) => sum + runeAmount(rune), 0);
         actions.append(button(`Virar grupo de ${pile.length} · +${groupAmount} energias`, () => action('tapGroup', { cardIds: pile.map(c => c.id) }), card.tapped));
       }
       const note = document.createElement('p');
       note.className = 'cost-note';
-      note.textContent = `${pile.length} Runa(s) iguais neste grupo · ${card.tapped ? 'viradas' : 'preparadas'}.`;
+      note.textContent = `${pile.length} Essência(s) iguais neste grupo · ${card.tapped ? 'viradas' : 'preparadas'}.`;
       actions.append(note);
     } else if (card.zone === 'creature' && card.energyEffect) {
       const boosted = card.energyEffect.condition === 'powerAtLeast4' && state.board.some(c => c.ownerId === state.you && c.zone === 'creature' && c.faceUp && statValue(c, 'power') >= 4);
       const amount = boosted ? card.energyEffect.boostedAmount : card.energyEffect.amount;
-      actions.append(button(`Girar para gerar ${amount} energia${amount > 1 ? 's' : ''}`, () => action('tap', { cardId: card.id }), card.tapped || card.attackedThisTurn || !card.faceUp));
-    } else actions.append(button(card.tapped ? 'Desvirar / preparar' : 'Girar / exaurir', () => action('tap', { cardId: card.id })));
+      actions.append(button(`Girar para gerar ${amount} energia${amount > 1 ? 's' : ''}`, () => action('tap', { cardId: card.id }), card.tapped || card.attackedThisTurn || !card.faceUp || sleeping));
+    } else actions.append(button(card.tapped ? 'Desvirar / preparar' : 'Girar / exaurir', () => action('tap', { cardId: card.id }), (sleeping && /\b(?:vire|virar|ao ser virad)/i.test(card.rules || '')) || (card.tapped && state.board.some(aura => aura.attachedTo === card.id && aura.attachment?.lockUntap))));
     if (card.zone === 'creature') actions.append(button('Declarar ataque', () => action('attack', { cardId: card.id }), state.turn !== state.you || !card.faceUp || card.tapped || card.attackedThisTurn || (!card.quickAttack && card.summonedTurnNumber === state.turnNumber)));
-    if (card.tokenEffect?.trigger === 'block') actions.append(button('Acionar efeito ao bloquear', () => action('triggerBlock', { cardId: card.id }), !card.faceUp));
-    actions.append(button('Voltar à mão', () => action('return', { cardId: card.id })));
+    if (state.combatPhase === 'defense' && card.zone === 'creature' && card.faceUp && !card.tapped) {
+      const hint = document.createElement('p'); hint.className = 'cost-note'; hint.textContent = 'Escolha o atacante para bloquear. Você pode juntar várias criaturas na mesma defesa.'; actions.append(hint);
+      for (const attacker of state.board.filter(c => c.attacking && c.ownerId !== state.you)) actions.append(button(card.blockingTarget === attacker.id ? `Retirar de ${attacker.name}` : `Defender de ${attacker.name}`, () => action('block', { cardId: card.id, attackerId: attacker.id }), attacker.agile && !card.agile && !/\bProntid[aã]o\b/i.test(card.rules || '')));
+    }
     actions.append(button('Descartar', () => action('discard', { cardId: card.id })));
+    actions.append(button('Exilar', () => action('exile', { cardId: card.id })));
   }
   panel.append(actions);
+}
+
+function renderPublicPile(id, cards) {
+  const target = $(id);
+  target.replaceChildren();
+  for (const card of cards.slice(-8).reverse()) {
+    const el = cardNode(card);
+    el.title = card.name;
+    el.addEventListener('click', () => openCardDetail(card, false));
+    target.append(el);
+  }
 }
 
 function render() {
@@ -669,22 +762,25 @@ function render() {
   renderGate();
   hideCardHover();
   if ($('card-detail').open) $('card-detail').close();
-  const self = state.spectator ? state.players[0] : me();
+  const self = (state.spectator ? state.players[0] : me()) || { name: 'Arquibancada', deckCount: 0, handCount: 0, discardCount: 0, ether: 0, hand: [], tokens: [], discard: [] };
   const opponent = state.spectator ? state.players[1] : rival();
   $('game').classList.toggle('spectating', Boolean(state.spectator));
   $('spectator-label').classList.toggle('hidden', !state.spectator);
   $('opponent-role').textContent = state.spectator ? 'JOGADOR 2' : 'ADVERSÁRIO';
   $('opponent-creature-label').textContent = state.spectator ? `CRIATURAS DE ${opponent?.name.toUpperCase() || 'JOGADOR 2'}` : 'CRIATURAS DO RIVAL';
-  $('self-creature-label').textContent = state.spectator ? `CRIATURAS DE ${self.name.toUpperCase()}` : 'SUAS CRIATURAS';
-  $('game').dataset.deckColor = self.deckColor || '';
-  $('self-name').textContent = self.name;
+  $('self-creature-label').textContent = state.spectator ? `CRIATURAS DE ${self?.name.toUpperCase() || 'JOGADOR 1'}` : 'SUAS CRIATURAS';
+  $('game').dataset.deckColor = self?.deckColor || '';
+  $('self-name').textContent = self?.name || 'Arquibancada';
   $('active-deck-name').textContent = self.deckChoice === 'custom' ? 'Deck próprio confirmado' : deckCatalog.find(deck => deck.slug === self.deckChoice)?.title || 'Aguardando deck';
   $('deck-count').textContent = self.deckCount;
   $('discard-count').textContent = self.discardCount;
   $('hand-heading-count').textContent = `(${state.spectator ? 0 : self.handCount})`;
+  $('hand-life-value').textContent = String(self.life ?? 20);
+  $('hand-life-minus').disabled = Boolean(state.spectator);
+  $('hand-life-plus').disabled = Boolean(state.spectator);
   $('ether-count').textContent = self.ether;
   const energy = selectedEnergy();
-  $('ether-color').textContent = energy ? `Energia de ${energy.name}` : 'Vire uma Runa para ganhar energia';
+  $('ether-color').textContent = energy ? `Energia de ${energy.name}` : 'Vire uma Essência para ganhar energia';
   $('energy-icon').className = energy ? `energy-icon energy-${energy.id}` : 'energy-icon hidden';
   $('energy-icon').title = energy?.description || '';
   $('draw-status').textContent = !self.deckReady ? 'Escolha um deck. As compras serão automáticas.'
@@ -693,20 +789,35 @@ function render() {
   $('opponent-name').textContent = opponent?.name || 'Aguardando rival...';
   $('opponent-deck').textContent = `${opponent?.deckCount || 0} no baralho`;
   $('opponent-hand').textContent = `${opponent?.handCount || 0} na mão`;
+  const concealed = $('opponent-hand-cards');
+  concealed.replaceChildren();
+  for (let index = 0; index < Math.min(opponent?.handCount || 0, 14); index++) {
+    const back = document.createElement('span');
+    back.className = 'opponent-hand-back';
+    concealed.append(back);
+  }
   $('round-label').textContent = `Rodada ${state.round}`;
   $('turn-label').textContent = state.phase === 'lobby' ? 'Escolha dos decks'
     : state.phase === 'coin' ? 'Sorteio da moeda'
     : state.phase === 'finished' ? 'Partida encerrada'
+    : state.combatPhase === 'defense' ? (state.turn === state.you ? 'Escolha os bloqueadores' : 'Defesa do rival')
     : state.turn === state.you ? 'Seu turno' : opponent ? `Turno de ${opponent.name}` : 'Aguardando rival';
   $('end-turn').disabled = state.spectator || state.phase !== 'active' || state.turn !== state.you || !opponent || state.players.some(p => !p.deckReady);
+  $('end-turn').innerHTML = state.combatPhase === 'defense' ? 'Concluir defesa <span>→</span>' : 'Encerrar turno <span>→</span>';
   $('end-turn').title = state.players.some(p => !p.deckReady) ? 'Os dois jogadores precisam confirmar os decks.' : '';
+  $('seat-action').textContent = state.spectator ? 'Ocupar vaga' : 'Ir à arquibancada';
+  $('seat-action').disabled = state.spectator && (state.players.length >= 2 || state.phase !== 'lobby');
   const hand = $('hand-cards');
   cancelHandDrag();
   hand.replaceChildren();
   const currentIds = (self.hand || []).map(card => card.id);
   handOrder = [...handOrder.filter(id => currentIds.includes(id)), ...currentIds.filter(id => !handOrder.includes(id))];
-  for (const card of handOrder.map(id => (self.hand || []).find(item => item.id === id)).filter(Boolean)) {
+  const visibleHand = handOrder.map(id => (self.hand || []).find(item => item.id === id)).filter(Boolean);
+  for (const [index, card] of visibleHand.entries()) {
     const el = cardNode(card, { selected: card.id === selection });
+    const relative = index - (visibleHand.length - 1) / 2;
+    el.style.setProperty('--fan-angle', `${Math.max(-18, Math.min(18, relative * 4.2))}deg`);
+    el.style.setProperty('--fan-y', `${Math.abs(relative) * 4 - 10}px`);
     el.dataset.cardId = card.id;
     el.draggable = false;
     el.addEventListener('dragstart', event => event.preventDefault());
@@ -726,7 +837,9 @@ function render() {
   renderPatron('self-patron', self);
   renderPatron('opponent-patron', opponent);
   for (const [prefix, player] of [['self', self], ['opponent', opponent]]) {
-    for (const [id, zone] of [['creatures','creature'],['runes','rune'],['spells','spell']]) renderZone(`${prefix}-${id}`, player?.id, zone);
+    for (const [id, zone] of [['creatures','creature'],['runes','rune'],['spells','spell'],['relics','relic']]) renderZone(`${prefix}-${id}`, player?.id, zone);
+    renderPublicPile(`${prefix}-grave`, player?.discard || []);
+    renderPublicPile(`${prefix}-exile`, player?.exile || []);
   }
   renderAttackLane();
   renderDiscardZone(self, opponent);
@@ -741,15 +854,24 @@ function renderAttackLane() {
   const lane = $('attack-lane');
   lane.replaceChildren();
   const attacking = state.board.filter(card => card.attacking);
+  const rows = new Map();
   for (const card of attacking) {
+    const side = card.ownerId === (state.spectator ? state.players[0]?.id : state.you) ? 'self' : 'opponent';
+    if (!rows.has(side)) { const row = document.createElement('div'); row.className = `attack-row ${side}`; rows.set(side, row); lane.append(row); }
     const unit = document.createElement('div');
     unit.className = 'attack-unit';
     const label = document.createElement('span');
-    label.textContent = `${state.players.find(p => p.id === card.ownerId)?.name || 'Jogador'} · ATAQUE`;
+    const blockers = state.board.filter(c => c.blockingTarget === card.id);
+    label.textContent = blockers.length ? `BLOQUEADO ×${blockers.length}` : 'ATAQUE';
+    label.title = blockers.length ? `Defensores: ${blockers.map(c => c.name).join(', ')}` : 'Sem bloqueadores';
     const image = cardNode(card, { back: !card.faceUp, selected: selection === card.id });
-    image.addEventListener('click', () => choose(card.id));
+    image.addEventListener('click', () => {
+      const defender = state.board.find(c => c.id === selection && c.ownerId === state.you && c.zone === 'creature');
+      if (state.combatPhase === 'defense' && defender && card.ownerId !== state.you) action('block', { cardId: defender.id, attackerId: card.id });
+      else choose(card.id);
+    });
     unit.append(label, image);
-    lane.append(unit);
+    rows.get(side).append(unit);
   }
   lane.classList.toggle('occupied', attacking.length > 0);
 }
@@ -889,13 +1011,13 @@ async function loadDecks() {
 
 $('create-form').addEventListener('submit', async event => {
   event.preventDefault();
-  try { enter(await request('/api/rooms', { method: 'POST', body: JSON.stringify({ name: $('create-name').value }) })); }
+  try { enter(await request('/api/rooms', { method: 'POST', body: JSON.stringify({ name: $('create-name').value, role: $('create-role').value }) })); }
   catch (error) { toast(error.message); }
 });
 $('join-form').addEventListener('submit', async event => {
   event.preventDefault();
   const code = $('room-code').value.trim().toUpperCase();
-  try { enter(await request(`/api/rooms/${code}/join`, { method: 'POST', body: JSON.stringify({ name: $('join-name').value }) })); }
+  try { enter(await request(`/api/rooms/${code}/join`, { method: 'POST', body: JSON.stringify({ name: $('join-name').value, role: $('join-role').value }) })); }
   catch (error) { toast(error.message); }
 });
 $('copy-link').addEventListener('click', async () => {
@@ -964,6 +1086,18 @@ function finishHandDrag(event, canceled = false) {
 window.addEventListener('pointerup', event => finishHandDrag(event));
 window.addEventListener('pointercancel', event => finishHandDrag(event, true));
 $('end-turn').addEventListener('click', () => action('endTurn'));
+$('seat-action').addEventListener('click', () => action(state?.spectator ? 'takeSeat' : 'spectate'));
+$('leave-room').addEventListener('click', async () => {
+  if (!session) return;
+  await action('leave');
+  streamController?.abort();
+  sessionStorage.removeItem('procurados-session');
+  session = null; state = null; selection = null;
+  const invite = invitationCode || null;
+  history.replaceState(null, '', invite ? `/runamarca?convite=${invite}` : '/runamarca');
+  document.body.classList.remove('in-room');
+  $('game').classList.add('hidden'); $('welcome').classList.remove('hidden');
+});
 for (const side of ['left', 'right']) {
   $(`toggle-${side}-rail`).addEventListener('click', () => setRailCollapsed(side, !$('game').classList.contains(`${side}-collapsed`)));
 }
@@ -976,6 +1110,8 @@ $('choose-first').addEventListener('click', () => action('decideFirst', { positi
 $('choose-second').addEventListener('click', () => action('decideFirst', { position: 'second' }));
 $('gate-restart').addEventListener('click', () => action('resetMatch'));
 $('shuffle').addEventListener('click', () => action('shuffle'));
+$('hand-life-minus').addEventListener('click', () => action('life', { delta: -1 }));
+$('hand-life-plus').addEventListener('click', () => action('life', { delta: 1 }));
 $('reset-match').addEventListener('click', () => { if (confirm('Reiniciar a partida para os dois jogadores e escolher novos decks?')) action('resetMatch'); });
 $('close-card-detail').addEventListener('click', () => $('card-detail').close());
 $('card-detail').addEventListener('click', event => { if (event.target === $('card-detail')) $('card-detail').close(); });
@@ -990,7 +1126,6 @@ document.addEventListener('keydown', event => {
   const boardCard = state.board.find(c => c.id === selection && c.ownerId === state.you);
   const handCard = selectedHandCard();
   if (key === 'f' && boardCard) action('flip', { cardId: selection });
-  if (key === 'r' && boardCard) action('return', { cardId: selection });
   if (key === 'd' && (boardCard || handCard)) action('discard', { cardId: selection });
 });
 

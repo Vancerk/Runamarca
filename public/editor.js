@@ -2,16 +2,10 @@ const $ = id => document.getElementById(id);
 const energyIds = ['ruptura', 'forja', 'fluxo'];
 const energyNames = { ruptura: 'Ruptura', forja: 'Forja', fluxo: 'Fluxo' };
 const energyColors = { ruptura: '#bd5847', forja: '#d0a44e', fluxo: '#568fc2' };
-// Os símbolos no atlas têm tamanhos e centros ligeiramente diferentes.
-// Cada recorte é normalizado para o mesmo diâmetro no custo da carta.
-const energyCrops = {
-  ruptura: { x: 19, y: 47, size: 82 },
-  fluxo: { x: 19, y: 197, size: 82 },
-  forja: { x: 20, y: 496, size: 74 }
-};
-const kindNames = { creature: 'Criatura', spell: 'Magia', rune: 'Terreno · Runa', patron: 'Patrono' };
-const fields = { name: 'card-name', kind: 'card-kind', subtype: 'card-subtype', rules: 'card-rules', quantity: 'card-quantity', power: 'card-power', health: 'card-health', generic: 'cost-generic', ruptura: 'cost-ruptura', forja: 'cost-forja', fluxo: 'cost-fluxo', artZoom: 'art-zoom', artX: 'art-x', artY: 'art-y' };
-const blank = () => ({ id: crypto.randomUUID(), name: '', kind: 'creature', subtype: '', rules: '', quantity: 1, power: 1, health: 1, generic: 0, ruptura: 0, forja: 0, fluxo: 0, art: '', artZoom: 100, artX: 50, artY: 50, agile: false, quickAttack: false, drawTrigger: '', drawCount: 1, drawPowerFour: false, tokenTrigger: '', tokenAmount: 1, tokenName: '', tokenPower: 1, tokenHealth: 1, energyResource: '', energyAmount: 1, energyBoost: '', energyBoosted: 2, agileDiscount: 0, patronFrame: '#65439d', patronOrnament: '#c9b1e8', patronAccent: '#e9d3fa', patronFont: 'display', patronOpacity: 72, patronFlourish: 'elaborate', patronAbilities: [{ cost: 2, title: '', effect: '' }, { cost: 3, title: '', effect: '' }, { cost: 5, title: '', effect: '' }] });
+const energyIconIds = ['vazio', 'ruptura', 'forja', 'fluxo', 'eco', 'veu'];
+const kindNames = { creature: 'Criatura', spell: 'Magia', rune: 'Essência', patron: 'Patrono' };
+const fields = { name: 'card-name', kind: 'card-kind', subtype: 'card-subtype', rules: 'card-rules', fontName: 'font-name', fontSubtype: 'font-subtype', fontRules: 'font-rules', quantity: 'card-quantity', power: 'card-power', health: 'card-health', generic: 'cost-generic', ruptura: 'cost-ruptura', forja: 'cost-forja', fluxo: 'cost-fluxo', artZoom: 'art-zoom', artX: 'art-x', artY: 'art-y' };
+const blank = () => ({ id: crypto.randomUUID(), name: '', kind: 'creature', subtype: '', rules: '', rulesItalic: false, fontName: 43, fontSubtype: 21, fontRules: 31, themeEnergy: 'auto', attachmentType: '', attachmentPower: 0, attachmentHealth: 0, attachmentTap: false, attachmentLock: false, attachmentTrample: false, quantity: 1, power: 1, health: 1, generic: 0, ruptura: 0, forja: 0, fluxo: 0, art: '', artZoom: 100, artX: 50, artY: 50, agile: false, quickAttack: false, drawTrigger: '', drawCount: 1, drawPowerFour: false, tokenTrigger: '', tokenAmount: 1, tokenName: '', tokenPower: 1, tokenHealth: 1, energyResource: '', energyAmount: 1, energyBoost: '', energyBoosted: 2, agileDiscount: 0, costAuraTarget: '', costAuraAmount: 1, patronFrame: '#65439d', patronOrnament: '#c9b1e8', patronAccent: '#e9d3fa', patronFont: 'display', patronOpacity: 72, patronFlourish: 'elaborate', patronAbilities: [{ cost: 2, title: '', effect: '' }, { cost: 3, title: '', effect: '' }, { cost: 5, title: '', effect: '' }] });
 let draft = blank();
 let project = [];
 let db = null;
@@ -37,7 +31,8 @@ function validateDesign(card) {
   if (!card.art) return ['Escolha uma ilustração para a carta.', 'card-art'];
   if (card.kind === 'patron' && !card.patronAbilities?.some(ability => ability.title?.trim() && ability.effect?.trim())) return ['Preencha o nome e o efeito de ao menos uma habilidade do Patrono.', 'patron-title-0'];
   if (card.kind === 'spell' && !card.rules?.trim()) return ['Escreva o efeito da Magia.', 'card-rules'];
-  if (card.kind === 'rune' && !card.rules?.trim() && !runeTokens(card).length) return ['Informe a energia gerada pela Runa ou escreva seu efeito.', 'cost-forja'];
+  if (card.kind === 'rune' && !card.rules?.trim() && !runeTokens(card).length) return ['Informe a energia gerada pela Essência ou escreva seu efeito.', 'cost-forja'];
+  if (card.kind !== 'patron' && card.rules?.trim() && rulesOverflow(card)) return ['O texto ultrapassa a altura da caixa. Reduza manualmente o tamanho da fonte ou encurte o texto.', 'card-rules'];
   if (card.tokenTrigger && !card.tokenName?.trim()) return ['Dê um nome à ficha criada por esta carta.', 'token-name'];
   if (!Number.isInteger(Number(card.quantity)) || Number(card.quantity) < 1 || Number(card.quantity) > 60) return ['A quantidade deve ficar entre 1 e 60.', 'card-quantity'];
   return null;
@@ -63,39 +58,50 @@ function round(ctx, x, y, w, h, r, fill, stroke, line = 1) {
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.lineWidth = line; ctx.strokeStyle = stroke; ctx.stroke(); }
 }
+function darken(hex, amount = .25) {
+  return '#' + [1, 3, 5].map(index => Math.round(parseInt(hex.slice(index, index + 2), 16) * (1 - amount)).toString(16).padStart(2, '0')).join('');
+}
+function illustrationPath(ctx, top, bottom) {
+  ctx.beginPath();
+  ctx.moveTo(38, top);
+  ctx.lineTo(862, top);
+  ctx.lineTo(880, top + 38);
+  ctx.lineTo(880, bottom - 70);
+  ctx.lineTo(828, bottom);
+  ctx.lineTo(72, bottom);
+  ctx.lineTo(20, bottom - 70);
+  ctx.lineTo(20, top + 38);
+  ctx.closePath();
+}
 function cardTokens(card) {
   const tokens = [];
   if (number(card.generic, 0, 20)) tokens.push({ id: 'generic', count: card.generic });
   for (const id of energyIds) {
     const count = number(card[id], 0, 12);
-    if (count <= 3) for (let i = 0; i < count; i++) tokens.push({ id });
-    else if (count) tokens.push({ id, count });
+    for (let i = 0; i < count; i++) tokens.push({ id });
   }
   return tokens;
 }
 function runeTokens(card) {
-  return ['generic', ...energyIds]
-    .map(id => ({ id, count: number(card[id], 0, id === 'generic' ? 20 : 12) }))
-    .filter(token => token.count > 0);
+  const tokens = [];
+  const generic = number(card.generic, 0, 20);
+  if (generic) tokens.push({ id: 'generic', count: generic });
+  for (const id of energyIds) {
+    const count = number(card[id], 0, 12);
+    for (let i = 0; i < count; i++) tokens.push({ id });
+  }
+  return tokens;
 }
-function drawEnergySymbol(ctx, atlas, token, x, cy, size, showCount = false) {
+function drawEnergySymbol(ctx, icons, token, x, cy, size, showCount = false) {
+  const icon = icons[token.id === 'generic' ? 'vazio' : token.id];
+  if (icon) ctx.drawImage(icon, x, cy - size / 2, size, size);
+  else { ctx.fillStyle = energyColors[token.id] || '#26323e'; ctx.beginPath(); ctx.arc(x + size / 2, cy, size / 2, 0, Math.PI * 2); ctx.fill(); }
   if (token.id === 'generic') {
-    ctx.beginPath(); ctx.arc(x + size / 2, cy, size / 2 - 1, 0, Math.PI * 2);
-    ctx.fillStyle = '#e7ddc7'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#a58a60'; ctx.stroke();
-    ctx.fillStyle = '#241b17'; ctx.font = `700 ${size * .58}px Cinzel, Georgia, serif`;
+    ctx.fillStyle = '#fff5e9'; ctx.strokeStyle='#111a22';ctx.lineWidth=Math.max(1.5,size*.07);ctx.font = `800 ${size * .48}px "Source Sans 3",Arial,sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(showCount ? String(token.count) : String(token.count), x + size / 2, cy + 1);
+    ctx.strokeText(String(token.count),x+size/2,cy+size*.025);ctx.fillText(String(token.count), x + size / 2, cy + size*.025);
     ctx.textAlign = 'left';
     return;
-  }
-  if (atlas) {
-    const crop = energyCrops[token.id];
-    ctx.save(); ctx.beginPath(); ctx.arc(x + size / 2, cy, size / 2 - 1, 0, Math.PI * 2); ctx.clip();
-    ctx.drawImage(atlas, crop.x, crop.y, crop.size, crop.size, x, cy - size / 2, size, size);
-    ctx.restore();
-  } else {
-    ctx.fillStyle = energyColors[token.id]; ctx.beginPath();
-    ctx.arc(x + size / 2, cy, size / 2 - 1, 0, Math.PI * 2); ctx.fill();
   }
   if (showCount && token.count > 1) {
     round(ctx, x + size * .49, cy + size * .2, size * .52, size * .31, size * .12, '#17110ef2', '#e2c58f', 1.5);
@@ -135,6 +141,74 @@ function fitLines(ctx, text, width, maxLines, start, minimum, family = '"Source 
   if (lines.length > maxLines) clipped[maxLines - 1] = clipped[maxLines - 1].replace(/\s+\S*$/, '') + '…';
   return { lines: clipped, size: minimum };
 }
+function richRuns(text, allItalic = false) {
+  const runs = []; let italic = allItalic; let part = '';
+  for (const character of String(text || '')) {
+    if (character === '*') {
+      if (part) runs.push({ text: part, italic });
+      part = ''; italic = !italic;
+    } else part += character;
+  }
+  if (part) runs.push({ text: part, italic });
+  return runs;
+}
+function wrapRichLines(ctx, runs, width, size) {
+  const font = italic => `${italic ? 'italic ' : ''}600 ${size}px "Source Sans 3",sans-serif`;
+  const lines = [[]]; let used = 0;
+  const nextLine = () => { lines.push([]); used = 0; };
+  const append = (text, italic, measured) => {
+    const line = lines.at(-1), last = line.at(-1);
+    if (last?.italic === italic) { last.text += text; last.width += measured; }
+    else line.push({ text, italic, width: measured });
+    used += measured;
+  };
+  for (const run of runs) for (const token of run.text.match(/\n|[^\S\n]+|[^\s]+/g) || []) {
+    if (token === '\n') { nextLine(); continue; }
+    ctx.font = font(run.italic);
+    const tokenWidth = ctx.measureText(token).width;
+    if (/^\s+$/.test(token)) {
+      if (used && used + tokenWidth <= width) append(token, run.italic, tokenWidth);
+      continue;
+    }
+    if (tokenWidth <= width) {
+      if (used && used + tokenWidth > width) nextLine();
+      append(token, run.italic, tokenWidth);
+      continue;
+    }
+    // Palavras sem espaços também precisam quebrar, sem comprimir a fonte.
+    for (const character of Array.from(token)) {
+      const characterWidth = ctx.measureText(character).width;
+      if (used && used + characterWidth > width) nextLine();
+      append(character, run.italic, characterWidth);
+    }
+  }
+  return lines;
+}
+function rulesOverflow(card) {
+  const descriptionTop = card.kind === 'rune' ? 804 : card.kind === 'creature' ? 871 : 885;
+  const y = card.kind === 'rune' && runeTokens(card).length ? 1050 : descriptionTop + 57;
+  const size = number(card.fontRules, 16, 52, 31);
+  const ctx = document.createElement('canvas').getContext('2d');
+  const lines = wrapRichLines(ctx, richRuns(card.rules, Boolean(card.rulesItalic)), 680, size);
+  return y + (lines.length - 1) * size * 1.2 > 1137;
+}
+function drawRichRules(ctx, card, x, y, width, bottom) {
+  const source = card.rules || 'Escreva aqui o efeito da carta.';
+  const runs = richRuns(source, Boolean(card.rulesItalic));
+  const size = number(card.fontRules, 16, 52, 31);
+  const lines = wrapRichLines(ctx, runs, width, size);
+  const lineHeight = size * 1.2;
+  ctx.fillStyle = '#fff1dd'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  for (const line of lines) {
+    if (y > bottom) break;
+    let cursor = x;
+    for (const run of line) {
+      ctx.font = `${run.italic ? 'italic ' : ''}600 ${size}px "Source Sans 3",sans-serif`;
+      ctx.fillText(run.text, cursor, y); cursor += run.width;
+    }
+    y += lineHeight;
+  }
+}
 function patronFlourish(ctx, x, y, side, color, scale = 1) {
   ctx.save(); ctx.translate(x, y); ctx.scale(side * scale, scale);
   ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 4;
@@ -150,7 +224,6 @@ function drawPatronCard(ctx, card, art) {
   const ornament = /^#[0-9a-f]{6}$/i.test(card.patronOrnament || '') ? card.patronOrnament : '#c9b1e8';
   const accent = /^#[0-9a-f]{6}$/i.test(card.patronAccent || '') ? card.patronAccent : '#e9d3fa';
   const opacity = number(card.patronOpacity, 45, 95, 72) / 100;
-  ctx.fillStyle = '#100e17'; ctx.fillRect(0, 0, 900, 1260);
   round(ctx, 17, 17, 866, 1226, 38, frame);
   ctx.save(); ctx.beginPath(); ctx.roundRect(40, 40, 820, 1180, 26); ctx.clip();
   if (art) {
@@ -177,7 +250,7 @@ function drawPatronCard(ctx, card, art) {
   round(ctx, 78, 93, 744, 124, 14, ctx.fillStyle);
   const title = (card.name || 'Novo Patrono').trim();
   const font = card.patronFont === 'script' ? '"Great Vibes",cursive' : card.patronFont === 'classic' ? '"EB Garamond",Georgia,serif' : 'Cinzel,Georgia,serif';
-  let titleSize = card.patronFont === 'script' ? 70 : 44;
+  let titleSize = Math.round(number(card.fontName, 24, 72, 43) * (card.patronFont === 'script' ? 1.55 : 1));
   do { ctx.font = `${card.patronFont === 'script' ? 400 : 600} ${titleSize}px ${font}`; if (ctx.measureText(title).width <= 650 || titleSize <= 27) break; titleSize -= 2; } while (true);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = accent;
   ctx.shadowColor = '#000'; ctx.shadowBlur = 10; ctx.fillText(title, 450, 158, 660); ctx.shadowBlur = 0;
@@ -213,96 +286,131 @@ function drawPatronCard(ctx, card, art) {
   }
 }
 async function drawCard(canvas, card) {
-  const [art, atlas] = await Promise.all([img(card.art), img('/energies.png')]);
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const [art, loadedIcons, attackIcon] = await Promise.all([img(card.art), Promise.all(energyIconIds.map(id => img(`/energy-icons/${id}.png`))), img(card.kind === 'creature' ? '/attack-shield.png?v=2' : null)]);
+  const icons = Object.fromEntries(energyIconIds.map((id, index) => [id, loadedIcons[index]]));
+  const ctx = canvas.getContext('2d', { alpha: true });
   ctx.setTransform(canvas.width / 900, 0, 0, canvas.height / 1260, 0, 0);
+  // O canvas conserva alinhamento e fonte entre prévias; Patrono usa texto centralizado.
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
   ctx.clearRect(0, 0, 900, 1260);
   if (card.kind === 'patron') { drawPatronCard(ctx, card, art); return; }
-  const dominant = energyIds.reduce((best, id) => number(card[id], 0, 12) > number(card[best], 0, 12) ? id : best, 'forja');
-  const accent = energyColors[dominant];
-  ctx.fillStyle = '#1c1510'; ctx.fillRect(0, 0, 900, 1260);
-  round(ctx, 17, 17, 866, 1226, 27, '#34261a', '#b99560', 6);
-  // A arte ocupa toda a área interna, inclusive atrás do título e das regras.
-  ctx.save(); ctx.beginPath(); ctx.roundRect(38, 38, 824, 1184, 17); ctx.clip();
+  const dominant = card.themeEnergy && card.themeEnergy !== 'auto' ? card.themeEnergy : ['generic', ...energyIds].reduce((best, id) => number(card[id], 0, 20) > number(card[best], 0, 20) ? id : best, 'generic');
+  const theme = dominant === 'generic' ? 'vazio' : dominant;
+  const palette = { vazio: ['#19242e','#273645','#8fabb4'], ruptura: ['#48231e','#64342a','#c97762'], forja: ['#493717','#665125','#d6ad5a'], fluxo: ['#1b314b','#294866','#73a9d1'] }[theme] || ['#19242e','#273645','#8fabb4'];
+  const accent = palette[2];
+  const darkTitle = darken(palette[1]);
+  const darkText = darken(palette[0]);
+  const essence = card.kind === 'rune';
+  const artTop = 114;
+  const descriptionTop = essence ? 804 : card.kind === 'creature' ? 871 : 885;
+  const artHeight = descriptionTop - artTop;
+  round(ctx, 17, 17, 866, 1226, 27, palette[0], accent, 6);
+  // A ilustração afunila até a caixa de texto, deixando as laterais livres para os atributos.
+  ctx.save(); illustrationPath(ctx, artTop, descriptionTop); ctx.clip();
   if (art) {
     const zoom = number(card.artZoom, 100, 230, 100) / 100;
-    const scale = Math.max(824 / art.width, 1184 / art.height) * zoom;
+    const scale = Math.max(860 / art.width, artHeight / art.height) * zoom;
     const w = art.width * scale, h = art.height * scale;
-    const x = 38 + (824 - w) * number(card.artX, 0, 100, 50) / 100;
-    const y = 38 + (1184 - h) * number(card.artY, 0, 100, 50) / 100;
+    const x = 20 + (860 - w) * number(card.artX, 0, 100, 50) / 100;
+    const y = artTop + (artHeight - h) * number(card.artY, 0, 100, 50) / 100;
     ctx.drawImage(art, x, y, w, h);
   } else {
     const placeholder = ctx.createRadialGradient(450, 490, 10, 450, 490, 750);
     placeholder.addColorStop(0, '#65523b'); placeholder.addColorStop(1, '#111b1a');
-    ctx.fillStyle = placeholder; ctx.fillRect(38, 38, 824, 1184);
+    ctx.fillStyle = placeholder; ctx.fillRect(20, artTop, 860, artHeight);
     ctx.fillStyle = '#c6a777'; ctx.font = '130px Georgia,serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('◈', 450, 510);
     ctx.font = '25px "Source Sans 3",sans-serif'; ctx.fillText('INSIRA UMA ILUSTRAÇÃO', 450, 610); ctx.textAlign = 'left';
   }
-  const vignette = ctx.createLinearGradient(0, 38, 0, 1222);
-  vignette.addColorStop(0, '#09090777'); vignette.addColorStop(.26, '#09090700');
-  vignette.addColorStop(.65, '#09090700'); vignette.addColorStop(1, '#090907aa');
-  ctx.fillStyle = vignette; ctx.fillRect(38, 38, 824, 1184);
   ctx.restore();
-  const head = ctx.createLinearGradient(0, 53, 0, 145);
-  head.addColorStop(0, '#17110de8'); head.addColorStop(1, '#17110dc7');
-  round(ctx, 53, 53, 794, 96, 12, head);
-  ctx.fillStyle = accent; ctx.fillRect(53, 147, 794, 3);
+  round(ctx, 38, 38, 824, 76, 12, darkTitle, accent, 4);
   const tokens = card.kind === 'rune' ? [] : cardTokens(card);
-  const chip = Math.max(30, Math.min(52, 345 / Math.max(1, tokens.length)));
-  const chipGap = Math.max(2, chip * .08);
-  const costWidth = tokens.length ? tokens.length * chip + (tokens.length - 1) * chipGap + 18 : 0;
+  const rows = Math.max(1, Math.ceil(tokens.length / 12));
+  const columns = Math.ceil(tokens.length / rows);
+  const chip = rows === 1 ? Math.min(52, Math.floor(335 / Math.max(1, columns))) : rows === 2 ? 25 : 18;
+  const chipGap = rows === 1 ? Math.max(2, chip * .08) : 2;
+  const costWidth = tokens.length ? columns * chip + (columns - 1) * chipGap + 18 : 0;
   const nameWidth = 758 - costWidth;
-  let titleSize = 43;
+  let titleSize = number(card.fontName, 24, 72, 43);
   const title = (card.name || 'Nova carta').trim();
   do { ctx.font = `700 ${titleSize}px Cinzel, Georgia, serif`; if (ctx.measureText(title).width <= nameWidth || titleSize <= 24) break; titleSize -= 2; } while (true);
-  ctx.fillStyle = '#f6e9cb'; ctx.textBaseline = 'middle';
-  if (ctx.measureText(title).width <= nameWidth) ctx.fillText(title, 73, 101);
+  ctx.fillStyle = '#fff1d9'; ctx.textBaseline = 'middle';
+  if (ctx.measureText(title).width <= nameWidth) ctx.fillText(title, 73, 77);
   else {
     const limit = Math.max(7, Math.floor(title.length * nameWidth / ctx.measureText(title).width) - 1);
-    ctx.fillText(title.slice(0, limit) + '…', 73, 101);
+    ctx.fillText(title.slice(0, limit) + '…', 73, 77);
   }
-  let chipX = 825 - (tokens.length * chip + Math.max(0, tokens.length - 1) * chipGap);
-  for (const token of tokens) {
-    drawEnergySymbol(ctx, atlas, token, chipX, 101, chip, Boolean(token.count && token.id !== 'generic'));
-    chipX += chip + chipGap;
+  const chipStart = 825 - (columns * chip + Math.max(0, columns - 1) * chipGap);
+  for (const [index, token] of tokens.entries()) {
+    const row = Math.floor(index / columns), column = index % columns;
+    const cy = rows === 1 ? 77 : rows === 2 ? 57 + row * 38 : 52 + row * 24;
+    drawEnergySymbol(ctx, icons, token, chipStart + column * (chip + chipGap), cy, chip);
   }
-  // O texto flutua sobre a imagem, sem uma segunda moldura interna.
-  round(ctx, 54, 828, 792, 333, 14, '#15110de3');
-  ctx.fillStyle = accent; ctx.fillRect(75, 845, 5, 49);
-  ctx.font = '700 26px Cinzel,Georgia,serif'; ctx.fillStyle = '#f7e4bb';
-  ctx.fillText(kindNames[card.kind] || 'Carta', 96, 866);
-  ctx.font = '600 21px "Source Sans 3",sans-serif'; ctx.fillStyle = '#c8b79c';
-  if (card.subtype) ctx.fillText(card.subtype.toUpperCase(), 96, 898);
-  if (card.kind === 'rune' && runeTokens(card).length) {
+  round(ctx, 72, descriptionTop, 756, 1227 - descriptionTop, 10, darkText, accent, 3);
+  ctx.save(); illustrationPath(ctx, artTop, descriptionTop);
+  ctx.strokeStyle = accent; ctx.lineWidth = 3; ctx.stroke();
+  ctx.restore();
+  if (essence && runeTokens(card).length) {
     const produced = runeTokens(card);
-    const symbolSize = card.rules ? 100 : 130;
-    const gap = 30;
-    const rowWidth = produced.length * symbolSize + (produced.length - 1) * gap;
-    let symbolX = 450 - rowWidth / 2;
-    const symbolY = card.rules ? 977 : 1009;
-    for (const token of produced) {
-      drawEnergySymbol(ctx, atlas, token, symbolX, symbolY, symbolSize, true);
-      symbolX += symbolSize + gap;
+    const columns = Math.min(6, produced.length), rows = Math.ceil(produced.length / columns);
+    const symbolSize = produced.length === 1 ? (card.rules ? 176 : 204) : rows === 1 ? Math.min(162, Math.floor(650 / columns)) : rows === 2 ? 78 : rows === 3 ? 50 : 24;
+    const gap = 8, rowWidth = columns * symbolSize + (columns - 1) * gap;
+    const gridHeight = rows * symbolSize + (rows - 1) * gap;
+    const startX = 450 - rowWidth / 2, startY = card.rules ? 835 : 985 - gridHeight / 2;
+    for (const [index, token] of produced.entries()) {
+      const row = Math.floor(index / columns), column = index % columns;
+      drawEnergySymbol(ctx, icons, token, startX + column * (symbolSize + gap), startY + row * (symbolSize + gap) + symbolSize / 2, symbolSize, true);
     }
   }
-  const formatted = fitLines(ctx, card.rules || (card.kind === 'rune' && runeTokens(card).length ? '' : 'Escreva aqui o efeito da carta.'), 716, card.kind === 'rune' ? 3 : 7, card.kind === 'rune' ? 26 : 34, 21);
-  ctx.font = `600 ${formatted.size}px "Source Sans 3",sans-serif`; ctx.fillStyle = '#f4e9d3'; ctx.textBaseline = 'alphabetic';
-  const lineHeight = formatted.size * 1.22;
-  formatted.lines.forEach((line,i) => ctx.fillText(line, 96, (card.kind === 'rune' && runeTokens(card).length ? 1081 : 946) + i * lineHeight));
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#e1c58e'; ctx.font = '700 21px Cinzel,Georgia,serif'; ctx.fillText('◈  RUNAMARCA', 75, 1191);
-  if (card.kind === 'creature') {
-    round(ctx, 699, 1168, 124, 45, 8, '#15110de8');
-    ctx.fillStyle = '#fff0cd'; ctx.font = '700 32px Cinzel,Georgia,serif'; ctx.textAlign = 'center'; ctx.fillText(`${number(card.power,0,30)}/${number(card.health,0,30)}`, 761, 1191); ctx.textAlign = 'left';
+  if (card.rules || !essence || !runeTokens(card).length) {
+    const rulesY = essence && runeTokens(card).length ? 1050 : descriptionTop + 57;
+    drawRichRules(ctx, card, 110, rulesY, 680, 1137);
   }
+  // A classificação forma uma barra opaca entre o ataque e a vida.
+  round(ctx, 145, 1155, 610, 72, 10, darkTitle, accent, 3);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const subtypeSize = number(card.fontSubtype, 14, 38, 21);
+  ctx.font = `700 ${card.subtype && subtypeSize > 30 ? 21 : 25}px Cinzel,Georgia,serif`; ctx.fillStyle = '#f7e4bb';
+  const kindY = card.subtype ? (subtypeSize > 34 ? 1177 : subtypeSize > 26 ? 1180 : 1182) : 1191;
+  ctx.fillText(kindNames[card.kind] || 'Carta', 450, kindY, 565);
+  if (card.subtype) {
+    ctx.font = `600 ${subtypeSize}px "Source Sans 3",sans-serif`; ctx.fillStyle = '#e3d1b2';
+    ctx.fillText(card.subtype.toUpperCase(), 450, 1210, 565);
+  }
+  if (card.kind === 'creature') {
+    const statNumberY = 1196;
+    if (attackIcon) ctx.drawImage(attackIcon, 4, 1126.5, 125, 125);
+    // Coração opaco e plano, sem o brilho/volume do emoji do sistema.
+    ctx.save(); ctx.translate(850, statNumberY);
+    ctx.beginPath(); ctx.moveTo(0, 40);
+    ctx.bezierCurveTo(-13, 27, -48, 4, -48, -17);
+    ctx.bezierCurveTo(-48, -46, -14, -52, 0, -28);
+    ctx.bezierCurveTo(14, -52, 48, -46, 48, -17);
+    ctx.bezierCurveTo(48, 4, 13, 27, 0, 40);
+    ctx.closePath(); ctx.fillStyle = '#48b96b'; ctx.fill();
+    ctx.strokeStyle = '#1b6138'; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
+    ctx.fillStyle = '#fffbed'; ctx.strokeStyle = '#152018'; ctx.lineWidth = 6; ctx.font = '900 43px "Source Sans 3",sans-serif';
+    for (const [value,x] of [[card.power,66.5],[card.health,850]]) { ctx.strokeText(String(number(value,0,30)), x, statNumberY); ctx.fillText(String(number(value,0,30)), x, statNumberY); }
+  }
+  ctx.textAlign = 'left';
 }
 
 function readForm() {
   for (const [key, id] of Object.entries(fields)) draft[key] = $(id).value;
   for (const key of ['quantity','power','health','generic','ruptura','forja','fluxo','artZoom','artX','artY']) draft[key] = number(draft[key], key === 'quantity' ? 1 : key === 'artZoom' ? 100 : 0, key === 'quantity' ? 60 : key === 'artZoom' ? 230 : key === 'power' || key === 'health' ? 30 : key.startsWith('art') ? 100 : key === 'generic' ? 20 : 12);
+  draft.fontName = number(draft.fontName, 24, 72, 43);
+  draft.fontSubtype = number(draft.fontSubtype, 14, 38, 21);
+  draft.fontRules = number(draft.fontRules, 16, 52, 31);
   draft.name = draft.name.trim().slice(0, 60);
   draft.subtype = draft.subtype.trim().slice(0, 45);
   draft.rules = draft.rules.slice(0, 850);
+  draft.themeEnergy = $('card-theme').value;
+  draft.attachmentType = $('attachment-type').value;
+  draft.attachmentPower = number($('attachment-power').value, -20, 20);
+  draft.attachmentHealth = number($('attachment-health').value, -20, 20);
+  draft.attachmentTap = $('attachment-tap').checked;
+  draft.attachmentLock = $('attachment-lock').checked;
+  draft.attachmentTrample = $('attachment-trample').checked;
   draft.agile = $('card-agile').checked;
   draft.quickAttack = $('card-quick-attack').checked;
   draft.drawTrigger = $('draw-trigger').value;
@@ -318,6 +426,8 @@ function readForm() {
   draft.energyBoost = $('energy-boost').value;
   draft.energyBoosted = number($('energy-boosted').value, 1, 5, 2);
   draft.agileDiscount = number($('agile-discount').value, 0, 5);
+  draft.costAuraTarget = $('cost-aura-target').value;
+  draft.costAuraAmount = number($('cost-aura-amount').value, -5, 5, 1);
   draft.patronFrame = $('patron-frame').value;
   draft.patronOrnament = $('patron-ornament').value;
   draft.patronAccent = $('patron-accent').value;
@@ -334,11 +444,13 @@ function readForm() {
   const patron = draft.kind === 'patron';
   $('energy-fields').hidden = patron;
   $('rules-field').hidden = patron;
+  $('toggle-italic').hidden = patron;
+  $('italic-hint').hidden = patron;
   $('patron-controls').hidden = !patron;
   $('auto-abilities').hidden = patron;
-  $('energy-legend').textContent = rune ? 'Energia gerada pela Runa' : 'Custos de energia';
+  $('energy-legend').textContent = rune ? 'Energia gerada pela Essência' : 'Custos de energia';
   $('energy-hint').textContent = rune
-    ? 'Informe quanto a Runa produz ao girar. Os símbolos aparecem em destaque na área de texto.'
+    ? 'Informe quanto a Essência produz ao girar. Os símbolos aparecem em destaque na área de texto.'
     : 'Cada símbolo é aplicado diretamente na faixa da carta.';
   syncAbilityUI();
   return draft;
@@ -351,13 +463,26 @@ function syncAbilityUI() {
   $('energy-amount').disabled = !creature || !$('energy-resource').value;
   $('energy-boost').disabled = !creature || !$('energy-resource').value;
   $('energy-boosted').disabled = !creature || !$('energy-resource').value || !$('energy-boost').value;
+  $('cost-aura-target').disabled = !creature;
+  $('cost-aura-amount').disabled = !creature || !$('cost-aura-target').value;
   $('draw-count').disabled = !$('draw-trigger').value;
   $('draw-power-four').disabled = $('draw-trigger').value !== 'turnStart';
   for (const id of ['token-amount','token-name','token-power','token-health']) $(id).disabled = !$('token-trigger').value;
 }
 function populate(card) {
-  draft = structuredClone(card);
+  draft = {...blank(), ...structuredClone(card)};
+  if (draft.rulesItalic && draft.rules && !draft.rules.includes('*')) {
+    draft.rules = `*${draft.rules}*`;
+    draft.rulesItalic = false;
+  }
   for (const [key,id] of Object.entries(fields)) $(id).value = draft[key] ?? blank()[key];
+  $('card-theme').value = draft.themeEnergy || 'auto';
+  $('attachment-type').value = draft.attachmentType || '';
+  $('attachment-power').value = draft.attachmentPower ?? 0;
+  $('attachment-health').value = draft.attachmentHealth ?? 0;
+  $('attachment-tap').checked = Boolean(draft.attachmentTap);
+  $('attachment-lock').checked = Boolean(draft.attachmentLock);
+  $('attachment-trample').checked = Boolean(draft.attachmentTrample);
   $('card-agile').checked = Boolean(draft.agile);
   $('card-quick-attack').checked = Boolean(draft.quickAttack);
   $('draw-trigger').value = draft.drawTrigger || '';
@@ -373,6 +498,8 @@ function populate(card) {
   $('energy-boost').value = draft.energyBoost || '';
   $('energy-boosted').value = draft.energyBoosted ?? 2;
   $('agile-discount').value = draft.agileDiscount ?? 0;
+  $('cost-aura-target').value = draft.costAuraTarget || '';
+  $('cost-aura-amount').value = draft.costAuraAmount ?? 1;
   $('patron-frame').value = draft.patronFrame || '#65439d';
   $('patron-ornament').value = draft.patronOrnament || '#c9b1e8';
   $('patron-accent').value = draft.patronAccent || '#e9d3fa';
@@ -389,11 +516,13 @@ function populate(card) {
   $('creature-stats').hidden = draft.kind !== 'creature';
   $('energy-fields').hidden = draft.kind === 'patron';
   $('rules-field').hidden = draft.kind === 'patron';
+  $('toggle-italic').hidden = draft.kind === 'patron';
+  $('italic-hint').hidden = draft.kind === 'patron';
   $('patron-controls').hidden = draft.kind !== 'patron';
   $('auto-abilities').hidden = draft.kind === 'patron';
-  $('energy-legend').textContent = draft.kind === 'rune' ? 'Energia gerada pela Runa' : 'Custos de energia';
+  $('energy-legend').textContent = draft.kind === 'rune' ? 'Energia gerada pela Essência' : 'Custos de energia';
   $('energy-hint').textContent = draft.kind === 'rune'
-    ? 'Informe quanto a Runa produz ao girar. Os símbolos aparecem em destaque na área de texto.'
+    ? 'Informe quanto a Essência produz ao girar. Os símbolos aparecem em destaque na área de texto.'
     : 'Cada símbolo é aplicado diretamente na faixa da carta.';
   syncAbilityUI();
   renderPreview();
@@ -401,7 +530,16 @@ function populate(card) {
 function renderPreview() {
   const serial = ++renderSerial;
   const card = structuredClone(readForm());
-  drawCard($('card-canvas'), card).catch(error => { if (serial === renderSerial) status(error.message, true); });
+  $('rules-fit-warning').hidden = card.kind === 'patron' || !card.rules?.trim() || !rulesOverflow(card);
+  const isolated = document.createElement('canvas');
+  isolated.width = 900; isolated.height = 1260;
+  drawCard(isolated, card).then(() => {
+    if (serial !== renderSerial) return;
+    const target = $('card-canvas').getContext('2d', { alpha: true });
+    target.setTransform(1, 0, 0, 1, 0, 0);
+    target.clearRect(0, 0, 900, 1260);
+    target.drawImage(isolated, 0, 0);
+  }).catch(error => { if (serial === renderSerial) status(error.message, true); });
 }
 async function shrinkArt(file) {
   if (!['image/png','image/jpeg','image/webp'].includes(file.type)) throw new Error('Use PNG, JPG ou WebP para a ilustração.');
@@ -474,6 +612,39 @@ async function pngCard() {
   const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1260;
   try {await document.fonts.ready;await drawCard(canvas,draft);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw new Error('Falha ao gerar PNG.');download(blob,filename(draft.name,'png'));status(`PNG de ${draft.name} baixado.`);}catch(error){status(error.message,true);}
 }
+async function playableCard(design) {
+  const canvas=document.createElement('canvas');canvas.width=600;canvas.height=840;
+  await drawCard(canvas,design);
+  const image=canvas.toDataURL('image/webp',.8);
+  if(image.length>2_000_000)throw new Error(`${design.name} ficou acima de 2 MB na exportação.`);
+  const energies=Object.fromEntries(energyIds.map(id=>[id,number(design[id],0,12)]));
+  const colored=Object.values(energies).reduce((a,b)=>a+b,0);
+  const card={name:design.name,kind:design.kind,subtype:design.subtype,rules:design.kind==='patron'?'':richRuns(design.rules).map(run=>run.text).join(''),cost:design.kind==='rune'?{generic:0,colored:0,energies:{ruptura:0,forja:0,fluxo:0}}:{generic:design.generic,colored,energies},power:design.kind==='creature'?design.power:0,health:design.kind==='creature'?design.health:0,agile:design.kind==='creature' && Boolean(design.agile),quickAttack:design.kind==='creature' && Boolean(design.quickAttack),image};
+  if (design.kind==='rune') card.runeEnergy = {generic:number(design.generic,0,20),...energies};
+  if (design.kind==='patron') {
+    card.cost = {generic:0,colored:0,energies:{ruptura:0,forja:0,fluxo:0}};
+    card.patronStyle = { frame: design.patronFrame, ornament: design.patronOrnament, accent: design.patronAccent, font: design.patronFont, opacity: design.patronOpacity, flourish: design.patronFlourish };
+    card.patronAbilities = design.patronAbilities;
+  }
+  if (design.kind !== 'patron' && design.drawTrigger) card.drawEffect = { trigger: design.drawTrigger, count: number(design.drawCount,1,7,1), ...(design.drawTrigger==='turnStart' && design.drawPowerFour ? { condition: 'powerAtLeast4' } : {}) };
+  if (design.kind !== 'patron' && design.tokenTrigger) card.tokenEffect = { trigger: design.tokenTrigger, count: number(design.tokenAmount,1,12,1), name: String(design.tokenName || 'Criatura').slice(0,40), power: number(design.tokenPower,0,30,1), health: number(design.tokenHealth,0,30,1) };
+  if (design.kind==='creature' && design.energyResource) card.energyEffect = { trigger:'tap', amount:number(design.energyAmount,1,5,1),resource:design.energyResource,...(design.energyBoost==='powerAtLeast4' ? {condition:'powerAtLeast4',boostedAmount:number(design.energyBoosted,1,5,2)} : {}) };
+  if (design.kind !== 'patron' && number(design.agileDiscount,0,5)) card.costDiscount = { condition:'agileCreature',amount:number(design.agileDiscount,0,5) };
+  if (design.kind === 'creature' && design.costAuraTarget && number(design.costAuraAmount,-5,5)) card.costAura = { target: design.costAuraTarget, amount: number(design.costAuraAmount,-5,5) };
+  if (design.kind === 'spell' && ['aura','artifact'].includes(design.attachmentType)) card.attachment = { type: design.attachmentType, powerDelta: number(design.attachmentPower,-20,20), healthDelta: number(design.attachmentHealth,-20,20), tapOnEnter: Boolean(design.attachmentTap), lockUntap: Boolean(design.attachmentLock), trample: Boolean(design.attachmentTrample) };
+  return card;
+}
+async function exportSingleCard() {
+  readForm(); if (reportInvalid(validateDesign(draft))) return;
+  try {
+    await document.fonts.ready;
+    const design=structuredClone(draft);
+    const card=await playableCard(design);
+    const bundle={format:'runamarca-card',version:1,design,cards:[card]};
+    download(new Blob([JSON.stringify(bundle)],{type:'application/json'}),filename(`${design.name}-completa`,'json'));
+    status(`Carta completa de ${design.name} baixada com arte, dados editáveis e efeitos configurados.`);
+  } catch(error) { status(error.message,true); }
+}
 async function exportDeck() {
   if(!project.length)return status('Guarde ao menos uma carta no projeto.',true);
   const count=project.reduce((sum,c)=>sum+number(c.quantity,1,60,1),0);
@@ -484,23 +655,8 @@ async function exportDeck() {
     for(const design of project){
       const invalid = validateDesign(design);
       if (invalid) throw new Error(`${design.name || 'Carta sem nome'}: ${invalid[0]}`);
-      const canvas=document.createElement('canvas');canvas.width=600;canvas.height=840;await drawCard(canvas,design);
-      const image=canvas.toDataURL('image/jpeg',.8);
-      if(image.length>2_000_000)throw new Error(`${design.name} ficou acima de 2 MB na exportação.`);
-      const energies=Object.fromEntries(energyIds.map(id=>[id,number(design[id],0,12)]));
-      const colored=Object.values(energies).reduce((a,b)=>a+b,0);
-      const card={name:design.name,kind:design.kind,subtype:design.subtype,rules:design.kind==='patron'?'':design.rules,cost:design.kind==='rune'?{generic:0,colored:0,energies:{ruptura:0,forja:0,fluxo:0}}:{generic:design.generic,colored,energies},power:design.kind==='creature'?design.power:0,health:design.kind==='creature'?design.health:0,agile:design.kind==='creature' && Boolean(design.agile),quickAttack:design.kind==='creature' && Boolean(design.quickAttack),image};
-      if (design.kind==='rune') card.runeEnergy = {generic:number(design.generic,0,20),...energies};
-      if (design.kind==='patron') {
-        card.cost = {generic:0,colored:0,energies:{ruptura:0,forja:0,fluxo:0}};
-        card.patronStyle = { frame: design.patronFrame, ornament: design.patronOrnament, accent: design.patronAccent, font: design.patronFont, opacity: design.patronOpacity, flourish: design.patronFlourish };
-        card.patronAbilities = design.patronAbilities;
-      }
-      if (design.kind !== 'patron' && design.drawTrigger) card.drawEffect = { trigger: design.drawTrigger, count: number(design.drawCount,1,7,1), ...(design.drawTrigger==='turnStart' && design.drawPowerFour ? { condition: 'powerAtLeast4' } : {}) };
-      if (design.kind !== 'patron' && design.tokenTrigger) card.tokenEffect = { trigger: design.tokenTrigger, count: number(design.tokenAmount,1,12,1), name: String(design.tokenName || 'Criatura').slice(0,40), power: number(design.tokenPower,0,30,1), health: number(design.tokenHealth,0,30,1) };
-      if (design.kind==='creature' && design.energyResource) card.energyEffect = { trigger:'tap', amount:number(design.energyAmount,1,5,1),resource:design.energyResource,...(design.energyBoost==='powerAtLeast4' ? {condition:'powerAtLeast4',boostedAmount:number(design.energyBoosted,1,5,2)} : {}) };
-      if (design.kind !== 'patron' && number(design.agileDiscount,0,5)) card.costDiscount = { condition:'agileCreature',amount:number(design.agileDiscount,0,5) };
-      for(let i=0;i<design.quantity;i++){cards.push(card);estimated+=image.length+500;}
+      const card=await playableCard(design);
+      for(let i=0;i<design.quantity;i++){cards.push(card);estimated+=card.image.length+500;}
       if(estimated>23_000_000)throw new Error('O deck passou de 23 MB. Reduza a quantidade de cartas ou o tamanho das imagens.');
     }
     download(new Blob([JSON.stringify({format:'runamarca-deck',version:1,cards})],{type:'application/json'}),'runamarca-deck.json');
@@ -509,9 +665,11 @@ async function exportDeck() {
 }
 function exportProject(){if(!project.length)return status('Guarde ao menos uma carta.',true);download(new Blob([JSON.stringify({format:'runamarca-editor',version:1,cards:project})],{type:'application/json'}),'runamarca-projeto-editavel.json');status('Projeto editável baixado.');}
 async function importProject(file){
-  try{const data=JSON.parse(await file.text());if(data.format!=='runamarca-editor'||!Array.isArray(data.cards))throw new Error('Arquivo de projeto inválido.');
-    if(project.length+data.cards.length>120)throw new Error('O projeto aceita até 120 modelos.');
-    const items=data.cards.map(raw=>({...blank(),...raw,id:crypto.randomUUID()}));
+  try{const data=JSON.parse(await file.text());
+    const designs=data.format==='runamarca-card' && data.design ? [data.design] : data.format==='runamarca-editor' ? data.cards : null;
+    if(!Array.isArray(designs))throw new Error('Use um projeto editável ou uma carta completa do RunaMarca.');
+    if(project.length+designs.length>120)throw new Error('O projeto aceita até 120 modelos.');
+    const items=designs.map(raw=>({...blank(),...raw,id:crypto.randomUUID()}));
     for(const item of items)if(!/^data:image\/(jpeg|png|webp);base64,/i.test(item.art||''))throw new Error(`Ilustração inválida em ${item.name||'uma carta'}.`);
     if(db)await transact('readwrite',store=>{for(const item of items)store.put(item);});
     project.push(...items);projectList();status(`${items.length} modelo(s) importado(s) ao projeto.`);
@@ -521,6 +679,18 @@ async function importProject(file){
 $('card-form').addEventListener('submit',saveCard);
 $('card-form').addEventListener('input',renderPreview);
 $('card-kind').addEventListener('change',renderPreview);
+$('toggle-italic').addEventListener('click', () => {
+  const input = $('card-rules');
+  const { selectionStart: start, selectionEnd: end } = input;
+  if (start === end) { status('Selecione primeiro o trecho que deseja deixar em itálico.', true); input.focus(); return; }
+  const text = input.value;
+  const wrapped = text[start - 1] === '*' && text[end] === '*';
+  input.value = wrapped
+    ? text.slice(0, start - 1) + text.slice(start, end) + text.slice(end + 1)
+    : text.slice(0, start) + '*' + text.slice(start, end) + '*' + text.slice(end);
+  input.focus(); input.setSelectionRange(wrapped ? start - 1 : start + 1, wrapped ? end - 1 : end + 1);
+  renderPreview();
+});
 $('draw-trigger').addEventListener('change',syncAbilityUI);
 $('token-trigger').addEventListener('change',syncAbilityUI);
 $('energy-resource').addEventListener('change',syncAbilityUI);
@@ -528,9 +698,11 @@ $('energy-boost').addEventListener('change',syncAbilityUI);
 $('card-art').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{draft.art=await shrinkArt(file);renderPreview();status(`Ilustração “${file.name}” carregada.`);}catch(error){status(error.message,true);}});
 $('new-card').addEventListener('click',()=>{populate(blank());projectList();status('Nova carta iniciada.');});
 $('download-png').addEventListener('click',pngCard);
+$('download-card').addEventListener('click',exportSingleCard);
 $('download-deck').addEventListener('click',exportDeck);
 $('download-project').addEventListener('click',exportProject);
 $('import-project').addEventListener('change',async event=>{if(event.target.files[0])await importProject(event.target.files[0]);event.target.value='';});
+renderPreview();
 document.fonts.ready.then(renderPreview);
 syncAbilityUI();
 (async()=>{try{db=await openDatabase();project=await allCards();projectList();status('Projeto carregado. Suas cartas guardadas ficam neste navegador.');}catch(error){projectList();status('Armazenamento local indisponível; exporte o projeto antes de sair.',true);}})();

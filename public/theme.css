@@ -220,14 +220,8 @@ kbd { border-color: #846238; color: #d8bd88; background: #130d09; }
 }
 
 .cost-warning { color: #f0a88a; font-size: 11px; line-height: 1.35; margin: 2px 0 8px; }
-.energy-icon { display: inline-block; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; background-image: url('/energies.png'); background-size: 292px 367px; background-repeat: no-repeat; box-shadow: 0 0 0 1px #d0ab64, 0 0 9px #000b; }
+.energy-icon { display: inline-block; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; background-size: contain; background-position: center; background-repeat: no-repeat; filter: drop-shadow(0 0 8px #000b); }
 .energy-icon.hidden { display: none; }
-.energy-ruptura { background-position: -7px -19px; }
-.energy-fluxo { background-position: -7px -80px; }
-.energy-eco { background-position: -7px -141px; }
-.energy-forja { background-position: -7px -202px; }
-.energy-veu { background-position: -7px -263px; }
-.energy-vazio { background-position: -7px -324px; }
 .card-cost-overlay {
   position: absolute;
   z-index: 2;
@@ -252,14 +246,15 @@ kbd { border-color: #846238; color: #d8bd88; background: #130d09; }
 .card-cost-overlay.cost-ventus { background: linear-gradient(90deg, #203727, #1f3526 48%, #223b2b); }
 .card-cost-overlay.cost-glacies { background: linear-gradient(90deg, #26325b, #253159 48%, #2a3761); }
 .card-cost-overlay.cost-purple { background: linear-gradient(90deg, #332249, #332248 48%, #38254f); }
-.cost-neutral-symbol { display: grid; flex: 0 0 1em; width: 1em; height: 1em; place-items: center; border-radius: 50%; background: #e0e4e0; color: #202620; font-family: Georgia, serif; font-size: 1em; font-style: normal; font-weight: 700; line-height: 1; }
-.cost-energy-symbol { display: inline-block; flex: 0 0 1em; width: 1em; height: 1em; border-radius: 50%; background-image: url('/energies.png'); background-size: 8.57em 10.79em; background-repeat: no-repeat; }
-.cost-energy-symbol.energy-ruptura { background-position: -.214em -.571em; }
-.cost-energy-symbol.energy-fluxo { background-position: -.214em -2.357em; }
-.cost-energy-symbol.energy-eco { background-position: -.214em -4.143em; }
-.cost-energy-symbol.energy-forja { background-position: -.214em -5.929em; }
-.cost-energy-symbol.energy-veu { background-position: -.214em -7.714em; }
-.cost-energy-symbol.energy-vazio { background-position: -.214em -9.5em; }
+.cost-neutral-symbol { display: grid; flex: 0 0 1em; width: 1em; height: 1em; place-items: center; border-radius: 50%; color: #fff6e9; text-shadow: 0 1px 2px #050912, 0 -1px 2px #050912; font-family: 'Source Sans 3', Arial, sans-serif; font-size: 1em; font-style: normal; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.cost-energy-symbol { display: inline-block; flex: 0 0 1em; width: 1em; height: 1em; border-radius: 50%; }
+.energy-icon,.cost-energy-symbol,.cost-neutral-symbol{background-size:contain;background-position:center;background-repeat:no-repeat}
+.energy-icon.energy-ruptura,.cost-energy-symbol.energy-ruptura{background-image:url('/energy-icons/ruptura.png')}
+.energy-icon.energy-forja,.cost-energy-symbol.energy-forja{background-image:url('/energy-icons/forja.png')}
+.energy-icon.energy-fluxo,.cost-energy-symbol.energy-fluxo{background-image:url('/energy-icons/fluxo.png')}
+.energy-icon.energy-eco,.cost-energy-symbol.energy-eco{background-image:url('/energy-icons/eco.png')}
+.energy-icon.energy-veu,.cost-energy-symbol.energy-veu{background-image:url('/energy-icons/veu.png')}
+.energy-icon.energy-vazio,.cost-energy-symbol.energy-vazio,.cost-neutral-symbol{background-image:url('/energy-icons/vazio.png')}
 .large-art-crop { position: relative; container-type: inline-size; }
 .large-cost-overlay { font-size: 4cqi; }
 .rune-pile { position: relative; flex: 0 0 auto; margin-right: 3px; }
@@ -436,6 +431,26 @@ kbd { border-color: #846238; color: #d8bd88; background: #130d09; }
   white-space: nowrap;
 }
 .creature-badge small { font-size: 7px; vertical-align: super; margin-left: 1px; }
+.creature-badge { min-width: 74px; height: 27px; padding: 1px 2px; gap: 2px; border: 0; background: transparent; overflow: visible; }
+.creature-unit { width: 74px; }
+.stat-emblem { position: relative; display: grid; place-items: center; width: 35px; height: 27px; flex: none; }
+.stat-emblem .stat-icon { position: absolute; inset: 0; display: grid; place-items: center; font-size: 30px; line-height: 1; color: #d8c8a2; filter: drop-shadow(0 2px 2px #000); }
+.stat-emblem.sword .stat-icon { transform: none; filter: none; background: url('/attack-shield.png?v=2') center / auto 110% no-repeat; }
+.stat-emblem.sword b { transform: translateY(2px); }
+.stat-emblem.heart .stat-icon { color: #41a963; filter: none; }
+.stat-emblem.heart .stat-icon { font-size: 25px; }
+.stat-emblem b { position: relative; z-index: 1; padding-top: 0; color: #fffdf0; font: 900 12px 'Source Sans 3', sans-serif; text-shadow: 0 1px 2px #0b1710, 0 -1px 2px #0b1710; }
+.stat-emblem small { position: absolute; z-index: 2; right: -5px; top: -1px; padding: 0 2px; background: #152016; border-radius: 4px; }
+.creature-unit { position: relative; isolation: isolate; }
+.creature-unit > .card:not(.attached-card), .creature-unit > .creature-badge { position: relative; z-index: 2; }
+.creature-unit > .attached-card { position: absolute; z-index: 0; left: 14px; top: 26px; transform: rotate(9deg); box-shadow: 1px 3px 7px #000a; }
+.creature-unit:has(.attached-card) { margin-right: 10px; }
+.creature-unit.attach-target > .card:not(.attached-card) { outline: 2px solid #e8d18b; outline-offset: 2px; animation: aura-target-pulse 1.25s ease-in-out infinite; }
+@keyframes aura-target-pulse { 50% { filter: brightness(1.25) drop-shadow(0 0 6px #efcc75); } }
+.zone-cards .card.board-moving { position: relative; z-index: 20; cursor: grabbing; filter: drop-shadow(0 8px 7px #0009); transition: none; }
+.hand-cards { overflow-y: visible; align-items: flex-end; padding-top: 16px; }
+.hand-cards > .card { transform: translateY(var(--fan-y, 0px)) rotate(var(--fan-angle, 0deg)); transform-origin: 50% 100%; margin-right: -18px; transition: transform .18s ease, filter .18s ease; }
+.hand-cards > .card:hover { transform: translateY(calc(var(--fan-y, 0px) - 12px)) rotate(var(--fan-angle, 0deg)) scale(1.045); z-index: 5; }
 .stat-up { color: #9cda83 !important; }
 .stat-down { color: #f08b7e !important; }
 .creature-zone .zone-cards { min-height: 86px; }
