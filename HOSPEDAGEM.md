@@ -8,7 +8,7 @@
 
 ## Publicar com Render
 
-1. Extraia o ZIP e coloque todos os arquivos em um repositório Git privado ou público. `server.js`, `package.json`, `Dockerfile` e a pasta `public/` precisam ficar na raiz do repositório.
+1. Extraia o ZIP e coloque todos os arquivos em um repositório Git privado ou público. `server.js`, `package.json`, `Dockerfile` e as pastas `public/` e `mesa-nova/` precisam ficar na raiz do repositório.
 2. No Render, crie um **Web Service** conectado a esse repositório.
 3. Escolha o runtime **Docker**; o `Dockerfile` já inicia o servidor. Configure **uma instância**. Se o painel pedir uma porta, use `3000`; o Render também fornece `PORT` automaticamente e o servidor a lê.
 4. Configure o health check para `/health`, se a opção estiver disponível.

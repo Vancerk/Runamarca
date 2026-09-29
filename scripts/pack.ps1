@@ -11,7 +11,7 @@ if ((Split-Path -Parent $archivePath) -ne $projectRoot -or (Split-Path -Parent $
 
 $rootFiles = @('.dockerignore', '.gitignore', 'ANDAMENTO.md', 'COMO_TESTAR.md', 'Dockerfile', 'HOSPEDAGEM.md', 'INICIAR_WINDOWS.bat', 'package.json', 'README.md', 'server.js', 'dice-game.js')
 $files = foreach ($name in $rootFiles) { Get-Item -LiteralPath (Join-Path $projectRoot $name) }
-foreach ($folder in @('public', 'scripts', 'test')) {
+foreach ($folder in @('public', 'mesa-nova', 'scripts', 'test')) {
   $files += Get-ChildItem -LiteralPath (Join-Path $projectRoot $folder) -File -Recurse
 }
 
@@ -26,7 +26,7 @@ try {
 
 $check = [System.IO.Compression.ZipFile]::OpenRead($temporaryPath)
 try {
-  foreach ($required in @('server.js', 'dice-game.js', 'Dockerfile', 'HOSPEDAGEM.md', 'public/hub.html', 'public/dice.html', 'public/editor.html', 'public/index.html', 'public/decks/catalog.json', 'public/decks/effects.json')) {
+  foreach ($required in @('server.js', 'dice-game.js', 'Dockerfile', 'HOSPEDAGEM.md', 'public/hub.html', 'public/dice.html', 'public/editor.html', 'public/index.html', 'public/decks/catalog.json', 'public/decks/effects.json', 'mesa-nova/server.mjs', 'mesa-nova/game.mjs', 'mesa-nova/index.html', 'mesa-nova/access.html', 'mesa-nova/cartas.json')) {
     if (-not $check.GetEntry($required)) { throw "Arquivo ausente do pacote: $required" }
   }
   Write-Host "Pacote com $($check.Entries.Count) arquivos."
