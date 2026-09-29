@@ -1,0 +1,908 @@
+{
+  "format": "runamarca-design-prototype",
+  "version": "0.1",
+  "date": "2026-09-29",
+  "status": "Conjunto inicial para testes; equilíbrio e duração ainda não validados.",
+  "not_legacy_editor_import": true,
+  "source_scope": "Leitura seletiva do livro principal (povos, idiomas, Éter e equipamentos), do Livro de Especializações (Caçador, Arcanista e Clérigo) e do Notion (índice do mundo e apresentação da Escola de Magia Virelion). Não é uma auditoria integral do cenário.",
+  "sources": [
+    {
+      "id": "livro-principal",
+      "url": "https://docs.google.com/document/d/180vEUg5UrQrj5CGN-CwgBTYLudfQ3xNLVUxy7FZv6pw/edit?usp=sharing",
+      "title": "Elysium — As crônicas de Elyndar / Manual de Regras — Beta 1.0",
+      "read_sections": [
+        "5: Éter e energias",
+        "6.5: povos, ancestralidades e idiomas",
+        "7.5: armas, focos e oficinas"
+      ]
+    },
+    {
+      "id": "especializacoes",
+      "url": "https://docs.google.com/document/d/1LAROra4PKj2TEHwKicVfBiTUcUUUib-o1udQrs63j1s/edit?usp=sharing",
+      "title": "Livro de Especializações — Beta 1.0",
+      "read_sections": [
+        "1.5.1: Caçador e Compêndio",
+        "1.5.2: Arcanista",
+        "1.5.3: Clérigo"
+      ]
+    },
+    {
+      "id": "notion-mundo",
+      "url": "https://app.notion.com/p/Elysium-227917a7719580ee9432fb53ffcaf530?source=copy_link",
+      "title": "Central de Dados RPG Elysium",
+      "read_sections": [
+        "Índice de reinos, facções e bestiário",
+        "Apresentação e origem da Escola de Magia Virelion",
+        "Apresentação das castas"
+      ]
+    },
+    {
+      "id": "virelion",
+      "url": "https://www.notion.so/253917a77195806fb1bbc162e8221ae9",
+      "title": "Escola de Magia Virelion"
+    }
+  ],
+  "rules": {
+    "patron_health": 24,
+    "deck_size": 24,
+    "max_copies": 2,
+    "opening_hand": 5,
+    "draw_per_own_preparation": 1,
+    "max_mana": 10,
+    "mana_growth": 1,
+    "mana_refresh": "start_of_own_preparation",
+    "combat_lanes": 3,
+    "emanation_slots": 2,
+    "max_prepared_spells_per_enemy_lane": 1,
+    "combat_order": [
+      "prepared_spells",
+      "revelation_effects",
+      "simultaneous_combat_damage"
+    ],
+    "overflow_damage": false,
+    "direct_patron_damage_if_lane_empty_after_effects": true,
+    "normal_attacks_target_emanation": false,
+    "new_creatures_can_fight": true,
+    "hand_limit": null,
+    "star_win_condition": false,
+    "testing_assumptions": [
+      "Sorteio inicial fixa quem prepara primeiro durante toda a partida; testar os dois lados.",
+      "Sem troca da mão inicial neste primeiro teste.",
+      "Fadiga: cada tentativa de compra sem cartas causa 1, 2, 3... de dano ao próprio Patrono.",
+      "Nenhuma cura ultrapassa a vida máxima.",
+      "Os três confrontos causam dano simultaneamente; derrota simultânea dos Patronos é empate.",
+      "Decisões secretas de combater são reveladas juntas; basta um sim para haver combate.",
+      "Patronos sem habilidade especial nesta versão; os títulos são originais e ainda podem ser substituídos por referências oficiais."
+    ]
+  },
+  "decks": [
+    {
+      "id": "ruptura-cacada",
+      "name": "Caçada de Fronteira",
+      "archetype": "Agressivo",
+      "affinity": "ruptura",
+      "patron": {
+        "id": "P-R",
+        "name": "A Garra Vigilante",
+        "health": 24,
+        "affinities": [
+          "ruptura"
+        ],
+        "starts_in_play": true,
+        "counts_toward_deck": false,
+        "ability": null,
+        "text": "Seu baralho só pode conter cartas de Ruptura. Sua mana pode pagar os custos dessas cartas.",
+        "lore_status": "Título original de protótipo; não identifica uma divindade oficial."
+      },
+      "plan": "Ocupar posições cedo, ameaçar casas vazias e usar dano pontual para abrir passagem. O suporte melhora uma posição conhecida, dando ao adversário informação útil.",
+      "weakness": "Pouca compra e nenhuma cura. Criaturas resistentes podem consumir suas cartas antes de o Patrono adversário cair.",
+      "narrative": "Uma companhia de caçadores reúne exploradores, combatentes das arenas e especialistas em armas. A liderança Lezhar inspira a Emanação; as armas de fogo e o Éter sustentam suas magias.",
+      "cards": [
+        {
+          "id": "R01",
+          "name": "Rastreadora das Fronteiras",
+          "type": "creature",
+          "subtype": "Humana · Batedora",
+          "cost": 1,
+          "quantity": 2,
+          "attack": 2,
+          "health": 1,
+          "text": "Sem habilidade.",
+          "role": "Pressão inicial.",
+          "lore_basis": "Livro principal, 6.5.2: Humanos; 3.2: leitura de rastros. Livro de Especializações, 1.5.1: preparo e leitura de campo do Caçador.",
+          "flavor": "Ela chega antes que o cartaz de recompensa.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R02",
+          "name": "Explorador Faelen",
+          "type": "creature",
+          "subtype": "Faelen · Explorador",
+          "cost": 1,
+          "quantity": 2,
+          "attack": 1,
+          "health": 2,
+          "text": "Sem habilidade.",
+          "role": "Ocupar uma casa com pouco investimento.",
+          "lore_basis": "Livro principal, 6.5.5: Faelen e ancestralidade dos Bosques.",
+          "flavor": "Pequenos passos também deixam o alvo sem saída.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R03",
+          "name": "Contratado das Metrópoles",
+          "type": "creature",
+          "subtype": "Humano · Mercenário",
+          "cost": 2,
+          "quantity": 2,
+          "attack": 3,
+          "health": 2,
+          "text": "Sem habilidade.",
+          "role": "Ameaça de dano por baixo custo.",
+          "lore_basis": "Livro principal, 6.5.2: Humanos e ambiente das metrópoles.",
+          "flavor": "O contrato só termina quando a caçada termina.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R04",
+          "name": "Pistoleira de Cartucho",
+          "type": "creature",
+          "subtype": "Humana · Pistoleira",
+          "cost": 2,
+          "quantity": 2,
+          "attack": 2,
+          "health": 2,
+          "text": "Revelação: cause 1 de dano à criatura inimiga na mesma posição.",
+          "role": "Preparar uma troca ou abrir passagem antes do confronto.",
+          "lore_basis": "Livro principal, 7.5: armas de pólvora, cartuchos e revólveres.",
+          "flavor": "O primeiro estampido é o aviso. Ela não costuma repetir.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "damage",
+              "target": "opposing_creature_same_lane",
+              "amount": 1
+            }
+          ],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R05",
+          "name": "Arauto Lezhar",
+          "type": "creature",
+          "subtype": "Lezhar · Arauto",
+          "cost": 2,
+          "quantity": 2,
+          "attack": 1,
+          "health": 3,
+          "text": "Emanação: sua criatura na posição 1 recebe +1 de ataque.",
+          "role": "Trocar presença em combate por apoio previsível.",
+          "lore_basis": "Livro principal, 6.5.1: liderança Lezhar.",
+          "flavor": "Seu rugido aponta o caminho; a companhia decide segui-lo.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "while_emanating",
+              "op": "attack_modifier",
+              "target": "allied_creature_lane_1",
+              "amount": 1
+            }
+          ],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R06",
+          "name": "Duelista das Arenas",
+          "type": "creature",
+          "subtype": "Lezhar · Duelista",
+          "cost": 3,
+          "quantity": 2,
+          "attack": 4,
+          "health": 3,
+          "text": "Sem habilidade.",
+          "role": "Principal atacante do meio da partida.",
+          "lore_basis": "Livro principal, 6.5.1: Arenas Sagradas.",
+          "flavor": "Na arena, aprendeu a esperar. Na caçada, a reconhecer a hora.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R07",
+          "name": "Drakonir de Companhia",
+          "type": "creature",
+          "subtype": "Drakonir · Guerreiro",
+          "cost": 4,
+          "quantity": 2,
+          "attack": 5,
+          "health": 4,
+          "text": "Sem habilidade.",
+          "role": "Manter pressão contra corpos maiores.",
+          "lore_basis": "Livro principal, 6.5.1: Drakonir de Companhias de Guerra.",
+          "flavor": "Escamas gastas, juramento intacto.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R08",
+          "name": "Azura da Caçada",
+          "type": "creature",
+          "subtype": "Azura · Caçador",
+          "cost": 5,
+          "quantity": 2,
+          "attack": 6,
+          "health": 5,
+          "text": "Sem habilidade.",
+          "role": "Finalizador agressivo.",
+          "lore_basis": "Livro principal, 6.5.5: força e disciplina dos Azuras.",
+          "flavor": "A fúria tem endereço. E ele conferiu o nome.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R09",
+          "name": "Avançar sob o Rugido",
+          "type": "direct_spell",
+          "subtype": "Magia · Comando",
+          "cost": 1,
+          "quantity": 2,
+          "text": "Uma criatura aliada recebe +2 de ataque até o fim desta rodada.",
+          "role": "Aumentar a ameaça de uma casa.",
+          "lore_basis": "Adaptação original da liderança Lezhar; livro principal, 6.5.1.",
+          "flavor": "Um passo conjunto faz a trilha tremer.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "attack_modifier",
+              "target": "chosen_allied_creature",
+              "amount": 2,
+              "duration": "round_end"
+            }
+          ],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R10",
+          "name": "Tiro de Cobertura",
+          "type": "direct_spell",
+          "subtype": "Magia · Disparo etéreo",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Cause 2 de dano a uma criatura inimiga.",
+          "role": "Remover uma criatura ferida ou atingir a Emanação.",
+          "lore_basis": "Livro principal, 7.5: armas de fogo e focos etéreos; efeito adaptado.",
+          "flavor": "A munição leva Éter onde a lâmina não alcança.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "damage",
+              "target": "chosen_enemy_creature",
+              "amount": 2
+            }
+          ],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R11",
+          "name": "Selo de Estilhaços",
+          "type": "prepared_spell",
+          "subtype": "Magia preparada · Selo",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 2 de dano a essa criatura.",
+          "role": "Ameaça escondida simples.",
+          "lore_basis": "Criação original a partir das inscrições rúnicas e do Éter do livro principal.",
+          "flavor": "O chão parece limpo até a inscrição acordar.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "prepared_trigger",
+              "op": "damage",
+              "target": "triggering_creature",
+              "amount": 2
+            }
+          ],
+          "affinity": "ruptura"
+        },
+        {
+          "id": "R12",
+          "name": "Marca do Compêndio",
+          "type": "prepared_spell",
+          "subtype": "Magia preparada · Marca",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 4 de dano a ela se tiver 4 ou mais de ataque; caso contrário, cause 1.",
+          "role": "Punir criaturas grandes; aceitar a isca de uma pequena.",
+          "lore_basis": "Livro de Especializações, 1.5.1: Caçador e Compêndio; efeito original de RunaMarca.",
+          "flavor": "Quanto maior a ameaça, mais fundo a marca responde.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "prepared_trigger",
+              "op": "conditional_damage",
+              "target": "triggering_creature",
+              "condition": {
+                "stat": "attack",
+                "gte": 4
+              },
+              "amount_if_true": 4,
+              "amount_if_false": 1
+            }
+          ],
+          "affinity": "ruptura"
+        }
+      ]
+    },
+    {
+      "id": "fluxo-selos",
+      "name": "Selos de Virelion",
+      "archetype": "Magia",
+      "affinity": "fluxo",
+      "patron": {
+        "id": "P-M",
+        "name": "O Olho dos Pactos",
+        "health": 24,
+        "affinities": [
+          "fluxo"
+        ],
+        "starts_in_play": true,
+        "counts_toward_deck": false,
+        "ability": null,
+        "text": "Seu baralho só pode conter cartas de Fluxo. Sua mana pode pagar os custos dessas cartas.",
+        "lore_status": "Título original inspirado em pactos; não identifica uma divindade oficial."
+      },
+      "plan": "Combinar criaturas com magias, preparar casas de valor incerto e repor a mão. A vitória vem das passagens abertas para suas criaturas.",
+      "weakness": "Menos criaturas e necessidade de distribuir mana entre presença no campo e efeitos. Destruir uma ameaça grande custa uma preparação importante.",
+      "narrative": "Uma expedição original de estudiosos de Virelion reúne Aethelis, uma aprendiz Vaelita e um Axiom rúnico. Selos, estudo e preparação traduzem o contexto da escola para o minigame. A composição desta expedição é inventada, não uma organização oficial do cenário.",
+      "cards": [
+        {
+          "id": "M01",
+          "name": "Aprendiz de Virelion",
+          "type": "creature",
+          "subtype": "Vaelita · Aprendiz",
+          "cost": 1,
+          "quantity": 2,
+          "attack": 1,
+          "health": 2,
+          "text": "Sem habilidade.",
+          "role": "Primeiro corpo e possível isca.",
+          "lore_basis": "Livro principal, 6.5.3: Vaelitas; Notion, Escola de Magia Virelion. A aprendiz específica é criação original.",
+          "flavor": "A centelha aprende o caminho antes da mão.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M02",
+          "name": "Discípula de Dravorn",
+          "type": "creature",
+          "subtype": "Aethelis · Conjuradora",
+          "cost": 2,
+          "quantity": 2,
+          "attack": 2,
+          "health": 2,
+          "text": "Revelação: se você jogou uma magia direta nesta rodada, esta criatura recebe +1 de ataque até o fim da rodada.",
+          "role": "Recompensar o uso de magia sem exigir uma sequência longa.",
+          "lore_basis": "Notion, Escola de Magia Virelion: casta Dravorn, alinhamento combativo; livro principal, 6.5.5: Aethelis. Personagem original.",
+          "flavor": "Cada sinal escrito é uma promessa que pode despertar.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "attack_modifier",
+              "target": "self",
+              "amount": 1,
+              "duration": "round_end",
+              "condition": "owner_played_direct_spell_this_round"
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M03",
+          "name": "Guardião Sheldran",
+          "type": "creature",
+          "subtype": "Sheldran · Guardião",
+          "cost": 2,
+          "quantity": 2,
+          "attack": 1,
+          "health": 4,
+          "text": "Sem habilidade.",
+          "role": "Conservar uma posição enquanto o jogador prepara magias.",
+          "lore_basis": "Livro principal, 6.5.1: Sheldran e ancestralidades.",
+          "flavor": "Guarda o arquivo com a paciência de quem já viu as marés voltarem.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M04",
+          "name": "Axiom de Circuito Rúnico",
+          "type": "creature",
+          "subtype": "Axiom · Rúnico",
+          "cost": 3,
+          "quantity": 2,
+          "attack": 2,
+          "health": 3,
+          "text": "Emanação: a primeira magia direta que você jogar em cada preparação sua custa 1 a menos, até o mínimo de 1.",
+          "role": "Economizar mana ao custo de um participante do combate.",
+          "lore_basis": "Livro principal, 6.5.6: Axiom Rúnico e modificação Circuito Rúnico.",
+          "flavor": "Ele escolheu aperfeiçoar o que os outros ainda tentam compreender.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "while_emanating",
+              "op": "cost_discount",
+              "target": "owners_first_direct_spell_of_preparation",
+              "amount": 1,
+              "minimum_cost": 1
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M05",
+          "name": "Arquivista de Virelion",
+          "type": "creature",
+          "subtype": "Aethelis · Erudita",
+          "cost": 4,
+          "quantity": 2,
+          "attack": 3,
+          "health": 4,
+          "text": "Entrada: compre 1 carta.",
+          "role": "Repor uma carta enquanto desenvolve o campo.",
+          "lore_basis": "Notion, Escola de Magia Virelion: biblioteca e estudo; Livro de Especializações, 1.5.2: Arcanista. Personagem original.",
+          "flavor": "Há páginas que só aceitam ser abertas uma vez.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_enter",
+              "op": "draw",
+              "target": "owner",
+              "amount": 1
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M06",
+          "name": "Mestra dos Selos de Virelion",
+          "type": "creature",
+          "subtype": "Aethelis · Mestra",
+          "cost": 6,
+          "quantity": 2,
+          "attack": 4,
+          "health": 6,
+          "text": "Revelação: cause 2 de dano à criatura inimiga na mesma posição.",
+          "role": "Converter domínio mágico em dano de combate.",
+          "lore_basis": "Notion, Escola de Magia Virelion: barreira de selos; livro principal, 6.5.5: Aethelis. Mestra e habilidade são criações originais.",
+          "flavor": "Ela termina a inscrição antes que o inimigo termine de avançar.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "damage",
+              "target": "opposing_creature_same_lane",
+              "amount": 2
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M07",
+          "name": "Pulso de Éter",
+          "type": "direct_spell",
+          "subtype": "Magia · Projeção",
+          "cost": 3,
+          "quantity": 2,
+          "text": "Cause 3 de dano a uma criatura inimiga.",
+          "role": "Remoção direta, inclusive de suporte.",
+          "lore_basis": "Livro principal, 5: Éter e dano mágico; efeito original.",
+          "flavor": "O ar se dobra por um instante.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "damage",
+              "target": "chosen_enemy_creature",
+              "amount": 3
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M08",
+          "name": "Consulta à Biblioteca",
+          "type": "direct_spell",
+          "subtype": "Magia · Pesquisa",
+          "cost": 3,
+          "quantity": 2,
+          "text": "Compre 2 cartas.",
+          "role": "Reposição de mão.",
+          "lore_basis": "Notion, Escola de Magia Virelion: biblioteca; Livro de Especializações, 1.5.2: estudo do Arcanista.",
+          "flavor": "Duas pistas certas valem mais que uma centena de rumores.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "draw",
+              "target": "owner",
+              "amount": 2
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M09",
+          "name": "Recompor o Éter",
+          "type": "direct_spell",
+          "subtype": "Magia · Restauração",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Cure 3 de dano de uma criatura aliada.",
+          "role": "Preservar uma criatura importante.",
+          "lore_basis": "Livro principal: energia Vida e restauração mágica compatível com Axiom.",
+          "flavor": "Carne, pedra ou metal: o Éter encontra as fissuras.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "heal",
+              "target": "chosen_allied_creature",
+              "amount": 3
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M10",
+          "name": "Romper o Vínculo",
+          "type": "direct_spell",
+          "subtype": "Magia · Ruptura de selo",
+          "cost": 5,
+          "quantity": 2,
+          "text": "Derrote uma criatura inimiga.",
+          "role": "Resposta cara a uma ameaça de qualquer tamanho.",
+          "lore_basis": "Efeito original de RunaMarca inspirado na manipulação do Éter; não reproduz uma magia oficial.",
+          "flavor": "Todo vínculo possui um ponto que não deveria ser tocado.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "defeat",
+              "target": "chosen_enemy_creature"
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M11",
+          "name": "Glifo Incandescente",
+          "type": "prepared_spell",
+          "subtype": "Magia preparada · Glifo",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 3 de dano a essa criatura.",
+          "role": "Abrir uma posição com uma magia preparada forte.",
+          "lore_basis": "Livro principal: inscrições rúnicas e energia Fogo; efeito original.",
+          "flavor": "O brilho vem tarde demais para servir de aviso.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "prepared_trigger",
+              "op": "damage",
+              "target": "triggering_creature",
+              "amount": 3
+            }
+          ],
+          "affinity": "fluxo"
+        },
+        {
+          "id": "M12",
+          "name": "Eco de Arkhavel",
+          "type": "prepared_spell",
+          "subtype": "Magia preparada · Inscrição",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 1 de dano a essa criatura e compre 1 carta.",
+          "role": "Preparação de menor dano que se repõe na mão.",
+          "lore_basis": "Livro principal, 6.5: Arkhavel; efeito original.",
+          "flavor": "A inscrição aprende alguma coisa sobre quem a atravessa.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "prepared_trigger",
+              "op": "damage",
+              "target": "triggering_creature",
+              "amount": 1
+            },
+            {
+              "timing": "prepared_trigger",
+              "op": "draw",
+              "target": "owner",
+              "amount": 1
+            }
+          ],
+          "affinity": "fluxo"
+        }
+      ]
+    },
+    {
+      "id": "forja-juramento",
+      "name": "Juramento de Aço",
+      "archetype": "Controle",
+      "affinity": "forja",
+      "patron": {
+        "id": "P-F",
+        "name": "A Bigorna Desperta",
+        "health": 24,
+        "affinities": [
+          "forja"
+        ],
+        "starts_in_play": true,
+        "counts_toward_deck": false,
+        "ability": null,
+        "text": "Seu baralho só pode conter cartas de Forja. Sua mana pode pagar os custos dessas cartas.",
+        "lore_status": "Título original de protótipo; não identifica uma divindade oficial."
+      },
+      "plan": "Conservar criaturas, desgastar adversários e chegar às ameaças de custo 6 e 7. Suas curas limitadas compram tempo, mas não substituem ocupar as três posições.",
+      "weakness": "Ataque inicial baixo, nenhuma compra adicional e mãos com cartas caras. Armadilhas de dano e remoção direta podem impedir suas trocas favoráveis.",
+      "narrative": "Uma companhia de proteção reúne artífices anões, guardiões e Axiom autônomos. A restauração é etérea para funcionar com seres vivos e corpos construídos.",
+      "cards": [
+        {
+          "id": "F01",
+          "name": "Vigia do Clã",
+          "type": "creature",
+          "subtype": "Anão · Vigia",
+          "cost": 1,
+          "quantity": 2,
+          "attack": 1,
+          "health": 3,
+          "text": "Sem habilidade.",
+          "role": "Defesa inicial resistente, com pouca pressão.",
+          "lore_basis": "Livro principal, 6.5.2: clãs anões.",
+          "flavor": "Reconhece uma aproximação pelo silêncio da oficina.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "forja"
+        },
+        {
+          "id": "F02",
+          "name": "Escudeiro Sheldran",
+          "type": "creature",
+          "subtype": "Sheldran · Escudeiro",
+          "cost": 2,
+          "quantity": 2,
+          "attack": 1,
+          "health": 5,
+          "text": "Sem habilidade.",
+          "role": "Absorver desgaste sem ganhar rapidamente.",
+          "lore_basis": "Livro principal, 6.5.1: Sheldran.",
+          "flavor": "Algumas promessas têm o peso de um escudo.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "forja"
+        },
+        {
+          "id": "F03",
+          "name": "Clériga da Forja",
+          "type": "creature",
+          "subtype": "Anã · Clériga",
+          "cost": 2,
+          "quantity": 2,
+          "attack": 1,
+          "health": 3,
+          "text": "Emanação: ao fim da sua preparação, cure 1 de dano de uma criatura aliada à sua escolha.",
+          "role": "Preservar o campo por pequenas recuperações.",
+          "lore_basis": "Livro principal, 6.5.2: fé e ofício anões; Livro de Especializações, 1.5.3: Clérigo como suporte. Personagem original.",
+          "flavor": "Seu ofício devolve firmeza tanto à pedra quanto ao pulso.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "end_owner_preparation_while_emanating",
+              "op": "heal",
+              "target": "chosen_allied_creature",
+              "amount": 1
+            }
+          ],
+          "affinity": "forja"
+        },
+        {
+          "id": "F04",
+          "name": "Sentinela Engrenauta",
+          "type": "creature",
+          "subtype": "Axiom · Engrenauta",
+          "cost": 3,
+          "quantity": 2,
+          "attack": 2,
+          "health": 5,
+          "text": "Sem habilidade.",
+          "role": "Corpo defensivo do meio da partida.",
+          "lore_basis": "Livro principal, 6.5.6: Axiom Engrenauta.",
+          "flavor": "Escolheu ficar. Nenhuma ordem poderia valer mais.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "forja"
+        },
+        {
+          "id": "F05",
+          "name": "Veterano das Arenas",
+          "type": "creature",
+          "subtype": "Lezhar · Veterano",
+          "cost": 4,
+          "quantity": 2,
+          "attack": 4,
+          "health": 5,
+          "text": "Sem habilidade.",
+          "role": "Começar a transformar defesa em pressão.",
+          "lore_basis": "Livro principal, 6.5.1: Arenas Sagradas.",
+          "flavor": "Uma cicatriz não ensina a vencer. Ensina a voltar.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "forja"
+        },
+        {
+          "id": "F06",
+          "name": "Drakonir dos Túmulos",
+          "type": "creature",
+          "subtype": "Drakonir · Guardião",
+          "cost": 5,
+          "quantity": 2,
+          "attack": 4,
+          "health": 7,
+          "text": "Sem habilidade.",
+          "role": "Ameaça resistente para repetidos confrontos.",
+          "lore_basis": "Livro principal, 6.5.1: Drakonir dos Túmulos Dracônicos.",
+          "flavor": "Há nomes antigos que ainda merecem um guardião.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "forja"
+        },
+        {
+          "id": "F07",
+          "name": "Gigante do Bastião",
+          "type": "creature",
+          "subtype": "Gigante · Protetor",
+          "cost": 6,
+          "quantity": 2,
+          "attack": 6,
+          "health": 7,
+          "text": "Sem habilidade.",
+          "role": "Finalizador resistente.",
+          "lore_basis": "Livro principal, 6.5.2: Gigantes e proteção de fronteiras; bastião original.",
+          "flavor": "O bastião começa onde ele decide parar.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "forja"
+        },
+        {
+          "id": "F08",
+          "name": "Axiom de Cerco",
+          "type": "creature",
+          "subtype": "Axiom · Engrenauta",
+          "cost": 7,
+          "quantity": 2,
+          "attack": 8,
+          "health": 8,
+          "text": "Sem habilidade.",
+          "role": "Grande ameaça que exige bloqueio ou remoção.",
+          "lore_basis": "Livro principal, 6.5.6: corpos pesados e autoconsciência dos Axiom.",
+          "flavor": "Foi construído para romper muralhas. Escolheu proteger as pessoas atrás delas.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [],
+          "affinity": "forja"
+        },
+        {
+          "id": "F09",
+          "name": "Restauração Etérea",
+          "type": "direct_spell",
+          "subtype": "Magia · Restauração",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Escolha um: cure 3 de dano de uma criatura aliada; ou restaure 2 de vida do seu Patrono.",
+          "role": "Recuperação limitada e flexível.",
+          "lore_basis": "Livro principal: energia Vida e restauração mágica de Axiom; efeito original.",
+          "flavor": "Recompor é dar à resistência mais uma oportunidade.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "choose_one",
+              "options": [
+                {
+                  "op": "heal",
+                  "target": "chosen_allied_creature",
+                  "amount": 3
+                },
+                {
+                  "op": "heal",
+                  "target": "own_patron",
+                  "amount": 2
+                }
+              ]
+            }
+          ],
+          "affinity": "forja"
+        },
+        {
+          "id": "F10",
+          "name": "Martelo Rúnico",
+          "type": "direct_spell",
+          "subtype": "Magia · Impacto",
+          "cost": 3,
+          "quantity": 2,
+          "text": "Cause 3 de dano a uma criatura inimiga.",
+          "role": "Finalizar uma criatura ferida ou remover suporte.",
+          "lore_basis": "Livro principal: engenharia anã, inscrições e Éter; efeito original.",
+          "flavor": "O golpe termina. A runa ainda ressoa.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "on_play",
+              "op": "damage",
+              "target": "chosen_enemy_creature",
+              "amount": 3
+            }
+          ],
+          "affinity": "forja"
+        },
+        {
+          "id": "F11",
+          "name": "Selo de Estacas",
+          "type": "prepared_spell",
+          "subtype": "Magia preparada · Selo",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 2 de dano a essa criatura.",
+          "role": "Interromper ameaças pequenas antes do confronto.",
+          "lore_basis": "Criação original com energia Terra e inscrições rúnicas do livro principal.",
+          "flavor": "A pedra estava esperando uma razão para se erguer.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "prepared_trigger",
+              "op": "damage",
+              "target": "triggering_creature",
+              "amount": 2
+            }
+          ],
+          "affinity": "forja"
+        },
+        {
+          "id": "F12",
+          "name": "Névoa de Fuligem",
+          "type": "prepared_spell",
+          "subtype": "Magia preparada · Névoa",
+          "cost": 2,
+          "quantity": 2,
+          "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, ela recebe -3 de ataque até o fim desta rodada.",
+          "role": "Reduzir a pressão de uma ameaça grande por um combate.",
+          "lore_basis": "Criação original inspirada em forjas e obstrução sensorial; livro principal, 4.4.",
+          "flavor": "Quem não encontra o alvo ainda precisa atravessar a defesa.",
+          "flavor_status": "criação original para o protótipo",
+          "effects": [
+            {
+              "timing": "prepared_trigger",
+              "op": "attack_modifier",
+              "target": "triggering_creature",
+              "amount": -3,
+              "duration": "round_end"
+            }
+          ],
+          "affinity": "forja"
+        }
+      ]
+    }
+  ]
+}

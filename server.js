@@ -4,6 +4,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { handleDice } from './dice-game.js';
+import { handleNewGame } from './mesa-nova/server.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'catalog.json'), 'utf8'));
@@ -592,7 +593,6 @@ export function act(room, player, data) {
 
 const files = {
   '/': ['hub.html', 'text/html; charset=utf-8'],
-  '/runamarca': ['index.html', 'text/html; charset=utf-8'],
   '/dados': ['dice.html', 'text/html; charset=utf-8'],
   '/hub.css': ['hub.css', 'text/css; charset=utf-8'],
   '/dice.css': ['dice.css', 'text/css; charset=utf-8'],
@@ -620,6 +620,8 @@ export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://local');
     if (req.method === 'GET' && url.pathname === '/health') { send(res, 200, { ok: true }); return; }
+    if (req.method === 'GET' && url.pathname === '/runamarca') { res.writeHead(308, { location: `/runamarca/${url.search}`, 'cache-control': 'no-store' }); res.end(); return; }
+    if (url.pathname.startsWith('/runamarca/')) { await handleNewGame(req, res, url, '/runamarca'); return; }
     if (await handleDice(req, res, url)) return;
     const energyIcon = url.pathname.match(/^\/energy-icons\/(ruptura|forja|fluxo|vazio|veu|eco)\.png$/);
     if (req.method === 'GET' && energyIcon) {
@@ -634,9 +636,7 @@ export const server = http.createServer(async (req, res) => {
       return;
     }
     if (req.method === 'GET' && files[url.pathname]) {
-      const [file, type] = url.pathname === '/' && url.searchParams.has('s')
-        ? ['index.html', 'text/html; charset=utf-8']
-        : files[url.pathname];
+      const [file, type] = files[url.pathname];
       res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
       res.end(await readFile(path.join(here, 'public', file)));
       return;
