@@ -43,5 +43,7 @@ await new Promise(resolve=>setTimeout(resolve,room.combat.duration+80));
 assert.equal(b.patron.hp,16,'armadilha derrota defensor, bônus aliado eleva ataque de 2 a 4');
 assert.equal(room.round,2);assert.equal(room.phase,'prep');assert.equal(a.reserve.length,1);assert.equal(b.reserve.length,0);
 assert.equal(room.preparationsDone,0,'a rodada seguinte exige novamente ambas as preparações');
+assert.ok(room.log.length<=10,'registro guarda no máximo dez atualizações');
+assert.ok(room.log.every(entry=>Number.isInteger(entry.round)&&typeof entry.message==='string'),'registro preserva rodada e mensagem para agrupar turnos');
 assert.equal(a.discard.some(c=>c.uid===trap.uid),true);assert.equal(a.discard.some(c=>c.uid===buff.uid),true);
 console.log('OK: abertura, mana, sigilo, duas magias posicionadas, três fases e dano ao Patrono.');

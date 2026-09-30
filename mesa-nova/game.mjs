@@ -7,7 +7,7 @@ const other = (room,id) => room.players.find(p=>p.id!==id);
 const own = (room,id) => room.players.find(p=>p.id===id);
 const effects = card => Array.isArray(card.effects)?card.effects:card.effects?[card.effects]:[];
 const effect = card => effects(card)[0] || null;
-const pushLog = (room,message) => {room.log.push(message);if(room.log.length>80)room.log.shift();};
+const pushLog = (room,message) => {room.log.push({message,round:room.round,turn:room.turn,phase:room.phase});if(room.log.length>10)room.log.shift();};
 const emit = (room,type,details={}) => {room.events??=[];room.events.push({id:++room.eventId,type,at:Date.now(),...details});if(room.events.length>30)room.events.shift();};
 const alive = card => card && card.damage < card.health;
 const attack = (card,room,lane) => {
@@ -223,7 +223,7 @@ export function act(room,p,data,catalog){
 
 export function view(room,p){
   const reveal=room.phase==='finished'||room.phase==='resolving';
-  return {code:room.code,inviteToken:room.inviteToken,phase:room.phase,round:room.round,turn:room.turn,first:room.first,coinWinner:room.coinWinner,winner:room.winner,you:p.id,spectator:room.spectators.includes(p),spectators:room.spectators.map(x=>({id:x.id,name:x.name})),revision:room.revision,serverNow:Date.now(),events:room.events.slice(-20),log:room.log.slice(-18),lastCombat:room.lastCombat||null,combat:room.phase==='resolving'?room.combat:null,players:room.players.map(seat=>({
+  return {code:room.code,inviteToken:room.inviteToken,phase:room.phase,round:room.round,turn:room.turn,first:room.first,coinWinner:room.coinWinner,winner:room.winner,you:p.id,spectator:room.spectators.includes(p),spectators:room.spectators.map(x=>({id:x.id,name:x.name})),revision:room.revision,serverNow:Date.now(),events:room.events.slice(-20),log:room.log,lastCombat:room.lastCombat||null,combat:room.phase==='resolving'?room.combat:null,players:room.players.map(seat=>({
      id:seat.id,name:seat.name,bot:seat.bot,deckId:seat.deckId,patron:seat.patron,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,mulligansLeft:seat.id===p.id?seat.mulligansLeft:undefined,mulliganReady:seat.mulliganReady,hand:seat.id===p.id?seat.hand:undefined,
     reserve:seat.reserve?.map(c=>({...c,owner:seat.id})),emanation:seat.emanation||[],
     formation:seat.id===p.id||reveal?seat.formation:[null,null,null],ready:seat.ready,voted:seat.vote!==null,

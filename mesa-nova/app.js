@@ -12,7 +12,7 @@ async function api(route,data,method='POST'){
   const response=await fetch(gameBase+route.replace(/^\//,''),{method,headers,...(data?{body:JSON.stringify(data)}:{})});if(response.status===204)return null;if(response.status===403){location.assign(gameBase+'access');throw Error('Acesso necessário.');}const result=await response.json();if(!response.ok)throw Error(result.error||'Ação não concluída.');return result;
 }
 function trackArrivals(previous,next){if(!previous||previous.you!==next.you||next.spectator)return;const before=new Set(previous.players.find(p=>p.id===previous.you)?.hand?.map(c=>c.uid)||[]);for(const card of next.players.find(p=>p.id===next.you)?.hand||[])if(!before.has(card.uid)&&!pendingArrival.includes(card.uid))pendingArrival.push(card.uid);}
-async function command(data){try{const next=await api(`/api/rooms/${state.code}/act`,data);if(next.left){sessionStorage.removeItem('runamarca-nova-seat');state=null;selected=null;visualBooted=false;lastRevision=-1;history.replaceState(null,'',gameBase);render();return;}trackArrivals(state,next);serverClockOffset=Date.now()-next.serverNow;state=next;render();}catch(e){err(e);}}
+async function command(data){try{const opening=data.type==='confirmMulligan'?[...$('mulligan-cards').querySelectorAll('.card')].map(node=>({uid:node.dataset.uid,copy:node.cloneNode(true),rect:node.getBoundingClientRect()})):null;const next=await api(`/api/rooms/${state.code}/act`,data);if(next.left){sessionStorage.removeItem('runamarca-nova-seat');state=null;selected=null;visualBooted=false;lastRevision=-1;history.replaceState(null,'',gameBase);render();return;}trackArrivals(state,next);serverClockOffset=Date.now()-next.serverNow;state=next;render();if(opening?.length)animateOpeningToHand(opening);}catch(e){err(e);}}
 async function refresh(){const saved=sessionStorage.getItem('runamarca-nova-seat');if(!saved||refreshing)return;refreshing=true;try{const info=JSON.parse(saved);const next=await api(`/api/rooms/${info.code}/state?revision=${lastRevision}`,null,'GET');if(!next)return;serverClockOffset=Date.now()-next.serverNow;if(next.revision>lastRevision||!state){trackArrivals(state,next);state=next;render();}}catch(e){sessionStorage.removeItem('runamarca-nova-seat');state=null;render();err(e);}finally{refreshing=false;}}
 function button(label,handler,klass='',disabled=false){const b=document.createElement('button');b.type='button';b.textContent=label;b.className=klass;b.disabled=disabled;b.onclick=handler;return b;}
 function text(parent,tag,value,klass){const el=document.createElement(tag);el.textContent=value;if(klass)el.className=klass;parent.append(el);return el;}
@@ -46,7 +46,7 @@ function renderGate(){
     const botSetup=$('bot-setup');botSetup.hidden=state.spectator||state.players.length!==1;const select=$('bot-deck');if(!select.options.length)for(const deck of models?.decks||[]){const option=document.createElement('option');option.value=deck.id;option.textContent=`Bot: ${deck.name}`;select.append(option);}
   }
 }
-function renderMulliganOverlay(){if(state.phase!=='mulligan')return;const self=seat();const status=$('mulligan-status'),cards=$('mulligan-cards'),controls=$('mulligan-controls');cards.replaceChildren();controls.replaceChildren();if(state.spectator){status.textContent='Os jogadores estão escolhendo suas mãos iniciais.';return;}status.textContent=self.mulliganReady?'Mão confirmada. Aguardando o adversário.':`${state.first===self.id?'Você joga primeiro':'Você joga em segundo'} · ${self.mulligansLeft} troca(s) restante(s). Selecione individualmente as cartas que deseja devolver ao deck.`;for(const card of self.hand||[]){const node=cardEl(card,{active:mulliganSelected.has(card.uid)});node.classList.add('opening-card');node.onmouseenter=node.onmousemove=node.onmouseleave=null;if(pendingArrival.includes(card.uid))node.classList.add('pending-arrival');cards.append(node);}if(!self.mulliganReady){controls.append(button(`Trocar ${mulliganSelected.size} carta(s)`,()=>{const cardIds=[...mulliganSelected];mulliganSelected.clear();command({type:'mulligan',cardIds});},'primary',!self.mulligansLeft||!mulliganSelected.size));controls.append(button('Manter e confirmar mão',()=>{mulliganSelected.clear();command({type:'confirmMulligan'});}));}}
+function renderMulliganOverlay(){if(state.phase!=='mulligan')return;const self=seat();const status=$('mulligan-status'),cards=$('mulligan-cards'),controls=$('mulligan-controls');cards.replaceChildren();controls.replaceChildren();if(state.spectator){status.textContent='Os jogadores estão escolhendo suas mãos iniciais.';return;}status.textContent=self.mulliganReady?'Mão confirmada. Aguardando o adversário.':`${state.first===self.id?'Você joga primeiro':'Você joga em segundo'} · ${self.mulligansLeft} troca(s) restante(s). Selecione individualmente as cartas que deseja devolver ao deck.`;if(self.mulliganReady)return;for(const card of self.hand||[]){const node=cardEl(card,{active:mulliganSelected.has(card.uid)});node.classList.add('opening-card');node.onmouseenter=node.onmousemove=node.onmouseleave=null;if(pendingArrival.includes(card.uid))node.classList.add('pending-arrival');cards.append(node);}controls.append(button(`Trocar ${mulliganSelected.size} carta(s)`,()=>{const cardIds=[...mulliganSelected];mulliganSelected.clear();command({type:'mulligan',cardIds});},'primary',!self.mulligansLeft||!mulliganSelected.size));controls.append(button('Manter e confirmar mão',()=>{mulliganSelected.clear();command({type:'confirmMulligan'});}));}
 function renderBoard(){const self=seat()||{id:'',name:'Aguardando jogador',hand:[],reserve:[],discard:[],formation:[null,null,null],emanation:[],handCount:0,discardCount:0,deckCount:0,mana:0,manaMax:0},opp=rival();matchSeat(self,'self');matchSeat(opp,'opponent');
   for(const [id,p] of [['self',self],['opponent',opp]]){
     const holder=$(`${id}-reserve`);holder.replaceChildren();const cards=(p?.reserve||[]).filter(c=>!p.emanation?.includes(c.uid));$(`${id}-reserve-count`).textContent=`${cards.length} criatura(s)`;
@@ -85,7 +85,7 @@ function renderBoard(){const self=seat()||{id:'',name:'Aguardando jogador',hand:
     }
     lanes.append(lane);
   }
-  const log=$('log');log.replaceChildren();for(const message of state.log.slice().reverse())text(log,'p',message);
+  const log=$('log');log.replaceChildren();let group=null;for(const item of state.log.slice(-10)){const entry=typeof item==='string'?{message:item,round:state.round,turn:null,phase:'lobby'}:item;const key=`${entry.round}:${entry.phase==='prep'?entry.turn:entry.phase}`;if(key!==group){const name=state.players.find(player=>player.id===entry.turn)?.name;const phase={vote:'Decisão',formation:'Formação',resolving:'Combate',finished:'Resultado',lobby:'Sala',coin:'Moeda',mulligan:'Mão inicial'}[entry.phase]||entry.phase;const title=entry.phase==='prep'&&name?`Rodada ${entry.round} · turno de ${name}`:`Rodada ${entry.round} · ${phase}`;text(log,'h4',title,'log-divider');group=key;}text(log,'p',entry.message);}
 }
 function layoutHand(){const cards=[...$('hand').querySelectorAll('.hand-card')];cards.forEach((node,index)=>{node.style.setProperty('--fan-angle',`${(index-(cards.length-1)/2)*4.3}deg`);node.style.setProperty('--fan-rise',`${Math.abs(index-(cards.length-1)/2)*5}px`);node.style.zIndex=index+1;});}
 function renderHand(self){const hand=$('hand');hand.replaceChildren();const current=self.hand||[];handOrder=handOrder.filter(uid=>current.some(c=>c.uid===uid));for(const card of current)if(!handOrder.includes(card.uid))handOrder.push(card.uid);for(const uid of handOrder){const card=current.find(c=>c.uid===uid);const node=cardEl(card,{active:selected===uid||mulliganSelected.has(uid)});node.classList.add('hand-card');if(pendingArrival.includes(uid))node.classList.add('pending-arrival');if(!state.spectator)bindLiveHandDrag(node,card);hand.append(node);}layoutHand();$('hand-count').textContent=`${self.handCount} cartas`;}
@@ -236,7 +236,18 @@ function visualCard(source){
   const rect=source.getBoundingClientRect(),copy=source.cloneNode(true);
   copy.classList.add('visual-card');copy.style.left=`${rect.left}px`;copy.style.top=`${rect.top}px`;
   copy.style.width=`${rect.width}px`;copy.style.height=`${rect.height}px`;
-  $('visual-layer').append(copy);return copy;
+  $('visual-layer').append(copy);source.style.visibility='hidden';return copy;
+}
+function animateOpeningToHand(cards){
+  visualMessage('MÃO CONFIRMADA','As cartas seguem para sua mão',1100);
+  cards.forEach(({uid,copy,rect},index)=>{
+    const target=[...$('hand').querySelectorAll('.card')].find(node=>node.dataset.uid===uid);
+    if(!target)return;
+    const end=target.getBoundingClientRect();target.style.visibility='hidden';copy.classList.remove('pending-arrival','selected');copy.classList.add('opening-flight');copy.style.left=`${rect.left}px`;copy.style.top=`${rect.top}px`;copy.style.width=`${rect.width}px`;copy.style.height=`${rect.height}px`;$('visual-layer').append(copy);
+    const dx=end.left+end.width/2-rect.left-rect.width/2,dy=end.top+end.height/2-rect.top-rect.height/2,scale=end.width/rect.width;
+    const animation=copy.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px,${dy}px) scale(${scale})`,opacity:1}],{duration:850,delay:index*90,easing:'cubic-bezier(.32,.05,.22,1)',fill:'forwards'});
+    animation.finished.finally(()=>{copy.remove();target.style.visibility='';});
+  });
 }
 async function animateLaneClash(entry){
   const [left,right]=entry.cards,parts=[left,right].map(card=>card?document.querySelector(`.lane[data-lane="${entry.lane}"] .card[data-uid="${card.uid}"]`):null);
@@ -249,7 +260,7 @@ async function animateLaneClash(entry){
     await Promise.all(collide.map(animation=>animation.finished.catch(()=>{})));
     for(let i=0;i<2;i++){
       const dead=entry.cards[1-i].attack>=entry.cards[i].health;
-      if(!dead){copies[i].remove();continue;}
+      if(!dead){copies[i].remove();parts[i].style.visibility='';continue;}
       parts[i].style.visibility='hidden';copies[i].classList.add('visual-dead');
       const grave=$(entry.cards[i].owner===seat()?.id?'self-grave':'opponent-grave'),from=center(parts[i]),to=center(grave);
       copies[i].animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${to.x-from.x}px,${to.y-from.y}px) scale(.48)`,opacity:.1}],{duration:550,easing:'ease-in'}).finished.finally(()=>copies[i].remove());
@@ -261,13 +272,13 @@ async function animateLaneClash(entry){
   const copy=visualCard(source),from=center(source),to=center(patron);
   const journey=copy.animate([{transform:'translate(0,0) scale(1)'},{transform:`translate(${to.x-from.x}px,${to.y-from.y}px) scale(1.12)`,offset:.55},{transform:'translate(0,0) scale(1)'}],{duration:1250,easing:'ease-in-out'});
   setTimeout(()=>{patron.classList.add('patron-struck');impact(patron);sound('gun');setTimeout(()=>patron.classList.remove('patron-struck'),650);},690);
-  journey.finished.finally(()=>copy.remove());
+  journey.finished.finally(()=>{copy.remove();source.style.visibility='';});
 }
 async function animateEvent(event){const player=state?.players.find(p=>p.id===event.playerId);const mine=player?.id===seat()?.id;const from=$(mine?'self-head':'opponent-head');const target=event.targetId?document.querySelector(`.card[data-uid="${event.targetId}"]`):null;
    if(event.type==='coin'){sound('coin');visualMessage('A MOEDA DECIDIU',`${player?.name||'Jogador'} escolhe quem começa`,1900);const coin=document.createElement('div');coin.className='coin-toss';coin.textContent='✦';$('visual-layer').append(coin);setTimeout(()=>coin.remove(),1900);await pause(1700);}
    else if(event.type==='first'){visualMessage('ORDEM DEFINIDA',`${player?.name||'Jogador'} joga primeiro`,1500);await pause(1250);}
-   else if(event.type==='opening'){visualMessage('MÃO INICIAL',`${player?.name||'Jogador'} recebe cinco cartas`,1900);for(let i=0;i<5;i++){setTimeout(()=>{fly('▰',from,$(mine?'hand':'opponent-head'),'draw');sound('draw');if(mine)setTimeout(revealArrival,760);},i*210);}await pause(1850);}
-   else if(event.type==='mulligan'){visualMessage('TROCA INICIAL',`${player?.name||'Jogador'} troca ${event.count} carta(s)`,1300);sound('draw');await pause(1200);}
+   else if(event.type==='opening'){visualMessage('MÃO INICIAL',`${player?.name||'Jogador'} recebe cinco cartas`,1900);for(let i=0;i<5;i++){setTimeout(()=>{const target=mine?$('mulligan-cards')?.querySelectorAll('.card')[i]:$('opponent-head');fly('▰',from,target||$('mulligan-panel')||$('mulligan-cards'),'draw');sound('draw');if(mine)setTimeout(revealArrival,900);},i*210);}await pause(1850);}
+   else if(event.type==='mulligan'){visualMessage('TROCA INICIAL',`${player?.name||'Jogador'} troca ${event.count} carta(s)`,1300);if(mine){const replacements=[...$('mulligan-cards').querySelectorAll('.pending-arrival')];replacements.forEach((card,index)=>setTimeout(()=>{fly('▰',from,card,'draw');sound('draw');setTimeout(revealArrival,900);},index*180));await pause(Math.max(1200,900+replacements.length*180));}else{sound('draw');await pause(1200);}}
    else if(event.type==='turn'){visualMessage('INÍCIO DE TURNO',`${player?.name||'Jogador'} · rodada ${event.round}`,1150);await pause(1050);}
    else if(event.type==='draw'){visualMessage('COMPRA DE CARTA',player?.name||'',1100);fly('▰',from,$(mine?'hand':'opponent-head'),'draw');sound('draw');await pause(760);if(mine)revealArrival();await pause(260);}
    else if(event.type==='burn'){visualMessage('CARTA QUEIMADA',`Mão cheia: ${event.name||'uma carta'} foi para o Nartvanyr`,1700);$('hand').classList.add('hand-burn');setTimeout(()=>$('hand').classList.remove('hand-burn'),1000);fly('▰',from,$(mine?'self-grave':'opponent-grave'),'burn');sound('burn');await pause(1550);}

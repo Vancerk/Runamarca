@@ -123,7 +123,7 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .upper-zone .emana-empty,.lower-zone .emana-empty{width:57px;height:80px}.upper-zone .eman-zone,.lower-zone .eman-zone{width:145px}
 .hand-zone{height:285px;min-height:285px}.hand-zone .card-row{height:240px;padding-bottom:20px}.hand-card{width:118px;height:165px;margin-left:-22px}.hand-card .card-title{font-size:12px}.hand-card .numbers{font-size:13px}.hand-card .mana-gem{width:29px;height:29px;font-size:15px}.drag-preview{width:118px!important;height:165px!important}
 .spell-drop.drop-ready{outline:3px solid #c6e8c9;box-shadow:inset 0 0 25px #a9d9a955!important}
-.visual-card{position:fixed!important;margin:0!important;pointer-events:none!important;z-index:100!important;transform:none!important;filter:drop-shadow(0 8px 9px #000c)}
+.visual-card{position:fixed!important;margin:0!important;pointer-events:none!important;z-index:100!important;filter:drop-shadow(0 8px 9px #000c)}
 .visual-card.visual-dead{filter:sepia(1) saturate(5) hue-rotate(320deg) brightness(.9)!important;box-shadow:0 0 22px #e63626!important}
 .patron-struck{animation:patron-struck .6s ease both}
 @keyframes patron-struck{0%,100%{filter:none}40%{filter:brightness(2) sepia(1) saturate(5) hue-rotate(320deg);transform:translateX(8px)}}
@@ -145,3 +145,13 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .hand-zone .card-row{transform:translateY(-85px);overflow:visible}
 .card.draggable,.card.draggable *{user-select:none;-webkit-user-select:none;-webkit-user-drag:none}
 .card.draggable *{pointer-events:none}
+.log{flex-direction:column;gap:5px}
+.log .log-divider{margin:9px 0 3px;padding:5px 7px;background:#6c4c3380;border-left:3px solid #d5ae73;color:#f2d6a5;font:700 10px Cinzel,Georgia,serif;line-height:1.35}
+.log p:first-child{color:var(--muted)}
+.hand-zone{height:176px;min-height:176px;background:transparent;border:0;box-shadow:none;padding-top:0}
+.hand-zone .card-row{height:170px;transform:translateY(-28px)}
+.game[data-phase="formation"] .center-actions{top:8px;left:auto;right:155px;width:190px;background:transparent;border:0;box-shadow:none;padding:0}
+.game[data-phase="formation"] #match-status,.game[data-phase="formation"] #phase-actions h3,.game[data-phase="formation"] #phase-actions>p:not(.status-pill){display:none}
+.game[data-phase="formation"] #phase-actions button{box-shadow:0 5px 14px #000a}
+.opening-flight{position:fixed!important;margin:0!important;pointer-events:none!important;z-index:100!important;transform-origin:center center}
+@media(max-width:750px){.hand-zone{height:140px;min-height:140px}.hand-zone .card-row{height:135px;transform:translateY(-26px)}.game[data-phase="formation"] .center-actions{right:104px;width:140px}}
