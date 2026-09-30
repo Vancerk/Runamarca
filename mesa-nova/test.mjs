@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {act,join,makeRoom,view,COMBAT_MS} from './game.mjs';
+import {act,join,makeRoom,view} from './game.mjs';
 const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'cartas.json'),'utf8'));
 const room=makeRoom('ABC123','Van');const a=room.players[0],b=join(room,'Vitu');
 const early=makeRoom('DEF456','Primeira');act(early,early.players[0],{type:'deck',deckId:'ruptura-cacada'},catalog);const late=join(early,'Segunda');assert.equal(late.deckId,null,'quem entra depois escolhe o próprio deck');
@@ -36,7 +36,7 @@ act(room,a,{type:'assign',lane:0,cardId:hunter.uid},catalog);assert.equal(view(r
 act(room,b,{type:'assign',lane:0,cardId:apprentice.uid},catalog);
 act(room,a,{type:'ready'},catalog);act(room,b,{type:'ready'},catalog);
 assert.equal(room.phase,'resolving');assert.equal(view(room,b).players.find(p=>p.id===a.id).formation[0],hunter.uid,'cartas são reveladas na animação');
-await new Promise(resolve=>setTimeout(resolve,COMBAT_MS+80));
+await new Promise(resolve=>setTimeout(resolve,room.combat.duration+80));
 assert.equal(b.patron.hp,20,'armadilha derrota defensor, bônus aliado eleva ataque de 2 a 4');
 assert.equal(room.round,2);assert.equal(room.phase,'prep');assert.equal(a.reserve.length,1);assert.equal(b.reserve.length,0);
 assert.equal(room.preparationsDone,0,'a rodada seguinte exige novamente ambas as preparações');

@@ -1,6 +1,6 @@
 {
   "format": "runamarca-design-prototype",
-  "version": "0.1",
+  "version": "0.2",
   "date": "2026-09-29",
   "status": "Conjunto inicial para testes; equilíbrio e duração ainda não validados.",
   "not_legacy_editor_import": true,
@@ -45,7 +45,11 @@
   "rules": {
     "patron_health": 24,
     "deck_size": 24,
-    "max_copies": 2,
+    "max_copies": {
+      "lacaio": 3,
+      "padrao": 2,
+      "elite": 1
+    },
     "opening_hand": 5,
     "draw_per_own_preparation": 1,
     "max_mana": 10,
@@ -63,16 +67,15 @@
     "direct_patron_damage_if_lane_empty_after_effects": true,
     "normal_attacks_target_emanation": false,
     "new_creatures_can_fight": true,
-    "hand_limit": null,
+    "hand_limit": 9,
     "star_win_condition": false,
     "testing_assumptions": [
-      "Sorteio inicial fixa quem prepara primeiro durante toda a partida; testar os dois lados.",
       "Sem troca da mão inicial neste primeiro teste.",
       "Fadiga: cada tentativa de compra sem cartas causa 1, 2, 3... de dano ao próprio Patrono.",
       "Nenhuma cura ultrapassa a vida máxima.",
       "Os três confrontos causam dano simultaneamente; derrota simultânea dos Patronos é empate.",
-      "Decisões secretas de combater são reveladas juntas; basta um sim para haver combate.",
-      "Patronos sem habilidade especial nesta versão; os títulos são originais e ainda podem ser substituídos por referências oficiais."
+      "Patronos sem habilidade especial nesta versão; os títulos são originais e ainda podem ser substituídos por referências oficiais.",
+      "A ordem de preparação permanece fixa neste teste; medir vantagem por assento antes de alterar a regra."
     ]
   },
   "decks": [
@@ -104,7 +107,7 @@
           "type": "creature",
           "subtype": "Humana · Batedora",
           "cost": 1,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 2,
           "health": 1,
           "text": "Sem habilidade.",
@@ -113,24 +116,35 @@
           "flavor": "Ela chega antes que o cartaz de recompensa.",
           "flavor_status": "criação original para o protótipo",
           "effects": [],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "lacaio"
         },
         {
           "id": "R02",
           "name": "Explorador Faelen",
           "type": "creature",
           "subtype": "Faelen · Explorador",
-          "cost": 1,
-          "quantity": 2,
+          "cost": 2,
+          "quantity": 3,
           "attack": 1,
           "health": 2,
-          "text": "Sem habilidade.",
+          "text": "Ao entrar: convoque um Batedor 1/1 para a reserva.",
           "role": "Ocupar uma casa com pouco investimento.",
           "lore_basis": "Livro principal, 6.5.5: Faelen e ancestralidade dos Bosques.",
           "flavor": "Pequenos passos também deixam o alvo sem saída.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "ruptura"
+          "effects": [
+            {
+              "timing": "on_enter",
+              "op": "summon",
+              "name": "Batedor Faelen",
+              "amount": 1,
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "affinity": "ruptura",
+          "rarity": "lacaio"
         },
         {
           "id": "R03",
@@ -138,7 +152,7 @@
           "type": "creature",
           "subtype": "Humano · Mercenário",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 3,
           "health": 2,
           "text": "Sem habilidade.",
@@ -147,7 +161,8 @@
           "flavor": "O contrato só termina quando a caçada termina.",
           "flavor_status": "criação original para o protótipo",
           "effects": [],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "lacaio"
         },
         {
           "id": "R04",
@@ -171,7 +186,8 @@
               "amount": 1
             }
           ],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "padrao"
         },
         {
           "id": "R05",
@@ -195,24 +211,35 @@
               "amount": 1
             }
           ],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "padrao"
         },
         {
           "id": "R06",
           "name": "Duelista das Arenas",
           "type": "creature",
           "subtype": "Lezhar · Duelista",
-          "cost": 3,
+          "cost": 4,
           "quantity": 2,
-          "attack": 4,
+          "attack": 3,
           "health": 3,
-          "text": "Sem habilidade.",
+          "text": "Ao entrar: convoque dois Recrutas 1/1 para a reserva.",
           "role": "Principal atacante do meio da partida.",
           "lore_basis": "Livro principal, 6.5.1: Arenas Sagradas.",
           "flavor": "Na arena, aprendeu a esperar. Na caçada, a reconhecer a hora.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "ruptura"
+          "effects": [
+            {
+              "timing": "on_enter",
+              "op": "summon",
+              "name": "Recruta da Arena",
+              "amount": 2,
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "affinity": "ruptura",
+          "rarity": "padrao"
         },
         {
           "id": "R07",
@@ -220,7 +247,7 @@
           "type": "creature",
           "subtype": "Drakonir · Guerreiro",
           "cost": 4,
-          "quantity": 2,
+          "quantity": 1,
           "attack": 5,
           "health": 4,
           "text": "Sem habilidade.",
@@ -229,7 +256,8 @@
           "flavor": "Escamas gastas, juramento intacto.",
           "flavor_status": "criação original para o protótipo",
           "effects": [],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "elite"
         },
         {
           "id": "R08",
@@ -237,16 +265,26 @@
           "type": "creature",
           "subtype": "Azura · Caçador",
           "cost": 5,
-          "quantity": 2,
+          "quantity": 1,
           "attack": 6,
           "health": 5,
-          "text": "Sem habilidade.",
+          "text": "Ao entrar: convoque um Caçador 2/1 para a reserva.",
           "role": "Finalizador agressivo.",
           "lore_basis": "Livro principal, 6.5.5: força e disciplina dos Azuras.",
           "flavor": "A fúria tem endereço. E ele conferiu o nome.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "ruptura"
+          "effects": [
+            {
+              "timing": "on_enter",
+              "op": "summon",
+              "name": "Caçador da Fronteira",
+              "amount": 1,
+              "attack": 2,
+              "health": 1
+            }
+          ],
+          "affinity": "ruptura",
+          "rarity": "elite"
         },
         {
           "id": "R09",
@@ -269,7 +307,8 @@
               "duration": "round_end"
             }
           ],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "padrao"
         },
         {
           "id": "R10",
@@ -291,7 +330,8 @@
               "amount": 2
             }
           ],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "padrao"
         },
         {
           "id": "R11",
@@ -313,7 +353,8 @@
               "amount": 2
             }
           ],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "padrao"
         },
         {
           "id": "R12",
@@ -321,7 +362,7 @@
           "type": "prepared_spell",
           "subtype": "Magia preparada · Marca",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 1,
           "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 4 de dano a ela se tiver 4 ou mais de ataque; caso contrário, cause 1.",
           "role": "Punir criaturas grandes; aceitar a isca de uma pequena.",
           "lore_basis": "Livro de Especializações, 1.5.1: Caçador e Compêndio; efeito original de RunaMarca.",
@@ -340,7 +381,8 @@
               "amount_if_false": 1
             }
           ],
-          "affinity": "ruptura"
+          "affinity": "ruptura",
+          "rarity": "elite"
         }
       ]
     },
@@ -372,7 +414,7 @@
           "type": "creature",
           "subtype": "Vaelita · Aprendiz",
           "cost": 1,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 1,
           "health": 2,
           "text": "Sem habilidade.",
@@ -381,7 +423,8 @@
           "flavor": "A centelha aprende o caminho antes da mão.",
           "flavor_status": "criação original para o protótipo",
           "effects": [],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "lacaio"
         },
         {
           "id": "M02",
@@ -389,7 +432,7 @@
           "type": "creature",
           "subtype": "Aethelis · Conjuradora",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 2,
           "health": 2,
           "text": "Revelação: se você jogou uma magia direta nesta rodada, esta criatura recebe +1 de ataque até o fim da rodada.",
@@ -407,7 +450,8 @@
               "condition": "owner_played_direct_spell_this_round"
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "lacaio"
         },
         {
           "id": "M03",
@@ -415,7 +459,7 @@
           "type": "creature",
           "subtype": "Sheldran · Guardião",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 1,
           "health": 4,
           "text": "Sem habilidade.",
@@ -424,7 +468,8 @@
           "flavor": "Guarda o arquivo com a paciência de quem já viu as marés voltarem.",
           "flavor_status": "criação original para o protótipo",
           "effects": [],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "lacaio"
         },
         {
           "id": "M04",
@@ -449,7 +494,8 @@
               "minimum_cost": 1
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "padrao"
         },
         {
           "id": "M05",
@@ -473,7 +519,8 @@
               "amount": 1
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "padrao"
         },
         {
           "id": "M06",
@@ -481,7 +528,7 @@
           "type": "creature",
           "subtype": "Aethelis · Mestra",
           "cost": 6,
-          "quantity": 2,
+          "quantity": 1,
           "attack": 4,
           "health": 6,
           "text": "Revelação: cause 2 de dano à criatura inimiga na mesma posição.",
@@ -497,7 +544,8 @@
               "amount": 2
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "elite"
         },
         {
           "id": "M07",
@@ -519,7 +567,8 @@
               "amount": 3
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "padrao"
         },
         {
           "id": "M08",
@@ -541,7 +590,8 @@
               "amount": 2
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "padrao"
         },
         {
           "id": "M09",
@@ -563,28 +613,31 @@
               "amount": 3
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "padrao"
         },
         {
           "id": "M10",
-          "name": "Romper o Vínculo",
+          "name": "Ruptura do Círculo",
           "type": "direct_spell",
           "subtype": "Magia · Ruptura de selo",
           "cost": 5,
           "quantity": 2,
-          "text": "Derrote uma criatura inimiga.",
+          "text": "Cause 2 de dano a todas as criaturas inimigas. Preparada: dispara quando uma criatura entrar na posição escolhida.",
           "role": "Resposta cara a uma ameaça de qualquer tamanho.",
           "lore_basis": "Efeito original de RunaMarca inspirado na manipulação do Éter; não reproduz uma magia oficial.",
           "flavor": "Todo vínculo possui um ponto que não deveria ser tocado.",
           "flavor_status": "criação original para o protótipo",
           "effects": [
             {
-              "timing": "on_play",
-              "op": "defeat",
-              "target": "chosen_enemy_creature"
+              "timing": "on_play_or_prepared",
+              "op": "area_damage",
+              "target": "all_enemy_creatures",
+              "amount": 2
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "padrao"
         },
         {
           "id": "M11",
@@ -592,7 +645,7 @@
           "type": "prepared_spell",
           "subtype": "Magia preparada · Glifo",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 1,
           "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 3 de dano a essa criatura.",
           "role": "Abrir uma posição com uma magia preparada forte.",
           "lore_basis": "Livro principal: inscrições rúnicas e energia Fogo; efeito original.",
@@ -606,7 +659,8 @@
               "amount": 3
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "elite"
         },
         {
           "id": "M12",
@@ -614,7 +668,7 @@
           "type": "prepared_spell",
           "subtype": "Magia preparada · Inscrição",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 1,
           "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 1 de dano a essa criatura e compre 1 carta.",
           "role": "Preparação de menor dano que se repõe na mão.",
           "lore_basis": "Livro principal, 6.5: Arkhavel; efeito original.",
@@ -634,7 +688,8 @@
               "amount": 1
             }
           ],
-          "affinity": "fluxo"
+          "affinity": "fluxo",
+          "rarity": "elite"
         }
       ]
     },
@@ -666,16 +721,25 @@
           "type": "creature",
           "subtype": "Anão · Vigia",
           "cost": 1,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 1,
           "health": 3,
-          "text": "Sem habilidade.",
+          "text": "Revelação: ganha +1 de ataque neste combate.",
           "role": "Defesa inicial resistente, com pouca pressão.",
           "lore_basis": "Livro principal, 6.5.2: clãs anões.",
           "flavor": "Reconhece uma aproximação pelo silêncio da oficina.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "forja"
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "attack_modifier",
+              "target": "self",
+              "amount": 1,
+              "duration": "round_end"
+            }
+          ],
+          "affinity": "forja",
+          "rarity": "lacaio"
         },
         {
           "id": "F02",
@@ -683,16 +747,25 @@
           "type": "creature",
           "subtype": "Sheldran · Escudeiro",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 1,
           "health": 5,
-          "text": "Sem habilidade.",
+          "text": "Revelação: cause 1 de dano à criatura inimiga na mesma posição.",
           "role": "Absorver desgaste sem ganhar rapidamente.",
           "lore_basis": "Livro principal, 6.5.1: Sheldran.",
           "flavor": "Algumas promessas têm o peso de um escudo.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "forja"
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "damage",
+              "target": "opposing_creature_same_lane",
+              "amount": 1,
+              "duration": "round_end"
+            }
+          ],
+          "affinity": "forja",
+          "rarity": "lacaio"
         },
         {
           "id": "F03",
@@ -700,7 +773,7 @@
           "type": "creature",
           "subtype": "Anã · Clériga",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "attack": 1,
           "health": 3,
           "text": "Emanação: ao fim da sua preparação, cure 1 de dano de uma criatura aliada à sua escolha.",
@@ -716,7 +789,8 @@
               "amount": 1
             }
           ],
-          "affinity": "forja"
+          "affinity": "forja",
+          "rarity": "lacaio"
         },
         {
           "id": "F04",
@@ -727,13 +801,21 @@
           "quantity": 2,
           "attack": 2,
           "health": 5,
-          "text": "Sem habilidade.",
+          "text": "Ao entrar: compre uma carta.",
           "role": "Corpo defensivo do meio da partida.",
           "lore_basis": "Livro principal, 6.5.6: Axiom Engrenauta.",
           "flavor": "Escolheu ficar. Nenhuma ordem poderia valer mais.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "forja"
+          "effects": [
+            {
+              "timing": "on_enter",
+              "op": "draw",
+              "target": "owner",
+              "amount": 1
+            }
+          ],
+          "affinity": "forja",
+          "rarity": "padrao"
         },
         {
           "id": "F05",
@@ -744,13 +826,22 @@
           "quantity": 2,
           "attack": 4,
           "health": 5,
-          "text": "Sem habilidade.",
+          "text": "Revelação: ganha +1 de ataque neste combate.",
           "role": "Começar a transformar defesa em pressão.",
           "lore_basis": "Livro principal, 6.5.1: Arenas Sagradas.",
           "flavor": "Uma cicatriz não ensina a vencer. Ensina a voltar.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "forja"
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "attack_modifier",
+              "target": "self",
+              "amount": 1,
+              "duration": "round_end"
+            }
+          ],
+          "affinity": "forja",
+          "rarity": "padrao"
         },
         {
           "id": "F06",
@@ -761,13 +852,22 @@
           "quantity": 2,
           "attack": 4,
           "health": 7,
-          "text": "Sem habilidade.",
+          "text": "Revelação: cause 1 de dano à criatura inimiga na mesma posição.",
           "role": "Ameaça resistente para repetidos confrontos.",
           "lore_basis": "Livro principal, 6.5.1: Drakonir dos Túmulos Dracônicos.",
           "flavor": "Há nomes antigos que ainda merecem um guardião.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "forja"
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "damage",
+              "target": "opposing_creature_same_lane",
+              "amount": 1,
+              "duration": "round_end"
+            }
+          ],
+          "affinity": "forja",
+          "rarity": "padrao"
         },
         {
           "id": "F07",
@@ -775,16 +875,25 @@
           "type": "creature",
           "subtype": "Gigante · Protetor",
           "cost": 6,
-          "quantity": 2,
+          "quantity": 1,
           "attack": 6,
           "health": 7,
-          "text": "Sem habilidade.",
+          "text": "Revelação: ganha +2 de ataque neste combate.",
           "role": "Finalizador resistente.",
           "lore_basis": "Livro principal, 6.5.2: Gigantes e proteção de fronteiras; bastião original.",
           "flavor": "O bastião começa onde ele decide parar.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "forja"
+          "effects": [
+            {
+              "timing": "revelation",
+              "op": "attack_modifier",
+              "target": "self",
+              "amount": 2,
+              "duration": "round_end"
+            }
+          ],
+          "affinity": "forja",
+          "rarity": "elite"
         },
         {
           "id": "F08",
@@ -792,16 +901,24 @@
           "type": "creature",
           "subtype": "Axiom · Engrenauta",
           "cost": 7,
-          "quantity": 2,
+          "quantity": 1,
           "attack": 8,
           "health": 8,
-          "text": "Sem habilidade.",
+          "text": "Ao entrar: compre uma carta.",
           "role": "Grande ameaça que exige bloqueio ou remoção.",
           "lore_basis": "Livro principal, 6.5.6: corpos pesados e autoconsciência dos Axiom.",
           "flavor": "Foi construído para romper muralhas. Escolheu proteger as pessoas atrás delas.",
           "flavor_status": "criação original para o protótipo",
-          "effects": [],
-          "affinity": "forja"
+          "effects": [
+            {
+              "timing": "on_enter",
+              "op": "draw",
+              "target": "owner",
+              "amount": 1
+            }
+          ],
+          "affinity": "forja",
+          "rarity": "elite"
         },
         {
           "id": "F09",
@@ -833,7 +950,8 @@
               ]
             }
           ],
-          "affinity": "forja"
+          "affinity": "forja",
+          "rarity": "padrao"
         },
         {
           "id": "F10",
@@ -855,7 +973,8 @@
               "amount": 3
             }
           ],
-          "affinity": "forja"
+          "affinity": "forja",
+          "rarity": "padrao"
         },
         {
           "id": "F11",
@@ -877,7 +996,8 @@
               "amount": 2
             }
           ],
-          "affinity": "forja"
+          "affinity": "forja",
+          "rarity": "padrao"
         },
         {
           "id": "F12",
@@ -885,7 +1005,7 @@
           "type": "prepared_spell",
           "subtype": "Magia preparada · Névoa",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 1,
           "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, ela recebe -3 de ataque até o fim desta rodada.",
           "role": "Reduzir a pressão de uma ameaça grande por um combate.",
           "lore_basis": "Criação original inspirada em forjas e obstrução sensorial; livro principal, 4.4.",
@@ -900,7 +1020,8 @@
               "duration": "round_end"
             }
           ],
-          "affinity": "forja"
+          "affinity": "forja",
+          "rarity": "elite"
         }
       ]
     }
