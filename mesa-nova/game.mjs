@@ -20,7 +20,7 @@ const attack = (card,room,lane) => {
 const laneCard = (room,ownerId,lane) => own(room,ownerId).formation[lane] ? own(room,ownerId).reserve.find(c=>c.uid===own(room,ownerId).formation[lane]) : null;
 const findCreature = (p,uid) => p.reserve.find(c=>c.uid===uid && alive(c));
 
-function freshPlayer(name){return {id:randomUUID(),token:token(),name:cleanName(name),deckId:null,art:{},patron:null,deck:[],hand:[],reserve:[],discard:[],manaMax:0,mana:0,fatigue:0,formation:[null,null,null],emanation:[],directPlayed:false,discountUsed:false,prepared:[],vote:null,ready:false,mulligansLeft:0,mulliganReady:false};}
+function freshPlayer(name){return {id:randomUUID(),token:token(),name:cleanName(name),bot:false,deckId:null,art:{},patron:null,deck:[],hand:[],reserve:[],discard:[],manaMax:0,mana:0,fatigue:0,formation:[null,null,null],emanation:[],directPlayed:false,discountUsed:false,prepared:[],vote:null,ready:false,mulligansLeft:0,mulliganReady:false};}
 export function makeRoom(roomCode,name,role='player'){
   const player=freshPlayer(name);
   return {code:roomCode,inviteToken:token(),players:role==='spectator'?[]:[player],spectators:role==='spectator'?[player]:[],phase:'lobby',round:1,turn:null,first:null,coinWinner:null,winner:null,log:[],events:[],eventId:0,revision:0};
@@ -64,7 +64,7 @@ function beginCombat(room){
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id}:null;})})),spells};
   pushLog(room,`Combate da rodada ${room.round}: formações reveladas.`);
-  setTimeout(()=>{if(room.phase!=='resolving'||room.combat?.id!==id)return;resolveCombat(room);room.combat=null;room.revision++;},duration);
+  setTimeout(()=>{if(room.phase!=='resolving'||room.combat?.id!==id)return;resolveCombat(room);room.combat=null;room.revision++;room.onChange?.();},duration);
 }
 function resolveCombat(room){
   const [left,right]=room.players;
@@ -129,6 +129,12 @@ export function act(room,p,data,catalog){
   if(!room.players.includes(p))throw Error('A arquibancada pode assistir, mas não jogar.');
   if(room.phase==='finished'&&data.type!=='reset')throw Error('A partida terminou.');
   if(data.type==='reset'){if(room.players.length!==2)throw Error('Aguarde dois jogadores.');resetToLobby(room);room.log=[];room.revision++;return;}
+  if(data.type==='addBot'){
+    if(room.phase!=='lobby'||room.players.length!==1||p.bot)throw Error('O bot fácil só pode entrar numa sala com um jogador humano.');
+    const deck=catalog.decks.find(d=>d.id===data.deckId);if(!deck)throw Error('Deck do bot desconhecido.');
+    const bot=join(room,'Autômato de Treino');bot.bot=true;bot.botDeckId=deck.id;
+    act(room,bot,{type:'deck',deckId:deck.id},catalog);pushLog(room,'Autômato de Treino entrou como adversário fácil.');room.revision++;return;
+  }
   if(data.type==='deck'){
     if(room.phase!=='lobby')throw Error('A escolha de decks terminou.');const deck=catalog.decks.find(d=>d.id===data.deckId);if(!deck)throw Error('Deck desconhecido.');
     const limits={lacaio:3,padrao:2,elite:1};if(deck.cards.reduce((sum,c)=>sum+c.quantity,0)!==24||deck.cards.some(c=>!Number.isInteger(c.quantity)||c.quantity<1||c.quantity>limits[c.rarity]))throw Error('Deck inválido: 24 cartas, até 3 lacaios, 2 padrões e 1 elite por carta.');
@@ -211,9 +217,43 @@ export function act(room,p,data,catalog){
 export function view(room,p){
   const reveal=room.phase==='finished'||room.phase==='resolving';
   return {code:room.code,inviteToken:room.inviteToken,phase:room.phase,round:room.round,turn:room.turn,first:room.first,coinWinner:room.coinWinner,winner:room.winner,you:p.id,spectator:room.spectators.includes(p),spectators:room.spectators.map(x=>({id:x.id,name:x.name})),revision:room.revision,serverNow:Date.now(),events:room.events.slice(-20),log:room.log.slice(-18),lastCombat:room.lastCombat||null,combat:room.phase==='resolving'?room.combat:null,players:room.players.map(seat=>({
-     id:seat.id,name:seat.name,deckId:seat.deckId,patron:seat.patron,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,mulligansLeft:seat.id===p.id?seat.mulligansLeft:undefined,mulliganReady:seat.mulliganReady,hand:seat.id===p.id?seat.hand:undefined,
+     id:seat.id,name:seat.name,bot:seat.bot,deckId:seat.deckId,patron:seat.patron,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,mulligansLeft:seat.id===p.id?seat.mulligansLeft:undefined,mulliganReady:seat.mulliganReady,hand:seat.id===p.id?seat.hand:undefined,
     reserve:seat.reserve?.map(c=>({...c,owner:seat.id})),emanation:seat.emanation||[],
     formation:seat.id===p.id||reveal?seat.formation:[null,null,null],ready:seat.ready,voted:seat.vote!==null,
     prepared:room.players.flatMap(caster=>caster.prepared.filter(item=>item.targetSide===seat.id).map(item=>({lane:item.lane,caster:caster.id,card:reveal||caster.id===p.id||!item.hidden?item.card:null,hidden:!reveal&&caster.id!==p.id&&item.hidden})))
   }))};
+}
+
+export function easyBotAction(room){
+  const bot=room.players.find(p=>p.bot);if(!bot)return null;
+  if(room.phase==='lobby')return bot.deckId?null:{type:'deck',deckId:bot.botDeckId};
+  if(room.phase==='coin')return room.coinWinner===bot.id?{type:'first',playerId:other(room,bot.id).id}:null;
+  if(room.phase==='mulligan'){
+    if(bot.mulliganReady)return null;
+    const expensive=bot.hand.filter(card=>card.cost>=5).slice(0,2);
+    return bot.mulligansLeft&&expensive.length?{type:'mulligan',cardIds:expensive.map(card=>card.uid)}:{type:'confirmMulligan'};
+  }
+  if(room.phase==='prep'){
+    if(room.turn!==bot.id)return null;
+    const creatures=bot.hand.filter(card=>card.type==='creature'&&card.cost<=bot.mana&&bot.reserve.length<8).sort((a,b)=>a.cost-b.cost);
+    if(creatures.length)return {type:'play',cardId:creatures[0].uid};
+    const enemy=other(room,bot.id);
+    for(const spell of bot.hand.filter(card=>card.type!=='creature'&&card.cost<=bot.mana).sort((a,b)=>a.cost-b.cost)){
+      const kind=targetKind(spell),op=effect(spell)?.op;
+      if(kind==='self')return {type:'play',cardId:spell.uid,mode:'direct'};
+      if(kind==='enemy-board'&&enemy.reserve.some(alive))return {type:'play',cardId:spell.uid,mode:'direct'};
+      if(kind==='enemy'&&enemy.reserve.some(alive)){const target=[...enemy.reserve].filter(alive).sort((a,b)=>(a.health-a.damage)-(b.health-b.damage))[0];return {type:'play',cardId:spell.uid,mode:'direct',targetId:target.uid};}
+      if(kind==='friendly-or-patron'&&(bot.patron.hp<=19||bot.reserve.some(c=>alive(c)&&c.damage>0)))return {type:'play',cardId:spell.uid,mode:'direct',targetId:bot.patron.hp<=19?'patron':bot.reserve.find(c=>alive(c)&&c.damage>0).uid};
+      if(kind==='friendly'){const target=op==='heal'?bot.reserve.find(c=>alive(c)&&c.damage>0):bot.reserve.find(alive);if(target)return {type:'play',cardId:spell.uid,mode:'direct',targetId:target.uid};}
+    }
+    return {type:'endPrep'};
+  }
+  if(room.phase==='vote')return bot.vote===null?{type:'vote',fight:bot.reserve.some(c=>alive(c)&&!bot.emanation.includes(c.uid))}:null;
+  if(room.phase==='formation'){
+    if(bot.ready)return null;
+    const unused=bot.reserve.filter(c=>alive(c)&&!bot.emanation.includes(c.uid)&&!bot.formation.includes(c.uid)).sort((a,b)=>b.attack-a.attack);
+    const open=bot.formation.findIndex(uid=>!uid);
+    return open>=0&&unused.length?{type:'assign',lane:open,cardId:unused[0].uid}:{type:'ready'};
+  }
+  return null;
 }

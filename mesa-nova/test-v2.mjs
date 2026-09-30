@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {act,join,makeRoom,view} from './game.mjs';
+import {act,easyBotAction,join,makeRoom,view} from './game.mjs';
 
 const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'cartas.json'),'utf8'));
 const limit={lacaio:3,padrao:2,elite:1};
@@ -62,4 +62,17 @@ assert.equal(room.phase,'lobby','sair durante a partida libera a sala');
 assert.equal(room.players.length,1);
 act(room,watcher,{type:'takeSeat'},catalog);
 assert.equal(room.players.includes(watcher),true);
-console.log('OK: raridades, 24 cartas, espectadores, mulligan, ordem fixa, convocações, dano em área, limite de mão e saída.');
+
+const solo=makeRoom('BOT123','Caçador');const human=solo.players[0];
+act(solo,human,{type:'addBot',deckId:'forja-juramento'},catalog);
+const bot=solo.players.find(p=>p.bot);assert.ok(bot);assert.equal(bot.deckId,'forja-juramento');
+act(solo,human,{type:'deck',deckId:'ruptura-cacada'},catalog);
+if(solo.coinWinner===bot.id)act(solo,bot,easyBotAction(solo),catalog);else act(solo,human,{type:'first',playerId:human.id},catalog);
+assert.equal(view(solo,human).players.find(p=>p.bot).hand,undefined,'mão do bot continua secreta');
+act(solo,human,{type:'confirmMulligan'},catalog);
+let guard=0;while(solo.phase==='mulligan'&&guard++<5)act(solo,bot,easyBotAction(solo),catalog);
+assert.equal(solo.phase,'prep');
+if(solo.turn===human.id)act(solo,human,{type:'endPrep'},catalog);
+guard=0;while(solo.phase==='prep'&&solo.turn===bot.id&&guard++<20)act(solo,bot,easyBotAction(solo),catalog);
+assert.ok(['prep','vote'].includes(solo.phase));
+console.log('OK: raridades, espectadores, mulligan, combate, bot fácil e limite de mão.');
