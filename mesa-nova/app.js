@@ -33,7 +33,7 @@ function matchSeat(player,position){if(!player)return;const self=position==='sel
 function showPatron(patron){const d=$('card-detail'),area=$('detail-content');area.replaceChildren();const card=document.createElement('div');card.className='patron-large';if(patron.image){const image=document.createElement('img');image.src=patron.image;image.alt='';card.append(image);}text(card,'strong',patron.name);area.append(card);const body=document.createElement('div');text(body,'h2',patron.name);text(body,'p',`${patron.affinity.toUpperCase()} · ${patron.hp}/${patron.maxHp} de vida`);text(body,'p','Patrono do baralho. Começa em jogo e fica fora das 24 cartas.');area.append(body);d.showModal();}
 function renderGate(){
   $('welcome').hidden=Boolean(state);$('lobby').hidden=!state||state.phase!=='lobby';$('mulligan-overlay').hidden=!state||state.phase!=='mulligan';$('game').hidden=!state;$('game').classList.toggle('is-obscured',Boolean(state&&['lobby','mulligan'].includes(state.phase)));
-  $('room-name').textContent=state?`SALA ${state.code}`:'';$('copy-link').hidden=!state;$('leave-room').hidden=!state;$('change-role').hidden=!state;$('change-role').textContent=state?.spectator?'Ocupar vaga':'Ir à arquibancada';$('change-role').disabled=Boolean(state?.spectator&&(state.phase!=='lobby'||state.players.length>=2));
+  $('room-name').textContent=state?`SALA ${state.code}`:'';$('rules-toggle').hidden=!state;$('copy-link').hidden=!state;$('leave-room').hidden=!state;$('change-role').hidden=!state;$('change-role').textContent=state?.spectator?'Ocupar vaga':'Ir à arquibancada';$('change-role').disabled=Boolean(state?.spectator&&(state.phase!=='lobby'||state.players.length>=2));
   $('phase-label').textContent=state?`${({lobby:'SALA',coin:'MOEDA',mulligan:'MÃO INICIAL',prep:'PREPARAÇÃO',vote:'DECISÃO',formation:'FORMAÇÃO',resolving:'COMBATE',finished:'FIM'})[state.phase]||state.phase.toUpperCase()} · RODADA ${state.round}`:'';
   if(!state){$('entry-title').textContent=isInvitation()?'Entre na sala convidada':'Abra a mesa';$('entry-note').textContent=isInvitation()?'Informe seu nome. Se as duas vagas estiverem ocupadas, você entra na arquibancada.':'Jogue em duas abas ou convide outra pessoa para entrar na sala.';$('create').hidden=isInvitation();$('join').textContent=isInvitation()?'Entrar na sala':'Entrar com código';$('join-code-label').hidden=isInvitation();$('role-label').hidden=isInvitation();}
   if(!state)return;
@@ -61,7 +61,22 @@ function renderBoard(){const self=seat()||{id:'',name:'Aguardando jogador',hand:
       const placed=player?.reserve?.find(c=>c.uid===player.formation?.[i]);
       if(placed){const node=cardEl(placed,{mini:true,active:selected===placed.uid});if(!state.spectator&&player.id===self.id)makeDraggable(node,placed);if(player.id===self.id&&pendingSnap?.lane===i&&pendingSnap.until>Date.now())node.classList.add('snapping');side.append(node);}else text(side,'span',state.phase==='formation'&&player?.id!==state.you?'?':state.phase==='formation'&&player?.id===state.you?'Solte aqui':'Vazia','drop-label');
       for(const prep of player?.prepared?.filter(item=>item.lane===i)||[]){const symbol=document.createElement('span');symbol.className=`spell-mark ${prep.caster===player.id?'ally-spell':'trap-spell'}${prep.hidden?' hidden-spell':''}`;symbol.textContent=prep.hidden?'':'✧';symbol.title=prep.hidden?'Magia inimiga oculta':prep.card?.name||'Magia';symbol.onclick=()=>{if(prep.card)showCard(prep.card);};side.append(symbol);}
-      if(!state.spectator&&player?.id===self.id){side.classList.add('own-drop');side.ondragover=event=>{if(state.phase==='formation'&&!self.ready){event.preventDefault();event.dataTransfer.dropEffect='move';side.classList.add('drop-ready');}};side.ondragleave=event=>{if(!side.contains(event.relatedTarget))side.classList.remove('drop-ready');};side.ondrop=event=>{event.preventDefault();side.classList.remove('drop-ready');const uid=event.dataTransfer.getData('text/plain');if(uid){pendingSnap={lane:i,until:Date.now()+900};command({type:'assign',lane:i,cardId:uid});}};}
+      if(!state.spectator&&player?.id){
+        if(player.id===self.id)side.classList.add('own-drop');
+        side.classList.add('spell-drop');
+        side.ondragover=event=>{
+          const uid=event.dataTransfer.getData('text/plain');
+          const spell=self.hand?.find(card=>card.uid===uid&&card.type!=='creature');
+          if((state.phase==='formation'&&player.id===self.id&&!self.ready)||(state.phase==='prep'&&state.turn===self.id&&spell)){event.preventDefault();side.classList.add('drop-ready');}
+        };
+        side.ondragleave=event=>{if(!side.contains(event.relatedTarget))side.classList.remove('drop-ready');};
+        side.ondrop=event=>{
+          event.preventDefault();side.classList.remove('drop-ready');const uid=event.dataTransfer.getData('text/plain');
+          const spell=self.hand?.find(card=>card.uid===uid&&card.type!=='creature');
+          if(spell&&state.phase==='prep')command({type:'play',cardId:uid,mode:'lane',lane:i,targetSide:player.id});
+          else if(uid&&state.phase==='formation'&&player.id===self.id){pendingSnap={lane:i,until:Date.now()+900};command({type:'assign',lane:i,cardId:uid});}
+        };
+      }
       lane.append(side);if(player===opp)text(lane,'div',`POSIÇÃO ${i+1}`,'lane-mid');
     }
     lanes.append(lane);
@@ -83,8 +98,9 @@ function bindLiveHandDrag(node,card){
     if(!dragging)return;
     ghost.style.left=`${x}px`;ghost.style.top=`${y}px`;
     document.querySelectorAll('.drop-ready').forEach(el=>el.classList.remove('drop-ready'));
-    const target=document.elementFromPoint(x,y),zone=target?.closest?.('#self-reserve-area,#self-emana-zone');
+    const target=document.elementFromPoint(x,y),zone=target?.closest?.('#self-reserve-area,#self-emana-zone'),lane=target?.closest?.('.lane-side');
     if(zone&&state.phase==='prep'&&state.turn===seat()?.id&&card.type==='creature')zone.classList.add('drop-ready');
+    if(lane&&state.phase==='prep'&&state.turn===seat()?.id&&card.type!=='creature')lane.classList.add('drop-ready');
     const over=target?.closest?.('.hand-card');
     if(over&&over!==node){
       const hand=$('hand'),rect=over.getBoundingClientRect();
@@ -98,11 +114,14 @@ function bindLiveHandDrag(node,card){
     const moved=dragging;origin=null;
     if(moved){
       suppressClickUntil=Date.now()+250;
-      const target=document.elementFromPoint(x,y),zone=target?.closest?.('#self-reserve-area,#self-emana-zone');
+      const target=document.elementFromPoint(x,y),zone=target?.closest?.('#self-reserve-area,#self-emana-zone'),lane=target?.closest?.('.lane-side');
       ghost?.remove();node.classList.remove('dragging-source');
       document.querySelectorAll('.drop-ready').forEach(el=>el.classList.remove('drop-ready'));
       if(zone&&state.phase==='prep'&&state.turn===seat()?.id&&card.type==='creature'){
         selected=null;command({type:'play',cardId:card.uid,...(zone.id==='self-emana-zone'?{mode:'emanate'}:{})});
+      }
+      if(lane&&state.phase==='prep'&&state.turn===seat()?.id&&card.type!=='creature'){
+        selected=null;command({type:'play',cardId:card.uid,mode:'lane',lane:Number(lane.dataset.lane),targetSide:lane.dataset.owner});
       }
     }
     ghost=null;dragging=false;
@@ -127,7 +146,7 @@ function revealArrival(){const uid=pendingArrival.shift();if(!uid)return;for(con
 function makeDraggable(node,card){if(state.phase!=='formation'||seat().ready||seat().emanation.includes(card.uid))return;node.draggable=true;node.classList.add('draggable');node.ondragstart=event=>{hideHover();event.dataTransfer.setData('text/plain',card.uid);event.dataTransfer.effectAllowed='move';node.classList.add('dragging');};node.ondragend=()=>{node.classList.remove('dragging');document.querySelectorAll('.drop-ready').forEach(el=>el.classList.remove('drop-ready'));};}
 function showCemetery(player){hideHover();const dialog=$('cemetery-detail'),area=$('cemetery-content');area.replaceChildren();text(area,'h2',`Nartvanyr · ${player.name}`);text(area,'p',`${player.discardCount} carta(s) consumida(s) ou derrotada(s). Clique numa carta para ler tudo.`);const row=document.createElement('div');row.className='cemetery-cards';for(const card of [...(player.discard||[])].reverse()){const node=cardEl(card);node.classList.add('cemetery-card');node.onmouseenter=node.onmousemove=node.onmouseleave=null;node.onclick=()=>showCard(card);row.append(node);}area.append(row);dialog.showModal();}
 function makeSelect(options){const select=document.createElement('select');for(const [value,label] of options){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);}return select;}
-function renderSelection(){const panel=$('selection-panel');panel.replaceChildren();const card=selectedCard();if(!card){text(panel,'h3','Carta selecionada');text(panel,'p','Selecione uma carta da mão ou da reserva. Clique duas vezes para ampliar.');return;}
+function renderSelection(){const panel=$('selection-panel');panel.replaceChildren();const card=selectedCard();panel.hidden=!card;if(!card)return;
   text(panel,'h3',card.name);text(panel,'p',card.text||'Sem efeito.');const actions=document.createElement('div');actions.className='buttons';actions.append(button('Ampliar',()=>showCard(card)));
   if(state.spectator){panel.append(actions);return;}
   const self=seat(),inHand=self.hand?.some(c=>c.uid===card.uid),inReserve=self.reserve?.some(c=>c.uid===card.uid);
@@ -137,10 +156,10 @@ function renderSelection(){const panel=$('selection-panel');panel.replaceChildre
       if(card.effects&&JSON.stringify(card.effects).includes('emanat'))actions.append(button(`Jogar direto em Emanação · ${card.cost} mana`,()=>{command({type:'play',cardId:card.uid,mode:'emanate'});selected=null;},'',self.mana<card.cost||self.emanation.length>=2));
     }
     if(inHand&&card.type!=='creature'){
-      const kind=role(card);const targetOptions=kind==='self'||kind==='enemy-board'?[]:kind==='enemy'?(rival()?.reserve||[]).map(c=>[c.uid,`${c.name} (${c.health-c.damage} vida)`]):[['patron','Seu Patrono'],...(self.reserve||[]).map(c=>[c.uid,`${c.name} (${c.health-c.damage} vida)`])];
+      const kind=role(card);const allied=(self.reserve||[]).map(c=>[c.uid,`${c.name} (${c.health-c.damage} vida)`]);const targetOptions=kind==='self'||kind==='enemy-board'?[]:kind==='enemy'?(rival()?.reserve||[]).map(c=>[c.uid,`${c.name} (${c.health-c.damage} vida)`]):kind==='friendly-or-patron'?[['patron','Seu Patrono'],...allied]:allied;
       const target=makeSelect(targetOptions);if(kind!=='self'&&kind!=='enemy-board'){text(actions,'span','Alvo direto','muted');actions.append(target);}
       actions.append(button(`Usar agora · ${card.cost} mana`,()=>{command({type:'play',cardId:card.uid,mode:'direct',targetId:target.value});selected=null;},'primary',self.mana<card.cost||((kind==='enemy'||kind==='friendly')&&!targetOptions.length)));
-      text(actions,'span',kind==='enemy'||kind==='enemy-board'?'Ou preparar oculta na posição inimiga:':'Ou preparar aberta ao lado da posição aliada:','muted');const places=document.createElement('div');places.className='entry-buttons';for(let lane=0;lane<3;lane++)places.append(button(String(lane+1),()=>{command({type:'play',cardId:card.uid,mode:'lane',lane});selected=null;},'',self.mana<card.cost));actions.append(places);
+      text(actions,'span','Para preparar no tabuleiro, arraste a magia da mão até uma posição aliada ou rival.','muted');
     }
     if(inReserve&&(self.emanation.includes(card.uid)||card.effects&&JSON.stringify(card.effects).includes('emanat'))){
       const leaving=self.emanation.includes(card.uid);
@@ -150,7 +169,7 @@ function renderSelection(){const panel=$('selection-panel');panel.replaceChildre
   if(state.phase==='formation'&&!self.ready&&inReserve&&!self.emanation.includes(card.uid)){text(actions,'span','Arraste esta carta da reserva até uma das três posições.','muted');const spots=document.createElement('div');spots.className='entry-buttons formation-fallback';for(let lane=0;lane<3;lane++)spots.append(button(String(lane+1),()=>command({type:'assign',lane,cardId:card.uid})));actions.append(spots);}
   panel.append(actions);
 }
-function renderActions(){const box=$('phase-actions');box.replaceChildren();const self=seat();if(!self)return;const message=$('match-status');
+function renderActions(){const box=$('phase-actions');box.replaceChildren();const self=seat();if(!self)return;$('game').dataset.phase=state.phase;const message=$('match-status');
   const label=state.phase==='coin'?'Moeda lançada':state.phase==='mulligan'?'Escolha da mão inicial':state.phase==='prep'?state.turn===self.id?'Sua preparação':'Preparação rival':state.phase==='vote'?'Decisão de combate':state.phase==='formation'?'Formação secreta':state.phase==='resolving'?'Confronto em curso':state.phase==='finished'?'Partida encerrada':'Aguardando';
   message.textContent=label+` · rodada ${state.round}`;
   if(state.spectator){text(box,'h3','Arquibancada');text(box,'p','Você acompanha a partida sem ver as mãos nem as formações secretas.');return;}
@@ -160,11 +179,10 @@ function renderActions(){const box=$('phase-actions');box.replaceChildren();cons
   }else if(state.phase==='mulligan'){
     text(box,'h3','Mão inicial');text(box,'p','Escolha as cartas na janela central.');
   }else if(state.phase==='prep'){
-    text(box,'h3',state.turn===self.id?'Faça suas jogadas':'Aguarde a preparação rival');
-    if(state.turn===self.id){text(box,'p','Jogue criaturas na reserva. Magias podem resolver agora ou ficar junto de uma posição.');const clerics=self.reserve.filter(c=>self.emanation.includes(c.uid)&&c.modelId==='F03');const choices=clerics.map((_,index)=>{const select=makeSelect([['','Sem cura'],...self.reserve.filter(c=>c.damage>0).map(c=>[c.uid,c.name])]);text(box,'span',`Cura da Clériga ${index+1}:`,'muted');box.append(select);return select;});
+    if(state.turn===self.id){const clerics=self.reserve.filter(c=>self.emanation.includes(c.uid)&&c.modelId==='F03');const choices=clerics.map((_,index)=>{const select=makeSelect([['','Sem cura'],...self.reserve.filter(c=>c.damage>0).map(c=>[c.uid,c.name])]);text(box,'span',`Cura da Clériga ${index+1}:`,'muted');box.append(select);return select;});
       box.append(button('Encerrar preparação',()=>command({type:'endPrep',healTargetIds:choices.map(select=>select.value)}),'primary'));}
   }else if(state.phase==='vote'){
-    text(box,'h3','Quer entrar em combate?');text(box,'p','Um “sim” inicia o combate imediatamente. A rodada só passa sem combate se ambos disserem “não”.');if(self.voted)text(box,'p','Você recusou. Aguardando a decisão rival.','status-pill');else{box.append(button('Sim, combater',()=>command({type:'vote',fight:true}),'primary'));box.append(button('Não combater',()=>command({type:'vote',fight:false})));}
+    if(self.voted)text(box,'p','Você recusou. Aguardando a decisão rival.','status-pill');else{box.append(button('Começar combate',()=>command({type:'vote',fight:true}),'primary'));box.append(button('Não combater',()=>command({type:'vote',fight:false})));}
   }else if(state.phase==='formation'){
     text(box,'h3','Distribua suas criaturas');text(box,'p','Arraste criaturas da reserva para as posições. Elas se encaixam ao soltar. A outra pessoa só vê a distribuição após ambas confirmarem.');
     if(self.ready)text(box,'p','Formação confirmada. Aguardando o rival.','status-pill');else{for(let lane=0;lane<3;lane++)box.append(button(`Limpar posição ${lane+1}`,()=>command({type:'assign',lane,cardId:null})));box.append(button('Confirmar formação',()=>command({type:'ready'}),'primary'));}
@@ -184,6 +202,37 @@ function impact(target,positive=false){if(!target)return;const pos=center(target
 function speechBubble(event){const target=document.querySelector(`.card[data-uid="${event.cardId}"]`)||$(event.zone==='emana'?(event.playerId===seat()?.id?'self-emana':'opponent-emana'):(event.playerId===seat()?.id?'self-reserve':'opponent-reserve'));if(!target)return;const box=document.createElement('div');box.className='speech-bubble';box.textContent=event.speech;const pos=center(target);box.style.left=`${pos.x}px`;box.style.top=`${pos.y-45}px`;$('visual-layer').append(box);setTimeout(()=>box.remove(),2100);}
 function center(node){const rect=node?.getBoundingClientRect();return rect?{x:rect.left+rect.width/2,y:rect.top+rect.height/2}:{x:innerWidth/2,y:innerHeight/2};}
 function fly(symbol,from,to,kind='spell'){const start=center(from),end=center(to);const node=document.createElement('div');node.className=`flying-effect ${kind}`;node.textContent=symbol;node.style.left=`${start.x}px`;node.style.top=`${start.y}px`;$('visual-layer').append(node);const animation=node.animate([{transform:'translate(-50%,-50%) scale(.7)',opacity:0},{transform:'translate(-50%,-50%) scale(1.2)',opacity:1,offset:.18},{transform:`translate(calc(${end.x-start.x}px - 50%),calc(${end.y-start.y}px - 50%)) scale(.9)`,opacity:1,offset:.84},{transform:`translate(calc(${end.x-start.x}px - 50%),calc(${end.y-start.y}px - 50%)) scale(1.8)`,opacity:0}],{duration:900,easing:'ease-in-out'});animation.finished.finally(()=>{node.remove();to?.classList.add('visual-hit');setTimeout(()=>to?.classList.remove('visual-hit'),650);});}
+function visualCard(source){
+  const rect=source.getBoundingClientRect(),copy=source.cloneNode(true);
+  copy.classList.add('visual-card');copy.style.left=`${rect.left}px`;copy.style.top=`${rect.top}px`;
+  copy.style.width=`${rect.width}px`;copy.style.height=`${rect.height}px`;
+  $('visual-layer').append(copy);return copy;
+}
+async function animateLaneClash(entry){
+  const [left,right]=entry.cards,parts=[left,right].map(card=>card?document.querySelector(`.lane[data-lane="${entry.lane}"] .card[data-uid="${card.uid}"]`):null);
+  if(!parts.some(Boolean))return;
+  if(left&&right&&parts[0]&&parts[1]){
+    const [a,b]=parts,pa=center(a),pb=center(b),dx=(pb.x-pa.x)*.46,dy=(pb.y-pa.y)*.46;
+    const copies=[visualCard(a),visualCard(b)];
+    const collide=[copies[0].animate([{transform:'translate(0,0)'},{transform:`translate(${dx}px,${dy}px)`,offset:.5},{transform:'translate(0,0)'}],{duration:900,easing:'ease-in-out'}),copies[1].animate([{transform:'translate(0,0)'},{transform:`translate(${-dx}px,${-dy}px)`,offset:.5},{transform:'translate(0,0)'}],{duration:900,easing:'ease-in-out'})];
+    setTimeout(()=>{impact(a);impact(b);sound('gun');},450);
+    await Promise.all(collide.map(animation=>animation.finished.catch(()=>{})));
+    for(let i=0;i<2;i++){
+      const dead=entry.cards[1-i].attack>=entry.cards[i].health;
+      if(!dead){copies[i].remove();continue;}
+      parts[i].style.visibility='hidden';copies[i].classList.add('visual-dead');
+      const grave=$(entry.cards[i].owner===seat()?.id?'self-grave':'opponent-grave'),from=center(parts[i]),to=center(grave);
+      copies[i].animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${to.x-from.x}px,${to.y-from.y}px) scale(.48)`,opacity:.1}],{duration:550,easing:'ease-in'}).finished.finally(()=>copies[i].remove());
+    }
+    return;
+  }
+  const card=left||right,source=parts[left?0:1];if(!card||!source)return;
+  const patron=$(card.owner===seat()?.id?'opponent-head':'self-head')?.querySelector('.patron-card');if(!patron)return;
+  const copy=visualCard(source),from=center(source),to=center(patron);
+  const journey=copy.animate([{transform:'translate(0,0) scale(1)'},{transform:`translate(${to.x-from.x}px,${to.y-from.y}px) scale(1.12)`,offset:.55},{transform:'translate(0,0) scale(1)'}],{duration:1250,easing:'ease-in-out'});
+  setTimeout(()=>{patron.classList.add('patron-struck');impact(patron);sound('gun');setTimeout(()=>patron.classList.remove('patron-struck'),650);},690);
+  journey.finished.finally(()=>copy.remove());
+}
 async function animateEvent(event){const player=state?.players.find(p=>p.id===event.playerId);const mine=player?.id===seat()?.id;const from=$(mine?'self-head':'opponent-head');const target=event.targetId?document.querySelector(`.card[data-uid="${event.targetId}"]`):null;
    if(event.type==='coin'){sound('coin');visualMessage('A MOEDA DECIDIU',`${player?.name||'Jogador'} escolhe quem começa`,1900);const coin=document.createElement('div');coin.className='coin-toss';coin.textContent='✦';$('visual-layer').append(coin);setTimeout(()=>coin.remove(),1900);await pause(1700);}
    else if(event.type==='first'){visualMessage('ORDEM DEFINIDA',`${player?.name||'Jogador'} joga primeiro`,1500);await pause(1250);}
@@ -205,6 +254,7 @@ function tickCombat(){
   const classes={reveal:'battle-reveal',magic:'battle-magic',revelation:'battle-revelation',clash:'battle-clash',result:'battle-aftermath'};
   let caption={reveal:'As formações deixam de ser segredo.',revelation:'Habilidades de Revelação entram em ação.',clash:'Criaturas se chocam; posições vazias expõem o Patrono.',result:'O resultado está sendo aplicado.'}[step.kind]||'';
    if(step.kind==='magic'){const spell=step.spell;caption=`${spell.name} · posição ${spell.lane+1} · ${spell.positive?'efeito aliado':'efeito hostil'}`;const side=lanes[spell.lane]?.querySelector(`.lane-side[data-owner="${spell.targetSide}"]`);if(side){side.classList.add(spell.positive?'effect-positive':'effect-negative');side.dataset.effect=`${spell.positive?'+':'−'}${spell.amount||'efeito'}`;fly(spell.op==='area_damage'?'✷':spell.positive?'✦':'➶',$(spell.casterId===seat()?.id?'self-head':'opponent-head'),side,spell.positive?'positive':'spell');sound(spellSound(spell.name,spell.op));setTimeout(()=>impact(side,spell.positive),650);}}
+  if(step.kind==='clash')for(const entry of battle.visual||[])animateLaneClash(entry);
   lanes.forEach(lane=>lane.classList.add(classes[step.kind]));$('battle-banner').textContent={reveal:'FORMAÇÕES REVELADAS',magic:'MAGIA EM AÇÃO',revelation:'REVELAÇÃO',clash:'CONFRONTO',result:'RESULTADO'}[step.kind];$('battle-caption').textContent=caption;
 }
 function render(){hideHover();renderGate();lastRevision=state?.revision??-1;if(!state){lastPhase=null;handOrder=[];pendingArrival=[];mulliganSelected.clear();return;}if(lastPhase==='resolving'&&state.phase!=='resolving')visualMessage('CONFRONTO ENCERRADO',state.phase==='finished'?'Partida concluída':'A próxima rodada começa',1250);if(lastPhase&&lastPhase!==state.phase&&state.phase==='formation')visualMessage('COMBATE INICIADO','Posicione suas criaturas em segredo',1500);if(lastPhase&&lastPhase!==state.phase&&state.phase==='mulligan')mulliganSelected.clear();lastPhase=state.phase;renderBoard();renderSelection();renderActions();renderMulliganOverlay();lastBattleStep='';tickCombat();queueEvents();}

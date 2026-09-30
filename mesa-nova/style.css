@@ -99,3 +99,33 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 #rules-dialog{width:min(640px,92vw);max-height:80vh;overflow:auto;background:#2b2020;border:3px double #d8ad72}#rules-dialog p{line-height:1.55;color:#e9dcc5}#close-rules{float:right}
 @media(max-width:1050px){.game{grid-template-columns:245px minmax(0,1fr)}.rail{padding:12px}.opening-panel{padding:20px}.deck-options{gap:9px}.deck-content{padding:8px 11px 12px}.deck-content h2{font-size:17px}.deck-art{height:155px}}
 @media(max-width:750px){.game{display:flex;flex-direction:column}.rail{order:2;max-height:none}.table{order:1}.opening-overlay{padding:8px;align-items:flex-start}.opening-panel{max-height:calc(100vh - 78px);padding:16px}.deck-options{grid-template-columns:1fr}.deck-option{min-height:0}.deck-art{height:135px}.bot-setup{flex-wrap:wrap}.bot-setup select,.bot-setup button{width:100%}.card.opening-card{width:112px;height:158px}#mulligan-cards{gap:7px;min-height:0}.hand-card{width:72px;height:103px;margin-left:-22px}.hand-zone{height:185px;min-height:185px}.hand-zone .card-row{height:150px}.hand-card .card-title{font-size:8px}.drag-preview{width:72px!important;height:103px!important}}
+
+/* A coluna lateral exibe somente o registro. As decisões ficam sobre a mesa. */
+.game{grid-template-columns:245px minmax(0,1fr)}
+.rail{max-height:calc(100vh - 66px);padding:15px 18px}.rail h3{margin:3px 0 16px}
+.board{position:relative}
+.center-actions{position:relative;z-index:5;width:calc(100% - 160px);max-width:600px;margin:5px auto 12px;padding:8px 12px;background:#261d1de8;border:1px solid #b58b5c;box-shadow:0 8px 19px #0009;text-align:center}
+.center-actions .notice{background:none;border:0;padding:0;margin:0;color:#e4c99c;font-size:11px}
+.center-actions #phase-actions{border:0;margin:0;padding:0}
+.center-actions #phase-actions h3{margin:3px 0;color:#f4daac;font-size:15px}
+.center-actions #phase-actions p{margin:5px 0;font-size:11px;line-height:1.35}
+.center-actions #phase-actions button{margin:3px;min-width:125px}
+.game[data-phase="prep"] .center-actions,.game[data-phase="vote"] .center-actions{position:absolute;top:50%;left:calc((100% - 155px)/2);transform:translate(-50%,-50%);width:min(420px,calc(100% - 170px));margin:0}
+.game[data-phase="resolving"] .center-actions{display:none}
+.selection-tray{min-height:0;padding:10px 18px;background:#2e2220;border-top:2px solid #ac8154;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.selection-tray[hidden]{display:none!important}.selection-tray h3{margin:0;font-size:14px;min-width:150px}.selection-tray p{font-size:11px;max-width:240px;margin:0}.selection-tray .buttons{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0}.selection-tray .buttons button{font-size:11px;padding:7px 9px}.selection-tray .buttons select{width:auto;min-width:130px}.selection-tray .buttons>span{max-width:230px}
+.combat-summary{padding:8px 18px;background:#241d1c;border-top:1px solid #8b6848}.combat-summary h3{margin:2px 0 6px}.combat-summary p{display:inline-block;margin:2px 12px 2px 0;font-size:11px}
+#spectators-game{margin:0;padding:4px 18px;background:#241d1c;font-size:10px}
+.upper-zone,.lower-zone{min-height:145px;padding:8px 14px}
+.upper-zone>.fighter,.lower-zone>.fighter{width:clamp(260px,30%,338px);height:135px;gap:10px}
+.fighter .patron-card{width:69px;height:100px}.fighter .patron-info strong{font-size:14px}.fighter .patron-info .muted{font-size:10px}.fighter .patron-stats .resource{font-size:14px}
+.card.mini{width:69px;height:94px}.card.mini .card-title{font-size:8px}.card.mini .mana-gem{width:21px;height:21px}
+.upper-zone .emana-empty,.lower-zone .emana-empty{width:57px;height:80px}.upper-zone .eman-zone,.lower-zone .eman-zone{width:145px}
+.hand-zone{height:285px;min-height:285px}.hand-zone .card-row{height:240px;padding-bottom:20px}.hand-card{width:118px;height:165px;margin-left:-22px}.hand-card .card-title{font-size:12px}.hand-card .numbers{font-size:13px}.hand-card .mana-gem{width:29px;height:29px;font-size:15px}.drag-preview{width:118px!important;height:165px!important}
+.spell-drop.drop-ready{outline:3px solid #c6e8c9;box-shadow:inset 0 0 25px #a9d9a955!important}
+.visual-card{position:fixed!important;margin:0!important;pointer-events:none!important;z-index:100!important;transform:none!important;filter:drop-shadow(0 8px 9px #000c)}
+.visual-card.visual-dead{filter:sepia(1) saturate(5) hue-rotate(320deg) brightness(.9)!important;box-shadow:0 0 22px #e63626!important}
+.patron-struck{animation:patron-struck .6s ease both}
+@keyframes patron-struck{0%,100%{filter:none}40%{filter:brightness(2) sepia(1) saturate(5) hue-rotate(320deg);transform:translateX(8px)}}
+@media(max-width:1050px){.game{grid-template-columns:210px minmax(0,1fr)}.upper-zone>.fighter,.lower-zone>.fighter{width:260px}.upper-zone,.lower-zone{flex-wrap:wrap}}
+@media(max-width:750px){.game{display:flex;flex-direction:column}.rail{order:2;max-height:220px}.table{order:1}.center-actions,.game[data-phase="prep"] .center-actions,.game[data-phase="vote"] .center-actions{position:relative;top:auto;left:auto;transform:none;width:calc(100% - 110px);margin:5px 0 12px}.upper-zone>.fighter,.lower-zone>.fighter{width:100%}.hand-zone{height:230px;min-height:230px}.hand-zone .card-row{height:185px}.hand-card{width:90px;height:125px;margin-left:-26px}.drag-preview{width:90px!important;height:125px!important}}

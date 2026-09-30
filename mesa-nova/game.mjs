@@ -63,6 +63,11 @@ function beginCombat(room){
   const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...(hasRevelation?[{kind:'revelation',duration:1200}]:[]),{kind:'clash',duration:2400},{kind:'result',duration:900}];
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id}:null;})})),spells};
+  // Simulate on a detached snapshot so the animation knows which cards actually
+  // reach the clash after prepared spells and Revelation have resolved.
+  const preview=structuredClone({...room,onChange:null,botTimer:null,combat:null,collectPreview:true});
+  resolveCombat(preview);
+  room.combat.visual=preview.preClash||[];
   pushLog(room,`Combate da rodada ${room.round}: formações reveladas.`);
   setTimeout(()=>{if(room.phase!=='resolving'||room.combat?.id!==id)return;resolveCombat(room);room.combat=null;room.revision++;room.onChange?.();},duration);
 }
@@ -105,6 +110,7 @@ function resolveCombat(room){
   removeDead(room);checkWin(room);if(room.phase==='finished')return;
   const damage=[];const patronHits=[];
   const [a,b]=room.players;
+  if(room.collectPreview)room.preClash=Array.from({length:3},(_,lane)=>({lane,cards:[a,b].map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,owner:p.id,attack:attack(c,room,lane),health:c.health-c.damage}:null;})}));
   for(let lane=0;lane<3;lane++){
     const ac=laneCard(room,a.id,lane),bc=laneCard(room,b.id,lane);
     if(ac&&bc){damage.push([ac,attack(bc,room,lane)],[bc,attack(ac,room,lane)]);pushLog(room,`Posição ${lane+1}: ${ac.name} enfrenta ${bc.name}.`);}
@@ -173,7 +179,8 @@ export function act(room,p,data,catalog){
           paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||0});
         }else if(mode==='lane'){
           const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição de 1 a 3.');
-          const targetSide=kind==='enemy'||kind==='enemy-board'?other(room,p.id):p;
+          const requestedSide=room.players.find(seat=>seat.id===data.targetSide);
+          const targetSide=requestedSide||((kind==='enemy'||kind==='enemy-board')?other(room,p.id):p);
           if(p.prepared.some(item=>item.targetSide===targetSide.id&&item.lane===lane))throw Error('Você já colocou uma magia nessa posição desse lado.');
           paidCost(p,card,'lane');p.hand=p.hand.filter(c=>c!==card);p.prepared.push({card,targetSide:targetSide.id,lane,hidden:targetSide.id!==p.id});
           pushLog(room,`${p.name} colocou uma magia ${targetSide.id===p.id?'aberta em sua':'oculta na'} posição ${lane+1}.`);
