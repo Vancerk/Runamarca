@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { handleDice } from './dice-game.js';
 import { handleNewGame } from './mesa-nova/server.mjs';
+import { handleAccounts, validMutationOrigin } from './accounts.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'catalog.json'), 'utf8'));
@@ -593,6 +594,10 @@ export function act(room, player, data) {
 
 const files = {
   '/': ['hub.html', 'text/html; charset=utf-8'],
+  '/perfil': ['profile.html', 'text/html; charset=utf-8'],
+  '/account.js': ['account.js', 'text/javascript; charset=utf-8'],
+  '/account.css': ['account.css', 'text/css; charset=utf-8'],
+  '/profile.js': ['profile.js', 'text/javascript; charset=utf-8'],
   '/dados': ['dice.html', 'text/html; charset=utf-8'],
   '/hub.css': ['hub.css', 'text/css; charset=utf-8'],
   '/dice.css': ['dice.css', 'text/css; charset=utf-8'],
@@ -619,6 +624,8 @@ const files = {
 export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://local');
+    if (!validMutationOrigin(req)) { send(res, 403, { error: 'Origem inválida.' }); return; }
+    if (await handleAccounts(req, res, url)) return;
     if (req.method === 'GET' && url.pathname === '/health') { send(res, 200, { ok: true }); return; }
     if (req.method === 'GET' && url.pathname === '/runamarca') { res.writeHead(308, { location: `/runamarca/${url.search}`, 'cache-control': 'no-store' }); res.end(); return; }
     if (url.pathname.startsWith('/runamarca/')) { await handleNewGame(req, res, url, '/runamarca'); return; }

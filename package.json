@@ -5,7 +5,15 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/server.test.js && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs"
+    "test": "node --test test/server.test.js test/accounts.test.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "pg-mem": "^3.0.14"
+  }
 }
