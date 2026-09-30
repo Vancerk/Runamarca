@@ -9,6 +9,7 @@ const early=makeRoom('DEF456','Primeira');act(early,early.players[0],{type:'deck
 act(room,a,{type:'deck',deckId:'ruptura-cacada',art:{R01:{image:'data:image/png;base64,iVBORw0KGgo=',kind:'card'}}},catalog);act(room,b,{type:'deck',deckId:'fluxo-selos'},catalog);
 assert.equal(room.phase,'coin');act(room,room.players.find(p=>p.id===room.coinWinner),{type:'first',playerId:a.id},catalog);
 assert.equal(room.phase,'mulligan');assert.equal(a.hand.length,5);assert.equal(b.hand.length,5);act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);assert.equal(a.hand.length,6);assert.equal(a.manaMax,1);
+assert.equal(a.patron.maxHp,20);assert.equal(b.patron.hp,20);
 assert.equal([...a.hand,...a.deck].find(c=>c.modelId==='R01').imageKind,'card','arte completa mantém seu modo de exibição');
 const model=id=>catalog.decks.flatMap(d=>d.cards).find(c=>c.id===id);
 const instance=(id,owner)=>({...structuredClone(model(id)),uid:`${id}-${Math.random()}`,modelId:id,owner:owner.id,damage:0,attackMod:0});
@@ -33,11 +34,13 @@ b.reserve=[apprentice];act(room,b,{type:'endPrep'},catalog);assert.equal(room.ph
 act(room,a,{type:'vote',fight:true},catalog);assert.equal(room.phase,'formation','um sim inicia imediatamente o combate');
 assert.throws(()=>act(room,b,{type:'vote',fight:false},catalog),/indisponível na formação/);
 act(room,a,{type:'assign',lane:0,cardId:hunter.uid},catalog);assert.equal(view(room,b).players.find(p=>p.id===a.id).formation[0],null,'formação rival fica secreta');
+act(room,a,{type:'assign',lane:0,cardId:null},catalog);assert.equal(a.formation[0],null,'arrastar de volta à reserva libera a posição');
+act(room,a,{type:'assign',lane:0,cardId:hunter.uid},catalog);
 act(room,b,{type:'assign',lane:0,cardId:apprentice.uid},catalog);
 act(room,a,{type:'ready'},catalog);act(room,b,{type:'ready'},catalog);
 assert.equal(room.phase,'resolving');assert.equal(view(room,b).players.find(p=>p.id===a.id).formation[0],hunter.uid,'cartas são reveladas na animação');
 await new Promise(resolve=>setTimeout(resolve,room.combat.duration+80));
-assert.equal(b.patron.hp,20,'armadilha derrota defensor, bônus aliado eleva ataque de 2 a 4');
+assert.equal(b.patron.hp,16,'armadilha derrota defensor, bônus aliado eleva ataque de 2 a 4');
 assert.equal(room.round,2);assert.equal(room.phase,'prep');assert.equal(a.reserve.length,1);assert.equal(b.reserve.length,0);
 assert.equal(room.preparationsDone,0,'a rodada seguinte exige novamente ambas as preparações');
 assert.equal(a.discard.some(c=>c.uid===trap.uid),true);assert.equal(a.discard.some(c=>c.uid===buff.uid),true);

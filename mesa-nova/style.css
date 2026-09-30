@@ -129,3 +129,19 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 @keyframes patron-struck{0%,100%{filter:none}40%{filter:brightness(2) sepia(1) saturate(5) hue-rotate(320deg);transform:translateX(8px)}}
 @media(max-width:1050px){.game{grid-template-columns:210px minmax(0,1fr)}.upper-zone>.fighter,.lower-zone>.fighter{width:260px}.upper-zone,.lower-zone{flex-wrap:wrap}}
 @media(max-width:750px){.game{display:flex;flex-direction:column}.rail{order:2;max-height:220px}.table{order:1}.center-actions,.game[data-phase="prep"] .center-actions,.game[data-phase="vote"] .center-actions{position:relative;top:auto;left:auto;transform:none;width:calc(100% - 110px);margin:5px 0 12px}.upper-zone>.fighter,.lower-zone>.fighter{width:100%}.hand-zone{height:230px;min-height:230px}.hand-zone .card-row{height:185px}.hand-card{width:90px;height:125px;margin-left:-26px}.drag-preview{width:90px!important;height:125px!important}}
+.card .mana-gem.mana-ruptura{background:#8b302c url('energy-icons/ruptura.png') center/cover;border-color:#f7a395}
+.card .mana-gem.mana-forja{background:#a9712a url('energy-icons/forja.png') center/cover;border-color:#ffe39b}
+.card .mana-gem.mana-fluxo{background:#265c89 url('energy-icons/fluxo.png') center/cover;border-color:#a9e4ff}
+.fighter .patron-stats .resource.mana-resource{display:flex;align-items:center;gap:6px;padding:5px 7px;text-transform:uppercase;font-size:11px;letter-spacing:.04em}
+.mana-resource img{width:23px;height:23px;object-fit:cover;border-radius:50%;flex:none}
+.fighter .patron-stats .resource.mana-ruptura{border-color:#d77b66;background:#442523;color:#ffe0d8;box-shadow:0 0 12px #c64b4855}
+.fighter .patron-stats .resource.mana-forja{border-color:#e8c073;background:#473322;color:#fff0c8;box-shadow:0 0 12px #d9a54955}
+.fighter .patron-stats .resource.mana-fluxo{border-color:#80bed9;background:#22394a;color:#d9f3ff;box-shadow:0 0 12px #5aadd055}
+.game[data-phase="formation"] .center-actions{position:absolute;top:16px;left:12px;transform:none;width:clamp(130px,18%,210px);margin:0;padding:7px;z-index:5}
+.game[data-phase="formation"] .center-actions #phase-actions h3{font-size:12px}
+.game[data-phase="formation"] .center-actions #phase-actions button{min-width:0;width:100%}
+.reserve-area.drop-ready{outline:2px solid #e6c582;box-shadow:inset 0 0 18px #e6c58266}
+.hand-zone{overflow:visible}
+.hand-zone .card-row{transform:translateY(-85px);overflow:visible}
+.card.draggable,.card.draggable *{user-select:none;-webkit-user-select:none;-webkit-user-drag:none}
+.card.draggable *{pointer-events:none}
