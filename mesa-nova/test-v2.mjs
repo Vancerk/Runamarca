@@ -23,6 +23,19 @@ act(room,room.players.find(p=>p.id===room.coinWinner),{type:'first',playerId:a.i
 assert.equal(a.deck.length+a.hand.length,24);
 assert.equal(b.deck.length+b.hand.length,24);
 assert.equal(view(room,watcher).players.every(p=>p.hand===undefined),true,'espectador não vê mãos');
+assert.equal(room.phase,'mulligan');
+assert.throws(()=>act(room,room.players.find(p=>p.id===room.coinWinner),{type:'first',playerId:b.id},catalog),/Aguarde a escolha da moeda/,'ordem não muda após a escolha');
+const aOld=a.hand[0].uid,bOld=b.hand[0].uid;
+act(room,a,{type:'mulligan',cardIds:[aOld]},catalog);
+assert.equal(a.hand.length,5);assert.equal(a.mulligansLeft,0);
+assert.throws(()=>act(room,a,{type:'mulligan',cardIds:[a.hand[0].uid]},catalog),/mais trocas/);
+act(room,b,{type:'mulligan',cardIds:[bOld]},catalog);
+act(room,b,{type:'mulligan',cardIds:[b.hand[0].uid]},catalog);
+assert.equal(b.mulligansLeft,0);
+act(room,a,{type:'confirmMulligan'},catalog);
+assert.equal(room.phase,'mulligan');
+act(room,b,{type:'confirmMulligan'},catalog);
+assert.equal(room.phase,'prep');
 
 const model=id=>catalog.decks.flatMap(d=>d.cards).find(c=>c.id===id);
 const instance=(id,p)=>({...structuredClone(model(id)),uid:`${id}-${Math.random()}`,modelId:id,owner:p.id,damage:0,attackMod:0});
@@ -49,4 +62,4 @@ assert.equal(room.phase,'lobby','sair durante a partida libera a sala');
 assert.equal(room.players.length,1);
 act(room,watcher,{type:'takeSeat'},catalog);
 assert.equal(room.players.includes(watcher),true);
-console.log('OK: raridades, 24 cartas, espectadores, convocações, dano em área, limite de mão e saída.');
+console.log('OK: raridades, 24 cartas, espectadores, mulligan, ordem fixa, convocações, dano em área, limite de mão e saída.');

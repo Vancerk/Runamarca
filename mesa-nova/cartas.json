@@ -70,13 +70,17 @@
     "hand_limit": 9,
     "star_win_condition": false,
     "testing_assumptions": [
-      "Sem troca da mão inicial neste primeiro teste.",
       "Fadiga: cada tentativa de compra sem cartas causa 1, 2, 3... de dano ao próprio Patrono.",
       "Nenhuma cura ultrapassa a vida máxima.",
       "Os três confrontos causam dano simultaneamente; derrota simultânea dos Patronos é empate.",
       "Patronos sem habilidade especial nesta versão; os títulos são originais e ainda podem ser substituídos por referências oficiais.",
       "A ordem de preparação permanece fixa neste teste; medir vantagem por assento antes de alterar a regra."
-    ]
+    ],
+    "opening_mulligans": {
+      "first": 1,
+      "second": 2,
+      "choose_individual_cards": true
+    }
   },
   "decks": [
     {
@@ -117,7 +121,9 @@
           "flavor_status": "criação original para o protótipo",
           "effects": [],
           "affinity": "ruptura",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/R01.webp",
+          "speech": "O rastro ainda está quente."
         },
         {
           "id": "R02",
@@ -144,7 +150,9 @@
             }
           ],
           "affinity": "ruptura",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/R02.webp",
+          "speech": "Eu conheço o caminho."
         },
         {
           "id": "R03",
@@ -162,7 +170,9 @@
           "flavor_status": "criação original para o protótipo",
           "effects": [],
           "affinity": "ruptura",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/R03.webp",
+          "speech": "Contrato aceito."
         },
         {
           "id": "R04",
@@ -187,7 +197,9 @@
             }
           ],
           "affinity": "ruptura",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/R04.webp",
+          "speech": "Mão longe do coldre."
         },
         {
           "id": "R05",
@@ -212,7 +224,9 @@
             }
           ],
           "affinity": "ruptura",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/R05.webp",
+          "speech": "A marca foi lançada."
         },
         {
           "id": "R06",
@@ -239,7 +253,9 @@
             }
           ],
           "affinity": "ruptura",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/R06.webp",
+          "speech": "A arena é minha."
         },
         {
           "id": "R07",
@@ -257,7 +273,9 @@
           "flavor_status": "criação original para o protótipo",
           "effects": [],
           "affinity": "ruptura",
-          "rarity": "elite"
+          "rarity": "elite",
+          "image": "art/R07.webp",
+          "speech": "Seguimos juntos."
         },
         {
           "id": "R08",
@@ -284,7 +302,9 @@
             }
           ],
           "affinity": "ruptura",
-          "rarity": "elite"
+          "rarity": "elite",
+          "image": "art/R08.webp",
+          "speech": "Minha presa não escapa."
         },
         {
           "id": "R09",
@@ -424,7 +444,9 @@
           "flavor_status": "criação original para o protótipo",
           "effects": [],
           "affinity": "fluxo",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/M01.webp",
+          "speech": "O Éter responde."
         },
         {
           "id": "M02",
@@ -451,7 +473,9 @@
             }
           ],
           "affinity": "fluxo",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/M02.webp",
+          "speech": "O selo está pronto."
         },
         {
           "id": "M03",
@@ -469,7 +493,9 @@
           "flavor_status": "criação original para o protótipo",
           "effects": [],
           "affinity": "fluxo",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/M03.webp",
+          "speech": "Atrás de mim."
         },
         {
           "id": "M04",
@@ -495,7 +521,9 @@
             }
           ],
           "affinity": "fluxo",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/M04.webp",
+          "speech": "Circuitos em harmonia."
         },
         {
           "id": "M05",
@@ -520,7 +548,9 @@
             }
           ],
           "affinity": "fluxo",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/M05.webp",
+          "speech": "Já li esse destino."
         },
         {
           "id": "M06",
@@ -545,7 +575,9 @@
             }
           ],
           "affinity": "fluxo",
-          "rarity": "elite"
+          "rarity": "elite",
+          "image": "art/M06.webp",
+          "speech": "Selos, despertem."
         },
         {
           "id": "M07",
@@ -739,7 +771,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/F01.webp",
+          "speech": "Ninguém passa."
         },
         {
           "id": "F02",
@@ -765,7 +799,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/F02.webp",
+          "speech": "Escudo erguido."
         },
         {
           "id": "F03",
@@ -790,7 +826,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "lacaio"
+          "rarity": "lacaio",
+          "image": "art/F03.webp",
+          "speech": "A chama nos guarda."
         },
         {
           "id": "F04",
@@ -815,7 +853,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/F04.webp",
+          "speech": "Protocolos ativos."
         },
         {
           "id": "F05",
@@ -841,7 +881,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/F05.webp",
+          "speech": "Já vi pior."
         },
         {
           "id": "F06",
@@ -867,7 +909,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "padrao"
+          "rarity": "padrao",
+          "image": "art/F06.webp",
+          "speech": "Os túmulos vigiam."
         },
         {
           "id": "F07",
@@ -893,7 +937,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "elite"
+          "rarity": "elite",
+          "image": "art/F07.webp",
+          "speech": "Este bastião resiste."
         },
         {
           "id": "F08",
@@ -918,7 +964,9 @@
             }
           ],
           "affinity": "forja",
-          "rarity": "elite"
+          "rarity": "elite",
+          "image": "art/F08.webp",
+          "speech": "Iniciar cerco."
         },
         {
           "id": "F09",

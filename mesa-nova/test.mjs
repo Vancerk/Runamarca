@@ -8,7 +8,7 @@ const room=makeRoom('ABC123','Van');const a=room.players[0],b=join(room,'Vitu');
 const early=makeRoom('DEF456','Primeira');act(early,early.players[0],{type:'deck',deckId:'ruptura-cacada'},catalog);const late=join(early,'Segunda');assert.equal(late.deckId,null,'quem entra depois escolhe o próprio deck');
 act(room,a,{type:'deck',deckId:'ruptura-cacada',art:{R01:{image:'data:image/png;base64,iVBORw0KGgo=',kind:'card'}}},catalog);act(room,b,{type:'deck',deckId:'fluxo-selos'},catalog);
 assert.equal(room.phase,'coin');act(room,room.players.find(p=>p.id===room.coinWinner),{type:'first',playerId:a.id},catalog);
-assert.equal(a.hand.length,6);assert.equal(a.manaMax,1);assert.equal(b.hand.length,5);
+assert.equal(room.phase,'mulligan');assert.equal(a.hand.length,5);assert.equal(b.hand.length,5);act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);assert.equal(a.hand.length,6);assert.equal(a.manaMax,1);
 assert.equal([...a.hand,...a.deck].find(c=>c.modelId==='R01').imageKind,'card','arte completa mantém seu modo de exibição');
 const model=id=>catalog.decks.flatMap(d=>d.cards).find(c=>c.id===id);
 const instance=(id,owner)=>({...structuredClone(model(id)),uid:`${id}-${Math.random()}`,modelId:id,owner:owner.id,damage:0,attackMod:0});

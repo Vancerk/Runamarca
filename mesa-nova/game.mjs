@@ -20,7 +20,7 @@ const attack = (card,room,lane) => {
 const laneCard = (room,ownerId,lane) => own(room,ownerId).formation[lane] ? own(room,ownerId).reserve.find(c=>c.uid===own(room,ownerId).formation[lane]) : null;
 const findCreature = (p,uid) => p.reserve.find(c=>c.uid===uid && alive(c));
 
-function freshPlayer(name){return {id:randomUUID(),token:token(),name:cleanName(name),deckId:null,art:{},patron:null,deck:[],hand:[],reserve:[],discard:[],manaMax:0,mana:0,fatigue:0,formation:[null,null,null],emanation:[],directPlayed:false,discountUsed:false,prepared:[],vote:null,ready:false};}
+function freshPlayer(name){return {id:randomUUID(),token:token(),name:cleanName(name),deckId:null,art:{},patron:null,deck:[],hand:[],reserve:[],discard:[],manaMax:0,mana:0,fatigue:0,formation:[null,null,null],emanation:[],directPlayed:false,discountUsed:false,prepared:[],vote:null,ready:false,mulligansLeft:0,mulliganReady:false};}
 export function makeRoom(roomCode,name,role='player'){
   const player=freshPlayer(name);
   return {code:roomCode,inviteToken:token(),players:role==='spectator'?[]:[player],spectators:role==='spectator'?[player]:[],phase:'lobby',round:1,turn:null,first:null,coinWinner:null,winner:null,log:[],events:[],eventId:0,revision:0};
@@ -28,12 +28,12 @@ export function makeRoom(roomCode,name,role='player'){
 export function cleanName(value){return String(value||'').trim().slice(0,30)||'Caçador';}
 export function join(room,name,role='player'){if(!['player','spectator'].includes(role))throw Error('Papel inválido.');if(role==='player'&&(room.players.length>=2||room.phase!=='lobby'))throw Error('As vagas de jogador estão ocupadas. Entre na arquibancada.');const p=freshPlayer(name);(role==='spectator'?room.spectators:room.players).push(p);pushLog(room,`${p.name} entrou ${role==='spectator'?'na arquibancada':'na sala'}.`);room.revision++;return p;}
 export function findPlayer(room,secret){return [...room.players,...room.spectators].find(p=>p.token===secret);}
-function draw(room,p,n=1,silent=false){for(let i=0;i<n;i++){if(p.deck.length){const card=p.deck.pop();if(p.hand.length>=9){p.discard.push(card);pushLog(room,`${p.name} queimou uma carta: mão cheia (9).`);if(!silent)emit(room,'burn',{playerId:p.id});}else{p.hand.push(card);if(!silent)emit(room,'draw',{playerId:p.id});}}else{p.fatigue++;p.patron.hp-=p.fatigue;pushLog(room,`${p.name} sofreu ${p.fatigue} de fadiga.`);emit(room,'fatigue',{playerId:p.id,amount:p.fatigue});checkWin(room);if(room.phase==='finished')break;}}}
+function draw(room,p,n=1,silent=false){for(let i=0;i<n;i++){if(p.deck.length){const card=p.deck.pop();if(p.hand.length>=9){p.discard.push(card);pushLog(room,`${p.name} queimou ${card.name}: mão cheia (9).`);if(!silent)emit(room,'burn',{playerId:p.id,name:card.name});}else{p.hand.push(card);if(!silent)emit(room,'draw',{playerId:p.id});}}else{p.fatigue++;p.patron.hp-=p.fatigue;pushLog(room,`${p.name} sofreu ${p.fatigue} de fadiga.`);emit(room,'fatigue',{playerId:p.id,amount:p.fatigue});checkWin(room);if(room.phase==='finished')break;}}}
 function startPrep(room,p){room.phase='prep';room.turn=p.id;p.manaMax=Math.min(10,p.manaMax+1);p.mana=p.manaMax;p.directPlayed=false;p.discountUsed=false;p.vote=null;p.ready=false;p.formation=[null,null,null];emit(room,'turn',{playerId:p.id,round:room.round});draw(room,p);pushLog(room,`Preparação de ${p.name}: ${p.mana}/${p.manaMax} mana e uma compra.`);}
 const patronPortrait={ruptura:'patrons/garra-vigilante.png',fluxo:'patrons/olho-dos-pactos.png',forja:'patrons/bigorna-desperta.png'};
-function startMatch(room,first){room.first=first;room.round=1;room.preparationsDone=0;room.lastCombat=null;room.combat=null;for(const p of room.players){const deck=p.deckData;const art=id=>typeof p.art[id]==='string'?{image:p.art[id],kind:'illustration'}:p.art[id]||{image:null,kind:null};p.patron={name:deck.patron.name,hp:24,maxHp:24,affinity:deck.affinity,image:art(deck.patron.id).image||patronPortrait[deck.affinity]};p.deck=shuffle(deck.cards.flatMap(model=>Array.from({length:model.quantity},()=>({...structuredClone(model),uid:randomUUID(),modelId:model.id,owner:p.id,damage:0,attackMod:0,image:art(model.id).image,imageKind:art(model.id).kind}))));p.hand=[];p.reserve=[];p.discard=[];p.mana=p.manaMax=p.fatigue=0;p.prepared=[];p.emanation=[];p.formation=[null,null,null];p.vote=null;p.ready=false;draw(room,p,5,true);}startPrep(room,own(room,first));}
+function startMatch(room,first){room.first=first;room.phase='mulligan';room.round=1;room.preparationsDone=0;room.lastCombat=null;room.combat=null;emit(room,'first',{playerId:first});for(const p of room.players){const deck=p.deckData;const art=id=>typeof p.art[id]==='string'?{image:p.art[id],kind:'illustration'}:p.art[id]||{image:null,kind:null};p.patron={name:deck.patron.name,hp:24,maxHp:24,affinity:deck.affinity,image:art(deck.patron.id).image||patronPortrait[deck.affinity]};p.deck=shuffle(deck.cards.flatMap(model=>Array.from({length:model.quantity},()=>({...structuredClone(model),uid:randomUUID(),modelId:model.id,owner:p.id,damage:0,attackMod:0,image:art(model.id).image||model.image||null,imageKind:art(model.id).kind||'illustration'}))));p.hand=[];p.reserve=[];p.discard=[];p.mana=p.manaMax=p.fatigue=0;p.prepared=[];p.emanation=[];p.formation=[null,null,null];p.vote=null;p.ready=false;p.mulligansLeft=p.id===first?1:2;p.mulliganReady=false;draw(room,p,5,true);emit(room,'opening',{playerId:p.id,count:5});}}
 function checkWin(room){if(room.phase==='finished')return;const down=room.players.filter(p=>p.patron?.hp<=0);if(!down.length)return;room.phase='finished';room.turn=null;room.winner=down.length===2?null:other(room,down[0].id).id;pushLog(room,down.length===2?'Empate: ambos os Patronos caíram.':`${other(room,down[0].id).name} venceu.`);}
-function resetToLobby(room){for(const seat of room.players){seat.deckId=null;seat.deckData=null;seat.art={};seat.patron=null;seat.hand=[];seat.deck=[];seat.reserve=[];seat.discard=[];seat.prepared=[];seat.emanation=[];}room.phase='lobby';room.winner=room.coinWinner=room.first=room.turn=null;room.lastCombat=room.combat=null;room.round=1;room.preparationsDone=0;}
+function resetToLobby(room){for(const seat of room.players){seat.deckId=null;seat.deckData=null;seat.art={};seat.patron=null;seat.hand=[];seat.deck=[];seat.reserve=[];seat.discard=[];seat.prepared=[];seat.emanation=[];seat.mulligansLeft=0;seat.mulliganReady=false;}room.phase='lobby';room.winner=room.coinWinner=room.first=room.turn=null;room.lastCombat=room.combat=null;room.round=1;room.preparationsDone=0;}
 function removeDead(room){for(const p of room.players){const dead=p.reserve.filter(c=>!alive(c));for(const c of dead){p.discard.push(c);p.formation=p.formation.map(uid=>uid===c.uid?null:uid);p.emanation=p.emanation.filter(uid=>uid!==c.uid);pushLog(room,`${c.name} foi derrotada.`);}p.reserve=p.reserve.filter(alive);}}
 function applyDamage(room,card,amount){if(card && amount>0)card.damage+=amount;}
 function applyEffect(room,caster,spell,target,phase){
@@ -61,7 +61,7 @@ function beginCombat(room){
   const spells=room.players.flatMap(p=>p.prepared.filter(item=>laneCard(room,item.targetSide,item.lane)).map(item=>({name:item.card.name,casterId:p.id,lane:item.lane,targetSide:item.targetSide,positive:item.targetSide===p.id,amount:effects(item.card).map(ef=>ef.amount||ef.amount_if_true||0).join('/'),op:effect(item.card)?.op})));
   const hasRevelation=room.players.some(p=>p.formation.some(uid=>p.reserve.find(c=>c.uid===uid&&effects(c).some(ef=>ef.timing==='revelation'&&(ef.condition!=='owner_played_direct_spell_this_round'||p.directPlayed)))));
   const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...(hasRevelation?[{kind:'revelation',duration:1200}]:[]),{kind:'clash',duration:2400},{kind:'result',duration:900}];
-  const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
+    const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id}:null;})})),spells};
   pushLog(room,`Combate da rodada ${room.round}: formações reveladas.`);
   setTimeout(()=>{if(room.phase!=='resolving'||room.combat?.id!==id)return;resolveCombat(room);room.combat=null;room.revision++;},duration);
@@ -133,11 +133,21 @@ export function act(room,p,data,catalog){
     if(room.phase!=='lobby')throw Error('A escolha de decks terminou.');const deck=catalog.decks.find(d=>d.id===data.deckId);if(!deck)throw Error('Deck desconhecido.');
     const limits={lacaio:3,padrao:2,elite:1};if(deck.cards.reduce((sum,c)=>sum+c.quantity,0)!==24||deck.cards.some(c=>!Number.isInteger(c.quantity)||c.quantity<1||c.quantity>limits[c.rarity]))throw Error('Deck inválido: 24 cartas, até 3 lacaios, 2 padrões e 1 elite por carta.');
     const art={};for(const [id,entry] of Object.entries(data.art||{})){if(!deck.cards.some(c=>c.id===id)&&id!==deck.patron.id)continue;const image=typeof entry==='string'?entry:entry?.image;const kind=typeof entry==='string'?'illustration':entry?.kind;if(typeof image!=='string'||image.length>2_000_000||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i.test(image)||!['card','illustration'].includes(kind))throw Error('Imagem inválida.');art[id]={image,kind};}
-    p.deckId=deck.id;p.deckData=deck;p.art=art;pushLog(room,`${p.name} escolheu ${deck.name}.`);if(room.players.length===2&&room.players.every(x=>x.deckId)){room.phase='coin';room.coinWinner=room.players[randomBytes(1)[0]%2].id;pushLog(room,`${own(room,room.coinWinner).name} venceu a moeda e escolhe quem começa.`);}room.revision++;return;
+    p.deckId=deck.id;p.deckData=deck;p.art=art;pushLog(room,`${p.name} escolheu ${deck.name}.`);if(room.players.length===2&&room.players.every(x=>x.deckId)){room.phase='coin';room.coinWinner=room.players[randomBytes(1)[0]%2].id;emit(room,'coin',{playerId:room.coinWinner});pushLog(room,`${own(room,room.coinWinner).name} venceu a moeda e escolhe quem começa.`);}room.revision++;return;
   }
   if(data.type==='first'){
     if(room.phase!=='coin'||p.id!==room.coinWinner)throw Error('Aguarde a escolha da moeda.');
     const first=room.players.find(x=>x.id===data.playerId);if(!first)throw Error('Jogador inválido.');startMatch(room,first.id);room.revision++;return;
+  }
+  if(room.phase==='mulligan'){
+    if(p.mulliganReady)throw Error('Sua mão inicial já foi confirmada.');
+    if(data.type==='mulligan'){
+      if(p.mulligansLeft<=0)throw Error('Você não tem mais trocas disponíveis.');
+      const ids=data.cardIds;if(!Array.isArray(ids)||ids.length<1||ids.length>5||new Set(ids).size!==ids.length||ids.some(id=>!p.hand.some(c=>c.uid===id)))throw Error('Selecione de uma a cinco cartas da sua mão.');
+      const returning=p.hand.filter(c=>ids.includes(c.uid));p.hand=p.hand.filter(c=>!ids.includes(c.uid));p.deck=shuffle([...p.deck,...returning]);p.mulligansLeft--;emit(room,'mulligan',{playerId:p.id,count:returning.length});draw(room,p,returning.length);pushLog(room,`${p.name} trocou ${returning.length} carta(s) da mão inicial.`);
+    }else if(data.type==='confirmMulligan'){
+      p.mulliganReady=true;pushLog(room,`${p.name} confirmou a mão inicial.`);if(room.players.every(x=>x.mulliganReady))startPrep(room,own(room,room.first));
+    }else throw Error('Ação indisponível na troca inicial.');room.revision++;return;
   }
   if(room.phase==='prep'){
     if(p.id!==room.turn)throw Error('Aguarde sua preparação.');
@@ -148,7 +158,7 @@ export function act(room,p,data,catalog){
         if(p.reserve.length>=8)throw Error('Reserva cheia: até 8 criaturas em campo.');
         if(toEmanation&&(!effects(card).some(ef=>String(ef.timing).includes('emanat'))||p.emanation.length>=2))throw Error('Esta carta não pode entrar em Emanação ou as duas vagas estão ocupadas.');
         paidCost(p,card);p.hand=p.hand.filter(c=>c!==card);p.reserve.push(card);if(toEmanation)p.emanation.push(card.uid);
-        pushLog(room,`${p.name} jogou ${card.name} ${toEmanation?'diretamente em Emanação':'na reserva'}.`);for(const ef of effects(card).filter(x=>x.timing==='on_enter'))applyEffect(room,p,{effects:[ef],id:card.id},card);
+        pushLog(room,`${p.name} jogou ${card.name} ${toEmanation?'diretamente em Emanação':'na reserva'}.`);emit(room,'creature',{playerId:p.id,cardId:card.uid,name:card.name,zone:toEmanation?'emana':'reserve',speech:card.speech||'A caçada começa.'});for(const ef of effects(card).filter(x=>x.timing==='on_enter'))applyEffect(room,p,{effects:[ef],id:card.id},card);
       }
       else{
         const mode=data.mode||'direct';const kind=targetKind(card);
@@ -170,6 +180,7 @@ export function act(room,p,data,catalog){
       if(p.mana<1)throw Error('Mover entre reserva e Emanação custa 1 mana.');p.mana--;
       p.emanation=leaving?p.emanation.filter(uid=>uid!==card.uid):[...p.emanation,card.uid];
       pushLog(room,`${card.name} ${leaving?'voltou à reserva':'entrou em Emanação'} por 1 mana.`);
+      emit(room,'creature',{playerId:p.id,cardId:card.uid,name:card.name,zone:leaving?'reserve':'emana',speech:card.speech||'Estou a postos.'});
     }else if(data.type==='endPrep'){
       const clerics=p.emanation.filter(uid=>p.reserve.find(c=>c.uid===uid)?.modelId==='F03');
       clerics.forEach((_,index)=>{const target=findCreature(p,data.healTargetIds?.[index]||data.healTargetId);if(target)target.damage=Math.max(0,target.damage-1);});
@@ -200,7 +211,7 @@ export function act(room,p,data,catalog){
 export function view(room,p){
   const reveal=room.phase==='finished'||room.phase==='resolving';
   return {code:room.code,inviteToken:room.inviteToken,phase:room.phase,round:room.round,turn:room.turn,first:room.first,coinWinner:room.coinWinner,winner:room.winner,you:p.id,spectator:room.spectators.includes(p),spectators:room.spectators.map(x=>({id:x.id,name:x.name})),revision:room.revision,serverNow:Date.now(),events:room.events.slice(-20),log:room.log.slice(-18),lastCombat:room.lastCombat||null,combat:room.phase==='resolving'?room.combat:null,players:room.players.map(seat=>({
-    id:seat.id,name:seat.name,deckId:seat.deckId,patron:seat.patron,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,hand:seat.id===p.id?seat.hand:undefined,
+     id:seat.id,name:seat.name,deckId:seat.deckId,patron:seat.patron,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,mulligansLeft:seat.id===p.id?seat.mulligansLeft:undefined,mulliganReady:seat.mulliganReady,hand:seat.id===p.id?seat.hand:undefined,
     reserve:seat.reserve?.map(c=>({...c,owner:seat.id})),emanation:seat.emanation||[],
     formation:seat.id===p.id||reveal?seat.formation:[null,null,null],ready:seat.ready,voted:seat.vote!==null,
     prepared:room.players.flatMap(caster=>caster.prepared.filter(item=>item.targetSide===seat.id).map(item=>({lane:item.lane,caster:caster.id,card:reveal||caster.id===p.id||!item.hidden?item.card:null,hidden:!reveal&&caster.id!==p.id&&item.hidden})))
