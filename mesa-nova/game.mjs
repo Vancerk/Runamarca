@@ -54,14 +54,14 @@ function applyEffect(room,caster,spell,target,phase){
 function targetKind(spell){const ef=effect(spell);if(ef?.op==='draw')return 'self';if(ef?.op==='area_damage')return 'enemy-board';if(ef?.op==='choose_one')return 'friendly-or-patron';if(['heal','attack_modifier'].includes(ef?.op)&&ef?.target==='chosen_allied_creature')return 'friendly';return 'enemy';}
 function validTarget(room,p,spell,targetId){const kind=targetKind(spell);if(kind==='self'||kind==='enemy-board')return {kind,target:null};if(kind==='friendly-or-patron'&&targetId==='patron')return {kind,target:{patron:true}};const side=kind==='enemy'?other(room,p.id):p;const target=findCreature(side,targetId);if(!target)throw Error('Escolha uma criatura viva do lado correto.');return {kind,target};}
 function paidCost(p,card,mode='direct'){let cost=card.cost;const sources=p.emanation.filter(uid=>p.reserve.find(c=>c.uid===uid)?.modelId==='M04').length;const discount=mode==='direct'&&card.type!=='creature'&&sources>0&&!p.discountUsed&&!p.directPlayed;if(discount)cost=Math.max(1,cost-sources);if(p.mana<cost)throw Error(`Mana insuficiente: precisa de ${cost}.`);p.mana-=cost;if(discount)p.discountUsed=true;return cost;}
-function finishRound(room){room.preparationsDone=0;for(const p of room.players){p.formation=[null,null,null];p.vote=null;p.ready=false;p.directPlayed=false;p.discountUsed=false;for(const c of p.reserve)c.attackMod=0;}room.round++;startPrep(room,own(room,room.first));}
+function finishRound(room){for(const p of room.players){for(const prep of p.prepared.filter(item=>effects(item.card).some(ef=>ef.op==='area_damage'))){p.discard.push(prep.card);emit(room,'expire',{playerId:p.id,cardId:prep.card.uid,name:prep.card.name});pushLog(room,`${prep.card.name} se desfez ao fim da rodada.`,p.id);}p.prepared=p.prepared.filter(item=>!effects(item.card).some(ef=>ef.op==='area_damage'));}room.preparationsDone=0;for(const p of room.players){p.formation=[null,null,null];p.vote=null;p.ready=false;p.directPlayed=false;p.discountUsed=false;for(const c of p.reserve)c.attackMod=0;}room.round++;startPrep(room,own(room,room.first));}
 export const COMBAT_MS=9000;
 function beginCombat(room){
   const id=randomUUID();
   room.phase='resolving';
   const spells=room.players.flatMap(p=>p.prepared.filter(item=>laneCard(room,item.targetSide,item.lane)).map(item=>({name:item.card.name,casterId:p.id,lane:item.lane,targetSide:item.targetSide,positive:item.targetSide===p.id,amount:effects(item.card).map(ef=>ef.amount||ef.amount_if_true||0).join('/'),op:effect(item.card)?.op})));
-  const hasRevelation=room.players.some(p=>p.formation.some(uid=>p.reserve.find(c=>c.uid===uid&&effects(c).some(ef=>ef.timing==='revelation'&&(ef.condition!=='owner_played_direct_spell_this_round'||p.directPlayed)))));
-  const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...(hasRevelation?[{kind:'revelation',duration:1200}]:[]),...Array.from({length:3},(_,lane)=>({kind:'clash',lane,duration:2200})),{kind:'result',duration:1200}];
+  const revelations=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const card=p.reserve.find(c=>c.uid===uid),ef=card&&effects(card).find(ef=>ef.timing==='revelation'&&(ef.condition!=='owner_played_direct_spell_this_round'||p.directPlayed));return ef?[{sourceId:uid,casterId:p.id,targetSide:ef.target==='self'?p.id:other(room,p.id).id,lane,name:card.name,op:ef.op,amount:ef.amount}]:[];}));
+  const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...revelations.map(ability=>({kind:'revelation',duration:1200,ability})),...Array.from({length:3},(_,lane)=>({kind:'clash',lane,duration:2200})),{kind:'result',duration:1200}];
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id}:null;})})),spells};
   // Simulate on a detached snapshot so the animation knows which cards actually
@@ -171,8 +171,8 @@ export function act(room,p,data,catalog){
     const prep=p.prepared.find(item=>item.card.uid===data.cardId);if(!prep)throw Error('Escolha uma magia preparada por você.');
     if(data.type==='unprepare'){
       if(p.hand.length>=9)throw Error('Sua mão está cheia. Reposicione a magia em vez de retirar.');
-      p.prepared=p.prepared.filter(item=>item!==prep);p.hand.push(prep.card);p.mana+=prep.paid??prep.card.cost;
-      pushLog(room,`${p.name} retirou uma magia preparada e recuperou sua mana.`,p.id);
+      p.prepared=p.prepared.filter(item=>item!==prep);p.hand.push(prep.card);/* Retirar não restaura recursos já gastos. */
+      pushLog(room,`${p.name} retirou uma magia preparada (sem reembolso de mana).`,p.id);
     }else{
       const lane=Number(data.lane),side=own(room,data.targetSide);
       if(!side||!Number.isInteger(lane)||lane<0||lane>2)throw Error('Posição inválida.');

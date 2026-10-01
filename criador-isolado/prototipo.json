@@ -662,7 +662,7 @@
           "subtype": "Magia · Ruptura de selo",
           "cost": 5,
           "quantity": 2,
-          "text": "Cause 2 de dano a todas as criaturas inimigas. Preparada: dispara quando uma criatura entrar na posição escolhida.",
+          "text": "Cause 2 de dano a todas as criaturas inimigas. Preparada: dispara quando uma criatura entrar na posição escolhida. Se preparada em uma posição, se desfaz ao fim da rodada mesmo sem ativar.",
           "role": "Resposta cara a uma ameaça de qualquer tamanho.",
           "lore_basis": "Efeito original de RunaMarca inspirado na manipulação do Éter; não reproduz uma magia oficial.",
           "flavor": "Todo vínculo possui um ponto que não deveria ser tocado.",

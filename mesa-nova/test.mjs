@@ -27,7 +27,7 @@ act(room,a,{type:'movePrepared',cardId:trap.uid,lane:2,targetSide:b.id},catalog)
 assert.equal(a.prepared[0].lane,2);assert.equal(a.mana,spent,'reposicionar não cobra outra vez');
 assert.throws(()=>act(room,b,{type:'unprepare',cardId:trap.uid},catalog),/preparação/,'rival não pode retirar armadilha');
 act(room,a,{type:'unprepare',cardId:trap.uid},catalog);
-assert.equal(a.mana,10,'retirada devolve exatamente a mana paga');assert.ok(a.hand.some(c=>c.uid===trap.uid));
+assert.equal(a.mana,spent,'retirada não gera nem devolve mana');assert.ok(a.hand.some(c=>c.uid===trap.uid));
 act(room,a,{type:'play',cardId:trap.uid,mode:'lane',lane:0},catalog);
 
 assert.equal(view(room,b).players.find(p=>p.id===b.id).prepared[0].card,null,'armadilha inimiga fica oculta');
@@ -61,3 +61,19 @@ assert.ok(room.log.length<=10,'registro guarda no máximo dez atualizações');
 assert.ok(room.log.every(entry=>Number.isInteger(entry.round)&&typeof entry.message==='string'),'registro preserva rodada e mensagem para agrupar turnos');
 assert.equal(a.discard.some(c=>c.uid===trap.uid),true);assert.equal(a.discard.some(c=>c.uid===buff.uid),true);
 console.log('OK: abertura, mana, sigilo, duas magias posicionadas, três fases e dano ao Patrono.');
+
+// A magia em área expira sem ativar; uma armadilha comum permanece. Nenhuma retirada restitui mana.
+const areaModel=catalog.decks.flatMap(d=>d.cards).find(c=>c.effects.some(ef=>ef.op==='area_damage'));
+const area=instance(areaModel.id,a),lasting=instance('R11',a);a.hand.push(area,lasting);a.mana=10;
+act(room,a,{type:'play',cardId:area.uid,mode:'lane',lane:1,targetSide:b.id},catalog);
+act(room,a,{type:'play',cardId:lasting.uid,mode:'lane',lane:2,targetSide:b.id},catalog);
+const manaAfterPlacement=a.mana;
+act(room,a,{type:'unprepare',cardId:lasting.uid},catalog);assert.equal(a.mana,manaAfterPlacement);assert.throws(()=>act(room,a,{type:'unprepare',cardId:lasting.uid},catalog),/preparada/);
+a.mana=10;act(room,a,{type:'play',cardId:lasting.uid,mode:'lane',lane:2,targetSide:b.id},catalog);
+act(room,a,{type:'endPrep'},catalog);act(room,b,{type:'endPrep'},catalog);
+act(room,a,{type:'vote',fight:false},catalog);act(room,b,{type:'vote',fight:false},catalog);
+assert.ok(a.discard.some(c=>c.uid===area.uid),'dano em área expira mesmo sem combate');assert.ok(a.prepared.some(item=>item.card.uid===lasting.uid),'outras magias não expiram');
+const enemyView=view(room,b).players.flatMap(p=>p.prepared).find(item=>item.caster===a.id);assert.equal(enemyView.card,null);assert.equal(enemyView.hidden,true);
+act(room,a,{type:'endPrep'},catalog);act(room,b,{type:'endPrep'},catalog);act(room,a,{type:'vote',fight:true},catalog);
+assert.equal(view(room,b).players.flatMap(p=>p.prepared).find(item=>item.caster===a.id).card,null,'armadilha permanece secreta ao posicionar criaturas');
+console.log('OK: retirada sem reembolso, expiração seletiva em área e sigilo durante formação.');

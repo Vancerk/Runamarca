@@ -170,3 +170,8 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 @media(max-width:750px){.game[data-phase="formation"] .center-actions{left:calc((100% - 94px)/2);right:auto;width:150px}}
 .deck-stack{width:28px;height:39px;flex:0 0 28px;margin-left:6px;border:1px solid #b59254;border-radius:3px;box-shadow:3px 2px 0 #493520,5px 4px 0 #a08048;overflow:hidden}.deck-stack img{width:100%;height:100%;object-fit:cover}
 #creator-dialog{width:96vw;max-width:1800px;height:94dvh;max-height:94dvh;padding:0;border:1px solid #d2aa65;background:#15110e;overflow:hidden}#creator-dialog::backdrop{background:#070503c9;backdrop-filter:blur(8px)}#creator-dialog>header{height:48px;padding:8px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #795d39;color:#edce8e;font:600 12px Cinzel,Georgia,serif}#creator-dialog iframe{display:block;width:100%;height:calc(100% - 48px);border:0}
+
+/* Keep flight geometry independent of idle, arrival and hover animations. */
+.visual-card{transform-origin:center!important;transition:none!important}.speech-bubble{z-index:130;max-width:260px;box-shadow:0 6px 20px #000c;border:2px solid #d1aa72;color:#fff0cf;background:#302018;animation-duration:2.6s}
+.patron-struck{animation:patron-knockback .24s ease-out!important}
+@keyframes patron-knockback{0%,100%{transform:translateY(0);filter:none}35%{transform:translateY(-9px);filter:sepia(1) saturate(5) hue-rotate(320deg)}65%{transform:translateY(-3px);filter:none}}
