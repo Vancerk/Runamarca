@@ -198,3 +198,40 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .lane-side .card.mini .card-title{font-size:10px}.lane-side .card.mini .numbers{font-size:11px}.lane-side .card.mini .mana-gem{width:25px;height:25px;font-size:13px}
 .game[data-phase="formation"] .center-actions{left:calc((100% - 155px)/2)}
 @media(max-width:750px){.lanes{width:calc(100% - 100px);min-height:246.4px}.lane{height:246.4px;min-height:246.4px}.lane-side .card.mini{width:75px;height:102px;flex-basis:75px}.game[data-phase="formation"] .center-actions{left:calc((100% - 100px)/2)}}
+
+/* Compact combat spaces, with phase controls beside Nartvanyr. */
+.board{display:grid;grid-template-columns:minmax(0,1fr) 132px;align-items:center;column-gap:10px;padding:6px}
+.lanes{grid-column:1;grid-row:1;width:100%;min-height:192.08px;gap:6px;align-self:center}
+.lane{position:relative;height:192.08px;min-height:192.08px;grid-template-rows:repeat(2,minmax(0,1fr));padding:2px}
+.lane::before{content:attr(data-symbol);position:absolute;inset:0;display:grid;place-items:center;color:#e4c38e18;font:64px Georgia,serif;pointer-events:none}
+.lane-side{min-width:0;z-index:1}
+.lane-side .card.mini{width:64px;height:87px;flex-basis:64px}
+.lane-side .card.mini .card-title{font-size:8px}.lane-side .card.mini .numbers{font-size:9px}
+.lane-side .card.mini .mana-gem{width:21px;height:21px;font-size:11px}
+.nartvanyr{position:relative;grid-column:2;grid-row:1;right:auto;top:auto;transform:none;width:132px;height:192.08px;grid-template-rows:24px 1fr 1fr}
+.nartvanyr button{height:54px}.nartvanyr button img{height:45px;width:32px}
+.game[data-phase="prep"] .board,.game[data-phase="vote"] .board{grid-template-columns:minmax(0,1fr) 140px 132px}
+.game[data-phase="prep"] .nartvanyr,.game[data-phase="vote"] .nartvanyr{grid-column:3}
+.game[data-phase="prep"] .center-actions,.game[data-phase="vote"] .center-actions{position:relative;grid-column:2;grid-row:1;top:auto;left:auto;right:auto;transform:none;width:100%;margin:0;padding:8px 6px;max-height:192px;overflow:auto;text-align:left}
+.game[data-phase="prep"] #phase-actions,.game[data-phase="vote"] #phase-actions{display:flex;flex-direction:column;gap:6px}
+.game[data-phase="prep"] .center-actions button,.game[data-phase="vote"] .center-actions button{min-width:0;width:100%;font-size:11px;margin:0;padding:9px 5px}
+.game[data-phase="prep"] .center-actions select{width:100%;min-width:0;font-size:11px;padding:6px 2px}
+.game[data-phase="prep"] .center-actions .muted{font-size:10px}
+.game[data-phase="prep"] .center-actions:has(#phase-actions:empty){visibility:hidden}
+.game[data-phase="formation"] .center-actions{left:calc((100% - 150px)/2)}
+.patron-card{position:relative}
+.patron-red-flash{position:absolute;inset:0;background:#d52a35;pointer-events:none;z-index:10;animation:patron-red-flash .35s ease-out both}
+@keyframes patron-red-flash{0%,100%{opacity:0}35%{opacity:.55}}
+.patron-struck{animation:patron-knockback .3s ease-out!important}
+@keyframes patron-knockback{0%,100%{transform:translateY(0)}35%{transform:translateY(-9px)}65%{transform:translateY(-3px)}}
+.attack-value.attack-increased{display:inline-block;animation:attack-number-glow 1.2s ease-out both}
+@keyframes attack-number-glow{0%,35%{color:#b0ff99;text-shadow:0 0 5px #71eb63,0 0 12px #56da62;transform:scale(1.2)}100%{color:#ffe0ab;text-shadow:none;transform:scale(1)}}
+@media(max-width:750px){
+ .board{grid-template-columns:minmax(0,1fr) 92px;gap:4px;padding:4px}
+ .lanes{width:100%;min-height:172.48px;gap:3px}.lane{height:172.48px;min-height:172.48px;padding:1px}
+ .lane-side .card.mini{width:57px;height:78px;flex-basis:57px}
+ .nartvanyr{width:92px;height:172.48px}.nartvanyr button{height:44px}.nartvanyr button img{height:35px;width:25px}
+ .game[data-phase="prep"] .board,.game[data-phase="vote"] .board{grid-template-columns:minmax(0,1fr) 105px 92px}
+ .game[data-phase="prep"] .center-actions,.game[data-phase="vote"] .center-actions{width:100%;max-height:172px;padding:4px}
+ .game[data-phase="formation"] .center-actions{left:calc((100% - 104px)/2)}
+}

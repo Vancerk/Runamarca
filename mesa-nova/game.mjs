@@ -197,7 +197,7 @@ export function act(room,p,data,catalog){
         const mode=data.mode||'direct';const kind=targetKind(card);
         if(mode==='direct'){
           const {target}=validTarget(room,p,card,data.targetId);
-          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||0});
+          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||0,attackAfter:effect(card)?.op==='attack_modifier'&&target?Math.max(0,target.attack+(target.attackMod||0)):undefined});
         }else if(mode==='lane'){
           const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição de 1 a 3.');
           const requestedSide=room.players.find(seat=>seat.id===data.targetSide);
