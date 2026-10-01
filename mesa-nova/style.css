@@ -175,3 +175,17 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .visual-card{transform-origin:center!important;transition:none!important}.speech-bubble{z-index:130;max-width:260px;box-shadow:0 6px 20px #000c;border:2px solid #d1aa72;color:#fff0cf;background:#302018;animation-duration:2.6s}
 .patron-struck{animation:patron-knockback .24s ease-out!important}
 @keyframes patron-knockback{0%,100%{transform:translateY(0);filter:none}35%{transform:translateY(-9px);filter:sepia(1) saturate(5) hue-rotate(320deg)}65%{transform:translateY(-3px);filter:none}}
+
+/* Positions 30% smaller; cards retain their size. */
+.lanes{width:calc((100% - 179px)*.7 + 24px);min-width:0;min-height:198px}.lane{height:196px;min-height:196px;display:grid;grid-template-rows:minmax(0,1fr) 22px minmax(0,1fr)}.lane-side{min-height:0}.lane-mid{align-self:center}
+.hand-card.payable{outline:1px solid #b9d992aa;outline-offset:2px;animation:payable-glow 2s ease-in-out infinite!important}
+@keyframes payable-glow{0%,100%{box-shadow:0 0 5px #b2d69050}50%{box-shadow:0 0 12px #ccebac90,0 0 3px #f2ffe1}}
+.healing-aura{position:fixed;color:#bafab8;border:2px solid #8fe3a0;border-radius:50%;width:110px;height:110px;display:grid;place-items:center;font-size:42px;background:radial-gradient(circle,#88e8a070,transparent 70%);box-shadow:0 0 35px #7be6a480;animation:healing-pulse 1.2s ease-out both}
+@keyframes healing-pulse{0%{transform:translate(-50%,-50%) scale(.55);opacity:0}35%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.3);opacity:0}}
+.buff-rise{position:fixed;color:#94ed8a;font:bold 22px Georgia,serif;text-shadow:0 0 8px #19572c,0 2px 3px #000;animation:buff-rise 1.1s ease-out both}
+@keyframes buff-rise{0%{transform:translateY(12px);opacity:0}20%,65%{opacity:1}100%{transform:translateY(-42px);opacity:0}}
+.patron-impact-ring{position:fixed;width:75px;height:95px;border:3px solid #dd715f;border-radius:25%;box-shadow:0 0 20px #e83e3570;animation:patron-ring .45s ease-out both}
+@keyframes patron-ring{0%{transform:translate(-50%,-50%) scale(.8);opacity:1}100%{transform:translate(-50%,-50%) scale(1.4);opacity:0}}
+@media(max-width:750px){.lanes{width:calc((100% - 108px)*.7 + 8px);min-height:178px}.lane{height:176px;min-height:176px}}
+.game[data-phase="formation"] .center-actions{left:calc(((100% - 179px)*.7 + 24px)/2)}
+@media(max-width:750px){.game[data-phase="formation"] .center-actions{left:calc(((100% - 108px)*.7 + 8px)/2)}}

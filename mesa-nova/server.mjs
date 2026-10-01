@@ -14,7 +14,7 @@ const sessions=new Map();
 const attempts=new Map();
 const accessHash='d1278d1e774f8b0c27c166302871dd40ccea755f31738a8210d70de8c44a9fe5';
 const sessionAge=30*24*60*60*1000;
-const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.webp':'image/webp'};
+const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.webp':'image/webp','.ogg':'audio/ogg'};
 function scheduleBot(room){if(room.botTimer||!room.players.some(p=>p.bot))return;room.botTimer=setTimeout(()=>{room.botTimer=null;const bot=room.players.find(p=>p.bot),next=easyBotAction(room);if(!bot||!next)return;try{act(room,bot,next,catalog);void persistMatch(room,'runamarca');scheduleBot(room);}catch(error){room.log.push({message:`Bot fácil interrompido: ${error.message}`,round:room.round,turn:room.turn,phase:room.phase});room.log=room.log.slice(-10);room.revision++;}},700);}
 function json(res,status,value){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));}
 async function payload(req){let size=0;const parts=[];for await(const part of req){size+=part.length;if(size>32_000_000)throw Error('Arquivo acima do limite de 32 MB.');parts.push(part);}try{return JSON.parse(Buffer.concat(parts).toString('utf8'));}catch{throw Error('JSON inválido.');}}

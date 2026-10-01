@@ -171,8 +171,8 @@ export function act(room,p,data,catalog){
     const prep=p.prepared.find(item=>item.card.uid===data.cardId);if(!prep)throw Error('Escolha uma magia preparada por você.');
     if(data.type==='unprepare'){
       if(p.hand.length>=9)throw Error('Sua mão está cheia. Reposicione a magia em vez de retirar.');
-      p.prepared=p.prepared.filter(item=>item!==prep);p.hand.push(prep.card);/* Retirar não restaura recursos já gastos. */
-      pushLog(room,`${p.name} retirou uma magia preparada (sem reembolso de mana).`,p.id);
+      p.prepared=p.prepared.filter(item=>item!==prep);p.hand.push(prep.card);const refund=prep.paidRound===room.round&&room.phase==='prep'&&room.turn===p.id?prep.paid:0;const returned=Math.min(refund||0,Math.max(0,p.manaMax-p.mana));p.mana+=returned;
+      pushLog(room,`${p.name} retirou uma magia preparada${returned?` e recuperou ${returned} mana`:''}.`,p.id);
     }else{
       const lane=Number(data.lane),side=own(room,data.targetSide);
       if(!side||!Number.isInteger(lane)||lane<0||lane>2)throw Error('Posição inválida.');
@@ -197,13 +197,13 @@ export function act(room,p,data,catalog){
         const mode=data.mode||'direct';const kind=targetKind(card);
         if(mode==='direct'){
           const {target}=validTarget(room,p,card,data.targetId);
-          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||0});
+          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||0});
         }else if(mode==='lane'){
           const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição de 1 a 3.');
           const requestedSide=room.players.find(seat=>seat.id===data.targetSide);
           const targetSide=requestedSide||((kind==='enemy'||kind==='enemy-board')?other(room,p.id):p);
           if(p.prepared.some(item=>item.targetSide===targetSide.id&&item.lane===lane))throw Error('Você já colocou uma magia nessa posição desse lado.');
-          const paid=paidCost(p,card,'lane');p.hand=p.hand.filter(c=>c!==card);p.prepared.push({card,paid,targetSide:targetSide.id,lane,hidden:targetSide.id!==p.id});
+          const paid=paidCost(p,card,'lane');p.hand=p.hand.filter(c=>c!==card);p.prepared.push({card,paidRound:room.round,paid,targetSide:targetSide.id,lane,hidden:targetSide.id!==p.id});
           pushLog(room,`${p.name} colocou uma magia ${targetSide.id===p.id?'aberta em sua':'oculta na'} posição ${lane+1}.`,p.id);
         }else throw Error('Modo de magia inválido.');
       }
@@ -248,7 +248,7 @@ export function view(room,p){
      id:seat.id,name:seat.name,bot:seat.bot,deckId:seat.deckId,patron:seat.patron,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,mulligansLeft:seat.id===p.id?seat.mulligansLeft:undefined,mulliganReady:seat.mulliganReady,hand:seat.id===p.id?seat.hand:undefined,
     reserve:seat.reserve?.map(c=>({...c,owner:seat.id})),emanation:seat.emanation||[],
     formation:seat.id===p.id||reveal?seat.formation:[null,null,null],ready:seat.ready,voted:seat.vote!==null,
-    prepared:room.players.flatMap(caster=>caster.prepared.filter(item=>item.targetSide===seat.id).map(item=>({lane:item.lane,caster:caster.id,card:reveal||caster.id===p.id||!item.hidden?item.card:null,hidden:!reveal&&caster.id!==p.id&&item.hidden})))
+    prepared:room.players.flatMap(caster=>caster.prepared.filter(item=>item.targetSide===seat.id).map(item=>({lane:item.lane,caster:caster.id,refund:caster.id===p.id&&item.paidRound===room.round&&room.phase==='prep'&&room.turn===p.id?Math.min(item.paid||0,Math.max(0,caster.manaMax-caster.mana)):0,card:reveal||caster.id===p.id||!item.hidden?item.card:null,hidden:!reveal&&caster.id!==p.id&&item.hidden})))
   }))};
 }
 
