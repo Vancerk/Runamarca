@@ -155,3 +155,17 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .game[data-phase="formation"] #phase-actions button{box-shadow:0 5px 14px #000a}
 .opening-flight{position:fixed!important;margin:0!important;pointer-events:none!important;z-index:100!important;transform-origin:center center}
 @media(max-width:750px){.hand-zone{height:140px;min-height:140px}.hand-zone .card-row{height:135px;transform:translateY(-26px)}.game[data-phase="formation"] .center-actions{right:104px;width:140px}}
+/* Transfers hide the original instead of leaving a translucent duplicate. */
+.card.dragging-source,.hand-card.dragging-source,.spell-mark.dragging-source{opacity:0!important;visibility:hidden!important}
+.draw-flight{position:fixed!important;margin:0!important;pointer-events:none!important;z-index:100;transform-origin:center;backface-visibility:visible}
+.card.wounded{box-shadow:inset 0 0 10px #c525254d,0 0 5px #d44b4240;border-color:#ad6254}
+.card.wounded img{filter:sepia(.12) saturate(.85);box-shadow:inset 0 0 12px #ba29294d}
+.card.wounded::after{content:'';position:absolute;inset:0;background:linear-gradient(145deg,transparent 35%,#a92a2a25);pointer-events:none}
+.log p.log-own{border-left:3px solid #6fae7f;padding-left:8px}.log p.log-rival{border-left:3px solid #cf7066;padding-left:8px}.log p.log-neutral{border-left:3px solid #96836c;padding-left:8px}
+.game[data-phase="formation"] .center-actions{top:auto;bottom:-18px;left:calc((100% - 145px)/2);right:auto;transform:translateX(-50%);width:190px;z-index:12}
+.patron-struck{animation:patron-knockback .85s ease-out}
+@keyframes patron-knockback{0%,100%{transform:translateY(0) scale(1);filter:none}30%{transform:translateY(-13px) scale(.94);filter:sepia(1) saturate(5) hue-rotate(320deg) drop-shadow(0 0 12px #ef4242)}65%{transform:translateY(3px) scale(1.02);filter:none}}
+.coin-pending{visibility:hidden!important;pointer-events:none!important}
+.spell-mark.draggable{cursor:grab;touch-action:none}
+@media(max-width:750px){.game[data-phase="formation"] .center-actions{left:calc((100% - 94px)/2);right:auto;width:150px}}
+.deck-stack{width:28px;height:39px;flex:0 0 28px;margin-left:6px;border:1px solid #b59254;border-radius:3px;box-shadow:3px 2px 0 #493520,5px 4px 0 #a08048;overflow:hidden}.deck-stack img{width:100%;height:100%;object-fit:cover}
