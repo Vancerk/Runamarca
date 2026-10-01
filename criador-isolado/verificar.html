@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><pre id="result">Aguardando</pre><iframe src="/" id="editor" style="width:1500px;height:1100px"></iframe><script>
+document.getElementById('editor').onload=async()=>{
+try{
+const w=document.getElementById('editor').contentWindow;
+await w.document.fonts.ready;
+await new Promise(r=>setTimeout(r,500));
+const data=await (await fetch('prototipo.json')).json();
+let expected=0;
+for(const deck of data.decks){expected+=13;w.document.getElementById('starter-deck').value=deck.id;w.document.getElementById('load-starter').click();for(let retry=0;retry<100 && w.eval('project.length')<expected;retry++)await new Promise(r=>setTimeout(r,100));}
+const cards=w.eval('project');if(cards.length!==39)throw Error('Esperado 39 modelos; recebido '+cards.length);
+for(const card of cards){const invalid=w.validateDesign(card);if(invalid)throw Error(card.name+': '+invalid[0]);const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1260;await w.drawCard(canvas,card);if(!canvas.toDataURL('image/png').startsWith('data:image/png'))throw Error('PNG inválido');}
+w.populate(cards[3]);w.renderPreview();
+document.getElementById('result').textContent='OK: 39 modelos, validação e renderização PNG 900x1260. '+w.document.getElementById('project-count').textContent;
+}catch(e){document.getElementById('result').textContent='ERRO: '+e.stack;}
+};
+</script>

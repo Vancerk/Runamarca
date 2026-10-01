@@ -62,7 +62,9 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       return json(res,405,{error:'Método inválido.'});
     }
     if(req.method!=='GET')return json(res,405,{error:'Método inválido.'});
-    const rel=decodeURIComponent(routePath).replace(/^\/+/, '')||'index.html';const file=path.resolve(root,rel);
+    if(routePath==='/criador'){res.writeHead(302,{Location:`${base}/criador/`});res.end();return;}
+    const assetPath=routePath==='/criador/'?'/criador/index.html':routePath;
+    const rel=decodeURIComponent(assetPath).replace(/^\/+/, '')||'index.html';const file=path.resolve(root,rel);
     if(!file.startsWith(root+path.sep)||!types[path.extname(file)])return json(res,404,{error:'Não encontrado.'});
     try{const content=await readFile(file);res.writeHead(200,{'Content-Type':types[path.extname(file)],'Cache-Control':'no-cache','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(content);}catch{return json(res,404,{error:'Não encontrado.'});}
   }catch(error){json(res,400,{error:error.message||'Erro na mesa.'});}
