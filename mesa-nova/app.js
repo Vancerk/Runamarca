@@ -2,6 +2,7 @@ const $=id=>document.getElementById(id);
 const gameBase=location.pathname.startsWith('/runamarca')?'/runamarca/':'/';
 let state=null,models=null,selected=null,importedArt={},lastRevision=-1,toastTimer=null,hoverUid=null,serverClockOffset=0,pendingSnap=null,refreshing=false;
 let visualBooted=false,lastVisualId=0,lastPhase=null,lastBattleStep='',handOrder=[],mulliganSelected=new Set(),audioContext=null,pendingArrival=[],suppressClickUntil=0;let visualQueue=Promise.resolve();
+const emanationChoices=new Map();let emanationChoiceTurn='';
 let commandBusy=false,activeDrag=null;const movingCards=new Set(),deadVisuals=new Map();
 function tableCard(uid){return [...document.querySelectorAll('#game .card,#game .spell-mark,#mulligan-cards .card')].find(node=>node.dataset.uid===uid&&!node.closest('#visual-layer'));}
 function cleanupDrag(){activeDrag?.();activeDrag=null;document.querySelectorAll('.drag-preview').forEach(node=>node.remove());document.querySelectorAll('.dragging-source,.drop-ready').forEach(node=>node.classList.remove('dragging-source','drop-ready'));}
@@ -161,7 +162,7 @@ function renderSelection(){const panel=$('selection-panel');panel.replaceChildre
   if(state.phase==='formation'&&!self.ready&&inReserve&&!self.emanation.includes(card.uid)){text(actions,'span','Arraste esta carta da reserva até uma das três posições.','muted');const spots=document.createElement('div');spots.className='entry-buttons formation-fallback';for(let lane=0;lane<3;lane++)spots.append(button(String(lane+1),()=>command({type:'assign',lane,cardId:card.uid})));actions.append(spots);}
   panel.append(actions);
 }
-function renderActions(){const box=$('phase-actions');box.replaceChildren();const self=seat();if(!self)return;$('game').dataset.phase=state.phase;const message=$('match-status');
+function renderActions(){const box=$('phase-actions');box.replaceChildren();const self=seat();if(!self)return;const choiceTurn=state.phase==='prep'&&state.turn===self.id&&!state.spectator?`${state.code}:${state.round}:${self.id}`:'';if(choiceTurn!==emanationChoiceTurn){emanationChoices.clear();emanationChoiceTurn=choiceTurn;}$('game').dataset.phase=state.phase;const message=$('match-status');
   const label=state.phase==='coin'?'Moeda lançada':state.phase==='mulligan'?'Escolha da mão inicial':state.phase==='prep'?state.turn===self.id?'Sua preparação':'Preparação rival':state.phase==='vote'?'Decisão de combate':state.phase==='formation'?'Formação secreta':state.phase==='resolving'?'Confronto em curso':state.phase==='finished'?'Partida encerrada':'Aguardando';
   message.textContent=label+` · rodada ${state.round}`;
   if(state.spectator){text(box,'h3','Arquibancada');text(box,'p','Você acompanha a partida sem ver as mãos nem as formações secretas.');return;}
@@ -170,7 +171,7 @@ function renderActions(){const box=$('phase-actions');box.replaceChildren();cons
   }else if(state.phase==='mulligan'){
     text(box,'h3','Mão inicial');text(box,'p','Escolha as cartas na janela central.');
   }else if(state.phase==='prep'){
-    if(state.turn===self.id){const clerics=self.reserve.filter(c=>self.emanation.includes(c.uid)&&c.modelId==='F03');const choices=clerics.map((_,index)=>{const select=makeSelect([['','Sem cura'],...self.reserve.filter(c=>c.damage>0).map(c=>[c.uid,c.name])]);text(box,'span',`Cura da Clériga ${index+1}:`,'muted');box.append(select);return select;});
+    if(state.turn===self.id){const clerics=self.reserve.filter(c=>self.emanation.includes(c.uid)&&c.modelId==='F03');const choices=clerics.map((cleric,index)=>{const select=makeSelect([['','Sem cura'],...self.reserve.filter(c=>c.damage>0).map(c=>[c.uid,c.name])]);const saved=emanationChoices.get(cleric.uid)||'';select.value=[...select.options].some(option=>option.value===saved)?saved:'';emanationChoices.set(cleric.uid,select.value);select.onchange=()=>emanationChoices.set(cleric.uid,select.value);select.setAttribute('aria-label',`Cura da Clériga ${index+1}`);text(box,'span',`Cura da Clériga ${index+1}:`,'muted');box.append(select);return select;});
       box.append(button('Encerrar preparação',()=>command({type:'endPrep',healTargetIds:choices.map(select=>select.value)}),'primary'));}
   }else if(state.phase==='vote'){
     if(self.voted)text(box,'p','Você recusou. Aguardando a decisão rival.','status-pill');else{box.append(button('Começar combate',()=>command({type:'vote',fight:true}),'primary'));box.append(button('Não combater',()=>command({type:'vote',fight:false})));}

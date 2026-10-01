@@ -189,3 +189,12 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 @media(max-width:750px){.lanes{width:calc((100% - 108px)*.7 + 8px);min-height:178px}.lane{height:176px;min-height:176px}}
 .game[data-phase="formation"] .center-actions{left:calc(((100% - 179px)*.7 + 24px)/2)}
 @media(max-width:750px){.game[data-phase="formation"] .center-actions{left:calc(((100% - 108px)*.7 + 8px)/2)}}
+
+/* Fill the space between formations and Nartvanyr without a dead strip. */
+.board{flex:0 0 auto;min-height:0;justify-content:flex-start;gap:8px}
+.lanes{width:calc(100% - 155px);min-height:274.4px;align-self:flex-start}
+.lane{height:274.4px;min-height:274.4px}
+.lane-side .card.mini{width:83px;height:113px;flex:0 0 83px}
+.lane-side .card.mini .card-title{font-size:10px}.lane-side .card.mini .numbers{font-size:11px}.lane-side .card.mini .mana-gem{width:25px;height:25px;font-size:13px}
+.game[data-phase="formation"] .center-actions{left:calc((100% - 155px)/2)}
+@media(max-width:750px){.lanes{width:calc(100% - 100px);min-height:246.4px}.lane{height:246.4px;min-height:246.4px}.lane-side .card.mini{width:75px;height:102px;flex-basis:75px}.game[data-phase="formation"] .center-actions{left:calc((100% - 100px)/2)}}
