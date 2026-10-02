@@ -265,3 +265,16 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 #notice-layer .visual-message{top:11%;z-index:1}
 .card.back>*{display:none!important}.card.back::before,.card.back::after{display:none!important}
 @media(max-width:750px){.lanes,.lane{min-height:241.472px}.lane{height:241.472px}.lane-side .card.mini{width:80px;height:109px;flex-basis:80px}.nartvanyr{height:241.472px}.nartvanyr button{height:75px}.nartvanyr button img{height:55px;width:30px}}
+
+/* Persistent attribute states and a flowing, viewport-aligned target trail. */
+.card .attack-value.attack-buffed{color:#a9fa8c;text-shadow:0 0 5px #6ad96480}
+.card .health-value.health-damaged{color:#ff7773;text-shadow:0 0 4px #df303070}
+.card .damage{display:none!important}
+@keyframes attack-number-glow{0%,35%{text-shadow:0 0 5px #71eb63,0 0 12px #56da62;transform:scale(1.2)}100%{text-shadow:0 0 5px #6ad96480;transform:scale(1)}}
+.target-flow{fill:none;stroke:#caff9f;stroke-width:3;stroke-dasharray:5 20;stroke-linecap:round;animation:target-stream 1s linear infinite}
+@keyframes target-stream{to{stroke-dashoffset:-25}}
+.card.back>.concealed-back-image{display:block!important;position:absolute;inset:0;width:100%;height:100%;object-fit:fill;border-radius:inherit}
+.card.back{background:#291e16 url('card-back.png') center/100% 100% no-repeat!important;color:transparent!important}
+.target-options>.patron-card{width:105px;height:145px;cursor:pointer}
+
+.target-arrow{fill:none;stroke:#caff9f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
