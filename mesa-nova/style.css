@@ -246,3 +246,22 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 #spectators-game{padding:0;margin:0;background:none;font-size:10px;max-width:150px;line-height:1.3;overflow-wrap:anywhere}
 .top-right{flex-wrap:wrap;justify-content:flex-end;gap:8px}.top{min-height:66px;height:auto;padding-block:10px}
 @media(max-width:750px){.lane .secret-alert{font-size:36px}.game[data-phase="formation"] .board{grid-template-columns:minmax(0,1fr) 105px 92px}.game[data-phase="formation"] .center-actions{max-height:172px;padding:4px;width:100%}#spectators-game{max-width:100px;font-size:9px}}
+
+/* Taller formations and visual targeting without ambiguous name lists. */
+.lanes,.lane{min-height:268.912px}.lane{height:268.912px}
+.lane-side .card.mini{width:89px;height:122px;flex-basis:89px}
+.lane-side .card.mini .card-title{font-size:10px}.lane-side .card.mini .numbers{font-size:12px}
+.lane-side .card.mini .mana-gem{width:26px;height:26px;font-size:14px}
+.nartvanyr{height:268.912px}.nartvanyr button{height:86px}.nartvanyr button img{height:65px;width:42px}
+#target-picker{width:min(700px,94vw);background:#30231e;border:3px double #bd9865;box-shadow:0 18px 45px #000b}
+#target-picker::backdrop{background:#08050570}#target-picker h2{font-size:20px;color:#efd5a8}
+#close-target-picker{float:right}.target-options{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin:20px 0}
+.target-option{display:grid;justify-items:center;gap:7px;max-width:160px}.target-option small{font-size:11px;text-align:center;color:#edd8b6}
+.card.target-card{width:105px;height:145px}.card.target-card .card-title{font-size:10px}.card.target-card .numbers{font-size:12px}
+.target-highlight{outline:3px solid #b3db99!important;box-shadow:0 0 18px #9fce7f}
+#target-links{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:65}
+.target-link{fill:none;stroke:#b2cf8b;stroke-width:2;opacity:.72;stroke-linecap:round;stroke-linejoin:round}
+#notice-layer{position:fixed;inset:0;pointer-events:none;z-index:150;overflow:hidden}
+#notice-layer .visual-message{top:11%;z-index:1}
+.card.back>*{display:none!important}.card.back::before,.card.back::after{display:none!important}
+@media(max-width:750px){.lanes,.lane{min-height:241.472px}.lane{height:241.472px}.lane-side .card.mini{width:80px;height:109px;flex-basis:80px}.nartvanyr{height:241.472px}.nartvanyr button{height:75px}.nartvanyr button img{height:55px;width:30px}}
