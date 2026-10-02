@@ -59,7 +59,7 @@ export const COMBAT_MS=9000;
 function beginCombat(room){
   const id=randomUUID();
   room.phase='resolving';
-  const spells=room.players.flatMap(p=>p.prepared.filter(item=>laneCard(room,item.targetSide,item.lane)).map(item=>({name:item.card.name,casterId:p.id,lane:item.lane,targetSide:item.targetSide,positive:item.targetSide===p.id,amount:effects(item.card).map(ef=>ef.amount||ef.amount_if_true||0).join('/'),op:effect(item.card)?.op})));
+  const spells=room.players.flatMap(p=>p.prepared.filter(item=>laneCard(room,item.targetSide,item.lane)).map(item=>({cardId:item.card.uid,name:item.card.name,casterId:p.id,lane:item.lane,targetSide:item.targetSide,positive:item.targetSide===p.id,amount:effects(item.card).map(ef=>ef.amount||ef.amount_if_true||0).join('/'),op:effect(item.card)?.op})));
   const revelations=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const card=p.reserve.find(c=>c.uid===uid),ef=card&&effects(card).find(ef=>ef.timing==='revelation'&&(ef.condition!=='owner_played_direct_spell_this_round'||p.directPlayed));return ef?[{sourceId:uid,casterId:p.id,targetSide:ef.target==='self'?p.id:other(room,p.id).id,lane,name:card.name,op:ef.op,amount:ef.amount}]:[];}));
   const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...revelations.map(ability=>({kind:'revelation',duration:1200,ability})),...Array.from({length:3},(_,lane)=>({kind:'clash',lane,duration:2200})),{kind:'result',duration:1200}];
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
@@ -68,7 +68,7 @@ function beginCombat(room){
   // reach the clash after prepared spells and Revelation have resolved.
   const preview=structuredClone({...room,onChange:null,botTimer:null,combat:null,collectPreview:true});
   resolveCombat(preview);
-  room.combat.visual=preview.preClash||[];
+  room.combat.visual=preview.preClash||[];for(const step of timeline){if(step.kind==='magic')step.spell.healthUpdates=preview.spellHealthUpdates?.find(entry=>entry.cardId===step.spell.cardId)?.targets||[];if(step.kind==='revelation')step.ability.healthUpdates=preview.revelationHealthUpdates?.filter(entry=>entry.sourceId===step.ability.sourceId).map(entry=>entry.target)||[];}
   room.combat.casualties=preview.players.flatMap(p=>p.discard.filter(c=>c.type==='creature'&&!own(room,p.id).discard.some(old=>old.uid===c.uid)).map(c=>({uid:c.uid,owner:p.id})));
   for(const step of timeline)if(step.kind==='clash'){
     const cards=room.combat.visual.find(entry=>entry.lane===step.lane)?.cards.filter(Boolean)||[];
@@ -80,6 +80,7 @@ function beginCombat(room){
   setTimeout(()=>{if(room.phase!=='resolving'||room.combat?.id!==id)return;resolveCombat(room);room.combat=null;room.revision++;room.onChange?.();},room.combat.duration);
 }
 function resolveCombat(room){
+  if(room.collectPreview){room.spellHealthUpdates=[];room.revelationHealthUpdates=[];}
   const [left,right]=room.players;
   room.lastCombat={round:room.round,names:[left.name,right.name],lanes:Array.from({length:3},(_,lane)=>({left:laneCard(room,left.id,lane)?.name||'Vazia',right:laneCard(room,right.id,lane)?.name||'Vazia'})),spells:[],patronHits:[]};
   const triggered=[];
@@ -98,6 +99,7 @@ function resolveCombat(room){
       if(ef.op==='defeat')change.defeat=true;
       if(ef.op==='attack_modifier')change.attack+=ef.amount;
     }
+    if(room.collectPreview)room.spellHealthUpdates.push({cardId:prep.card.uid,targets:[...spellChanges].map(([card,change])=>({uid:card.uid,hp:Math.max(0,card.health-(change.defeat?card.health:Math.max(0,card.damage+change.damage-change.heal))),maxHp:card.health}))});
     caster.discard.push(prep.card);caster.prepared=caster.prepared.filter(item=>item!==prep);
     room.lastCombat.spells.push(`${prep.card.name} · posição ${prep.lane+1} de ${targetSide.name}`);
     pushLog(room,`${prep.card.name} foi ativada na posição ${prep.lane+1} de ${targetSide.name}.`,caster.id);
@@ -113,8 +115,8 @@ function resolveCombat(room){
     reveals.push({p,lane,card,ef,target:ef.target==='self'?card:laneCard(room,other(room,p.id).id,lane)});
   }
   const hits=[];
-  for(const item of reveals){if(item.ef.op==='damage'&&item.target)hits.push([item.target,item.ef.amount]);else if(item.ef.op==='attack_modifier'&&item.target)item.target.attackMod+=item.ef.amount;pushLog(room,`${item.card.name} ativou Revelação na posição ${item.lane+1}.`,item.p.id);}
-  for(const [target,amount] of hits)applyDamage(room,target,amount);
+  for(const item of reveals){if(item.ef.op==='damage'&&item.target)hits.push([item.target,item.ef.amount,item.card.uid]);else if(item.ef.op==='attack_modifier'&&item.target)item.target.attackMod+=item.ef.amount;pushLog(room,`${item.card.name} ativou Revelação na posição ${item.lane+1}.`,item.p.id);}
+  for(const [target,amount,sourceId] of hits){applyDamage(room,target,amount);if(room.collectPreview)room.revelationHealthUpdates.push({sourceId,target:{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health}});}
   removeDead(room);checkWin(room);if(room.phase==='finished')return;
   const damage=[];const patronHits=[];
   const [a,b]=room.players;
@@ -197,7 +199,7 @@ export function act(room,p,data,catalog){
         const mode=data.mode||'direct';const kind=targetKind(card);
         if(mode==='direct'){
           const {target}=validTarget(room,p,card,data.targetId);
-          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||0,attackAfter:effect(card)?.op==='attack_modifier'&&target?Math.max(0,target.attack+(target.attackMod||0)):undefined});
+          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||0,healthUpdates:effect(card)?.op==='area_damage'?other(room,p.id).reserve.concat(other(room,p.id).discard.filter(c=>c.type==='creature')).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health})):target?.patron?[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}]:target?[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health}]:[],attackAfter:effect(card)?.op==='attack_modifier'&&target?Math.max(0,target.attack+(target.attackMod||0)):undefined});
         }else if(mode==='lane'){
           const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição de 1 a 3.');
           const requestedSide=room.players.find(seat=>seat.id===data.targetSide);

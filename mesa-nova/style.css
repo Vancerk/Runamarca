@@ -305,3 +305,6 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .capture-result{color:#f4d59f;margin:0 0 12px}.capture-done{z-index:1}
 
 .capture-barrel{position:absolute;left:5%;top:50%;width:1px;height:1px;pointer-events:none}
+
+.health-value{display:inline-block}.health-value.health-changed{animation:health-number-change .45s ease-out}
+@keyframes health-number-change{30%{transform:scale(1.25);text-shadow:0 0 9px currentColor}100%{transform:scale(1)}}

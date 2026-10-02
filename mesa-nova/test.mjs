@@ -51,6 +51,7 @@ act(room,b,{type:'ready'},catalog);
 assert.deepEqual(room.combat.timeline.filter(s=>s.kind==='clash').map(s=>s.lane),[0,1,2],'choques percorrem as posições em ordem');
 assert.equal(room.combat.timeline.at(-1).kind,'result','descarte visual vem depois dos três confrontos');
 assert.ok(room.combat.casualties.some(c=>c.uid===apprentice.uid),'animação identifica criatura eliminada por magia');
+assert.equal(room.combat.timeline.find(step=>step.kind==='magic'&&step.spell.cardId===trap.uid).spell.healthUpdates.find(update=>update.uid===apprentice.uid).hp,0,'o impacto da armadilha atualiza a vida para zero antes do confronto');
 
 assert.equal(room.phase,'resolving');assert.equal(view(room,b).players.find(p=>p.id===a.id).formation[0],hunter.uid,'cartas são reveladas na animação');
 await new Promise(resolve=>setTimeout(resolve,room.combat.duration+80));
