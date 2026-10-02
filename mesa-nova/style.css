@@ -278,3 +278,30 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .target-options>.patron-card{width:105px;height:145px;cursor:pointer}
 
 .target-arrow{fill:none;stroke:#caff9f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Flights use their own coordinates, independent of hand/card transforms. */
+.card-flight{position:absolute;pointer-events:none;z-index:100;transform:none;will-change:left,top,width,height}
+.card-flight>.flight-face{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;transform:none!important;animation:none!important;transition:none!important;visibility:visible!important;opacity:1!important}
+#selection-panel{display:none!important}
+#target-links{z-index:110;display:block;overflow:visible}
+.target-link{stroke:#bee898;stroke-width:3;opacity:.9;filter:drop-shadow(0 1px 2px #000)}
+.capture-scene{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse,#59422de8,#110c0bf5);backdrop-filter:blur(7px);perspective:1000px;overflow:hidden}
+.capture-stage{position:relative;width:min(410px,90vw);height:min(460px,62vh);display:grid;place-items:center;perspective:1000px}
+.final-patron{position:relative;width:190px;height:270px;border:5px double #cba466;border-radius:12px;background:#2a1b13;box-shadow:0 12px 45px #000c;display:flex;flex-direction:column;overflow:hidden;transform-style:preserve-3d}
+.final-patron img{width:100%;height:85%;object-fit:cover}.final-patron>strong{font:600 13px Cinzel,Georgia,serif;color:#ffe3b4;padding:9px;text-align:center}
+.wanted-stars{position:absolute;inset:0;pointer-events:none}.wanted-star{position:absolute;font-size:35px;color:#ffd375;text-shadow:0 0 12px #fc9e34;transform:translate(-50%,-50%);animation:wanted-star-in .35s ease-out both}
+@keyframes wanted-star-in{from{opacity:0;transform:translate(-50%,-50%) scale(2)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.capture-title{order:-1;font:700 clamp(17px,3vw,27px) Cinzel,Georgia,serif;color:#eacc98;letter-spacing:.1em;text-align:center;margin:0}
+.capture-sight{position:absolute;left:50%;top:45%;width:110px;height:110px;transform:translate(-50%,-50%);border:2px solid #ee4845;border-radius:50%;box-shadow:0 0 14px #ff4b5260;animation:sight-in .5s ease-out both}
+.capture-sight:before,.capture-sight:after{content:'';position:absolute;background:#ee4845}.capture-sight:before{width:145px;height:2px;left:-19px;top:53px}.capture-sight:after{height:145px;width:2px;top:-19px;left:53px}
+@keyframes sight-in{from{opacity:0;transform:translate(-50%,-50%) scale(1.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.capture-bullet{color:#fff4bc;font-size:35px;text-shadow:0 0 14px #ffcd7d}.capture-hit{animation:capture-impact .45s ease-out!important}
+@keyframes capture-impact{30%{filter:sepia(1) saturate(5) hue-rotate(315deg);transform:translateX(10px) rotate(4deg)}100%{filter:none;transform:none}}
+.final-patron.captured-scroll{background:radial-gradient(ellipse,#f5deb1,#cda76c);border-color:#705134;justify-content:center;align-items:center;gap:24px;box-shadow:inset 0 0 28px #7c4b36,0 10px 35px #0008}
+.captured-scroll>strong{font:bold 24px Georgia,serif;color:#713827;border:3px double #7d4933;padding:10px;transform:rotate(-7deg)}.captured-scroll>span{font:600 13px Cinzel,serif;text-align:center;color:#4b2d20;padding:8px}
+.champion{box-shadow:0 0 35px #ffd17880,0 20px 40px #000b}
+.victory-firework{position:absolute;width:1px;height:1px;pointer-events:none}.victory-firework i{position:absolute;width:5px;height:12px;border-radius:50%;background:var(--color);box-shadow:0 0 10px var(--color);animation:firework-spark 1.6s ease-out both}
+@keyframes firework-spark{0%{opacity:0;transform:rotate(var(--a)) translateY(0) scale(.4)}15%{opacity:1}80%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(125px) scale(.2)}}
+.capture-result{color:#f4d59f;margin:0 0 12px}.capture-done{z-index:1}
+
+.capture-barrel{position:absolute;left:5%;top:50%;width:1px;height:1px;pointer-events:none}
