@@ -408,3 +408,40 @@ test('Seis Ossos permite iniciar uma nova partida após a vitória', async () =>
     assert.equal(restarted.round, 1);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
+
+
+test('Rei dos Pássaros separa um dado por 50, renova por turno e Troca foi removida', async () => {
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const base=`http://127.0.0.1:${server.address().port}`;
+  const call=async(path,data,secret)=>{const r=await fetch(base+path,{method:data?'POST':'GET',headers:{...(data?{'content-type':'application/json'}:{}),...(secret?{'x-player-token':secret}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,data:await r.json()};};
+  try {
+    const a=(await call('/api/dice/rooms',{name:'A'})).data;
+    const path=`/api/dice/rooms/${a.code}`;
+    const b=(await call(`${path}/join`,{name:'B'})).data;
+    for(const insignia of ['troca-prata','troca-ouro'])assert.equal((await call(`${path}/action`,{type:'propose',insignia},a.token)).status,400);
+    assert.equal((await call(`${path}/action`,{type:'propose',insignia:'rei-dos-passaros'},a.token)).status,200);
+    assert.equal((await call(`${path}/action`,{type:'accept',insignia:'rei-dos-passaros'},b.token)).status,200);
+    for(let turn=0;turn<4;turn++){
+      const before=(await call(`${path}/state`,undefined,a.token)).data;
+      const secret=before.turn===before.players[0].id?a.token:b.token;
+      const mine=before.players.find(p=>p.id===before.turn);
+      assert.equal(mine.charges,1);
+      assert.equal((await call(`${path}/action`,{type:'useInsignia',index:0},secret)).status,400);
+      assert.equal((await call(`${path}/action`,{type:'roll'},secret)).status,200);
+      const rolled=(await call(`${path}/state`,undefined,secret)).data;
+      assert.equal(rolled.roll.length,6);assert.equal(rolled.bust,false);
+      for(const index of [-1,6,0.5,'0',null])assert.equal((await call(`${path}/action`,{type:'useInsignia',index},secret)).status,400);
+      const rival=secret===a.token?b.token:a.token;
+      assert.equal((await call(`${path}/action`,{type:'useInsignia',index:0},rival)).status,400);
+      assert.equal((await call(`${path}/action`,{type:'useInsignia',index:turn},secret)).status,200);
+      const kept=(await call(`${path}/state`,undefined,secret)).data;
+      assert.equal(kept.turnPoints,50);assert.equal(kept.lastKeep,50);assert.equal(kept.available,5);assert.deepEqual(kept.roll,[]);
+      assert.equal(kept.players.find(p=>p.id===kept.you).charges,0);
+      assert.match(kept.log.at(-1),new RegExp(`dado ${rolled.roll[turn]} .*50 pontos`));
+      assert.equal((await call(`${path}/action`,{type:'useInsignia',index:0},secret)).status,400);
+      assert.equal((await call(`${path}/action`,{type:'bank'},secret)).status,200);
+      const banked=(await call(`${path}/state`,undefined,secret)).data;
+      assert.equal(banked.players.find(p=>p.id===banked.you).score,50*(Math.floor(turn/2)+1));
+    }
+  } finally {await new Promise(resolve=>server.close(resolve));}
+});
