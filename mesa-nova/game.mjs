@@ -32,7 +32,7 @@ export function findPlayer(room,secret){return [...room.players,...room.spectato
 function draw(room,p,n=1,silent=false){for(let i=0;i<n;i++){if(p.deck.length){const card=p.deck.pop();if(p.hand.length>=9){p.discard.push(card);pushLog(room,`${p.name} queimou ${card.name}: mão cheia (9).`,p.id);if(!silent)emit(room,'burn',{playerId:p.id,name:card.name});}else{p.hand.push(card);if(!silent)emit(room,'draw',{playerId:p.id,cardId:card.uid});}}else{p.fatigue++;p.patron.hp-=p.fatigue;pushLog(room,`${p.name} sofreu ${p.fatigue} de fadiga.`,p.id);emit(room,'fatigue',{playerId:p.id,amount:p.fatigue});checkWin(room);if(room.phase==='finished')break;}}}
 function startPrep(room,p){room.phase='prep';room.turn=p.id;p.manaMax=Math.min(10,p.manaMax+1);p.mana=p.manaMax;p.directPlayed=false;p.discountUsed=false;p.vote=null;p.ready=false;p.formation=[null,null,null];emit(room,'turn',{playerId:p.id,round:room.round});draw(room,p);pushLog(room,`Preparação de ${p.name}: ${p.mana}/${p.manaMax} mana e uma compra.`,p.id);}
 const patronPortrait={ruptura:'patrons/garra-vigilante.png',fluxo:'patrons/olho-dos-pactos.png',forja:'patrons/bigorna-desperta.png'};
-function startMatch(room,first){beginMatch(room);room.first=first;room.phase='mulligan';room.round=1;room.preparationsDone=0;room.lastCombat=null;room.combat=null;emit(room,'first',{playerId:first});for(const p of room.players){const deck=p.deckData;const art=id=>typeof p.art[id]==='string'?{image:p.art[id],kind:'illustration'}:p.art[id]||{image:null,kind:null};p.patron={name:deck.patron.name,hp:20,maxHp:20,affinity:deck.affinity,image:art(deck.patron.id).image||patronPortrait[deck.affinity]};p.deck=shuffle(deck.cards.flatMap(model=>Array.from({length:model.quantity},()=>({...structuredClone(model),uid:randomUUID(),modelId:model.id,owner:p.id,damage:0,attackMod:0,image:art(model.id).image||model.image||null,imageKind:art(model.id).kind||'illustration'}))));p.hand=[];p.reserve=[];p.discard=[];p.mana=p.manaMax=p.fatigue=0;p.prepared=[];p.emanation=[];p.formation=[null,null,null];p.vote=null;p.ready=false;p.mulligansLeft=p.id===first?1:2;p.mulliganReady=false;draw(room,p,5,true);emit(room,'opening',{playerId:p.id,count:5});}}
+function startMatch(room,first){beginMatch(room);room.first=first;room.phase='mulligan';room.round=1;room.preparationsDone=0;room.lastCombat=null;room.combat=null;emit(room,'first',{playerId:first});for(const p of room.players){const deck=p.deckData;const art=id=>typeof p.art[id]==='string'?{image:p.art[id],kind:'illustration'}:p.art[id]||{image:null,kind:null};p.patron={name:deck.patron.name,hp:16,maxHp:16,affinity:deck.affinity,image:art(deck.patron.id).image||patronPortrait[deck.affinity]};p.deck=shuffle(deck.cards.flatMap(model=>Array.from({length:model.quantity},()=>({...structuredClone(model),uid:randomUUID(),modelId:model.id,owner:p.id,damage:0,attackMod:0,image:art(model.id).image||model.image||null,imageKind:art(model.id).kind||'illustration',artZoom:art(model.id).artZoom??100,artX:art(model.id).artX??50,artY:art(model.id).artY??0}))));p.hand=[];p.reserve=[];p.discard=[];p.mana=p.manaMax=p.fatigue=0;p.prepared=[];p.emanation=[];p.formation=[null,null,null];p.vote=null;p.ready=false;p.mulligansLeft=p.id===first?1:2;p.mulliganReady=false;draw(room,p,5,true);emit(room,'opening',{playerId:p.id,count:5});}}
 function checkWin(room){if(room.phase==='finished')return;const down=room.players.filter(p=>p.patron?.hp<=0);if(!down.length)return;room.phase='finished';room.turn=null;room.winner=down.length===2?null:other(room,down[0].id).id;pushLog(room,down.length===2?'Empate: ambos os Patronos caíram.':`${other(room,down[0].id).name} venceu.`);}
 function resetToLobby(room){for(const seat of room.players){seat.deckId=null;seat.deckData=null;seat.art={};seat.patron=null;seat.hand=[];seat.deck=[];seat.reserve=[];seat.discard=[];seat.prepared=[];seat.emanation=[];seat.mulligansLeft=0;seat.mulliganReady=false;}room.phase='lobby';room.winner=room.coinWinner=room.first=room.turn=null;room.lastCombat=room.combat=null;room.round=1;room.preparationsDone=0;}
 function removeDead(room){for(const p of room.players){const dead=p.reserve.filter(c=>!alive(c));for(const c of dead){p.discard.push(c);p.formation=p.formation.map(uid=>uid===c.uid?null:uid);p.emanation=p.emanation.filter(uid=>uid!==c.uid);pushLog(room,`${c.name} foi derrotada.`,p.id);}p.reserve=p.reserve.filter(alive);}}
@@ -41,11 +41,11 @@ function applyEffect(room,caster,spell,target,phase){
   for(const ef of effects(spell)){
     if(ef.op==='draw'){draw(room,caster,ef.amount);continue;}
     if(ef.op==='summon'){for(let i=0;i<ef.amount&&caster.reserve.length<8;i++){const creature={uid:randomUUID(),modelId:`${spell.id}-token`,owner:caster.id,name:ef.name||'Aliado Convocado',type:'creature',rarity:'lacaio',affinity:caster.patron.affinity,cost:0,attack:ef.attack||1,health:ef.health||1,damage:0,attackMod:0,text:'Criatura convocada.',effects:[],token:true};caster.reserve.push(creature);emit(room,'summon',{playerId:caster.id,cardId:creature.uid,name:creature.name,zone:'reserve',speech:'Estou a postos!'});}continue;}
-    if(ef.op==='area_damage'){for(const creature of other(room,caster.id).reserve)if(alive(creature))applyDamage(room,creature,ef.amount);continue;}
+    if(ef.op==='area_damage'){for(const creature of other(room,caster.id).reserve)if(alive(creature)&&!other(room,caster.id).emanation.includes(creature.uid))applyDamage(room,creature,ef.direct_amount??ef.amount);continue;}
     if(ef.op==='choose_one'){const option=ef.options?.find(o=>target?.patron?o.target==='own_patron':o.target==='chosen_allied_creature');if(option){const amount=option.amount;if(target?.patron)caster.patron.hp=Math.min(caster.patron.maxHp,caster.patron.hp+amount);else if(target)target.damage=Math.max(0,target.damage-amount);}continue;}
     if(!target)continue;
     if(ef.op==='heal'){target.damage=Math.max(0,target.damage-ef.amount);continue;}
-    if(ef.op==='damage'){applyDamage(room,target,ef.amount);continue;}
+    if(ef.op==='damage'){const previouslyAlive=alive(target);applyDamage(room,target,ef.amount);if(ef.draw_on_kill&&previouslyAlive&&!alive(target))draw(room,caster,ef.draw_on_kill);continue;}
     if(ef.op==='defeat'){target.damage=target.health;continue;}
     if(ef.op==='attack_modifier'){target.attackMod=(target.attackMod||0)+ef.amount;continue;}
     if(ef.op==='conditional_damage'){const value=attack(target,room,phase?.lane||0)>=ef.condition.gte?ef.amount_if_true:ef.amount_if_false;applyDamage(room,target,value);}
@@ -60,7 +60,7 @@ function beginCombat(room){
   const id=randomUUID();
   room.phase='resolving';
   const spells=room.players.flatMap(p=>p.prepared.filter(item=>laneCard(room,item.targetSide,item.lane)).map(item=>({cardId:item.card.uid,name:item.card.name,casterId:p.id,lane:item.lane,targetSide:item.targetSide,positive:item.targetSide===p.id,amount:effects(item.card).map(ef=>ef.amount||ef.amount_if_true||0).join('/'),op:effect(item.card)?.op})));
-  const revelations=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const card=p.reserve.find(c=>c.uid===uid),ef=card&&effects(card).find(ef=>ef.timing==='revelation'&&(ef.condition!=='owner_played_direct_spell_this_round'||p.directPlayed));return ef?[{sourceId:uid,casterId:p.id,targetSide:ef.target==='self'?p.id:other(room,p.id).id,lane,name:card.name,op:ef.op,amount:ef.amount}]:[];}));
+  const revelations=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const card=p.reserve.find(c=>c.uid===uid),ef=card&&effects(card).find(ef=>ef.timing==='revelation'&&(ef.condition!=='owner_played_direct_spell_this_round'||p.directPlayed)&&(ef.condition!=='self_wounded'||card.damage>0));return ef?[{sourceId:uid,casterId:p.id,targetSide:ef.target==='self'?p.id:other(room,p.id).id,lane,name:card.name,op:ef.op,amount:ef.amount}]:[];}));
   const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...revelations.map(ability=>({kind:'revelation',duration:1200,ability})),...Array.from({length:3},(_,lane)=>({kind:'clash',lane,duration:2200})),{kind:'result',duration:1200}];
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id}:null;})})),spells};
@@ -85,14 +85,14 @@ function resolveCombat(room){
   room.lastCombat={round:room.round,names:[left.name,right.name],lanes:Array.from({length:3},(_,lane)=>({left:laneCard(room,left.id,lane)?.name||'Vazia',right:laneCard(room,right.id,lane)?.name||'Vazia'})),spells:[],patronHits:[]};
   const triggered=[];
   for(const p of room.players)for(const prep of p.prepared){const targetSide=own(room,prep.targetSide);const target=laneCard(room,targetSide.id,prep.lane);if(target)triggered.push({prep,caster:p,target,targetSide});}
-  const spellChanges=new Map();const spellDraws=[];
+  const spellChanges=new Map();const spellDraws=[];const killDraws=[];
   const changeFor=card=>{if(!spellChanges.has(card))spellChanges.set(card,{damage:0,heal:0,attack:0,defeat:false});return spellChanges.get(card);};
   for(const {prep,caster,target,targetSide} of triggered){
     for(const ef of effects(prep.card)){
       if(ef.op==='draw'){spellDraws.push([caster,ef.amount]);continue;}
       const change=changeFor(target);
-        if(ef.op==='area_damage'){for(const enemy of other(room,caster.id).reserve)if(alive(enemy))changeFor(enemy).damage+=ef.amount;continue;}
-        if(ef.op==='damage')change.damage+=ef.amount;
+        if(ef.op==='area_damage'){for(let lane=0;lane<3;lane++){const enemy=laneCard(room,other(room,caster.id).id,lane);if(alive(enemy))changeFor(enemy).damage+=ef.amount;}continue;}
+        if(ef.op==='damage'){change.damage+=ef.amount;if(ef.draw_on_kill)killDraws.push([caster,target,ef.draw_on_kill]);}
       if(ef.op==='conditional_damage')change.damage+=attack(target,room,prep.lane)>=ef.condition.gte?ef.amount_if_true:ef.amount_if_false;
       if(ef.op==='heal')change.heal+=ef.amount;
       if(ef.op==='choose_one')change.heal+=ef.options.find(x=>x.target==='chosen_allied_creature')?.amount||0;
@@ -105,13 +105,13 @@ function resolveCombat(room){
     pushLog(room,`${prep.card.name} foi ativada na posição ${prep.lane+1} de ${targetSide.name}.`,caster.id);
   }
   for(const [target,change] of spellChanges){target.attackMod=(target.attackMod||0)+change.attack;target.damage=change.defeat?target.health:Math.max(0,target.damage+change.damage-change.heal);}
-  for(const [caster,count] of spellDraws)draw(room,caster,count);
+  for(const [caster,target,count] of killDraws)if(!alive(target))draw(room,caster,count);for(const [caster,count] of spellDraws)draw(room,caster,count);
   removeDead(room);checkWin(room);if(room.phase==='finished')return;
   const reveals=[];
   for(const p of room.players)for(let lane=0;lane<3;lane++){
     const card=laneCard(room,p.id,lane);if(!card)continue;
     const ef=effects(card).find(x=>x.timing==='revelation');if(!ef)continue;
-    if(ef.condition==='owner_played_direct_spell_this_round'&&!p.directPlayed)continue;
+    if(ef.condition==='owner_played_direct_spell_this_round'&&!p.directPlayed)continue;if(ef.condition==='self_wounded'&&card.damage<=0)continue;
     reveals.push({p,lane,card,ef,target:ef.target==='self'?card:laneCard(room,other(room,p.id).id,lane)});
   }
   const hits=[];
@@ -219,7 +219,12 @@ export function act(room,p,data,catalog){
       emit(room,'creature',{playerId:p.id,cardId:card.uid,name:card.name,zone:leaving?'reserve':'emana',speech:card.speech||'Estou a postos.'});
     }else if(data.type==='endPrep'){
       const clerics=p.emanation.filter(uid=>p.reserve.find(c=>c.uid===uid)?.modelId==='F03');
-      clerics.forEach((_,index)=>{const target=findCreature(p,data.healTargetIds?.[index]||data.healTargetId);if(target)target.damage=Math.max(0,target.damage-1);});
+      clerics.forEach((uid,index)=>{
+        const cleric=findCreature(p,uid),ef=effects(cleric).find(ef=>ef.op==='heal'),target=findCreature(p,data.healTargetIds?.[index]||data.healTargetId),cost=ef?.mana_cost||0;
+        if(!target||target.damage<=0||(ef?.exclude_self&&target.uid===uid)||p.mana<cost)return;
+        p.mana-=cost;target.damage=Math.max(0,target.damage-1);
+        emit(room,'cleric_heal',{playerId:p.id,sourceId:uid,targetId:target.uid,amount:1,mana:cost});
+      });
       room.preparationsDone=(room.preparationsDone||0)+1;
       if(room.preparationsDone===1){startPrep(room,other(room,p.id));}
       else if(room.preparationsDone===2){room.phase='vote';room.turn=null;pushLog(room,`Preparações concluídas. Cada jogador decide se haverá combate.`);}

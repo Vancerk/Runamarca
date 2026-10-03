@@ -38,3 +38,23 @@
 /* The reference frame replaces the former Patron portrait controls. */
 #patron-controls,#auto-abilities{display:none!important}.canvas-wrap{border:0;background:transparent;box-shadow:none;padding:0}.preview-pane{background:radial-gradient(ellipse at center,#443221,#1b1510 66%)}
 .cost-grid{grid-template-columns:1fr}.cost-grid label:not(:first-child){display:none}.cost-grid label:first-child{align-items:stretch;text-align:left}
+.creature-budget{border:1px solid #a4834a;background:#221c15;padding:14px;margin:16px 0}
+.budget-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.budget-summary span{font-size:12px;color:#d7c5a7}.budget-summary strong{display:block;font-size:26px;color:#eed49b}
+.creature-budget[data-over=true] #budget-remaining,.creature-budget[data-over=true] #budget-status{color:#ff9b8e}
+.budget-abilities{display:grid;gap:12px;margin-top:12px}
+.budget-ability{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;border:1px solid #66523a;border-radius:6px}
+.budget-ability label:first-child{grid-column:1/-1}.budget-ability button{grid-column:1/-1}
+#budget-status{font-size:13px;color:#e5ce9d;line-height:1.5}
+#budget-reference p{font-size:12px;line-height:1.4;margin:8px 0}
+.creature-budget h3{font-size:14px;color:#e8ca8b;margin:20px 0 8px}
+.budget-effect{min-width:0;padding:12px!important;background:#18140f;border-color:#78603d!important}
+.budget-effect-step{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0;padding-top:12px;border-top:1px solid #604c33}
+.budget-effect-step>strong{grid-column:1/-1;font-size:12px;color:#d8bd87}
+.budget-effect-step label{min-width:0}.budget-effect-step select{font-size:11px}
+.budget-effect-step label:has([data-budget=reason]){grid-column:1/-1}
+.budget-price-line{padding:10px;background:#30291c;border-left:3px solid #c8ac64;color:#ecdaba;font-size:12px;line-height:1.6}
+.budget-summary{position:sticky;top:8px;background:#221c15;padding:10px 0;z-index:2;border-bottom:1px solid #66523a}
+.field-hint{line-height:1.5}
+.budget-fixed-target{grid-column:1/-1;margin:0}
+@media(min-width:761px){.preview-pane{position:sticky;top:8px;align-self:start}.preview-pane .canvas-wrap{width:min(100%,430px,calc((100dvh - 260px)*.714286))}}

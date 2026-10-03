@@ -9,7 +9,7 @@ const early=makeRoom('DEF456','Primeira');act(early,early.players[0],{type:'deck
 act(room,a,{type:'deck',deckId:'ruptura-cacada',art:{R01:{image:'data:image/png;base64,iVBORw0KGgo=',kind:'card'}}},catalog);act(room,b,{type:'deck',deckId:'fluxo-selos'},catalog);
 [a,b]=[room.players.find(p=>p.id===room.first),room.players.find(p=>p.id!==room.first)];assert.equal(room.first,room.coinWinner);
 assert.equal(room.phase,'mulligan');assert.equal(a.hand.length,5);assert.equal(b.hand.length,5);act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);assert.equal(a.hand.length,6);assert.equal(a.manaMax,1);
-assert.equal(a.patron.maxHp,20);assert.equal(b.patron.hp,20);
+assert.equal(a.patron.maxHp,16);assert.equal(b.patron.hp,16);
 assert.equal(room.players.find(p=>p.deckId==='ruptura-cacada').hand.concat(room.players.find(p=>p.deckId==='ruptura-cacada').deck).find(c=>c.modelId==='R01').imageKind,'card','arte completa mantém seu modo de exibição');
 const model=id=>catalog.decks.flatMap(d=>d.cards).find(c=>c.id===id);
 const instance=(id,owner)=>({...structuredClone(model(id)),uid:`${id}-${Math.random()}`,modelId:id,owner:owner.id,damage:0,attackMod:0});
@@ -55,7 +55,7 @@ assert.equal(room.combat.timeline.find(step=>step.kind==='magic'&&step.spell.car
 
 assert.equal(room.phase,'resolving');assert.equal(view(room,b).players.find(p=>p.id===a.id).formation[0],hunter.uid,'cartas são reveladas na animação');
 await new Promise(resolve=>setTimeout(resolve,room.combat.duration+80));
-assert.equal(b.patron.hp,16,'armadilha derrota defensor, bônus aliado eleva ataque de 2 a 4');
+assert.equal(b.patron.hp,12,'armadilha derrota defensor, bônus aliado eleva ataque de 2 a 4');
 assert.equal(room.round,2);assert.equal(room.phase,'prep');assert.equal(a.reserve.length,1);assert.equal(b.reserve.length,0);
 assert.equal(room.preparationsDone,0,'a rodada seguinte exige novamente ambas as preparações');
 assert.ok(room.log.length<=10,'registro guarda no máximo dez atualizações');

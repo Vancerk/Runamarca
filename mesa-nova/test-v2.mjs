@@ -47,8 +47,8 @@ act(room,a,{type:'endPrep'},catalog);
 const enemy1=instance('R01',a),enemy2=instance('R03',a);a.reserve.push(enemy1,enemy2);
 const area=instance('M10',b);b.hand.push(area);b.mana=10;
 act(room,b,{type:'play',cardId:area.uid,mode:'direct'},catalog);
-assert.equal(enemy1.damage,2);
-assert.equal(enemy2.damage,2);
+assert.equal(enemy1.damage,1);
+assert.equal(enemy2.damage,1);
 
 b.hand=Array.from({length:9},(_,i)=>instance('M01',b));
 const drawn=instance('M08',b);b.hand.push(drawn);b.mana=10;

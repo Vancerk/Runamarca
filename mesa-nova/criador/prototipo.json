@@ -1,8 +1,8 @@
 {
   "format": "runamarca-design-prototype",
-  "version": "0.2",
-  "date": "2026-09-29",
-  "status": "Conjunto inicial para testes; equilíbrio e duração ainda não validados.",
+  "version": "0.3-pontos",
+  "date": "2026-10-03",
+  "status": "Decks reconstruídos pela referência de pontos v2; teste automatizado não substitui teste humano.",
   "not_legacy_editor_import": true,
   "source_scope": "Leitura seletiva do livro principal (povos, idiomas, Éter e equipamentos), do Livro de Especializações (Caçador, Arcanista e Clérigo) e do Notion (índice do mundo e apresentação da Escola de Magia Virelion). Não é uma auditoria integral do cenário.",
   "sources": [
@@ -43,7 +43,7 @@
     }
   ],
   "rules": {
-    "patron_health": 20,
+    "patron_health": 24,
     "deck_size": 24,
     "max_copies": {
       "lacaio": 3,
@@ -91,7 +91,7 @@
       "patron": {
         "id": "P-R",
         "name": "A Garra Vigilante",
-        "health": 20,
+        "health": 16,
         "affinities": [
           "ruptura"
         ],
@@ -123,7 +123,16 @@
           "affinity": "ruptura",
           "rarity": "lacaio",
           "image": "art/R01.webp",
-          "speech": "O rastro ainda está quente."
+          "speech": "O rastro ainda está quente.",
+          "budgetEffects": [],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 3,
+            "spent": 3,
+            "remaining": 0,
+            "abilityPoints": 0
+          }
         },
         {
           "id": "R02",
@@ -132,8 +141,8 @@
           "subtype": "Faelen · Explorador",
           "cost": 2,
           "quantity": 3,
-          "attack": 1,
-          "health": 2,
+          "attack": 2,
+          "health": 1,
           "text": "Ao entrar: convoque um Batedor 1/1 para a reserva.",
           "role": "Ocupar uma casa com pouco investimento.",
           "lore_basis": "Livro principal, 6.5.5: Faelen e ancestralidade dos Bosques.",
@@ -152,7 +161,31 @@
           "affinity": "ruptura",
           "rarity": "lacaio",
           "image": "art/R02.webp",
-          "speech": "Eu conheço o caminho."
+          "speech": "Eu conheço o caminho.",
+          "budgetEffects": [
+            {
+              "name": "Explorador Faelen",
+              "timing": "enter",
+              "target": "self",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "summon",
+              "amount": 1,
+              "tokenAttack": 1,
+              "tokenHealth": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Ficha 1/1 ocupa 2 pontos. Corpo reduzido mantém pressão e reposição.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 5,
+            "remaining": 0,
+            "abilityPoints": 2
+          }
         },
         {
           "id": "R03",
@@ -172,7 +205,16 @@
           "affinity": "ruptura",
           "rarity": "lacaio",
           "image": "art/R03.webp",
-          "speech": "Contrato aceito."
+          "speech": "Contrato aceito.",
+          "budgetEffects": [],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 5,
+            "remaining": 0,
+            "abilityPoints": 0
+          }
         },
         {
           "id": "R04",
@@ -182,7 +224,7 @@
           "cost": 2,
           "quantity": 2,
           "attack": 2,
-          "health": 2,
+          "health": 1,
           "text": "Revelação: cause 1 de dano à criatura inimiga na mesma posição.",
           "role": "Preparar uma troca ou abrir passagem antes do confronto.",
           "lore_basis": "Livro principal, 7.5: armas de pólvora, cartuchos e revólveres.",
@@ -199,7 +241,29 @@
           "affinity": "ruptura",
           "rarity": "padrao",
           "image": "art/R04.webp",
-          "speech": "Mão longe do coldre."
+          "speech": "Mão longe do coldre.",
+          "budgetEffects": [
+            {
+              "name": "Pistoleira de Cartucho",
+              "timing": "reveal",
+              "target": "lane",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Revelação de dano consome 2 pontos; reduzir resistência preserva o ataque agressivo.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 5,
+            "remaining": 0,
+            "abilityPoints": 2
+          }
         },
         {
           "id": "R05",
@@ -226,7 +290,29 @@
           "affinity": "ruptura",
           "rarity": "padrao",
           "image": "art/R05.webp",
-          "speech": "A marca foi lançada."
+          "speech": "A marca foi lançada.",
+          "budgetEffects": [
+            {
+              "name": "Arauto Lezhar",
+              "timing": "emanation",
+              "target": "fixedAlly",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "attack",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 5,
+            "remaining": 0,
+            "abilityPoints": 1
+          }
         },
         {
           "id": "R06",
@@ -235,8 +321,8 @@
           "subtype": "Lezhar · Duelista",
           "cost": 4,
           "quantity": 2,
-          "attack": 3,
-          "health": 3,
+          "attack": 4,
+          "health": 1,
           "text": "Ao entrar: convoque dois Recrutas 1/1 para a reserva.",
           "role": "Principal atacante do meio da partida.",
           "lore_basis": "Livro principal, 6.5.1: Arenas Sagradas.",
@@ -255,7 +341,31 @@
           "affinity": "ruptura",
           "rarity": "padrao",
           "image": "art/R06.webp",
-          "speech": "A arena é minha."
+          "speech": "A arena é minha.",
+          "budgetEffects": [
+            {
+              "name": "Duelista das Arenas",
+              "timing": "enter",
+              "target": "self",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "summon",
+              "amount": 2,
+              "tokenAttack": 1,
+              "tokenHealth": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Duas fichas custam 4 pontos. Corpo 4/1 fica vulnerável em troca de quantidade.",
+          "budgetAudit": {
+            "available": 9,
+            "spent": 9,
+            "remaining": 0,
+            "abilityPoints": 4
+          }
         },
         {
           "id": "R07",
@@ -275,7 +385,16 @@
           "affinity": "ruptura",
           "rarity": "elite",
           "image": "art/R07.webp",
-          "speech": "Seguimos juntos."
+          "speech": "Seguimos juntos.",
+          "budgetEffects": [],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 9,
+            "spent": 9,
+            "remaining": 0,
+            "abilityPoints": 0
+          }
         },
         {
           "id": "R08",
@@ -285,7 +404,7 @@
           "cost": 5,
           "quantity": 1,
           "attack": 6,
-          "health": 5,
+          "health": 2,
           "text": "Ao entrar: convoque um Caçador 2/1 para a reserva.",
           "role": "Finalizador agressivo.",
           "lore_basis": "Livro principal, 6.5.5: força e disciplina dos Azuras.",
@@ -304,7 +423,31 @@
           "affinity": "ruptura",
           "rarity": "elite",
           "image": "art/R08.webp",
-          "speech": "Minha presa não escapa."
+          "speech": "Minha presa não escapa.",
+          "budgetEffects": [
+            {
+              "name": "Azura da Caçada",
+              "timing": "enter",
+              "target": "self",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "summon",
+              "amount": 1,
+              "tokenAttack": 2,
+              "tokenHealth": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Ficha 2/1 custa 3 pontos. Mantém finalizador de alto ataque, sem resistência gratuita.",
+          "budgetAudit": {
+            "available": 11,
+            "spent": 11,
+            "remaining": 0,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "R09",
@@ -329,16 +472,38 @@
           ],
           "affinity": "ruptura",
           "rarity": "padrao",
-          "image": "art/R09.webp"
+          "image": "art/R09.webp",
+          "budgetEffects": [
+            {
+              "name": "Avançar sob o Rugido",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "round",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "attack",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 2,
+            "spent": 2,
+            "remaining": 0,
+            "abilityPoints": 2
+          }
         },
         {
           "id": "R10",
           "name": "Tiro de Cobertura",
           "type": "direct_spell",
           "subtype": "Magia · Disparo etéreo",
-          "cost": 2,
+          "cost": 3,
           "quantity": 2,
-          "text": "Cause 2 de dano a uma criatura inimiga.",
+          "text": "Cause 2 de dano a uma criatura inimiga. Se esse dano a destruir, compre 1 carta.",
           "role": "Remover uma criatura ferida ou atingir a Emanação.",
           "lore_basis": "Livro principal, 7.5: armas de fogo e focos etéreos; efeito adaptado.",
           "flavor": "A munição leva Éter onde a lâmina não alcança.",
@@ -348,12 +513,47 @@
               "timing": "on_play",
               "op": "damage",
               "target": "chosen_enemy_creature",
-              "amount": 2
+              "amount": 2,
+              "draw_on_kill": 1
             }
           ],
           "affinity": "ruptura",
           "rarity": "padrao",
-          "image": "art/R10.webp"
+          "image": "art/R10.webp",
+          "budgetEffects": [
+            {
+              "name": "Tiro de Cobertura",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 2
+            },
+            {
+              "name": "Tiro de Cobertura",
+              "timing": "direct",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "kill",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "draw",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Dano 2 custa 4 pontos, compra condicional 2. A magia passa a orçamento de 6.",
+          "budgetAudit": {
+            "available": 6,
+            "spent": 6,
+            "remaining": 0,
+            "abilityPoints": 6
+          }
         },
         {
           "id": "R11",
@@ -377,14 +577,36 @@
           ],
           "affinity": "ruptura",
           "rarity": "padrao",
-          "image": "art/R11.webp"
+          "image": "art/R11.webp",
+          "budgetEffects": [
+            {
+              "name": "Selo de Estilhaços",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 4,
+            "spent": 3,
+            "remaining": 1,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "R12",
           "name": "Marca do Compêndio",
           "type": "prepared_spell",
           "subtype": "Magia preparada · Marca",
-          "cost": 2,
+          "cost": 3,
           "quantity": 1,
           "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 4 de dano a ela se tiver 4 ou mais de ataque; caso contrário, cause 1.",
           "role": "Punir criaturas grandes; aceitar a isca de uma pequena.",
@@ -406,7 +628,29 @@
           ],
           "affinity": "ruptura",
           "rarity": "elite",
-          "image": "art/R12.webp"
+          "image": "art/R12.webp",
+          "budgetEffects": [
+            {
+              "name": "Marca do Compêndio",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "instant",
+              "condition": "threshold",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 4
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Dano alto contra ameaças grandes precisa de custo maior, mesmo condicionado e preparado.",
+          "budgetAudit": {
+            "available": 6,
+            "spent": 6,
+            "remaining": 0,
+            "abilityPoints": 6
+          }
         }
       ]
     },
@@ -418,7 +662,7 @@
       "patron": {
         "id": "P-M",
         "name": "O Olho dos Pactos",
-        "health": 20,
+        "health": 16,
         "affinities": [
           "fluxo"
         ],
@@ -450,7 +694,16 @@
           "affinity": "fluxo",
           "rarity": "lacaio",
           "image": "art/M01.webp",
-          "speech": "O Éter responde."
+          "speech": "O Éter responde.",
+          "budgetEffects": [],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 3,
+            "spent": 3,
+            "remaining": 0,
+            "abilityPoints": 0
+          }
         },
         {
           "id": "M02",
@@ -479,7 +732,29 @@
           "affinity": "fluxo",
           "rarity": "lacaio",
           "image": "art/M02.webp",
-          "speech": "O selo está pronto."
+          "speech": "O selo está pronto.",
+          "budgetEffects": [
+            {
+              "name": "Discípula de Dravorn",
+              "timing": "reveal",
+              "target": "self",
+              "duration": "round",
+              "condition": "spell",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "attack",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 5,
+            "remaining": 0,
+            "abilityPoints": 1
+          }
         },
         {
           "id": "M03",
@@ -499,7 +774,16 @@
           "affinity": "fluxo",
           "rarity": "lacaio",
           "image": "art/M03.webp",
-          "speech": "Atrás de mim."
+          "speech": "Atrás de mim.",
+          "budgetEffects": [],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 5,
+            "remaining": 0,
+            "abilityPoints": 0
+          }
         },
         {
           "id": "M04",
@@ -508,7 +792,7 @@
           "subtype": "Axiom · Rúnico",
           "cost": 3,
           "quantity": 2,
-          "attack": 2,
+          "attack": 1,
           "health": 3,
           "text": "Emanação: a primeira magia direta que você jogar em cada preparação sua custa 1 a menos, até o mínimo de 1.",
           "role": "Economizar mana ao custo de um participante do combate.",
@@ -527,7 +811,29 @@
           "affinity": "fluxo",
           "rarity": "padrao",
           "image": "art/M04.webp",
-          "speech": "Circuitos em harmonia."
+          "speech": "Circuitos em harmonia.",
+          "budgetEffects": [
+            {
+              "name": "Axiom de Circuito Rúnico",
+              "timing": "emanation",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "discount",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Desconto recorrente ocupa 3 pontos. Menos ataque torna o apoio um investimento.",
+          "budgetAudit": {
+            "available": 7,
+            "spent": 7,
+            "remaining": 0,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "M05",
@@ -537,7 +843,7 @@
           "cost": 4,
           "quantity": 2,
           "attack": 3,
-          "health": 4,
+          "health": 3,
           "text": "Entrada: compre 1 carta.",
           "role": "Repor uma carta enquanto desenvolve o campo.",
           "lore_basis": "Notion, Escola de Magia Virelion: biblioteca e estudo; Livro de Especializações, 1.5.2: Arcanista. Personagem original.",
@@ -554,7 +860,29 @@
           "affinity": "fluxo",
           "rarity": "padrao",
           "image": "art/M05.webp",
-          "speech": "Já li esse destino."
+          "speech": "Já li esse destino.",
+          "budgetEffects": [
+            {
+              "name": "Arquivista de Virelion",
+              "timing": "enter",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "draw",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Compra de entrada ocupa 3 pontos; reduzir vida mantém corpo e reposição no custo 4.",
+          "budgetAudit": {
+            "available": 9,
+            "spent": 9,
+            "remaining": 0,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "M06",
@@ -564,7 +892,7 @@
           "cost": 6,
           "quantity": 1,
           "attack": 4,
-          "health": 6,
+          "health": 5,
           "text": "Revelação: cause 2 de dano à criatura inimiga na mesma posição.",
           "role": "Converter domínio mágico em dano de combate.",
           "lore_basis": "Notion, Escola de Magia Virelion: barreira de selos; livro principal, 6.5.5: Aethelis. Mestra e habilidade são criações originais.",
@@ -581,7 +909,29 @@
           "affinity": "fluxo",
           "rarity": "elite",
           "image": "art/M06.webp",
-          "speech": "Selos, despertem."
+          "speech": "Selos, despertem.",
+          "budgetEffects": [
+            {
+              "name": "Mestra dos Selos de Virelion",
+              "timing": "reveal",
+              "target": "lane",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Revelação de 2 dano custa 4 pontos. Vida 5 deixa total 13 no custo 6.",
+          "budgetAudit": {
+            "available": 13,
+            "spent": 13,
+            "remaining": 0,
+            "abilityPoints": 4
+          }
         },
         {
           "id": "M07",
@@ -605,7 +955,29 @@
           ],
           "affinity": "fluxo",
           "rarity": "padrao",
-          "image": "art/M07.webp"
+          "image": "art/M07.webp",
+          "budgetEffects": [
+            {
+              "name": "Pulso de Éter",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 3
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 6,
+            "spent": 6,
+            "remaining": 0,
+            "abilityPoints": 6
+          }
         },
         {
           "id": "M08",
@@ -629,7 +1001,29 @@
           ],
           "affinity": "fluxo",
           "rarity": "padrao",
-          "image": "art/M08.webp"
+          "image": "art/M08.webp",
+          "budgetEffects": [
+            {
+              "name": "Consulta à Biblioteca",
+              "timing": "direct",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "draw",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 6,
+            "spent": 6,
+            "remaining": 0,
+            "abilityPoints": 6
+          }
         },
         {
           "id": "M09",
@@ -653,7 +1047,29 @@
           ],
           "affinity": "fluxo",
           "rarity": "padrao",
-          "image": "art/M09.webp"
+          "image": "art/M09.webp",
+          "budgetEffects": [
+            {
+              "name": "Recompor o Éter",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "heal",
+              "amount": 3
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 4,
+            "spent": 3,
+            "remaining": 1,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "M10",
@@ -662,7 +1078,7 @@
           "subtype": "Magia · Ruptura de selo",
           "cost": 5,
           "quantity": 2,
-          "text": "Cause 2 de dano a todas as criaturas inimigas. Preparada: dispara quando uma criatura entrar na posição escolhida. Se preparada em uma posição, se desfaz ao fim da rodada mesmo sem ativar.",
+          "text": "Direta: cause 1 de dano a todas as criaturas inimigas fora da emanacao. Preparada: quando uma criatura inimiga for revelada na posicao escolhida, cause 2 de dano apenas as criaturas da formacao inimiga. Expira ao fim da rodada mesmo sem ativar.",
           "role": "Resposta cara a uma ameaça de qualquer tamanho.",
           "lore_basis": "Efeito original de RunaMarca inspirado na manipulação do Éter; não reproduz uma magia oficial.",
           "flavor": "Todo vínculo possui um ponto que não deveria ser tocado.",
@@ -672,19 +1088,56 @@
               "timing": "on_play_or_prepared",
               "op": "area_damage",
               "target": "all_enemy_creatures",
-              "amount": 2
+              "amount": 2,
+              "direct_amount": 1
             }
           ],
           "affinity": "fluxo",
           "rarity": "padrao",
-          "image": "art/M10.webp"
+          "image": "art/M10.webp",
+          "budgetEffects": [
+            {
+              "name": "Ruptura do Círculo",
+              "timing": "direct",
+              "target": "area",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "choice",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 1,
+              "count": 8
+            },
+            {
+              "name": "Ruptura do Círculo",
+              "timing": "trap",
+              "target": "area",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "choice",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 2,
+              "count": 3
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 10,
+            "spent": 10,
+            "remaining": 0,
+            "abilityPoints": 10
+          }
         },
         {
           "id": "M11",
           "name": "Glifo Incandescente",
           "type": "prepared_spell",
           "subtype": "Magia preparada · Glifo",
-          "cost": 2,
+          "cost": 3,
           "quantity": 1,
           "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 3 de dano a essa criatura.",
           "role": "Abrir uma posição com uma magia preparada forte.",
@@ -701,7 +1154,29 @@
           ],
           "affinity": "fluxo",
           "rarity": "elite",
-          "image": "art/M11.webp"
+          "image": "art/M11.webp",
+          "budgetEffects": [
+            {
+              "name": "Glifo Incandescente",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 3
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "3 dano preparado custa 5 pontos. Custo 2 oferecia apenas 4.",
+          "budgetAudit": {
+            "available": 6,
+            "spent": 5,
+            "remaining": 1,
+            "abilityPoints": 5
+          }
         },
         {
           "id": "M12",
@@ -731,7 +1206,41 @@
           ],
           "affinity": "fluxo",
           "rarity": "elite",
-          "image": "art/M12.webp"
+          "image": "art/M12.webp",
+          "budgetEffects": [
+            {
+              "name": "Eco de Arkhavel",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 1
+            },
+            {
+              "name": "Eco de Arkhavel",
+              "timing": "trap",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "draw",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 4,
+            "spent": 3,
+            "remaining": 1,
+            "abilityPoints": 3
+          }
         }
       ]
     },
@@ -743,7 +1252,7 @@
       "patron": {
         "id": "P-F",
         "name": "A Bigorna Desperta",
-        "health": 20,
+        "health": 16,
         "affinities": [
           "forja"
         ],
@@ -765,7 +1274,7 @@
           "cost": 1,
           "quantity": 3,
           "attack": 1,
-          "health": 3,
+          "health": 1,
           "text": "Revelação: ganha +1 de ataque neste combate.",
           "role": "Defesa inicial resistente, com pouca pressão.",
           "lore_basis": "Livro principal, 6.5.2: clãs anões.",
@@ -783,7 +1292,29 @@
           "affinity": "forja",
           "rarity": "lacaio",
           "image": "art/F01.webp",
-          "speech": "Ninguém passa."
+          "speech": "Ninguém passa.",
+          "budgetEffects": [
+            {
+              "name": "Vigia do Clã",
+              "timing": "reveal",
+              "target": "self",
+              "duration": "round",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "attack",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Ataque efetivo 2 na Revelação precisa entrar na conta. Reduzir vida abre respostas cedo.",
+          "budgetAudit": {
+            "available": 3,
+            "spent": 3,
+            "remaining": 0,
+            "abilityPoints": 1
+          }
         },
         {
           "id": "F02",
@@ -793,8 +1324,8 @@
           "cost": 2,
           "quantity": 3,
           "attack": 1,
-          "health": 5,
-          "text": "Revelação: cause 1 de dano à criatura inimiga na mesma posição.",
+          "health": 2,
+          "text": "Revelação: se estiver ferido, cause 1 de dano à criatura inimiga na mesma posição.",
           "role": "Absorver desgaste sem ganhar rapidamente.",
           "lore_basis": "Livro principal, 6.5.1: Sheldran.",
           "flavor": "Algumas promessas têm o peso de um escudo.",
@@ -805,13 +1336,36 @@
               "op": "damage",
               "target": "opposing_creature_same_lane",
               "amount": 1,
-              "duration": "round_end"
+              "duration": "round_end",
+              "condition": "self_wounded"
             }
           ],
           "affinity": "forja",
           "rarity": "lacaio",
           "image": "art/F02.webp",
-          "speech": "Escudo erguido."
+          "speech": "Escudo erguido.",
+          "budgetEffects": [
+            {
+              "name": "Escudeiro Sheldran",
+              "timing": "reveal",
+              "target": "lane",
+              "duration": "round",
+              "condition": "wounded",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Revelação condicionada ocupa 2 pontos pela regra de desconto máximo. Defesa continua barata, porém frágil.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 5,
+            "remaining": 0,
+            "abilityPoints": 2
+          }
         },
         {
           "id": "F03",
@@ -821,8 +1375,8 @@
           "cost": 2,
           "quantity": 3,
           "attack": 1,
-          "health": 3,
-          "text": "Emanação: ao fim da sua preparação, cure 1 de dano de uma criatura aliada à sua escolha.",
+          "health": 2,
+          "text": "Emanação: ao fim da sua preparação, você pode pagar 1 mana para curar 1 de dano de outra criatura aliada.",
           "role": "Preservar o campo por pequenas recuperações.",
           "lore_basis": "Livro principal, 6.5.2: fé e ofício anões; Livro de Especializações, 1.5.3: Clérigo como suporte. Personagem original.",
           "flavor": "Seu ofício devolve firmeza tanto à pedra quanto ao pulso.",
@@ -832,23 +1386,47 @@
               "timing": "end_owner_preparation_while_emanating",
               "op": "heal",
               "target": "chosen_allied_creature",
-              "amount": 1
+              "amount": 1,
+              "mana_cost": 1,
+              "exclude_self": true
             }
           ],
           "affinity": "forja",
           "rarity": "lacaio",
           "image": "art/F03.webp",
-          "speech": "A chama nos guarda."
+          "speech": "A chama nos guarda.",
+          "budgetEffects": [
+            {
+              "name": "Clériga da Forja",
+              "timing": "emanation",
+              "target": "ally",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 1,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "heal",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 5,
+            "spent": 4,
+            "remaining": 1,
+            "abilityPoints": 1
+          }
         },
         {
           "id": "F04",
           "name": "Sentinela Engrenauta",
           "type": "creature",
           "subtype": "Axiom · Engrenauta",
-          "cost": 3,
+          "cost": 4,
           "quantity": 2,
           "attack": 2,
-          "health": 5,
+          "health": 4,
           "text": "Ao entrar: compre uma carta.",
           "role": "Corpo defensivo do meio da partida.",
           "lore_basis": "Livro principal, 6.5.6: Axiom Engrenauta.",
@@ -865,7 +1443,29 @@
           "affinity": "forja",
           "rarity": "padrao",
           "image": "art/F04.webp",
-          "speech": "Protocolos ativos."
+          "speech": "Protocolos ativos.",
+          "budgetEffects": [
+            {
+              "name": "Sentinela Engrenauta",
+              "timing": "enter",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "draw",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Compra não é gratuita em um bloqueador. Corpo 2/4 + compra = 9 pontos.",
+          "budgetAudit": {
+            "available": 9,
+            "spent": 9,
+            "remaining": 0,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "F05",
@@ -874,7 +1474,7 @@
           "subtype": "Lezhar · Veterano",
           "cost": 4,
           "quantity": 2,
-          "attack": 4,
+          "attack": 3,
           "health": 5,
           "text": "Revelação: ganha +1 de ataque neste combate.",
           "role": "Começar a transformar defesa em pressão.",
@@ -893,7 +1493,29 @@
           "affinity": "forja",
           "rarity": "padrao",
           "image": "art/F05.webp",
-          "speech": "Já vi pior."
+          "speech": "Já vi pior.",
+          "budgetEffects": [
+            {
+              "name": "Veterano das Arenas",
+              "timing": "reveal",
+              "target": "self",
+              "duration": "round",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "attack",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 9,
+            "spent": 9,
+            "remaining": 0,
+            "abilityPoints": 1
+          }
         },
         {
           "id": "F06",
@@ -902,8 +1524,8 @@
           "subtype": "Drakonir · Guardião",
           "cost": 5,
           "quantity": 2,
-          "attack": 4,
-          "health": 7,
+          "attack": 3,
+          "health": 5,
           "text": "Revelação: cause 1 de dano à criatura inimiga na mesma posição.",
           "role": "Ameaça resistente para repetidos confrontos.",
           "lore_basis": "Livro principal, 6.5.1: Drakonir dos Túmulos Dracônicos.",
@@ -921,7 +1543,29 @@
           "affinity": "forja",
           "rarity": "padrao",
           "image": "art/F06.webp",
-          "speech": "Os túmulos vigiam."
+          "speech": "Os túmulos vigiam.",
+          "budgetEffects": [
+            {
+              "name": "Drakonir dos Túmulos",
+              "timing": "reveal",
+              "target": "lane",
+              "duration": "round",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 11,
+            "spent": 10,
+            "remaining": 1,
+            "abilityPoints": 2
+          }
         },
         {
           "id": "F07",
@@ -931,7 +1575,7 @@
           "cost": 6,
           "quantity": 1,
           "attack": 6,
-          "health": 7,
+          "health": 5,
           "text": "Revelação: ganha +2 de ataque neste combate.",
           "role": "Finalizador resistente.",
           "lore_basis": "Livro principal, 6.5.2: Gigantes e proteção de fronteiras; bastião original.",
@@ -949,14 +1593,36 @@
           "affinity": "forja",
           "rarity": "elite",
           "image": "art/F07.webp",
-          "speech": "Este bastião resiste."
+          "speech": "Este bastião resiste.",
+          "budgetEffects": [
+            {
+              "name": "Gigante do Bastião",
+              "timing": "reveal",
+              "target": "self",
+              "duration": "round",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "attack",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Bônus de ataque 2 ocupa 2 pontos. Reduzir vida mantém ameaça forte com janela de remoção.",
+          "budgetAudit": {
+            "available": 13,
+            "spent": 13,
+            "remaining": 0,
+            "abilityPoints": 2
+          }
         },
         {
           "id": "F08",
           "name": "Axiom de Cerco",
           "type": "creature",
           "subtype": "Axiom · Engrenauta",
-          "cost": 7,
+          "cost": 9,
           "quantity": 1,
           "attack": 8,
           "health": 8,
@@ -976,7 +1642,29 @@
           "affinity": "forja",
           "rarity": "elite",
           "image": "art/F08.webp",
-          "speech": "Iniciar cerco."
+          "speech": "Iniciar cerco.",
+          "budgetEffects": [
+            {
+              "name": "Axiom de Cerco",
+              "timing": "enter",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "draw",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 19,
+            "spent": 19,
+            "remaining": 0,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "F09",
@@ -1010,7 +1698,41 @@
           ],
           "affinity": "forja",
           "rarity": "padrao",
-          "image": "art/F09.webp"
+          "image": "art/F09.webp",
+          "budgetEffects": [
+            {
+              "name": "Restauração Etérea",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "choice",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "heal",
+              "amount": 3
+            },
+            {
+              "name": "Restauração Etérea",
+              "timing": "direct",
+              "target": "patron",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "choice",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "heal",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 4,
+            "spent": 4,
+            "remaining": 0,
+            "abilityPoints": 4
+          }
         },
         {
           "id": "F10",
@@ -1034,7 +1756,29 @@
           ],
           "affinity": "forja",
           "rarity": "padrao",
-          "image": "art/F10.webp"
+          "image": "art/F10.webp",
+          "budgetEffects": [
+            {
+              "name": "Martelo Rúnico",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 3
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 6,
+            "spent": 6,
+            "remaining": 0,
+            "abilityPoints": 6
+          }
         },
         {
           "id": "F11",
@@ -1058,7 +1802,29 @@
           ],
           "affinity": "forja",
           "rarity": "padrao",
-          "image": "art/F11.webp"
+          "image": "art/F11.webp",
+          "budgetEffects": [
+            {
+              "name": "Selo de Estacas",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "instant",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "damage",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 4,
+            "spent": 3,
+            "remaining": 1,
+            "abilityPoints": 3
+          }
         },
         {
           "id": "F12",
@@ -1083,7 +1849,29 @@
           ],
           "affinity": "forja",
           "rarity": "elite",
-          "image": "art/F12.webp"
+          "image": "art/F12.webp",
+          "budgetEffects": [
+            {
+              "name": "Névoa de Fuligem",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "round",
+              "condition": "none",
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "effect": "weaken",
+              "amount": 3
+            }
+          ],
+          "budgetVersion": 2,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
+          "budgetAudit": {
+            "available": 4,
+            "spent": 2,
+            "remaining": 2,
+            "abilityPoints": 2
+          }
         }
       ]
     }
