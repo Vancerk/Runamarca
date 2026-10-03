@@ -39,10 +39,22 @@ function button(label,handler,klass='',disabled=false){const b=document.createEl
 function text(parent,tag,value,klass){const el=document.createElement(tag);el.textContent=value;if(klass)el.className=klass;parent.append(el);return el;}
 function manaAffinity(value){return ['ruptura','forja','fluxo'].includes(value)?value:'fluxo';}
 function affordable(card){const p=seat();if(!p||state.spectator||state.phase!=='prep'||state.turn!==p.id||!p.hand?.some(c=>c.uid===card?.uid))return false;const sources=p.emanation.filter(uid=>p.reserve.find(c=>c.uid===uid)?.modelId==='M04').length;const cost=card.type!=='creature'&&sources&&!p.discountUsed&&!p.directPlayed?Math.max(1,card.cost-sources):card.cost;return p.mana>=cost;}
+const cardFaceCache=new Map();
+function paintCardFace(canvas,design,combat,flat){
+ const key=JSON.stringify([design,combat,flat]);let entry=cardFaceCache.get(key);
+ if(!entry){
+  const frame=document.createElement('canvas');frame.width=canvas.width;frame.height=canvas.height;entry={frame,ready:false};cardFaceCache.set(key,entry);
+  const render=combat?RunaCardVisual.drawCombat:RunaCardVisual.drawCard;
+  entry.promise=(!combat&&flat?new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>{frame.getContext('2d').drawImage(image,0,0,frame.width,frame.height);resolve();};image.onerror=reject;image.src=design.art;}):render(frame,design,{assets:'criador/',hideStats:true,flat})).then(()=>{entry.ready=true;}).catch(error=>{cardFaceCache.delete(key);console.error(error);});
+  if(cardFaceCache.size>72)cardFaceCache.delete(cardFaceCache.keys().next().value);
+ }
+ const paint=()=>canvas.getContext('2d').drawImage(entry.frame,0,0);
+ if(entry.ready){paint();return Promise.resolve();}return entry.promise.then(paint);
+}
 function cardEl(card,{mini=false,back=false,active=false,combat=false}={}){
   const el=document.createElement('button');el.type='button';el.className=`card${mini?' mini':''}${back?' back':''}${active?' selected':''}${card?.imageKind==='card'?' has-art':''}`;el.dataset.uid=card?.uid||'';if(!back&&affordable(card))el.classList.add('payable');if(movingCards.has(card?.uid))el.style.visibility='hidden';if(card?.type==='creature'&&card.damage>0)el.classList.add('wounded');el.setAttribute('aria-label',back?'Magia oculta':`${card.name} · custo ${card.cost} · ${card.text||''}`);
   if(!back){el.classList.add('styled-card','energy-'+manaAffinity(card.affinity));if(combat)el.classList.add('combat-card');if(card.image){const image=document.createElement('img');image.src=card.image;image.alt='';el.append(image);}else text(el,'div',card.type==='creature'?'✦':'◈','fallback');text(el,'div',card.name,'card-title');text(el,'span',String(card.cost??0),`mana-gem mana-${manaAffinity(card.affinity)}`);if(card.type==='creature'){const ns='http://www.w3.org/2000/svg',stats=document.createElementNS(ns,'svg');stats.classList.add('card-stats-svg');stats.setAttribute('viewBox',combat?'0 0 900 820':'0 0 900 1260');stats.setAttribute('aria-hidden','true');el.append(stats);const attack=displayedAttack.get(card.uid)??Math.max(0,card.attack+(card.attackMod||0)),health=displayedHealth.get(card.uid)??Math.max(0,card.health-card.damage);el.dataset.baseAttack=card.attack;for(const [value,x,y,klass] of [[attack,83.3,combat?739:1172,'attack-value'+(attack>card.attack?' attack-buffed':'')],[health,826,combat?744.12:1177.12,'health-value'+(health<card.health?' health-damaged':'')]]){const number=document.createElementNS(ns,'text');number.setAttribute('x',x);number.setAttribute('y',y);number.setAttribute('text-anchor','middle');number.setAttribute('dominant-baseline','central');number.setAttribute('class',klass);number.textContent=String(value);stats.append(number);}}if(card.rarity)text(el,'span',card.rarity,'rarity');}
-  if(!back){const canvas=document.createElement('canvas');canvas.width=450;canvas.height=combat?410:630;canvas.className='card-art-canvas';el.prepend(canvas);const design={name:card.name,kind:card.type==='creature'?'creature':'spell',rules:card.text,subtype:card.subtype||'',themeEnergy:manaAffinity(card.affinity),art:card.image,artZoom:card.artZoom||100,artX:card.artX??50,artY:card.artY??0,generic:card.cost,power:card.attack,health:card.health};const render=combat?RunaCardVisual.drawCombat:RunaCardVisual.drawCard;if(!combat&&card.imageKind==='card'){const image=new Image();el.visualReady=new Promise(resolve=>{image.onload=()=>{canvas.getContext('2d').drawImage(image,0,0,450,630);resolve();};image.onerror=resolve;});image.src=card.image;}else el.visualReady=render(canvas,design,{assets:'criador/',hideStats:true,flat:card.imageKind==='card'}).catch(console.error);}
+  if(!back){const canvas=document.createElement('canvas');canvas.width=450;canvas.height=combat?410:630;canvas.className='card-art-canvas';el.prepend(canvas);const design={name:card.name,kind:card.type==='creature'?'creature':'spell',rules:card.text,subtype:card.subtype||'',themeEnergy:manaAffinity(card.affinity),art:card.image,artZoom:card.artZoom||100,artX:card.artX??50,artY:card.artY??0,generic:card.cost,power:card.attack,health:card.health};el.visualReady=paintCardFace(canvas,design,combat,card.imageKind==='card');}
   el.onclick=()=>{if(back||Date.now()<suppressClickUntil)return;if(state?.phase==='mulligan'&&seat()?.hand?.some(c=>c.uid===card.uid)){mulliganSelected.has(card.uid)?mulliganSelected.delete(card.uid):mulliganSelected.add(card.uid);render();return;}if(state?.phase==='prep'&&state.turn===state.you&&seat()?.emanation.includes(card.uid)){showEmanationMenu(card);return;}if(state?.phase==='prep'&&state.turn===state.you&&!state.spectator){if(seat()?.hand?.some(c=>c.uid===card.uid)&&card.type!=='creature'){chooseSpellTarget(card);return;}if(seat()?.reserve?.some(c=>c.uid===card.uid)&&JSON.stringify(card.effects||[]).includes('emanat')){showEmanationMenu(card);return;}}};el.ondblclick=null;
   if(!back){el.onmouseenter=event=>showHover(card,event);el.onmousemove=moveHover;el.onmouseleave=hideHover;}
   return el;
@@ -74,7 +86,7 @@ function renderBoard(){const self=seat()||{id:'',name:'Aguardando jogador',hand:
   for(const [id,p] of [['self',self],['opponent',opp]]){
     const holder=$(`${id}-reserve`);holder.replaceChildren();const cards=(p?.reserve||[]).filter(c=>!p.emanation?.includes(c.uid)&&!p.formation?.includes(c.uid));$(`${id}-reserve-count`).textContent='';
     for(const c of cards){const node=cardEl(c,{mini:true,active:selected===c.uid});if(!state.spectator&&p.id===self.id)makeDraggable(node,c);holder.append(node);}
-    const eman=$(`${id}-emana`);eman.replaceChildren();for(let slot=0;slot<2;slot++){const em=p?.reserve?.find(c=>c.uid===p.emanation?.[slot]);if(em)eman.append(cardEl(em,{mini:true,active:selected===em.uid}));else text(eman,'span',`Vaga ${slot+1}`,'emana-empty');}
+    const eman=$(`${id}-emana`);eman.replaceChildren();for(let slot=0;slot<2;slot++){const em=p?.reserve?.find(c=>c.uid===p.emanation?.[slot]);if(em)eman.append(cardEl(em,{mini:true,active:selected===em.uid}));else text(eman,'span',String(slot+1),'emana-empty');}
     const grave=$(`${id}-grave`);grave.replaceChildren();const top=p?.discard?.at(-1);if(top&&top.image){const art=document.createElement('img');art.src=top.image;art.alt='';grave.append(art);}else text(grave,'span','✝');text(grave,'b',`${p?.discardCount||0} carta(s)`);grave.onclick=()=>showCemetery(p);
   }
   const reserveDrop=$('self-reserve-area');reserveDrop.ondragover=event=>{if(state.phase==='formation'&&!self.ready){event.preventDefault();reserveDrop.classList.add('drop-ready');}};
@@ -123,7 +135,7 @@ function bindCardDrag(node,card,kind='hand'){
   const cancel=()=>clean();
   const move=e=>{
    if(!ghost&&Math.hypot(e.clientX-origin.x,e.clientY-origin.y)<7)return;
-   e.preventDefault();if(!ghost){hideHover();ghost=cloneVisual(node);ghost.classList.remove('pending-arrival');ghost.classList.add('drag-preview');ghost.style.visibility='';$('visual-layer').append(ghost);node.classList.add('dragging-source');}
+   e.preventDefault();if(!ghost){hideHover();ghost=cloneVisual(node);ghost.classList.remove('pending-arrival');ghost.classList.add('drag-preview');ghost.style.visibility='';ghost.style.setProperty('width',node.offsetWidth+'px','important');ghost.style.setProperty('height',node.offsetHeight+'px','important');$('visual-layer').append(ghost);node.classList.add('dragging-source');}
    ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';
    document.querySelectorAll('.drop-ready').forEach(el=>el.classList.remove('drop-ready'));
    const target=document.elementFromPoint(e.clientX,e.clientY),lane=target?.closest('.lane-side'),zone=target?.closest('#self-reserve-area,#self-emana-zone,#hand');
@@ -131,18 +143,22 @@ function bindCardDrag(node,card,kind='hand'){
    const over=target?.closest('.hand-card');if(kind==='hand'&&over&&over!==node){const rect=over.getBoundingClientRect();$('hand').insertBefore(node,e.clientX>rect.left+rect.width/2?over.nextSibling:over);handOrder=[...$('hand').querySelectorAll('.hand-card')].map(el=>el.dataset.uid);layoutHand();}
   };
   const release=e=>{
-   const held=ghost?cloneVisual(ghost):null;if(held){held.classList.remove('drag-preview');held.classList.add('release-ghost');const heldRect=ghost.getBoundingClientRect();held.style.width=heldRect.width+'px';held.style.height=heldRect.height+'px';held.style.pointerEvents='none';document.body.append(held);movingCards.add(card.uid);setTimeout(()=>{held.remove();movingCards.delete(card.uid);if(!commandBusy)render();},2500);}const moved=Boolean(ghost),rect=ghost?.getBoundingClientRect(),target=document.elementFromPoint(e.clientX,e.clientY),lane=target?.closest('.lane-side'),zone=target?.closest('#self-reserve-area,#self-emana-zone,#hand');clean();if(!moved)return;suppressClickUntil=Date.now()+450;selected=null;
+   const rect=ghost?.getBoundingClientRect(),target=document.elementFromPoint(e.clientX,e.clientY),lane=target?.closest('.lane-side'),zone=target?.closest('#self-reserve-area,#self-emana-zone,#hand');let action=null;
    if(kind==='prepared'){
-    if(lane)command({type:'movePrepared',cardId:card.uid,lane:Number(lane.dataset.lane),targetSide:lane.dataset.owner},rect);
-    else if(zone)command({type:'unprepare',cardId:card.uid},rect);return;
+    if(lane)action={type:'movePrepared',cardId:card.uid,lane:Number(lane.dataset.lane),targetSide:lane.dataset.owner};
+    else if(zone)action={type:'unprepare',cardId:card.uid};
    }
-   if(kind==='hand'&&state.phase==='prep'&&state.turn===seat()?.id){
-    if(card.type==='creature'&&zone&&zone.id!=='hand')command({type:'play',cardId:card.uid,...(zone.id==='self-emana-zone'?{mode:'emanate'}:{})},rect);
-    else if(card.type!=='creature'&&lane)command({type:'play',cardId:card.uid,mode:'lane',lane:Number(lane.dataset.lane),targetSide:lane.dataset.owner},rect);
+   else if(kind==='hand'&&state.phase==='prep'&&state.turn===seat()?.id){
+    if(card.type==='creature'&&zone&&zone.id!=='hand')action={type:'play',cardId:card.uid,...(zone.id==='self-emana-zone'?{mode:'emanate'}:{})};
+    else if(card.type!=='creature'&&lane)action={type:'play',cardId:card.uid,mode:'lane',lane:Number(lane.dataset.lane),targetSide:lane.dataset.owner};
    }else if(kind==='reserve'&&state.phase==='formation'&&!seat().ready){
-    if(lane?.dataset.owner===seat().id)command({type:'assign',cardId:card.uid,lane:Number(lane.dataset.lane)},rect);
-    else if(zone?.id==='self-reserve-area'){const index=seat().formation.indexOf(card.uid);if(index!==-1)command({type:'assign',cardId:null,lane:index},rect);}
+    if(lane?.dataset.owner===seat().id)action={type:'assign',cardId:card.uid,lane:Number(lane.dataset.lane)};
+    else if(zone?.id==='self-reserve-area'){const index=seat().formation.indexOf(card.uid);if(index!==-1)action={type:'assign',cardId:null,lane:index};}
    }
+   const moved=Boolean(ghost),held=action&&ghost?cloneVisual(ghost):null;
+   if(held){held.classList.remove('drag-preview');held.classList.add('release-ghost');held.style.pointerEvents='none';document.body.append(held);}
+   clean();if(!moved)return;suppressClickUntil=Date.now()+450;selected=null;
+   if(action){movingCards.add(card.uid);node.style.visibility='hidden';command(action,rect).finally(()=>{held?.remove();finishVisual(card.uid);});}
   };
   activeDrag=clean;timer=setTimeout(clean,15000);document.addEventListener('pointermove',move,{passive:false});document.addEventListener('pointerup',release);document.addEventListener('pointercancel',cancel);
  };
@@ -233,15 +249,21 @@ async function animateTransfer({uid,copy,rect,card,duration:customDuration,delay
  let arrival=null,flight=null;
  try{
   const target=destination?document.querySelector(destination):tableCard(uid);if(!target||!rect)return;
-  await target.visualReady;
+  const changesFace=copy.classList.contains('combat-card')!==target.classList.contains('combat-card')||copy.classList.contains('spell-mark');
+  if(changesFace)await target.visualReady;
   const end=target.getBoundingClientRect(),bounds=$('visual-layer').getBoundingClientRect();if(!end.width||!end.height)return;
   movingCards.add(uid);target.style.visibility='hidden';pendingArrival=pendingArrival.filter(id=>id!==uid);
   const dx=end.left+end.width/2-rect.left-rect.width/2,dy=end.top+end.height/2-rect.top-rect.height/2;
   const make=(face,w,h)=>{const wrapper=document.createElement('div');wrapper.className='card-flight';Object.assign(wrapper.style,{left:(rect.left+rect.width/2-w/2-bounds.left)+'px',top:(rect.top+rect.height/2-h/2-bounds.top)+'px',width:w+'px',height:h+'px'});face.classList.remove('hand-card','opening-card','dragging-source','drag-preview','pending-arrival','selected','arrived','snapping','visual-hit','payable');face.classList.add('flight-face');face.removeAttribute('style');wrapper.append(face);$('visual-layer').append(wrapper);return wrapper;};
-  flight=make(copy,rect.width,rect.height);arrival=make(cloneVisual(target),end.width,end.height);
+  flight=make(copy,rect.width,rect.height);
   document.querySelectorAll('.release-ghost').forEach(node=>node.remove());
   const duration=customDuration??(720+weightOf(card)*180),options={duration,delay,easing:'cubic-bezier(.22,.65,.22,1)',fill:'both'};
   const oldScale=end.width/rect.width,newScale=rect.width/end.width;
+  if(!changesFace){
+   await flight.animate([{transform:'translate(0,0) scale(1)'},{transform:'translate('+dx+'px,'+dy+'px) scale('+oldScale+')'}],options).finished;
+   sound('place');return;
+  }
+  arrival=make(cloneVisual(target),end.width,end.height);
   const departing=flight.animate([{transform:'translate(0,0) scale(1)',opacity:1},{opacity:1,offset:.15},{opacity:0,offset:.7},{transform:'translate('+dx+'px,'+dy+'px) scale('+oldScale+')',opacity:0}],options);
   const arriving=arrival.animate([{transform:'translate(0,0) scale('+newScale+')',opacity:0},{opacity:0,offset:.15},{opacity:1,offset:.7},{transform:'translate('+dx+'px,'+dy+'px) scale(1)',opacity:1}],options);
   await Promise.all([departing.finished,arriving.finished]);sound('place');
