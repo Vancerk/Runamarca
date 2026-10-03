@@ -342,3 +342,4 @@ button{background:#443128;border-color:#a77c54}button:hover:not(:disabled){backg
 .final-patron.capture-hit:before{content:'';position:absolute;inset:0;background:#e32c26;z-index:5;pointer-events:none;animation:capture-red-tint .45s ease-out both}
 @keyframes capture-impact-red{0%{transform:translateX(0) rotate(0)}35%{transform:translateX(10px) rotate(4deg)}100%{transform:translateX(0) rotate(0)}}
 @keyframes capture-red-tint{0%,100%{opacity:0}35%{opacity:.65}}
+.card.styled-card .card-stats-svg text{transform-box:fill-box;transform-origin:center}
