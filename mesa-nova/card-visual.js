@@ -80,10 +80,25 @@ function framedPanel(ctx,x,y,w,h,fill,cut=16){bevelPath(ctx,x,y,w,h,cut);ctx.fil
 function diamond(ctx,x,y,size=8){ctx.beginPath();ctx.moveTo(x,y-size);ctx.lineTo(x+size*.65,y);ctx.lineTo(x,y+size);ctx.lineTo(x-size*.65,y);ctx.closePath();ctx.fillStyle='#5b351b';ctx.fill();ctx.strokeStyle='#dcb36b';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(x,y-size*.45);ctx.lineTo(x+size*.28,y);ctx.lineTo(x,y+size*.45);ctx.lineTo(x-size*.28,y);ctx.closePath();ctx.fillStyle='#f8e0a0';ctx.fill();}
 function divider(ctx,y){const g=ctx.createLinearGradient(260,0,640,0);g.addColorStop(0,'#79512b00');g.addColorStop(.5,'#79512b');g.addColorStop(1,'#79512b00');ctx.strokeStyle=g;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(260,y);ctx.lineTo(640,y);ctx.stroke();diamond(ctx,450,y,10);}
 function drawHeart(ctx,x,y){ctx.save();ctx.translate(x,y);ctx.scale(1.15,1.15);ctx.beginPath();ctx.moveTo(0,47);ctx.bezierCurveTo(-19,29,-52,7,-52,-16);ctx.bezierCurveTo(-52,-49,-17,-55,0,-31);ctx.bezierCurveTo(17,-55,52,-49,52,-16);ctx.bezierCurveTo(52,7,19,29,0,47);ctx.closePath();ctx.strokeStyle='#3b2717';ctx.lineWidth=15;ctx.stroke();ctx.strokeStyle='#d7ad65';ctx.lineWidth=10;ctx.stroke();const g=ctx.createLinearGradient(-40,-40,40,45);g.addColorStop(0,'#4fbd86');g.addColorStop(.4,'#247049');g.addColorStop(1,'#0b3225');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#83ce96';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+function rarityFrame(ctx,card,height,radius,line){
+ const rarity=String(card.rarity||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const metals={
+  lacaio:['#d29a60','#80502d','#bb8450','#70442a','#e2b482'],
+  padrao:['#e6e9ea','#737d84','#bac1c6','#626b73','#f0f1f2'],
+  elite:['#ffe28a','#997017','#e5b942','#91691b','#ffe5a0'],
+  soberano:['#f5f4fa','#b9cbd8','#e8d6ed','#a5d4d8','#f6f4ef']
+ };
+ const colors=metals[rarity]||['#8a7960','#302c27','#635641','#302c28','#c5a572'];
+ const metal=ctx.createLinearGradient(17,17,883,height-17);
+ colors.forEach((color,i)=>metal.addColorStop(i/4,color));
+ ctx.save();round(ctx,17,17,866,height-34,radius,metal,colors[4],line);
+ ctx.beginPath();ctx.roundRect(17,17,866,height-34,radius);ctx.clip();
+ grain(ctx,17,17,866,height-34,.38);ctx.restore();
+}
 async function drawCard(canvas,card,{assets="",hideStats=false}={}){
  const [art,loadedIcons,attackIcon]=await Promise.all([img(card.art),Promise.all(energyIconIds.map(id=>img(assets+'energy-icons/'+id+'.png'))),img(assets+'attack-shield.png')]);
  const icons=Object.fromEntries(energyIconIds.map((id,i)=>[id,loadedIcons[i]])),ctx=canvas.getContext('2d');ctx.setTransform(canvas.width/900,0,0,canvas.height/1260,0,0);ctx.clearRect(0,0,900,1260);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.globalAlpha=1;ctx.shadowBlur=0;
- const stone=ctx.createLinearGradient(0,0,900,1260);stone.addColorStop(0,'#8a7960');stone.addColorStop(.35,'#302c27');stone.addColorStop(.75,'#635641');stone.addColorStop(1,'#302c28');round(ctx,17,17,866,1226,25,stone,'#c5a572',3);ctx.save();ctx.beginPath();ctx.roundRect(17,17,866,1226,25);ctx.clip();grain(ctx,17,17,866,1226,.65);ctx.restore();
+ rarityFrame(ctx,card,1260,25,3);
  const wine=ctx.createLinearGradient(40,40,850,1210);const palette={ruptura:['#55251b','#2a1210','#63281d','#26100f'],forja:['#89701f','#493e18','#ac8b2d','#4b401b'],fluxo:['#214966','#102332','#2d5f7c','#0b1c29']}[card.themeEnergy]||['#55251b','#2a1210','#63281d','#26100f'];palette.forEach((color,i)=>wine.addColorStop([0,.4,.7,1][i],color));framedPanel(ctx,40,35,820,1180,wine,25);grain(ctx,46,40,808,1170,.2);
  // Broad illustration with chamfered gold edges, matching the supplied reference.
  ctx.save();bevelPath(ctx,49,129,802,713,18);ctx.clip();if(art){const zoom=number(card.artZoom,100,230,100)/100,scale=Math.max(802/art.width,713/art.height)*zoom,w=art.width*scale,h=art.height*scale;ctx.drawImage(art,49+(802-w)*number(card.artX,0,100,50)/100,129+(713-h)*number(card.artY,0,100,50)/100,w,h);}else{const g=ctx.createRadialGradient(450,420,20,450,480,560);g.addColorStop(0,'#766448');g.addColorStop(1,'#1b2324');ctx.fillStyle=g;ctx.fillRect(49,129,802,713);ctx.textAlign='center';ctx.fillStyle='#dcc296';ctx.font='110px Georgia';ctx.fillText('◈',450,450);ctx.font='24px Cinzel,Georgia';ctx.fillText('INSIRA SUA ILUSTRAÇÃO',450,520);}ctx.restore();bevelPath(ctx,49,129,802,713,18);ctx.strokeStyle='#26190f';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#cda466';ctx.lineWidth=3;ctx.stroke();
@@ -105,7 +120,7 @@ async function drawCard(canvas,card,{assets="",hideStats=false}={}){
 async function drawCombat(canvas,card,{assets='',flat=false}={}){
  const [art,shield]=await Promise.all([img(card.art),img(assets+'attack-shield.png')]);
  const ctx=canvas.getContext('2d');ctx.setTransform(canvas.width/900,0,0,canvas.height/820,0,0);ctx.clearRect(0,0,900,820);
- const stone=ctx.createLinearGradient(0,0,900,820);stone.addColorStop(0,'#8a7960');stone.addColorStop(1,'#302c28');round(ctx,17,17,866,786,35,stone,'#c5a572',4);grain(ctx,17,17,866,786,.4);
+ rarityFrame(ctx,card,820,35,4);
  framedPanel(ctx,40,38,820,741,{forja:'#79621d',fluxo:'#214966',ruptura:'#55251b'}[card.themeEnergy]||'#79621d',20);
  ctx.save();bevelPath(ctx,49,49,802,713,18);ctx.clip();
  if(art){const source=flat?{x:art.width*49/900,y:art.height*129/1260,w:art.width*802/900,h:art.height*713/1260}:{x:0,y:0,w:art.width,h:art.height};const scale=Math.max(802/source.w,713/source.h)*(Number(card.artZoom||100)/100),w=source.w*scale,h=source.h*scale;ctx.drawImage(art,source.x,source.y,source.w,source.h,49+(802-w)*Number(card.artX??50)/100,49+(713-h)*Number(card.artY??0)/100,w,h);}else{ctx.fillStyle='#39392d';ctx.fillRect(49,49,802,713);}

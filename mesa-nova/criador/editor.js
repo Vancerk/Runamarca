@@ -33,7 +33,7 @@ function validateDesign(card) {
   if (card.kind === 'rune' && !card.rules?.trim() && !runeTokens(card).length) return ['Informe a energia gerada pela Essência ou escreva seu efeito.', 'cost-forja'];
   if (card.kind !== 'patron' && card.rules?.trim() && rulesOverflow(card)) return ['O texto ultrapassa a altura da caixa. Reduza manualmente o tamanho da fonte ou encurte o texto.', 'card-rules'];
   if (card.tokenTrigger && !card.tokenName?.trim()) return ['Dê um nome à ficha criada por esta carta.', 'token-name'];
-  if (!Number.isInteger(Number(card.quantity)) || Number(card.quantity) < 1 || Number(card.quantity) > (card.kind==='patron'?1:({lacaio:3,padrao:2,elite:1}[card.rarity]||2))) return ['Quantidade acima do limite da raridade (lacaio 3, padrão 2, elite 1).' , 'card-quantity'];
+  if (!Number.isInteger(Number(card.quantity)) || Number(card.quantity) < 1 || Number(card.quantity) > (card.kind==='patron'?1:({lacaio:3,padrao:2,elite:1,soberano:1}[card.rarity]||2))) return ['Quantidade acima do limite da raridade (lacaio 3, padrão 2, elite e soberano 1).' , 'card-quantity'];
   return null;
 }
 function reportInvalid(result, focus = true) {
@@ -336,7 +336,7 @@ function readForm() {
   return draft;
 }
 function syncAbilityUI() {
-  $('card-quantity').max=$('card-kind').value==='patron'?1:({lacaio:3,padrao:2,elite:1}[$('card-rarity').value]||2);
+  $('card-quantity').max=$('card-kind').value==='patron'?1:({lacaio:3,padrao:2,elite:1,soberano:1}[$('card-rarity').value]||2);
   if(Number($('card-quantity').value)>Number($('card-quantity').max)){$('card-quantity').value=$('card-quantity').max;draft.quantity=Number($('card-quantity').max);}
   $('spell-mode-field').hidden = $('card-kind').value !== 'spell';
   $('patron-health-field').hidden = $('card-kind').value !== 'patron';
