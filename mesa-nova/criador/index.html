@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="editor.css?v=20261003-combate">
   <script src="budget-model.js?v=20261003-combate" defer></script>
   <script src="budget.js?v=20261003-combate" defer></script>
-  <script src="../card-visual.js?v=20261004-hp-regras" defer></script>
-  <script src="editor.js?v=20261004-hp-regras" defer></script>
+  <script src="../card-visual.js?v=20261004-narrativa" defer></script>
+  <script src="editor.js?v=20261004-narrativa" defer></script>
 </head>
 <body>
   <header class="editor-topbar">
@@ -29,6 +29,8 @@
         <div class="art-controls"><label>Zoom da imagem<input id="art-zoom" type="range" min="100" max="230" value="100"></label><label>Horizontal<input id="art-x" type="range" min="0" max="100" value="50"></label><label>Vertical<input id="art-y" type="range" min="0" max="100" value="50"></label></div>
         <label id="patron-health-field">Vida do Patrono<input id="patron-health" type="number" min="1" max="99" value="16"></label><fieldset id="energy-fields"><legend id="energy-legend">Custos de energia</legend><p id="energy-hint" class="field-hint">Cada símbolo é aplicado diretamente na faixa da carta.</p><div class="cost-grid"><label><span class="neutral-icon"></span> Custo de mana<input id="cost-generic" type="number" min="0" max="20" value="1"></label><label><span class="energy-dot ruptura"></span> Ruptura<input id="cost-ruptura" type="number" min="0" max="12" value="0"></label><label><span class="energy-dot forja"></span> Forja<input id="cost-forja" type="number" min="0" max="12" value="0"></label><label><span class="energy-dot fluxo"></span> Fluxo<input id="cost-fluxo" type="number" min="0" max="12" value="0"></label></div><label>Afinidade da carta<select id="card-theme"><option value="ruptura">Ruptura</option><option value="forja">Forja</option><option value="fluxo">Fluxo</option></select></label></fieldset>
         <label id="rules-field">Texto da carta<textarea id="card-rules" maxlength="850" rows="5" placeholder="Descreva o efeito da carta..."></textarea><span id="rules-fit-warning" class="rules-fit-warning" hidden>O texto passou da altura da caixa. Reduza o tamanho da fonte manualmente ou encurte o texto antes de exportar.</span></label>
+        <details class="abilities"><summary>Fala ao jogar</summary><label>Texto do balão<textarea id="card-speech" maxlength="160" rows="2" placeholder="Ex.: A forja ainda arde!"></textarea></label><p class="field-hint">Fala curta exibida quando a criatura entra na reserva ou na Emanação.</p></details>
+        <details class="abilities"><summary>Texto narrativo</summary><label>Narrativa da carta<textarea id="card-narrative" maxlength="1200" rows="5" placeholder="Conte uma lembrança, uma lenda ou um trecho da história desta carta..."></textarea></label><p class="field-hint">Aparece à esquerda do zoom após manter o mouse sobre a carta.</p></details>
         <button id="toggle-italic" class="secondary" type="button">Aplicar itálico ao trecho selecionado</button><p id="italic-hint" class="field-hint">Selecione palavras no texto e clique em itálico. Use o mesmo botão para retirar o itálico. As marcas * não aparecem na carta pronta.</p>
 
         <fieldset id="creature-budget" class="creature-budget"><legend id="budget-heading">Etapas da criatura</legend>

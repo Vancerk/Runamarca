@@ -64,9 +64,31 @@ function cardEl(card,{mini=false,back=false,active=false,combat=false}={}){
   if(!back){el.onmouseenter=event=>showHover(card,event);el.onmousemove=moveHover;el.onmouseleave=hideHover;}
   return el;
 }
-function showHover(card,event){const holder=$('hover-preview');if(hoverUid!==card.uid){hoverUid=card.uid;holder.replaceChildren();const picture=cardEl(card);picture.classList.add('big');picture.onclick=picture.ondblclick=picture.onmouseenter=picture.onmousemove=picture.onmouseleave=null;holder.append(picture);}holder.hidden=false;moveHover(event);}
+let narrativeTimer=null;
+const keywordGlossary=[
+ [/revela[çc][ãa]o/i,'Revelação','Resolve após as magias de posição e antes dos ataques.'],
+ [/emana[çc][ãa]o/i,'Emanação','Efeito da criatura em uma vaga de Emanação. Ataques normais e magias em área não a atingem.'],
+ [/\bentrada\b|ao entrar/i,'Entrada','Efeito que acontece quando a criatura entra em campo.'],
+ [/convoc|invoc|ficha/i,'Convocar','Cria uma criatura adicional na reserva.'],
+ [/neste combate/i,'Neste combate','O bônus termina quando este combate acaba.'],
+ [/dano em [áa]rea/i,'Dano em área','Atinge várias criaturas, exceto as que estão em Emanação.'],
+ [/armadilha|magia preparada/i,'Magia preparada','Ativa quando uma criatura é revelada na posição escolhida.']
+];
+function showHover(card,event){
+ const holder=$('hover-preview');if(hoverUid!==card.uid){
+  clearTimeout(narrativeTimer);hoverUid=card.uid;holder.replaceChildren();
+  const picture=cardEl(card);picture.classList.add('big');picture.onclick=picture.ondblclick=picture.onmouseenter=picture.onmousemove=picture.onmouseleave=null;
+  const terms=keywordGlossary.filter(([pattern])=>pattern.test(card.text||'')),narrative=String(card.narrative||'').trim();
+  if(terms.length||narrative){const side=document.createElement('aside');side.className='hover-context';
+   if(terms.length){const keys=document.createElement('div');keys.className='hover-keywords';for(const [,name,definition] of terms){const item=document.createElement('div');text(item,'strong',name);text(item,'p',definition);keys.append(item);}side.append(keys);}
+   if(narrative){const dream=document.createElement('div');dream.className='hover-dream';dream.textContent=narrative;side.append(dream);narrativeTimer=setTimeout(()=>{if(hoverUid===card.uid&&!holder.hidden)dream.classList.add('revealed');},900);}
+   holder.append(side);
+  }
+  holder.append(picture);
+ }holder.hidden=false;moveHover(event);
+}
 function moveHover(event){const holder=$('hover-preview');if(holder.hidden)return;const w=holder.offsetWidth||245,h=holder.offsetHeight||380;holder.style.left=`${Math.max(10,Math.min(innerWidth-w-10,event.clientX+(event.clientX>innerWidth*.68?-w-26:22)))}px`;holder.style.top=`${Math.max(70,Math.min(innerHeight-h-10,event.clientY-h*.38))}px`;}
-function hideHover(){const holder=$('hover-preview');holder.hidden=true;hoverUid=null;}
+function hideHover(){clearTimeout(narrativeTimer);narrativeTimer=null;const holder=$('hover-preview');holder.hidden=true;hoverUid=null;}
 function showCard(card){hideHover();const d=$('card-detail');const area=$('detail-content');area.replaceChildren();const picture=cardEl(card);picture.classList.add('big');picture.onclick=picture.ondblclick=picture.onmouseenter=picture.onmousemove=picture.onmouseleave=null;area.append(picture);const body=document.createElement('div');text(body,'h2',card.name);text(body,'p',card.type==='creature'?`Criatura · ${card.attack}/${card.health} · custo ${card.cost}`:`Magia · custo ${card.cost}`);text(body,'p',card.text||'Sem texto.');area.append(body);d.showModal();}
 function selectedCard(){if(!state)return null;return [...(seat()?.hand||[]),...(seat()?.reserve||[]),...(rival()?.reserve||[]),...state.players.flatMap(p=>p.prepared.filter(item=>item.caster===state.you&&item.card).map(item=>item.card))].find(c=>c.uid===selected);}
 function role(card){const ef=Array.isArray(card.effects)?card.effects[0]:card.effects;if(ef?.op==='draw')return 'self';if(ef?.op==='area_damage')return 'enemy-board';if(ef?.op==='choose_one')return 'friendly-or-patron';if(['heal','attack_modifier'].includes(ef?.op)&&ef?.target==='chosen_allied_creature')return 'friendly';return 'enemy';}
@@ -362,7 +384,7 @@ $('add-bot').onclick=()=>command({type:'addBot',deckId:$('bot-deck').value});
 $('leave-room').onclick=()=>command({type:'leave'});$('change-role').onclick=()=>command({type:state.spectator?'takeSeat':'spectate'});
 $('close-detail').onclick=()=>$('card-detail').close();$('rules-toggle').onclick=()=>$('rules-dialog').showModal();$('close-rules').onclick=()=>$('rules-dialog').close();
 $('close-cemetery').onclick=()=>$('cemetery-detail').close();
-$('art-import').onchange=async event=>{try{const data=JSON.parse(await event.target.files[0].text());if(data.format!=='runamarca-prototipo-editor'||!Array.isArray(data.cards))throw Error('Exporte o projeto editável no novo criador de cartas.');let count=0;for(const card of data.cards){if(!card.art||!card.starterDeck)continue;const deck=models.decks.find(d=>d.id===card.starterDeck);const model=[...deck?.cards||[],deck?.patron].find(c=>c?.name===card.name);if(model){(importedArt[deck.id]??={})[model.id]={image:card.art,kind:'illustration',artZoom:card.artZoom,artX:card.artX,artY:card.artY};count++;}}$('art-message').textContent=`${count} ilustração(ões) pronta(s). Escolha o deck depois de importar.`;}catch(e){err(e);}event.target.value='';};
+$('art-import').onchange=async event=>{try{const data=JSON.parse(await event.target.files[0].text());if(data.format!=='runamarca-prototipo-editor'||!Array.isArray(data.cards))throw Error('Exporte o projeto editável no novo criador de cartas.');let count=0;for(const card of data.cards){if(!card.starterDeck)continue;const deck=models.decks.find(d=>d.id===card.starterDeck);const model=[...deck?.cards||[],deck?.patron].find(c=>c?.name===card.name);if(model){(importedArt[deck.id]??={})[model.id]={...(card.art?{image:card.art,kind:'illustration',artZoom:card.artZoom,artX:card.artX,artY:card.artY}:{}),speech:String(card.speech||'').slice(0,160),narrative:String(card.narrative||'').slice(0,1200)};count++;}}$('art-message').textContent=`${count} carta(s) com artes e textos prontos. Escolha o deck depois de importar.`;}catch(e){err(e);}event.target.value='';};
 const slug=name=>String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 async function compactImage(file){const bitmap=await createImageBitmap(file);const scale=Math.min(1,900/bitmap.width,1260/bitmap.height);const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();return canvas.toDataURL('image/jpeg',.74);}
 $('art-files').onchange=async event=>{let count=0;try{for(const file of event.target.files){if(!['image/png','image/jpeg','image/webp'].includes(file.type))continue;const stem=slug(file.name.replace(/\.[^.]+$/,''));for(const deck of models.decks){const model=[...deck.cards,deck.patron].find(card=>slug(card.name)===stem);if(model){(importedArt[deck.id]??={})[model.id]={image:await compactImage(file),kind:'card'};count++;break;}}}$('art-message').textContent=`${count} imagem(ns) associada(s). Escolha o deck depois de importar. Os arquivos devem ter o nome da carta.`;}catch(e){err(e);}event.target.value='';};

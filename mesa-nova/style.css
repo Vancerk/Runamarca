@@ -361,3 +361,11 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 @media(max-width:750px){.hand-card{width:108px;height:151.2px;margin-left:-34px}.hand-zone{height:163px;min-height:163px}.hand-zone .card-row{height:157px;transform:translateY(-26px)}#detail-content{grid-template-columns:1fr}}
 
 .card .health-liquid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+#hover-preview{display:flex;align-items:flex-start;gap:16px;padding:0;background:transparent;border:0;box-shadow:none}
+#hover-preview .hover-context{width:220px;flex:none;max-height:calc(100vh - 100px);overflow:hidden}
+#hover-preview .hover-keywords{padding:12px;background:#271e18ed;border:1px solid #b99965;border-radius:8px;box-shadow:0 8px 24px #0007}
+.hover-keywords strong{font:700 13px Cinzel,Georgia,serif;color:#ebcd94}.hover-keywords p{font-size:12px;line-height:1.45;margin:5px 0 12px}.hover-keywords div:last-child p{margin-bottom:0}
+.hover-dream{position:relative;margin-top:24px;padding:26px 18px;color:#eadcc7;font:italic 17px/1.65 Georgia,serif;white-space:pre-wrap;overflow-wrap:anywhere;background:radial-gradient(ellipse at 55% 45%,#665575b3,#44344f7d 55%,#33283b00 78%);border-radius:40%;opacity:0;filter:blur(6px);transform:translateX(10px);transition:opacity .65s ease,filter .65s ease,transform .65s ease;text-shadow:0 2px 8px #171019}
+.hover-dream.revealed{opacity:1;filter:blur(0);transform:translateX(0)}
+@media(max-width:620px){#hover-preview{gap:8px}#hover-preview .hover-context{width:32vw}.hover-keywords p{font-size:10px}.hover-dream{font-size:13px;padding:16px 8px}#hover-preview .card.big{width:55vw!important;height:auto!important;aspect-ratio:900/1260}}
+@media(prefers-reduced-motion:reduce){.hover-dream{transition:none;filter:none;transform:none}}

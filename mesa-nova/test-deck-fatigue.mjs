@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {act,makeRoom,join} from './game.mjs';
+import {act,makeRoom,join,view} from './game.mjs';
 const catalog=JSON.parse(await readFile(new URL('./cartas.json',import.meta.url),'utf8'));
 const first=catalog.decks[0];
 function choose(cards){const room=makeRoom('TEST','Teste');act(room,room.players[0],{type:'deck',deckId:first.id},{decks:[{...first,cards}]});return room;}
@@ -22,3 +22,16 @@ buy(1);assert.equal(player.patron.hp,69);assert.equal(player.fatigue,16);
 player.patron.hp=10;buy(3);assert.equal(room.phase,'finished');assert.equal(room.winner,room.players.find(p=>p!==player).id);
 assert.equal(player.fatigue,32,'A compra para quando a fadiga encerra a partida');
 console.log('OK: máximo de 30 cartas, quatro raridades, fadiga exponencial e derrota por fadiga.');
+const stories=makeRoom('STORY','Narrador'),author=stories.players[0],reader=join(stories,'Leitor');
+const creatureId=first.cards.find(card=>card.type==='creature').id;
+act(stories,author,{type:'deck',deckId:first.id,art:{[creatureId]:{speech:'A caçada começa!',narrative:'Uma lembrança entre as brumas.'}}},catalog);
+act(stories,reader,{type:'deck',deckId:catalog.decks[1].id},catalog);
+const creature=author.hand.concat(author.deck).find(card=>card.modelId===creatureId);
+assert.equal(creature.speech,'A caçada começa!');assert.equal(creature.narrative,'Uma lembrança entre as brumas.');
+assert.equal(view(stories,reader).players.find(p=>p.id===author.id).hand,undefined,'O texto narrativo não revela a mão rival');
+act(stories,author,{type:'confirmMulligan'},catalog);act(stories,reader,{type:'confirmMulligan'},catalog);
+stories.turn=author.id;author.mana=10;author.hand=[creature];
+act(stories,author,{type:'play',cardId:creature.uid},catalog);
+assert.equal(stories.events.findLast(event=>event.type==='creature').speech,'A caçada começa!');
+assert.equal(view(stories,reader).players.find(p=>p.id===author.id).reserve[0].narrative,'Uma lembrança entre as brumas.');
+console.log('OK: fala e narrativa importadas sem nova arte, balão compartilhado e mão rival protegida.');
