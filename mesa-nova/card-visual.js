@@ -88,7 +88,13 @@ function rarityFrame(ctx,card,height,radius,line){
   elite:['#ffe28a','#997017','#e5b942','#91691b','#ffe5a0'],
   soberano:['#f5f4fa','#b9cbd8','#e8d6ed','#a5d4d8','#f6f4ef']
  };
- const colors=metals[rarity]||['#8a7960','#302c27','#635641','#302c28','#c5a572'];
+ let colors=metals[rarity]||['#8a7960','#302c27','#635641','#302c28','#c5a572'];
+ if(rarity==='padrao'||rarity==='soberano'){
+  const channels=colors.map(color=>[1,3,5].map(index=>parseInt(color.slice(index,index+2),16)));
+  const averages=[0,1,2].map(index=>channels.reduce((sum,color)=>sum+color[index],0)/channels.length);
+  // Silver has softer reflections and lower exposure; platinum keeps its iridescent hues.
+  colors=channels.map(color=>'#'+color.map((value,index)=>Math.round(rarity==='padrao'?(averages[index]+(value-averages[index])*.75)*.75:Math.min(255,value*1.25)).toString(16).padStart(2,'0')).join(''));
+ }
  const metal=ctx.createLinearGradient(17,17,883,height-17);
  colors.forEach((color,i)=>metal.addColorStop(i/4,color));
  ctx.save();round(ctx,17,17,866,height-34,radius,metal,colors[4],line);
