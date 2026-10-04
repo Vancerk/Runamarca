@@ -5,7 +5,7 @@ import path from 'node:path';
 import {act,easyBotAction,join,makeRoom,view} from './game.mjs';
 
 const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'cartas.json'),'utf8'));
-const limit={lacaio:3,padrao:2,elite:1};
+const limit={lacaio:4,padrao:3,elite:2,soberano:1};
 for(const deck of catalog.decks){
   assert.equal(deck.cards.reduce((total,card)=>total+card.quantity,0),24);
   for(const card of deck.cards)assert.ok(card.quantity<=limit[card.rarity],`${card.id}: raridade inválida`);

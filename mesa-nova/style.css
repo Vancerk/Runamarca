@@ -359,3 +359,5 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 .card-flight{contain:layout style;backface-visibility:hidden}
 .spell-mark.ally-spell{background:#624728;border-color:#dcc18a;color:#fff0c7}.spell-drop.drop-ready{outline-color:#edcc89;box-shadow:inset 0 0 25px #d7ad6355!important}
 @media(max-width:750px){.hand-card{width:108px;height:151.2px;margin-left:-34px}.hand-zone{height:163px;min-height:163px}.hand-zone .card-row{height:157px;transform:translateY(-26px)}#detail-content{grid-template-columns:1fr}}
+
+.card .health-liquid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}

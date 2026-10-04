@@ -51,7 +51,7 @@ test('Os 36 modelos testados respeitam saldo e limites de cópias',async()=>{
   assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),24);
   for(const card of deck.cards){models++;const b=calculate(card);
    assert.ok(b.remaining>=0,card.id);assert.equal(b.spent,card.budgetAudit.spent);
-   assert.ok(card.quantity<=({lacaio:3,padrao:2,elite:1}[card.rarity]));
+   assert.ok(card.quantity<=({lacaio:4,padrao:3,elite:2,soberano:1}[card.rarity]));
    const normalized=card.budgetEffects.map(e=>normalize(card.type==='creature'?'creature':'spell',e,{hasDamage:card.budgetEffects.some(other=>other!==e&&other.effect==='damage'&&other.amount>0&&other.timing===e.timing&&other.group==='sum')}));
    assert.equal(calculate({...card,budgetEffects:normalized}).spent,b.spent,card.id+' mantém orçamento após filtrar combinações');
    if(card.effects?.length)assert.ok(card.budgetEffects.length>0,card.id);

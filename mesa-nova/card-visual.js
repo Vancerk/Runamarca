@@ -80,6 +80,18 @@ function framedPanel(ctx,x,y,w,h,fill,cut=16){bevelPath(ctx,x,y,w,h,cut);ctx.fil
 function diamond(ctx,x,y,size=8){ctx.beginPath();ctx.moveTo(x,y-size);ctx.lineTo(x+size*.65,y);ctx.lineTo(x,y+size);ctx.lineTo(x-size*.65,y);ctx.closePath();ctx.fillStyle='#5b351b';ctx.fill();ctx.strokeStyle='#dcb36b';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(x,y-size*.45);ctx.lineTo(x+size*.28,y);ctx.lineTo(x,y+size*.45);ctx.lineTo(x-size*.28,y);ctx.closePath();ctx.fillStyle='#f8e0a0';ctx.fill();}
 function divider(ctx,y){const g=ctx.createLinearGradient(260,0,640,0);g.addColorStop(0,'#79512b00');g.addColorStop(.5,'#79512b');g.addColorStop(1,'#79512b00');ctx.strokeStyle=g;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(260,y);ctx.lineTo(640,y);ctx.stroke();diamond(ctx,450,y,10);}
 function drawHeart(ctx,x,y){ctx.save();ctx.translate(x,y);ctx.scale(1.15,1.15);ctx.beginPath();ctx.moveTo(0,47);ctx.bezierCurveTo(-19,29,-52,7,-52,-16);ctx.bezierCurveTo(-52,-49,-17,-55,0,-31);ctx.bezierCurveTo(17,-55,52,-49,52,-16);ctx.bezierCurveTo(52,7,19,29,0,47);ctx.closePath();ctx.strokeStyle='#3b2717';ctx.lineWidth=15;ctx.stroke();ctx.strokeStyle='#d7ad65';ctx.lineWidth=10;ctx.stroke();const g=ctx.createLinearGradient(-40,-40,40,45);g.addColorStop(0,'#4fbd86');g.addColorStop(.4,'#247049');g.addColorStop(1,'#0b3225');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#83ce96';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+function drawLiquidHeart(canvas,ratio=1,combat=false){
+ const ctx=canvas.getContext('2d'),height=combat?820:1260;
+ ctx.setTransform(canvas.width/900,0,0,canvas.height/height,0,0);ctx.clearRect(0,0,900,height);
+ const y=combat?747:1180;drawHeart(ctx,826,y);
+ ratio=Math.max(0,Math.min(1,ratio));if(ratio===1)return;
+ ctx.save();ctx.translate(826,y);ctx.scale(1.15,1.15);
+ ctx.beginPath();ctx.moveTo(0,47);ctx.bezierCurveTo(-19,29,-52,7,-52,-16);ctx.bezierCurveTo(-52,-49,-17,-55,0,-31);ctx.bezierCurveTo(17,-55,52,-49,52,-16);ctx.bezierCurveTo(52,7,19,29,0,47);ctx.closePath();ctx.clip();
+ const level=48-96*ratio;
+ ctx.beginPath();ctx.moveTo(-60,-60);ctx.lineTo(60,-60);ctx.lineTo(60,level);ctx.bezierCurveTo(20,level-3,-20,level+3,-60,level);ctx.closePath();ctx.fillStyle='#173329';ctx.fill();
+ if(ratio>0){ctx.beginPath();ctx.moveTo(-60,level);ctx.bezierCurveTo(-20,level+3,20,level-3,60,level);ctx.strokeStyle='#8dd7b5';ctx.lineWidth=2;ctx.stroke();}
+ ctx.restore();
+}
 function rarityFrame(ctx,card,height,radius,line){
  const rarity=String(card.rarity||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  const metals={
@@ -114,7 +126,7 @@ async function drawCard(canvas,card,{assets="",hideStats=false}={}){
  // Cost set into a gold medallion, instead of a detached label.
  const affinity=card.themeEnergy||'ruptura',cx=805,cy=87;ctx.beginPath();ctx.arc(cx,cy,52.7,0,Math.PI*2);const orb=ctx.createRadialGradient(cx-17,cy-20.4,2,cx,cy,56.1);orb.addColorStop(0,energyColors[affinity]||'#bd5847');orb.addColorStop(1,{ruptura:'#702d23',forja:'#765013',fluxo:'#244e78'}[affinity]||'#702d23');ctx.fillStyle=orb;ctx.fill();ctx.strokeStyle='#f0ca82';ctx.lineWidth=5;ctx.stroke();ctx.fillStyle='#fff7dc';ctx.strokeStyle='#26160f';ctx.lineWidth=5;ctx.font='700 54.6px Georgia,serif';ctx.textAlign='center';const cost=card.kind==='patron'?'◈':String(number(card.generic,0,20));ctx.textBaseline='alphabetic';const metrics=ctx.measureText(cost),costY=cy+(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2;ctx.strokeText(cost,cx,costY);ctx.fillText(cost,cx,costY);
  const paper=ctx.createRadialGradient(450,970,10,450,995,470);paper.addColorStop(0,'#f4dfb7');paper.addColorStop(.7,'#dfbf8b');paper.addColorStop(1,'#aa7548');framedPanel(ctx,64,855,772,272,paper,20);ctx.save();bevelPath(ctx,69,860,762,262,17);ctx.clip();grain(ctx,64,855,772,272,.28);if(icons[affinity]){ctx.globalAlpha=.12;ctx.drawImage(icons[affinity],329.25,870.25,241.5,241.5);}ctx.restore();
- const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora das 24 cartas.':'Escreva aqui o efeito da carta.'),size=number(card.fontRules,16,52,31),lines=wrapRichLines(ctx,richRuns(rules,card.rulesItalic),650,size),lineHeight=size*1.2;let y=Math.max(926,990-(lines.length-1)*lineHeight/2);ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of lines){if(y>1095)break;let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+size+'px "EB Garamond",Georgia,serif';ctx.fillText(run.text,x,y);x+=run.width;}y+=lineHeight;}
+ const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora do limite de 30 cartas.':'Escreva aqui o efeito da carta.'),size=number(card.fontRules,16,52,31),lines=wrapRichLines(ctx,richRuns(rules,card.rulesItalic),650,size),lineHeight=size*1.2;let y=Math.max(926,990-(lines.length-1)*lineHeight/2);ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of lines){if(y>1095)break;let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+size+'px "EB Garamond",Georgia,serif';ctx.fillText(run.text,x,y);x+=run.width;}y+=lineHeight;}
  framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#f6e5be';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.textAlign='left';ctx.font='700 25px Cinzel,Georgia,serif';ctx.fillText((kindNames[card.kind]||'Carta').toUpperCase(),174,1174,190);ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();ctx.font='600 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.fillText((card.subtype||'').toUpperCase(),395,1174,325);
  for(const [x,y] of [[48,155],[852,155],[48,550],[852,550],[48,1004],[852,1004],[450,1216]])diamond(ctx,x,y,y===1216?15:9);
  if(card.kind==='creature'&&attackIcon)ctx.drawImage(attackIcon,5,1085,159.85,159.85);
@@ -133,5 +145,5 @@ async function drawCombat(canvas,card,{assets='',flat=false}={}){
  if(art){const source=flat?{x:art.width*49/900,y:art.height*129/1260,w:art.width*802/900,h:art.height*713/1260}:{x:0,y:0,w:art.width,h:art.height};const scale=Math.max(802/source.w,713/source.h)*(Number(card.artZoom||100)/100),w=source.w*scale,h=source.h*scale;ctx.drawImage(art,source.x,source.y,source.w,source.h,49+(802-w)*Number(card.artX??50)/100,49+(713-h)*Number(card.artY??0)/100,w,h);}else{ctx.fillStyle='#39392d';ctx.fillRect(49,49,802,713);}
  ctx.restore();if(shield)ctx.drawImage(shield,5,653,159.85,159.85);drawHeart(ctx,826,747);
 }
-window.RunaCardVisual={drawCard,drawCombat};
+window.RunaCardVisual={drawCard,drawCombat,drawLiquidHeart};
 })();

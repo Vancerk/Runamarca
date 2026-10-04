@@ -26,6 +26,7 @@ function status(message, error = false) {
   if (error) { alert.textContent = message; alertTimer = setTimeout(() => { alert.hidden = true; }, 6500); }
 }
 function validateDesign(card) {
+  if (!['lacaio','padrao','elite','soberano'].includes(card.rarity)) return ['Escolha Bronze, Prata, Ouro ou Platina.', 'card-rarity'];
   if (!card.name?.trim()) return ['Informe o nome da carta.', 'card-name'];
   if (!['creature','spell','rune','patron'].includes(card.kind)) return ['Escolha o tipo da carta.', 'card-kind'];
   if (card.kind === 'creature' && Number(card.health) < 1) return ['A criatura precisa de pelo menos 1 de vida.', 'card-health'];
@@ -33,7 +34,7 @@ function validateDesign(card) {
   if (card.kind === 'rune' && !card.rules?.trim() && !runeTokens(card).length) return ['Informe a energia gerada pela Essência ou escreva seu efeito.', 'cost-forja'];
   if (card.kind !== 'patron' && card.rules?.trim() && rulesOverflow(card)) return ['O texto ultrapassa a altura da caixa. Reduza manualmente o tamanho da fonte ou encurte o texto.', 'card-rules'];
   if (card.tokenTrigger && !card.tokenName?.trim()) return ['Dê um nome à ficha criada por esta carta.', 'token-name'];
-  if (!Number.isInteger(Number(card.quantity)) || Number(card.quantity) < 1 || Number(card.quantity) > (card.kind==='patron'?1:({lacaio:3,padrao:2,elite:1,soberano:1}[card.rarity]||2))) return ['Quantidade acima do limite da raridade (lacaio 3, padrão 2, elite e soberano 1).' , 'card-quantity'];
+  if (!Number.isInteger(Number(card.quantity)) || Number(card.quantity) < 1 || Number(card.quantity) > (card.kind==='patron'?1:({lacaio:4,padrao:3,elite:2,soberano:1}[card.rarity]||2))) return ['Quantidade acima do limite da raridade (Bronze 4, Prata 3, Ouro 2 e Platina 1).' , 'card-quantity'];
   return null;
 }
 function reportInvalid(result, focus = true) {
@@ -258,7 +259,7 @@ function drawPatronCard(ctx, card, art) {
   ctx.fillText(String(card.patronHealth || 16)+' de vida',450,940);
   ctx.font='26px "EB Garamond",Georgia,serif';
   ctx.fillText('Seu deck usa cartas desta afinidade.',450,1030);
-  ctx.fillText('Começa em jogo, fora das 24 cartas.',450,1070);
+  ctx.fillText('Começa em jogo, fora do limite de 30 cartas.',450,1070);
 
 }
 let grainTexture=null;
@@ -336,7 +337,7 @@ function readForm() {
   return draft;
 }
 function syncAbilityUI() {
-  $('card-quantity').max=$('card-kind').value==='patron'?1:({lacaio:3,padrao:2,elite:1,soberano:1}[$('card-rarity').value]||2);
+  $('card-quantity').max=$('card-kind').value==='patron'?1:({lacaio:4,padrao:3,elite:2,soberano:1}[$('card-rarity').value]||2);
   if(Number($('card-quantity').value)>Number($('card-quantity').max)){$('card-quantity').value=$('card-quantity').max;draft.quantity=Number($('card-quantity').max);}
   $('spell-mode-field').hidden = $('card-kind').value !== 'spell';
   $('patron-health-field').hidden = $('card-kind').value !== 'patron';
@@ -472,7 +473,7 @@ function download(blob, name) {
 async function projectList() {
   const holder = $('project-list'); holder.replaceChildren();
   const quantity = project.reduce((sum,c) => sum + number(c.quantity,1,60,1), 0);
-  $('project-count').textContent = `${project.length} modelo(s) · ${quantity} cópia(s) na coleção (inclui Patronos)`;
+  $('project-count').textContent = `${project.length} modelo(s) · ${project.filter(c=>c.kind!=='patron').reduce((sum,c)=>sum+Number(c.quantity),0)}/30 cartas no deck · ${quantity} cópia(s) na coleção`;
   $('download-deck').disabled = !project.length; $('download-project').disabled = !project.length;
   if (!project.length) { const p=document.createElement('p');p.className='empty-project';p.textContent='Guarde a primeira carta para montar seu deck.';holder.append(p);return; }
   for (const card of project) {
@@ -511,7 +512,12 @@ function exportProject(){
   download(new Blob([JSON.stringify({format:'runamarca-prototipo-editor',version:1,cards:project},null,2)],{type:'application/json'}),'runamarca-prototipo-editavel.json');
   status('Coleção editável exportada.');
 }
-function exportDeck(){exportProject();}
+function exportDeck(){
+ const cards=project.filter(card=>card.kind!=='patron'),total=cards.reduce((sum,card)=>sum+Number(card.quantity),0);
+ if(!cards.length||!Number.isInteger(total)||total>30)return status('O deck deve ter de 1 a 30 cartas, sem contar o Patrono.',true);
+ for(const card of project){const invalid=validateDesign(card);if(invalid)return status(card.name+': '+invalid[0],true);}
+ exportProject();
+}
 async function importProject(file){
   try{
     const data=JSON.parse(await file.text());
