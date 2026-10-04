@@ -89,11 +89,12 @@ function rarityFrame(ctx,card,height,radius,line){
   soberano:['#edd3f5','#9bcff1','#b2edce','#f2dfa3','#efaed4','#b7a8ed','#95deeb','#efc5d5','#d8b8ed']
  };
  let colors=metals[rarity]||['#8a7960','#302c27','#635641','#302c28','#c5a572'];
- if(rarity==='padrao'||rarity==='soberano'){
+ if(rarity==='lacaio'||rarity==='padrao'||rarity==='soberano'){
   const channels=colors.map(color=>[1,3,5].map(index=>parseInt(color.slice(index,index+2),16)));
   const averages=[0,1,2].map(index=>channels.reduce((sum,color)=>sum+color[index],0)/channels.length);
-  // Silver has softer reflections; platinum uses colored reflections at 15% lower exposure.
-  colors=channels.map(color=>'#'+color.map((value,index)=>Math.round(rarity==='padrao'?(averages[index]+(value-averages[index])*.75)*.75:value*.85).toString(16).padStart(2,'0')).join(''));
+  // Silver retains softer reflections; bronze is dimmer and platinum preserves its iridescent hues.
+  const exposure=rarity==='lacaio'?.75:.85*1.15;
+  colors=channels.map(color=>'#'+color.map((value,index)=>Math.round(rarity==='padrao'?(averages[index]+(value-averages[index])*.75)*.75:value*exposure).toString(16).padStart(2,'0')).join(''));
  }
  const metal=ctx.createLinearGradient(17,17,883,height-17);
  colors.forEach((color,i)=>metal.addColorStop(i/(colors.length-1),color));
