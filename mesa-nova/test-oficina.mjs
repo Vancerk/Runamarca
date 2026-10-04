@@ -4,8 +4,8 @@ import {act,join,makeRoom,resolveCombat,view} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url)));
 const deck=catalog.decks.find(d=>d.id==='forja-oficina-lyrik');
 assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);
-assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,3);
-assert.equal(deck.cards.find(c=>c.id==='FL04').rarity,'lacaio');
+assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,4);
+assert.equal(deck.cards.find(c=>c.id==='FL04').rarity,'elite');assert.equal(deck.cards.find(c=>c.id==='FL04').quantity,2);
 assert.equal(deck.cards.find(c=>c.id==='FL11').speech,'Protocolo: Exterminar!');
 assert.equal(catalog.decks.find(d=>d.id==='forja-juramento').cards.length,12);
 for(const c of deck.cards)assert.ok(fs.existsSync(new URL(c.image,import.meta.url)));
@@ -41,7 +41,7 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a}=setup();room.phase='prep';const target=card('FL02',a,{damage:1}),elf=card('FL07',a);a.reserve.push(target,elf);a.emanation.push(elf.uid);const spell=card('FL10',a);a.hand.push(spell);act(room,a,{type:'play',cardId:spell.uid,mode:'direct',targetId:target.uid},catalog);assert.equal(target.attack,3);assert.equal(target.health,5);assert.equal(view(room,a).players[0].reserve.find(c=>c.uid===target.uid).effectiveAttack,4);act(room,a,{type:'endPrep',healTargetIds:[target.uid]},catalog);assert.equal(target.damage,0);assert.equal(a.mana,5,'Buff 4 e cura 1');
 }
 {
- const {room,a,b}=setup();room.phase='formation';const taunter=place(a,card('FL09',a),0);assert.throws(()=>act(room,a,{type:'ready'},catalog),/Provocar/);assert.throws(()=>act(room,a,{type:'taunt',cardId:taunter.uid,lane:0},catalog),/adicional/);act(room,a,{type:'taunt',cardId:taunter.uid,lane:2},catalog);assert.equal(view(room,b).players[0].taunts[taunter.uid],undefined,'Alvo secreto até revelar');assert.equal(view(room,a).players[0].taunts[taunter.uid],2);
+ const {room,a,b}=setup();room.phase='formation';const taunter=place(a,card('FL09',a),0);assert.throws(()=>act(room,a,{type:'ready'},catalog),/Provocar/);assert.throws(()=>act(room,a,{type:'taunt',cardId:taunter.uid,lane:0},catalog),/adjacente/);assert.throws(()=>act(room,a,{type:'taunt',cardId:taunter.uid,lane:2},catalog),/adjacente/);act(room,a,{type:'taunt',cardId:taunter.uid,lane:1},catalog);assert.equal(view(room,b).players[0].taunts[taunter.uid],undefined,'Alvo secreto até revelar');assert.equal(view(room,a).players[0].taunts[taunter.uid],1);
 }
 {
  const {room,a,b}=setup();room.phase='lobby';act(room,a,{type:'deck',deckId:deck.id},catalog);act(room,b,{type:'deck',deckId:'forja-juramento'},catalog);assert.equal(a.deck.length+a.hand.length,30);const imported=a.deck.concat(a.hand).find(c=>c.modelId==='FL05');assert.equal(imported.artZoom,144);assert.equal(imported.artX,41);assert.equal(imported.artY,39);

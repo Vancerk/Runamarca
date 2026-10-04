@@ -30,7 +30,7 @@ act(room,a,{type:'mulligan',cardIds:[aOld]},catalog);
 assert.equal(a.hand.length,5);assert.equal(a.mulligansLeft,0);
 assert.throws(()=>act(room,a,{type:'mulligan',cardIds:[a.hand[0].uid]},catalog),/mais trocas/);
 act(room,b,{type:'mulligan',cardIds:[bOld]},catalog);
-act(room,b,{type:'mulligan',cardIds:[b.hand[0].uid]},catalog);
+assert.throws(()=>act(room,b,{type:'mulligan',cardIds:[b.hand[0].uid]},catalog),/mais trocas/);
 assert.equal(b.mulligansLeft,0);
 act(room,a,{type:'confirmMulligan'},catalog);
 assert.equal(room.phase,'mulligan');

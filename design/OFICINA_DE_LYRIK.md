@@ -8,11 +8,11 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 |---|---|---:|---:|---|
 | Mecânico Proativo | Bronze | 4 | 2 | 2 / 3 |
 | Anão escudeiro | Bronze | 4 | 2 | 1 / 3 |
-| Anão Taverneiro | Bronze | 3 | 1 | 1 / 1 |
-| Sintético Próspero | Bronze | 4 | 1 | 0 / 2 |
+| Anão Taverneiro | Bronze | 4 | 1 | 1 / 1 |
+| Sintético Próspero | Ouro | 2 | 1 | 0 / 2 |
 | Rompe-problema | Prata | 3 | 4 | 6 / 3 |
 | Anão estudioso | Prata | 3 | 4 | 1 / 2 |
-| Elfo estudioso | Prata | 2 | 3 | 1 / 2 |
+| Elfo estudioso | Prata | 3 | 3 | 1 / 2 |
 | Monge Rúnico | Prata | 2 | 5 | 3 / 4 |
 | G.0.L.1.A.5, o Terror Náutico | Ouro | 2 | 8 | 7 / 10 |
 | Reforço Divino | Ouro | 1 | 4 | Magia: +2 / +2 |
@@ -22,7 +22,7 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 ## Regras implementadas e aprovadas
 
 - **Transpassar:** transmite ao Patrono o dano de combate acima da vida restante do defensor. Não transmite dano de Revelação ou de magias.
-- **Provocar:** durante a formação, a criatura escolhe uma posição adicional diferente da própria. O atacante dessa posição ataca a criatura provocadora. Ela continua atacando uma única vez, na própria posição. Clicar nela permite mudar a escolha antes de confirmar. Duas criaturas não podem disputar a mesma posição adicional. A escolha fica oculta até a revelação.
+- **Provocar:** durante a formação, a criatura escolhe uma posição adicional adjacente à própria. O atacante dessa posição ataca a criatura provocadora. Ela continua atacando uma única vez, na própria posição. Clicar nela permite mudar a escolha antes de confirmar. Duas criaturas não podem disputar a mesma posição adicional. A escolha fica oculta até a revelação.
 - **Iniciativa:** todos os ataques de criaturas com Iniciativa resolvem juntos, antes dos ataques normais. Criaturas mortas nessa etapa não atacam. Duas criaturas com Iniciativa podem se destruir mutuamente. Um defensor morto pela Iniciativa não abre um segundo ataque gratuito ao Patrono no mesmo confronto.
 - **Monge:** a redução de 2 de ataque vale somente para o combate atual, sem ataque negativo.
 - **Veronica:** ganha +1/+1 permanentemente por criatura cuja eliminação contou com seu dano, desde que sobreviva ao combate. Os acréscimos de vida aumentam a vida máxima e a vida restante em 1; não restauram toda a vida.
@@ -48,10 +48,10 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 - **Patrono:** confirmar futuramente se o deck deve ter outro Patrono; por enquanto usa a Bigorna existente.
 - **Preço das novas habilidades:** o contador não possui fórmula calibrada para Iniciativa, Transpassar, Provocar, crescimento recorrente ou dano adjacente. Elas aparecem como efeitos personalizados **ainda sem preço**, com aviso explícito; zero provisório não significa habilidade gratuita. Nenhum custo ou atributo foi rebalanceado automaticamente.
 - **Orçamento mínimo:** Mecânico 2/3 por 2 mana gasta 5/5 pontos antes de Iniciativa; Rompe-problema 6/3 por 4 gasta 9/9 antes de Transpassar; Golias 7/10 por 8 gasta 17/17 antes de Provocar. Precisam de revisão do custo da habilidade ou de exceção de design justificada.
-- **Taverneiro:** 1/1 por 1 mana com compra de 1 soma 5 pontos na referência atual, diante de 3 disponíveis. É um motor de compra eficiente, especialmente com três cópias.
-- **Sintético:** quatro cópias de custo 1 com crescimento permanente podem gerar pressão cumulativa. O crescimento depende de entrar em combate e sobreviver, oferecendo ao rival oportunidade de eliminá-lo antes de crescer.
+- **Taverneiro:** 1/1 por 1 mana com compra de 1 soma 5 pontos na referência atual, diante de 3 disponíveis. É um motor de compra eficiente, especialmente com quatro cópias.
+- **Sintético:** duas cópias de custo 1 com crescimento permanente podem gerar pressão cumulativa. O crescimento depende de entrar em combate e sobreviver, oferecendo ao rival oportunidade de eliminá-lo antes de crescer.
 - **Duração do Reforço Divino:** foi interpretado como permanente por não haver duração no texto. Caso devesse terminar no combate, precisa de alteração explícita.
-- **Economia do deck:** tem 29 criaturas e uma única magia. Isso concentra respostas e compra em criaturas; apenas 3 Taverneiros + 3 Estudiosos já representam até seis compras de entrada.
+- **Economia do deck:** tem 29 criaturas e uma única magia. Isso concentra respostas e compra em criaturas; 4 Taverneiros + 3 Estudiosos representam até sete compras de entrada.
 - **Custo 10:** Cataclisma só pode entrar com a mana máxima. Pode aparecer cedo e ocupar espaço na mão; não foi concedido desconto especial.
 
 ## Verificação
@@ -59,3 +59,7 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 Testes automatizados específicos cobrem composição, conservação do Forja anterior, arquivos de arte, falas, enquadramento, Iniciativa e empate entre iniciativas, Transpassar, Provocar e sigilo, crescimento, dano adjacente, redução temporária, bônus permanente e cura paga. A bateria de regressão anterior também passou. A interface foi conferida no navegador: seleção do novo deck, carregamento no criador, escolha de Provocar e bordas verdes.
 
 Esses testes verificam regras e integração. **Não constituem uma bateria de partidas nem demonstram equilíbrio competitivo do novo deck.**
+
+## Revisão de 4 de outubro
+
+Sintético Próspero agora é Ouro, com duas cópias. Anão Taverneiro tem quatro cópias e Elfo Estudioso três, completando 30 cartas. A narrativa do Taverneiro diz balcão. Provocar só pode escolher uma casa adjacente à posição do provocador.

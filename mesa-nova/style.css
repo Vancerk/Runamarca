@@ -384,3 +384,15 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 .taunt-space-mark,.taunt-source-mark{position:absolute;right:5px;top:5px;z-index:4;padding:3px 5px;border:1px solid #d99f6a;background:#291a13e8;color:#ffd2a0;font-size:15px;pointer-events:none}
 .taunt-source-mark{right:auto;left:5px;top:auto;bottom:5px;font-size:12px}
 .anchor-mark{position:absolute;left:5px;top:5px;color:#b8d7f0;z-index:4}.anchored-space{outline:2px solid #739cb7;outline-offset:-3px}
+/* Larger hand and preview, with room for the permanent fan. */
+.hand-card{width:185px;height:259px;margin-left:-45px}
+.hand-zone{height:265px;min-height:265px}.hand-zone .card-row{height:259px;transform:translateY(-32px)}
+.card.big{width:min(379.5px,calc((100dvh - 95px)*.7142857),calc(100vw - 42px))}
+@media(max-width:750px){.hand-card{width:135px;height:189px;margin-left:-42.5px}.hand-zone{height:204px;min-height:204px}.hand-zone .card-row{height:196px;transform:translateY(-30px)}}
+@media(max-width:620px){#hover-preview .card.big{width:63.25vw!important}}
+/* Narrativa à esquerda; regras à direita, com a carta entre ambas. */
+#hover-preview .hover-context{width:clamp(105px,18vw,220px);overflow:auto}
+#hover-preview .narrative-context{align-self:center}
+.game[data-phase="resolving"] .lane-side .card{animation:none!important;transition:none!important;transform:none}
+@media(max-width:620px){#hover-preview{gap:5px}#hover-preview .hover-context{width:18vw}#hover-preview .hover-keywords{padding:6px}#hover-preview .hover-keywords strong{font-size:10px}.hover-dream{font-size:11px}#hover-preview .card.big{width:55vw!important}}
+#hover-preview .hover-context{overflow-x:hidden;overflow-y:auto}

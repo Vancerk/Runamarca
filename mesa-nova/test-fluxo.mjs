@@ -31,3 +31,16 @@ const place=(p,c,lane)=>{p.reserve.push(c);p.formation[lane]=c.uid;return c;};
  const {room,a}=setup();room.phase='prep';const ally=card('FV07',a);a.reserve.push(ally);const spell=card('FV05',a);a.hand.push(spell);act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(ally.attack,4);assert.equal(ally.health,4);const apprentice=place(a,card('FV03',a),0);room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,2);assert.equal(apprentice.attack,1);
 }
 console.log('Fluxo: 30 cartas, maldição por alvo, simultaneidade, contato, âncora, barreira, buffs, descarte e reserva aprovados.');
+{
+ const {room,a,b}=setup();room.phase='prep';for(let i=1;i<=6;i++){assert.equal(room.round,i);assert.equal(room.first,i%2?a.id:b.id);assert.equal(room.turn,room.first);const first=room.players.find(p=>p.id===room.turn),second=room.players.find(p=>p!==first);act(room,first,{type:'endPrep'},catalog);act(room,second,{type:'endPrep'},catalog);act(room,a,{type:'vote',fight:false},catalog);act(room,b,{type:'vote',fight:false},catalog);}
+}
+{
+ const {room,a,b}=setup();room.phase='prep';const healer=card('FV04',a),target=card('FV07',a,{damage:1});a.reserve.push(healer,target);a.emanation.push(healer.uid);a.mana=0;assert.throws(()=>act(room,a,{type:'endPrep',healTargetIds:[target.uid]},catalog),/Mana insuficiente/);assert.equal(target.damage,1);assert.equal(room.turn,a.id);a.mana=1;act(room,a,{type:'endPrep',healTargetIds:[target.uid]},catalog);assert.equal(target.damage,0);assert.equal(a.mana,0);const healing=view(room,b).events.find(e=>e.type==='cleric_heal');assert.equal(healing.healthUpdates[0].hp,target.health);
+}
+{
+ const {room,a,b}=setup();room.phase='prep';const c=card('FV03',a,{speech:'O éter é a minha arma'});a.hand.push(c);act(room,a,{type:'play',cardId:c.uid},catalog);const e=view(room,b).events.find(e=>e.type==='creature');assert.equal(e.speech,c.speech);assert.equal(e.cardId,c.uid);
+}
+{
+ for(const x of [0,200,400]){const from={left:50,top:600,width:70,height:100},to={left:x,top:250,width:100,height:90},line=RunaMotion.link(from,to);assert.ok(line.end.x>=x&&line.end.x<=x+100);assert.ok(line.end.y>=250&&line.end.y<=340);assert.ok(Object.values(line).every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));}const frames=RunaMotion.strikeFrames(150,-200);assert.equal(frames.at(-1).transform,'translate(0px,0px)');assert.equal(frames[1].transform,frames[2].transform);
+}
+console.log('Correções: alternância em seis rodadas, Auramora, fala compartilhada e geometria da seta aprovadas.');

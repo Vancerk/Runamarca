@@ -4,7 +4,7 @@ export function resolveDirectedCombat(room,{effects,attack,laneCard,alive,applyD
  const participants=room.players.flatMap(p=>p.formation.map((uid,lane)=>({p,lane,card:laneCard(room,p.id,lane)})).filter(x=>x.card));
  const strikes=participants.map(({p,lane,card})=>{
   const enemy=room.players.find(x=>x.id!==p.id);
-  const redirect=participants.find(x=>x.p===enemy&&effects(x.card).some(e=>e.op==='taunt')&&enemy.taunts?.[x.card.uid]===lane);
+  const redirect=participants.find(x=>x.p===enemy&&effects(x.card).some(e=>e.op==='taunt')&&enemy.taunts?.[x.card.uid]===lane&&Math.abs(x.lane-lane)===1);
   return {card,p,lane,targetLane:redirect?.lane??lane,target:redirect?.card||laneCard(room,enemy.id,lane),enemy,initiative:effects(card).some(e=>e.op==='initiative')};
  });
  const contributors=new Map(),steps=[];

@@ -63,6 +63,7 @@ assert.ok(room.log.every(entry=>Number.isInteger(entry.round)&&typeof entry.mess
 assert.equal(a.discard.some(c=>c.uid===trap.uid),true);assert.equal(a.discard.some(c=>c.uid===buff.uid),true);
 console.log('OK: abertura, mana, sigilo, duas magias posicionadas, três fases e dano ao Patrono.');
 
+assert.equal(room.first,b.id,'Rodada 2 inverte a ordem');act(room,b,{type:'endPrep'},catalog);
 // A magia em área expira sem ativar; uma armadilha comum permanece. Só a retirada na mesma preparação restitui mana.
 const areaModel=catalog.decks.flatMap(d=>d.cards).find(c=>c.effects.some(ef=>ef.op==='area_damage'));
 const area=instance(areaModel.id,a),lasting=instance('R11',a);a.hand.push(area,lasting);a.mana=10;
@@ -71,7 +72,7 @@ act(room,a,{type:'play',cardId:lasting.uid,mode:'lane',lane:2,targetSide:b.id},c
 const manaAfterPlacement=a.mana;
 act(room,a,{type:'unprepare',cardId:lasting.uid},catalog);assert.equal(a.mana,Math.min(a.manaMax,manaAfterPlacement+lasting.cost));assert.throws(()=>act(room,a,{type:'unprepare',cardId:lasting.uid},catalog),/preparada/);
 a.mana=10;act(room,a,{type:'play',cardId:lasting.uid,mode:'lane',lane:2,targetSide:b.id},catalog);
-act(room,a,{type:'endPrep'},catalog);act(room,b,{type:'endPrep'},catalog);
+act(room,a,{type:'endPrep'},catalog);
 act(room,a,{type:'vote',fight:false},catalog);act(room,b,{type:'vote',fight:false},catalog);
 assert.ok(a.discard.some(c=>c.uid===area.uid),'dano em área expira mesmo sem combate');assert.ok(a.prepared.some(item=>item.card.uid===lasting.uid),'outras magias não expiram');
 const enemyView=view(room,b).players.flatMap(p=>p.prepared).find(item=>item.caster===a.id);assert.equal(enemyView.card,null);assert.equal(enemyView.hidden,true);
@@ -81,7 +82,7 @@ console.log('OK: reembolso imediato limitado, expiração seletiva em área e si
 
 // Uma magia de rodada anterior não pode gerar mana após a recarga.
 act(room,a,{type:'ready'},catalog);act(room,b,{type:'ready'},catalog);await new Promise(resolve=>setTimeout(resolve,room.combat.duration+80));
-a.hand=a.hand.slice(0,5);const manaBeforeOldRemoval=a.mana;assert.ok(a.prepared.some(item=>item.card.uid===lasting.uid));act(room,a,{type:'unprepare',cardId:lasting.uid},catalog);assert.equal(a.mana,manaBeforeOldRemoval,'retirada tardia não gera mana gratuita');
+assert.equal(room.first,b.id,'Rodada 4 inverte novamente');act(room,b,{type:'endPrep'},catalog);a.hand=a.hand.slice(0,5);const manaBeforeOldRemoval=a.mana;assert.ok(a.prepared.some(item=>item.card.uid===lasting.uid));act(room,a,{type:'unprepare',cardId:lasting.uid},catalog);assert.equal(a.mana,manaBeforeOldRemoval,'retirada tardia não gera mana gratuita');
 const refundTrap=instance('R11',a);a.hand.push(refundTrap);a.mana=a.manaMax;const beforeRefund=a.mana;act(room,a,{type:'play',cardId:refundTrap.uid,mode:'lane',lane:2,targetSide:b.id},catalog);act(room,a,{type:'unprepare',cardId:refundTrap.uid},catalog);assert.equal(a.mana,beforeRefund);assert.ok(a.mana<=a.manaMax);assert.throws(()=>act(room,a,{type:'unprepare',cardId:refundTrap.uid},catalog),/preparada/);
 const restore=catalog.decks.flatMap(d=>d.cards).find(card=>card.effects.some(ef=>ef.op==='choose_one'));const healing=instance(restore.id,a);a.hand.push(healing);a.mana=10;a.patron.hp=12;act(room,a,{type:'play',cardId:healing.uid,mode:'direct',targetId:'patron'},catalog);assert.equal(room.events.at(-1).targetPatronId,a.id,'cura informa o Patrono correto para a animação');
 console.log('OK: sem reembolso entre rodadas, sem dupla devolução e alvo visual da cura.');
