@@ -4,7 +4,7 @@ import {act,join,makeRoom,resolveCombat,view} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url)));
 const deck=catalog.decks.find(d=>d.id==='forja-oficina-lyrik');
 assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);
-assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,4);
+assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,4);assert.equal(deck.cards.find(c=>c.id==='FL03').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL01').cost,3);assert.equal(deck.cards.find(c=>c.id==='FL01').health,2);assert.equal(deck.cards.find(c=>c.id==='FL01').quantity,2);assert.equal(deck.cards.find(c=>c.id==='FL05').cost,5);assert.equal(deck.cards.find(c=>c.id==='FL05').health,2);assert.equal(deck.cards.find(c=>c.id==='FL04').cost,3);assert.equal(deck.cards.find(c=>c.id==='FL07').cost,4);
 assert.equal(deck.cards.find(c=>c.id==='FL04').rarity,'elite');assert.equal(deck.cards.find(c=>c.id==='FL04').quantity,2);
 assert.equal(deck.cards.find(c=>c.id==='FL11').speech,'Protocolo: Exterminar!');
 assert.equal(catalog.decks.find(d=>d.id==='forja-juramento').cards.length,12);
@@ -47,3 +47,17 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a,b}=setup();room.phase='lobby';act(room,a,{type:'deck',deckId:deck.id},catalog);act(room,b,{type:'deck',deckId:'forja-juramento'},catalog);assert.equal(a.deck.length+a.hand.length,30);const imported=a.deck.concat(a.hand).find(c=>c.modelId==='FL05');assert.equal(imported.artZoom,144);assert.equal(imported.artX,41);assert.equal(imported.artY,39);
 }
 console.log('Oficina de Lyrik: composição, artes, Iniciativa, Transpassar, Provocar, crescimento, área adjacente, cura e sigilo aprovados.');
+
+{
+ const {room,a,b}=setup();room.phase='prep';const target=place(b,card('FL09',b),0),ice=card('FL13',a);a.hand.push(ice);assert.throws(()=>act(room,a,{type:'play',cardId:ice.uid,mode:'direct',targetId:target.uid},catalog),/posição/);assert.throws(()=>act(room,a,{type:'play',cardId:ice.uid,mode:'lane',lane:0,targetSide:a.id},catalog),/inimiga/);act(room,a,{type:'play',cardId:ice.uid,mode:'lane',lane:0,targetSide:b.id},catalog);assert.equal(view(room,b).players[1].prepared[0].card,null);room.phase='resolving';resolveCombat(room);assert.equal(target.attack,6);assert.equal(target.attackMod,0);room.phase='resolving';resolveCombat(room);assert.equal(target.attack,6,'Toque permanente após dois combates');
+}
+{
+ const {room,a,b}=setup();room.phase='prep';const target=card('FL09',b),zero=card('FL04',b),emana=card('FL09',b);b.reserve.push(target,zero,emana);b.emanation=[emana.uid];a.hand.push(card('FL14',a));act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'direct'},catalog);assert.equal(target.attack,6);assert.equal(zero.attack,0);assert.equal(emana.attack,7);const e=room.events.find(e=>e.type==='spell');assert.equal(e.healthUpdates.find(u=>u.uid===target.uid).attack,6);
+}
+{
+ const {room,a,b}=setup();room.phase='prep';const placed=place(b,card('FL09',b),0),reserve=card('FL09',b),emana=card('FL09',b);b.reserve.push(reserve,emana);b.emanation=[emana.uid];a.hand.push(card('FL14',a));act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'lane',lane:0,targetSide:b.id},catalog);room.phase='resolving';resolveCombat(room);assert.equal(placed.attack,6);assert.equal(reserve.attack,7);assert.equal(emana.attack,7);assert.equal(a.prepared.length,0);assert.equal(placed.attackMod,0);
+}
+{
+ const {room,a,b}=setup();room.phase='prep';const target=card('FL09',b);b.reserve.push(target);a.hand.push(card('FL15',a));act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'direct',targetId:target.uid},catalog);assert.equal(target.damage,2);assert.equal(a.mana,8);assert.equal(room.events.find(e=>e.type==='spell').healthUpdates[0].hp,8);
+}
+console.log('Forja revisado: 30 cartas, custos/atributos, redução permanente, sigilo, Emanação imune a área e dano direto aprovados.');

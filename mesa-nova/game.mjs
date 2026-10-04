@@ -48,18 +48,19 @@ function applyEffect(room,caster,spell,target,phase){
     if(ef.op==='discard'){caster.pendingDiscard=Math.min(caster.hand.length,(caster.pendingDiscard||0)+ef.amount);continue;}
     if(ef.op==='area_stat_buff'){for(const c of caster.reserve.filter(alive)){c.attack+=ef.attack;c.health+=ef.health;spellBuff(c,room.round,true);}continue;}
     if(ef.op==='summon'){for(let i=0;i<ef.amount&&reserveSize(caster)<8;i++){const creature={uid:randomUUID(),modelId:`${spell.id}-token`,owner:caster.id,name:ef.name||'Aliado Convocado',type:'creature',rarity:'lacaio',affinity:caster.patron.affinity,cost:0,attack:ef.attack||1,health:ef.health||1,damage:0,attackMod:0,text:'Criatura convocada.',effects:[],token:true};caster.reserve.push(creature);emit(room,'summon',{playerId:caster.id,cardId:creature.uid,name:creature.name,zone:'reserve',speech:'Estou a postos!'});}continue;}
+    if(ef.op==='area_attack_modifier'){for(const c of other(room,caster.id).reserve)if(alive(c)&&!other(room,caster.id).emanation.includes(c.uid))c.attack=Math.max(0,c.attack+ef.amount);continue;}
     if(ef.op==='area_damage'){for(const creature of other(room,caster.id).reserve)if(alive(creature)&&!other(room,caster.id).emanation.includes(creature.uid))applyDamage(room,creature,ef.direct_amount??ef.amount);continue;}
     if(ef.op==='choose_one'){const option=ef.options?.find(o=>target?.patron?o.target==='own_patron':o.target==='chosen_allied_creature');if(option){const amount=option.amount;if(target?.patron)caster.patron.hp=Math.min(caster.patron.maxHp,caster.patron.hp+amount);else if(target)target.damage=Math.max(0,target.damage-amount);}continue;}
     if(!target)continue;
     if(ef.op==='heal'){target.damage=Math.max(0,target.damage-ef.amount);continue;}
     if(ef.op==='damage'){const previouslyAlive=alive(target);applyDamage(room,target,ef.amount);if(ef.draw_on_kill&&previouslyAlive&&!alive(target))draw(room,caster,ef.draw_on_kill);continue;}
     if(ef.op==='defeat'){target.damage=target.health;continue;}
-    if(ef.op==='attack_modifier'){target.attackMod=(target.attackMod||0)+ef.amount;if(ef.amount>0)spellBuff(target,room.round);continue;}
+    if(ef.op==='attack_modifier'){if(ef.permanent)target.attack=Math.max(0,target.attack+ef.amount);else target.attackMod=(target.attackMod||0)+ef.amount;if(ef.amount>0)spellBuff(target,room.round);continue;}
     if(ef.op==='stat_buff'){target.attack+=ef.attack;target.health+=ef.health;spellBuff(target,room.round,true);continue;}
     if(ef.op==='conditional_damage'){const value=attack(target,room,phase?.lane||0)>=ef.condition.gte?ef.amount_if_true:ef.amount_if_false;applyDamage(room,target,value);}
   }
 }
-function targetKind(spell){const ef=effect(spell);if(['draw','area_stat_buff'].includes(ef?.op))return 'self';if(ef?.op==='area_damage')return 'enemy-board';if(ef?.op==='choose_one')return 'friendly-or-patron';if(['heal','attack_modifier','stat_buff'].includes(ef?.op)&&ef?.target==='chosen_allied_creature')return 'friendly';return 'enemy';}
+function targetKind(spell){const ef=effect(spell);if(['draw','area_stat_buff'].includes(ef?.op))return 'self';if(['area_damage','area_attack_modifier'].includes(ef?.op))return 'enemy-board';if(ef?.op==='choose_one')return 'friendly-or-patron';if(['heal','attack_modifier','stat_buff'].includes(ef?.op)&&ef?.target==='chosen_allied_creature')return 'friendly';return 'enemy';}
 function validTarget(room,p,spell,targetId){const kind=targetKind(spell);if(kind==='self'||kind==='enemy-board')return {kind,target:null};if(kind==='friendly-or-patron'&&targetId==='patron')return {kind,target:{patron:true}};const side=kind==='enemy'?other(room,p.id):p;const target=findCreature(side,targetId);if(!target)throw Error('Escolha uma criatura viva do lado correto.');return {kind,target};}
 function paidCost(p,card,mode='direct'){let cost=card.cost;const sources=p.emanation.filter(uid=>p.reserve.find(c=>c.uid===uid)?.modelId==='M04').length;const discount=mode==='direct'&&card.type!=='creature'&&sources>0&&!p.discountUsed&&!p.directPlayed;if(discount)cost=Math.max(1,cost-sources);if(p.mana<cost)throw Error(`Mana insuficiente: precisa de ${cost}.`);p.mana-=cost;if(discount)p.discountUsed=true;return cost;}
 function finishRound(room){for(const p of room.players){for(const prep of p.prepared.filter(item=>effects(item.card).some(ef=>ef.op==='area_damage'))){p.discard.push(prep.card);emit(room,'expire',{playerId:p.id,cardId:prep.card.uid,name:prep.card.name});pushLog(room,`${prep.card.name} se desfez ao fim da rodada.`,p.id);}p.prepared=p.prepared.filter(item=>!effects(item.card).some(ef=>ef.op==='area_damage'));}room.preparationsDone=0;for(const p of room.players){retainAnchors(p);p.vote=null;p.ready=false;p.directPlayed=false;p.discountUsed=false;for(const c of p.reserve)c.attackMod=0;}room.laneBonuses={};room.round++;room.first=other(room,room.first).id;startPrep(room,own(room,room.first));}
@@ -103,6 +104,7 @@ export function resolveCombat(room){
       if(ef.op==='discard'){caster.pendingDiscardAfterCombat=(caster.pendingDiscardAfterCombat||0)+ef.amount;continue;}
       if(ef.op==='anchor'){target.anchor={lane:prep.lane,remaining:2,setAt:room.combatCount};continue;}
       if(ef.op==='barrier'){changeFor(target).statHealth+=ef.health;target.temporaryHealth=(target.temporaryHealth||0)+ef.health;spellBuff(target,room.round);continue;}
+      if(ef.op==='area_attack_modifier'){for(let lane=0;lane<3;lane++){const c=laneCard(room,other(room,caster.id).id,lane);if(alive(c))changeFor(c).statAttack+=ef.amount;}continue;}
       if(ef.op==='area_stat_buff'){for(const c of caster.reserve.filter(alive)){changeFor(c).statAttack+=ef.attack;changeFor(c).statHealth+=ef.health;spellBuff(c,room.round,true);}continue;}
       const change=changeFor(target);
         if(ef.op==='area_damage'){for(let lane=0;lane<3;lane++){const enemy=laneCard(room,other(room,caster.id).id,lane);if(alive(enemy))changeFor(enemy).damage+=ef.amount;}continue;}
@@ -111,15 +113,15 @@ export function resolveCombat(room){
       if(ef.op==='heal')change.heal+=ef.amount;
       if(ef.op==='choose_one')change.heal+=ef.options.find(x=>x.target==='chosen_allied_creature')?.amount||0;
       if(ef.op==='defeat')change.defeat=true;
-      if(ef.op==='attack_modifier'){change.attack+=ef.amount;if(ef.amount>0)spellBuff(target,room.round);}
+      if(ef.op==='attack_modifier'){if(ef.permanent)change.statAttack+=ef.amount;else change.attack+=ef.amount;if(ef.amount>0)spellBuff(target,room.round);}
       if(ef.op==='stat_buff'){change.statAttack+=ef.attack;change.statHealth+=ef.health;spellBuff(target,room.round,true);}
     }
-    if(room.collectPreview)room.spellHealthUpdates.push({cardId:prep.card.uid,targets:[...spellChanges].map(([card,change])=>({uid:card.uid,hp:Math.max(0,card.health+change.statHealth-(change.defeat?card.health:Math.max(0,card.damage+change.damage-change.heal))),maxHp:card.health+change.statHealth,attack:card.attack+change.statAttack}))});
+    if(room.collectPreview)room.spellHealthUpdates.push({cardId:prep.card.uid,targets:[...spellChanges].map(([card,change])=>({uid:card.uid,hp:Math.max(0,card.health+change.statHealth-(change.defeat?card.health:Math.max(0,card.damage+change.damage-change.heal))),maxHp:card.health+change.statHealth,attack:Math.max(0,Math.max(0,card.attack+change.statAttack)+(card.attackMod||0)+change.attack)}))});
     if(effects(prep.card).some(e=>e.op==='barrier')){prep.remaining??=2;prep.lastCombat=room.combatCount;}else{caster.discard.push(prep.card);caster.prepared=caster.prepared.filter(item=>item!==prep);}
     room.lastCombat.spells.push(`${prep.card.name} · posição ${prep.lane+1} de ${targetSide.name}`);
     pushLog(room,`${prep.card.name} foi ativada na posição ${prep.lane+1} de ${targetSide.name}.`,caster.id);
   }
-  for(const [target,change] of spellChanges){target.attack+=change.statAttack;target.health+=change.statHealth;target.attackMod=(target.attackMod||0)+change.attack;target.damage=change.defeat?target.health:Math.max(0,target.damage+change.damage-change.heal);}
+  for(const [target,change] of spellChanges){target.attack=Math.max(0,target.attack+change.statAttack);target.health+=change.statHealth;target.attackMod=(target.attackMod||0)+change.attack;target.damage=change.defeat?target.health:Math.max(0,target.damage+change.damage-change.heal);}
   for(const [caster,target,count] of killDraws)if(!alive(target))draw(room,caster,count);for(const [caster,count] of spellDraws)draw(room,caster,count);
   removeDead(room);checkWin(room);if(room.phase==='finished')return;
   for(const p of room.players)for(const prep of p.prepared)if(effects(prep.card).some(e=>e.op==='barrier')){prep.remaining??=2;prep.lastCombat=room.combatCount;}
@@ -199,6 +201,7 @@ export function act(room,p,data,catalog){
       pushLog(room,`${p.name} retirou uma magia preparada${returned?` e recuperou ${returned} mana`:''}.`,p.id);
     }else{
       const lane=Number(data.lane),side=own(room,data.targetSide);
+      if(prep.card.enemyOnly&&side?.id===p.id)throw Error('Esta magia exige uma posição inimiga.');
       if(!side||!Number.isInteger(lane)||lane<0||lane>2)throw Error('Posição inválida.');
       if(p.prepared.some(item=>item!==prep&&item.targetSide===side.id&&item.lane===lane))throw Error('Você já colocou uma magia nessa posição.');
       prep.lane=lane;prep.targetSide=side.id;prep.hidden=side.id!==p.id;
@@ -223,13 +226,13 @@ export function act(room,p,data,catalog){
         if(mode==='direct'){
           if(card.positionOnly)throw Error('Esta magia deve ser colocada em uma posição.');
           const {target}=validTarget(room,p,card,data.targetId);
-          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||effect(card)?.attack||0,healthUpdates:effect(card)?.op==='area_stat_buff'?p.reserve.map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,p.formation.indexOf(c.uid))})):effect(card)?.op==='area_damage'?other(room,p.id).reserve.concat(other(room,p.id).discard.filter(c=>c.type==='creature')).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health})):target?.patron?[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}]:target?[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health}]:[],attackAfter:['attack_modifier','stat_buff'].includes(effect(card)?.op)&&target?attack(target,room,p.formation.indexOf(target.uid)):undefined});
+          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||effect(card)?.attack||0,healthUpdates:effect(card)?.op==='area_stat_buff'?p.reserve.map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,p.formation.indexOf(c.uid))})):['area_damage','area_attack_modifier'].includes(effect(card)?.op)?other(room,p.id).reserve.concat(other(room,p.id).discard.filter(c=>c.type==='creature')).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,other(room,p.id).formation.indexOf(c.uid))})):target?.patron?[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}]:target?[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,(kind==='enemy'?other(room,p.id):p).formation.indexOf(target.uid))}]:[],attackAfter:['attack_modifier','stat_buff'].includes(effect(card)?.op)&&target?attack(target,room,p.formation.indexOf(target.uid)):undefined});
         }else if(mode==='lane'){
           const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição de 1 a 3.');
           const requestedSide=room.players.find(seat=>seat.id===data.targetSide);
           const targetSide=requestedSide||((kind==='enemy'||kind==='enemy-board')?other(room,p.id):p);
           if(p.prepared.some(item=>item.targetSide===targetSide.id&&item.lane===lane))throw Error('Você já colocou uma magia nessa posição desse lado.');
-          if(effect(card)?.op==='barrier'&&targetSide!==p)throw Error('Barreira deve ocupar uma posição aliada.');const paid=paidCost(p,card,'lane');p.hand=p.hand.filter(c=>c!==card);p.prepared.push({card,paidRound:room.round,paid,targetSide:targetSide.id,lane,hidden:targetSide.id!==p.id});
+          if(card.enemyOnly&&targetSide===p)throw Error('Esta magia exige uma posição inimiga.');if(effect(card)?.op==='barrier'&&targetSide!==p)throw Error('Barreira deve ocupar uma posição aliada.');const paid=paidCost(p,card,'lane');p.hand=p.hand.filter(c=>c!==card);p.prepared.push({card,paidRound:room.round,paid,targetSide:targetSide.id,lane,hidden:targetSide.id!==p.id});
           pushLog(room,`${p.name} colocou uma magia ${targetSide.id===p.id?'aberta em sua':'oculta na'} posição ${lane+1}.`,p.id);
         }else throw Error('Modo de magia inválido.');
       }
@@ -309,7 +312,7 @@ export function easyBotAction(room){
     if(creatures.length)return {type:'play',cardId:creatures[0].uid};
     const enemy=other(room,bot.id);
     for(const spell of bot.hand.filter(card=>card.type!=='creature'&&card.cost<=bot.mana).sort((a,b)=>a.cost-b.cost)){
-      const kind=targetKind(spell),op=effect(spell)?.op;if(spell.positionOnly){const side=op==='anchor'?enemy:bot;const lane=[0,1,2].find(l=>!bot.prepared.some(x=>x.targetSide===side.id&&x.lane===l));if(lane!==undefined)return {type:'play',cardId:spell.uid,mode:'lane',lane,targetSide:side.id};continue;}
+      const kind=targetKind(spell),op=effect(spell)?.op;if(spell.positionOnly){const side=spell.enemyOnly||op==='anchor'?enemy:bot;const lane=[0,1,2].find(l=>!bot.prepared.some(x=>x.targetSide===side.id&&x.lane===l));if(lane!==undefined)return {type:'play',cardId:spell.uid,mode:'lane',lane,targetSide:side.id};continue;}
       if(kind==='self')return {type:'play',cardId:spell.uid,mode:'direct'};
       if(kind==='enemy-board'&&enemy.reserve.some(alive))return {type:'play',cardId:spell.uid,mode:'direct'};
       if(kind==='enemy'&&enemy.reserve.some(alive)){const target=[...enemy.reserve].filter(alive).sort((a,b)=>(a.health-a.damage)-(b.health-b.damage))[0];return {type:'play',cardId:spell.uid,mode:'direct',targetId:target.uid};}
