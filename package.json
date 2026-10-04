@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs"
+    "test": "node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs && node mesa-nova/test-oficina.mjs && node mesa-nova/test-fluxo.mjs"
   },
   "engines": {
     "node": ">=20"

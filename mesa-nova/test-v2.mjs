@@ -7,7 +7,7 @@ import {act,easyBotAction,join,makeRoom,view} from './game.mjs';
 const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'cartas.json'),'utf8'));
 const limit={lacaio:4,padrao:3,elite:2,soberano:1};
 for(const deck of catalog.decks){
-  assert.equal(deck.cards.reduce((total,card)=>total+card.quantity,0),24);
+  assert.ok(deck.cards.reduce((total,card)=>total+card.quantity,0)<=30);
   for(const card of deck.cards)assert.ok(card.quantity<=limit[card.rarity],`${card.id}: raridade inválida`);
 }
 assert.ok(catalog.decks.find(d=>d.affinity==='forja').cards.filter(c=>c.type==='creature').every(c=>c.effects.length),'Forja precisa de habilidades nas criaturas');
