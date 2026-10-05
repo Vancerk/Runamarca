@@ -1,0 +1,136 @@
+
+> runamarca@0.1.0 test
+> node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs && node mesa-nova/test-oficina.mjs && node mesa-nova/test-fluxo.mjs && node mesa-nova/test-presentation.mjs
+
+TAP version 13
+# Subtest: Bronze mantém equivalência das moedas e itens separados
+ok 1 - Bronze mantém equivalência das moedas e itens separados
+  ---
+  duration_ms: 2.6546
+  ...
+# Subtest: login OAuth, sessão persistente, administrador, inventário e resultados
+ok 2 - login OAuth, sessão persistente, administrador, inventário e resultados
+  ---
+  duration_ms: 260.7266
+  ...
+# Subtest: Fichas e compra têm destino fixo; cartas e magias têm momentos próprios
+ok 3 - Fichas e compra têm destino fixo; cartas e magias têm momentos próprios
+  ---
+  duration_ms: 1.9419
+  ...
+# Subtest: Campos incompatíveis são normalizados antes de gastar os pontos
+ok 4 - Campos incompatíveis são normalizados antes de gastar os pontos
+  ---
+  duration_ms: 0.3818
+  ...
+# Subtest: Corpo e dano na Revelação compartilham o saldo; magia não compra atributos
+ok 5 - Corpo e dano na Revelação compartilham o saldo; magia não compra atributos
+  ---
+  duration_ms: 0.6869
+  ...
+# Subtest: Área conta alcance e cobra somente o modo escolhido, mais flexibilidade
+ok 6 - Área conta alcance e cobra somente o modo escolhido, mais flexibilidade
+  ---
+  duration_ms: 0.3514
+  ...
+# Subtest: Restrições não zeram recorrência nem dão desconto ilimitado
+ok 7 - Restrições não zeram recorrência nem dão desconto ilimitado
+  ---
+  duration_ms: 0.4218
+  ...
+# Subtest: Preço manual pede justificativa; fichas sem vida são sinalizadas
+ok 8 - Preço manual pede justificativa; fichas sem vida são sinalizadas
+  ---
+  duration_ms: 0.2943
+  ...
+# Subtest: Os 36 modelos testados respeitam saldo e limites de cópias
+ok 9 - Os 36 modelos testados respeitam saldo e limites de cópias
+  ---
+  duration_ms: 9.4471
+  ...
+# Subtest: Fortuna altera somente os dados escolhidos
+ok 10 - Fortuna altera somente os dados escolhidos
+  ---
+  duration_ms: 1.667
+  ...
+# Subtest: combinações de seis dados e poderes das insígnias
+ok 11 - combinações de seis dados e poderes das insígnias
+  ---
+  duration_ms: 1.5038
+  ...
+# Subtest: hub, cartas automáticas, ataque e mesa de dados online
+ok 12 - hub, cartas automáticas, ataque e mesa de dados online
+  ---
+  duration_ms: 136.727
+  ...
+# Subtest: espectadores não veem mãos; fichas, ataque e descarte ficam sincronizados
+ok 13 - espectadores não veem mãos; fichas, ataque e descarte ficam sincronizados
+  ---
+  duration_ms: 30.1926
+  ...
+# Subtest: RunaMarca: defesa múltipla, sono e desconto de custo são validados pelo servidor
+ok 14 - RunaMarca: defesa múltipla, sono e desconto de custo são validados pelo servidor
+  ---
+  duration_ms: 35.5781
+  ...
+# Subtest: RunaMarca permite anfitrião espectador e troca de vaga na sala
+ok 15 - RunaMarca permite anfitrião espectador e troca de vaga na sala
+  ---
+  duration_ms: 16.3226
+  ...
+# Subtest: efeito de fichas pode contar cópias no descarte
+ok 16 - efeito de fichas pode contar cópias no descarte
+  ---
+  duration_ms: 15.5197
+  ...
+# Subtest: Seis Ossos valida proposta, insígnia perdida e seleção pontuável no servidor
+ok 17 - Seis Ossos valida proposta, insígnia perdida e seleção pontuável no servidor
+  ---
+  duration_ms: 19.4688
+  ...
+# Subtest: Seis Ossos permite anfitrião espectador, ocupar vaga, arquibancada e sair da sala
+ok 18 - Seis Ossos permite anfitrião espectador, ocupar vaga, arquibancada e sair da sala
+  ---
+  duration_ms: 20.4866
+  ...
+# Subtest: Aura fica anexada, modifica atributos e acompanha o alvo ao descarte
+ok 19 - Aura fica anexada, modifica atributos e acompanha o alvo ao descarte
+  ---
+  duration_ms: 31.425
+  ...
+# Subtest: Runa pode gerar energia no mesmo turno em que entra
+ok 20 - Runa pode gerar energia no mesmo turno em que entra
+  ---
+  duration_ms: 14.3574
+  ...
+# Subtest: Seis Ossos permite iniciar uma nova partida após a vitória
+ok 21 - Seis Ossos permite iniciar uma nova partida após a vitória
+  ---
+  duration_ms: 17.3533
+  ...
+# Subtest: Rei dos Pássaros separa um dado por 50, renova por turno e Troca foi removida
+ok 22 - Rei dos Pássaros separa um dado por 50, renova por turno e Troca foi removida
+  ---
+  duration_ms: 70.7103
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 588.4494
+OK: máximo de 30 cartas, quatro raridades, fadiga exponencial e derrota por fadiga.
+OK: fala e narrativa importadas sem nova arte, balão compartilhado e mão rival protegida.
+OK: raridades, espectadores, mulligan, combate, bot fácil e limite de mão.
+OK: abertura, mana, sigilo, duas magias posicionadas, três fases e dano ao Patrono.
+OK: reembolso imediato limitado, expiração seletiva em área e sigilo durante formação.
+OK: sem reembolso entre rodadas, sem dupla devolução e alvo visual da cura.
+Oficina de Lyrik: composição, artes, Iniciativa, Transpassar, Provocar, crescimento, área adjacente, cura e sigilo aprovados.
+Forja revisado: 30 cartas, custos/atributos, redução permanente, sigilo, Emanação imune a área e dano direto aprovados.
+Fluxo: 30 cartas, maldição por alvo, simultaneidade, contato, âncora, barreira, buffs, descarte e reserva aprovados.
+Correções: alternância em seis rodadas, Auramora, fala compartilhada e geometria da seta aprovadas.
+Fluxo atualizado: Evasão com reset/custo/sigilo/mão cheia e Sono com posição fixa, ataque suspenso, duração e despertar aprovados.
+Apresentação: balões de ambos os jogadores na camada da janela e alvo letal preservado.

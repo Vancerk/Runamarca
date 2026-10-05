@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-05T04:19:47.481Z",
+  "baseline": "ac1786b",
+  "scope": "RunaMarca audit corrections",
+  "syntax": [
+    {
+      "file": "accounts.mjs",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/app.js",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/criador/budget-model.js",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/criador/budget.js",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/criador/editor.js",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/game.mjs",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/server.mjs",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/test-ui.mjs",
+      "exit": 0
+    },
+    {
+      "file": "mesa-nova/test-v2.mjs",
+      "exit": 0
+    },
+    {
+      "file": "test/audit-regression.mjs",
+      "exit": 0
+    },
+    {
+      "file": "test/review-regression.test.mjs",
+      "exit": 0
+    }
+  ],
+  "catalogGameplayPreserved": true,
+  "nodeTestsLocal": 31,
+  "nodeTestsPublication": 30,
+  "auditRegressionCases": 18,
+  "browserTwoPlayerCheck": "pending user access",
+  "files": [
+    {
+      "file": "README.md",
+      "sha256": "2b4d5b3671f66065a169b61850de50dbec9b1b2db2f71f26e421d6247c05eedc"
+    },
+    {
+      "file": "README-LEGADO.md",
+      "sha256": "baa3f75e2f7d61b5f94db12ab9a2198a53039b0874f840e6a3e467364426349e"
+    },
+    {
+      "file": "accounts.mjs",
+      "sha256": "189f92776c67a87ab49c16e341ab28ea60081e32c67c84446e315f8905916d24"
+    },
+    {
+      "file": "mesa-nova/LEIA-ME.md",
+      "sha256": "5eaf1e8ba3dadce8f2489e049fdcc5457f448e77caf1ba8990443b64200f361e"
+    },
+    {
+      "file": "mesa-nova/app.js",
+      "sha256": "1c0808277b19ed746203149943056b7cc24cd6ab257dfe2ffe6319bf99c5f299"
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "sha256": "76ecbdba0ee01a87245f681b481b02d0f26abfc91537a6740b0cc91077b17ca8"
+    },
+    {
+      "file": "mesa-nova/criador/budget-model.js",
+      "sha256": "28153b48e875bfd26ec755996438b1f35dfc3d10d28d0f461ed0d705fc022f8c"
+    },
+    {
+      "file": "mesa-nova/criador/budget.js",
+      "sha256": "8a20f5120d59602bcad5c1fe87cbd65f95ef933308e83f2e13db33b9c6116f8e"
+    },
+    {
+      "file": "mesa-nova/criador/editor.js",
+      "sha256": "db4180f87ea8dcfcdd64b75196c4c2402b0bd165d958245a4795b93dbf748b95"
+    },
+    {
+      "file": "mesa-nova/criador/index.html",
+      "sha256": "5c40ddf25bcc9747dcefb6b51d7c9fe828c6c60ee31bf6b748012be970eee8ec"
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "sha256": "76ecbdba0ee01a87245f681b481b02d0f26abfc91537a6740b0cc91077b17ca8"
+    },
+    {
+      "file": "mesa-nova/game.mjs",
+      "sha256": "c24b7a23dacc3766837f801c2567310b2956f1330e38172bfbf621c34ea8965f"
+    },
+    {
+      "file": "mesa-nova/server.mjs",
+      "sha256": "262f49dcf1d3f3d50f2216a650039f715d13791f2dff87fc55b21a1a35128c90"
+    },
+    {
+      "file": "mesa-nova/test-ui.mjs",
+      "sha256": "bbb439f2de0bba7175afbe0294624295c1ec4bf71d2f469f5329ea72282ca5df"
+    },
+    {
+      "file": "mesa-nova/test-v2.mjs",
+      "sha256": "8bc8940f164a803cf40635adc3b68b4c8a5794c58f5aa25e3d203f1c8f15aea2"
+    },
+    {
+      "file": "package.json",
+      "sha256": "7becd0f84a454c6954322a7f241bbd7ec4ffb2a6254fd36f475047dbae2f2dbb"
+    },
+    {
+      "file": "test/audit-regression.mjs",
+      "sha256": "9ca5c70ae55921237dc24adc41a524a5450f29fc9a7c0a772a89e86c0f2d4c7c"
+    },
+    {
+      "file": "test/review-regression.test.mjs",
+      "sha256": "1def76c86d25414a4ce2e20363c0c2e0c363deaf42712d8c80110ec8e3d7e0ef"
+    },
+    {
+      "file": "design/auditoria-2026-10-05/RELATORIO.md",
+      "sha256": "41eb439cdd11fccc2450ee38f6b043e60b050807993743942bb826d09543f89b"
+    },
+    {
+      "file": "design/testes-2026-10-03-pontos/catalogo-testado.json",
+      "sha256": "714cda9b13c9d67f29549e3539a24f0343372a47050128ff6aba76a74f56d1f2"
+    }
+  ],
+  "nodeTestsPublicationPassed": 30,
+  "publicationTestExit": 0
+}

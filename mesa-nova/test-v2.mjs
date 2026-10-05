@@ -57,8 +57,9 @@ act(room,b,{type:'play',cardId:drawn.uid,mode:'direct'},catalog);
 assert.equal(b.hand.length,9,'a mão não passa de nove cartas');
 assert.equal(b.discard.length,before+3,'magia e duas compras excedentes vão ao cemitério');
 const flexible=instance('M09',b);b.hand.push(flexible);b.mana=10;
-act(room,b,{type:'play',cardId:flexible.uid,mode:'lane',lane:0,targetSide:a.id},catalog);
-assert.equal(b.prepared.at(-1).targetSide,a.id,'magia arrastada para o lado rival mantém o lado escolhido');
+assert.throws(()=>act(room,b,{type:'play',cardId:flexible.uid,mode:'lane',lane:0,targetSide:a.id},catalog),/aliada/);
+act(room,b,{type:'play',cardId:flexible.uid,mode:'lane',lane:0,targetSide:b.id},catalog);
+assert.equal(b.prepared.at(-1).targetSide,b.id,'cura só pode ser preparada no lado aliado');
 
 act(room,a,{type:'leave'},catalog);
 assert.equal(room.phase,'lobby','sair durante a partida libera a sala');

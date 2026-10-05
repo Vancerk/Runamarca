@@ -330,7 +330,7 @@ function readForm() {
   $('toggle-italic').hidden = patron;
   $('italic-hint').hidden = patron;
   $('patron-controls').hidden = !patron;
-  $('auto-abilities').hidden = patron;
+  $('auto-abilities').hidden = true;
   $('energy-legend').textContent = rune ? 'Energia gerada pela Essência' : 'Custos de energia';
   $('energy-hint').textContent = rune
     ? 'Informe quanto a Essência produz ao girar. Os símbolos aparecem em destaque na área de texto.'
@@ -339,6 +339,7 @@ function readForm() {
   return draft;
 }
 function syncAbilityUI() {
+  $('auto-abilities').hidden = true;
   $('card-quantity').max=$('card-kind').value==='patron'?1:({lacaio:4,padrao:3,elite:2,soberano:1}[$('card-rarity').value]||2);
   if(Number($('card-quantity').value)>Number($('card-quantity').max)){$('card-quantity').value=$('card-quantity').max;draft.quantity=Number($('card-quantity').max);}
   $('spell-mode-field').hidden = $('card-kind').value !== 'spell';
@@ -410,7 +411,7 @@ function populate(card) {
   $('toggle-italic').hidden = draft.kind === 'patron';
   $('italic-hint').hidden = draft.kind === 'patron';
   $('patron-controls').hidden = draft.kind !== 'patron';
-  $('auto-abilities').hidden = draft.kind === 'patron';
+  $('auto-abilities').hidden = true;
   $('energy-legend').textContent = draft.kind === 'rune' ? 'Energia gerada pela Essência' : 'Custos de energia';
   $('energy-hint').textContent = draft.kind === 'rune'
     ? 'Informe quanto a Essência produz ao girar. Os símbolos aparecem em destaque na área de texto.'
@@ -456,7 +457,7 @@ function transact(mode, callback) {
     const store = transaction.objectStore('cards');
     callback(store);
     transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(transaction.error);
+    transaction.onerror = transaction.onabort = () => reject(transaction.error||Error('Gravação cancelada.'));
   });
 }
 function allCards() {
@@ -495,7 +496,7 @@ async function saveCard(event) {
   if (reportInvalid(validateDesign(draft))) return;
   const copy=structuredClone(draft);const index=project.findIndex(c=>c.id===copy.id);
   if (index>=0) project[index]=copy; else project.push(copy);
-  try { if(db) await transact('readwrite',store=>store.put(copy)); status(`${copy.name} guardada neste navegador.`); }
+  try { if(db) await transact('readwrite',store=>store.put(copy)); status(db?`${copy.name} guardada neste navegador.`:`${copy.name} está apenas na memória desta página. Exporte o JSON antes de sair.`,!db); }
   catch(error){status(`Carta na lista, mas não persistida: ${error.message}`,true);}
   projectList();
 }
@@ -527,13 +528,13 @@ async function importProject(file){
     if(project.length+data.cards.length>120)throw Error('Limite de 120 modelos por coleção.');
     const items=data.cards.map(raw=>({...blank(),...raw,id:crypto.randomUUID()}));
     for(const item of items){
-      if(!['creature','spell','patron'].includes(item.kind))throw Error('Tipo de carta inválido.');
+      if(!['creature','spell','rune','patron'].includes(item.kind))throw Error('Tipo de carta inválido.');
       if(!energyIds.includes(item.themeEnergy))throw Error('Afinidade inválida.');
       if(item.art&&!/^data:image\/(jpeg|png|webp);base64,/i.test(item.art))throw Error('Ilustração inválida.');
       const invalid=validateDesign(item);if(invalid)throw Error(item.name+': '+invalid[0]);
     }
     if(db)await transact('readwrite',store=>items.forEach(item=>store.put(item)));
-    project.push(...items);await projectList();status('Cartas importadas.');
+    project.push(...items);await projectList();status(db?'Cartas importadas e guardadas neste navegador.':'Cartas importadas apenas na memória. Exporte o JSON antes de sair.',!db);
   }catch(error){status(error.message,true);}
 }
 let starterDecks=[];
@@ -583,4 +584,4 @@ $('import-project').addEventListener('change',async event=>{if(event.target.file
 renderPreview();
 document.fonts.ready.then(renderPreview);
 syncAbilityUI();
-(async()=>{try{db=await openDatabase();project=await allCards();projectList();status('Projeto carregado. Suas cartas guardadas ficam neste navegador.');}catch(error){projectList();status('Armazenamento local indisponível; exporte o projeto antes de sair.',true);}})();
+(async()=>{try{db=await openDatabase();const stored=await allCards(),memory=project;project=[...stored.filter(c=>!memory.some(m=>m.id===c.id)),...memory];if(memory.length)await transact('readwrite',store=>memory.forEach(c=>store.put(c)));projectList();status('Projeto carregado. Suas cartas guardadas ficam neste navegador.');}catch(error){projectList();status('Armazenamento local indisponível; exporte o projeto antes de sair.',true);}})();

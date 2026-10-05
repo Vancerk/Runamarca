@@ -1,33 +1,46 @@
-# RunaMarca — mesa nova de teste
+# RunaMarca — mesa atual
 
-Esta mesa usa as regras e os três decks de `cartas.json`. No servidor principal, ela abre em `/runamarca/`; o Seis Ossos continua em `/dados`. Também pode rodar sozinha para desenvolvimento.
+A mesa abre em **/runamarca/** no portal Elysium Jogos; o criador abre em **/runamarca/criador/**. O catálogo executável é `cartas.json`.
 
 ## Abrir localmente
 
-No terminal, execute `node mesa-nova/server.mjs` a partir da raiz do projeto e abra http://127.0.0.1:3042. Nesta instalação do Codex, se o Node encontrar um erro `EPERM` ao resolver caminhos no OneDrive, execute `node --preserve-symlinks --preserve-symlinks-main mesa-nova/server.mjs`.
+Na raiz: `npm ci`, depois `npm start`. Porta padrão 3000, configurável por `PORT`. Para rodar apenas o RunaMarca: `node mesa-nova/server.mjs`, porta padrão 3042. No OneDrive, use `NODE_OPTIONS=--preserve-symlinks --preserve-symlinks-main` se ocorrer EPERM.
 
-Informe o código de acesso da mesa e crie uma sala. O botão **Copiar convite** gera um link próprio da sala: quem recebe esse link informa somente o nome e entra como jogador, ou como espectador se as duas vagas estiverem ocupadas. O link concede acesso à mesa; compartilhe-o apenas com quem deve entrar. Também é possível entrar manualmente com o código de seis caracteres da sala. Cada aba guarda sua vaga na sessão do navegador. As salas existem apenas enquanto o processo estiver ligado.
+Entre com o código de acesso. Crie uma sala e use Copiar convite para convidar outro jogador; com duas vagas ocupadas, o convidado entra na arquibancada. Cada aba guarda sua vaga durante a sessão. Falhas temporárias de rede preservam a vaga e o estado; sala inexistente ou token inválido exigem entrar novamente. Reiniciar o servidor remove as salas em memória.
 
-Para jogar pela internet, publique a pasta `mesa-nova` como um serviço Node independente, com `npm start` ou seu Dockerfile. O servidor usa a variável `PORT` e expõe `/health`. O endereço local `127.0.0.1` funciona apenas no computador que executa o servidor.
+## Regras atuais
 
-## Fluxo da partida
+1. Há cinco decks prontos: Caçada de Fronteira (Ruptura), Selos de Virelion (Fluxo), Juramento de Aço (Forja), Oficina de Lyrik (Forja) e Ecos de Virelion (Fluxo). Os três primeiros têm 24 cartas; os dois novos, 30. O limite geral é 30, sem contar o Patrono.
+2. Bronze/Lacaio: até 4 cópias por modelo; Prata/Padrão: 3; Ouro/Elite: 2; Platina/Soberano: 1. São limites por carta, não por número de modelos da raridade.
+3. Patronos começam com 16 de vida. A moeda define o primeiro jogador na rodada 1; a ordem se inverte a cada nova rodada.
+4. Cada jogador recebe 5 cartas e pode realizar **uma** troca inicial. Cartas devolvidas são embaralhadas antes da reposição e podem voltar. Ao esgotar a troca, a interface apresenta a mão nova e confirma automaticamente. Mão máxima: 9 cartas; excedentes vão ao Nartvanyr.
+5. No início de cada preparação, o máximo de mana sobe 1 até 10, a mana se recupera e o jogador compra 1 carta. Sem cartas no deck, cada compra causa fadiga: 1, 2, 4, 8… Compras de um mesmo grupo de magias preparadas resolvem antes da decisão de vitória; se ambos caírem nesse grupo, ocorre empate. Usos diretos encerram ao atingir a condição de vitória.
+6. Criaturas entram na reserva. Ela comporta 8 criaturas **fora** da Emanação, que comporta outras 2. Da mão à Emanação paga-se apenas o custo da carta; mover entre as duas zonas custa 1 mana.
+7. Ao terminar as duas preparações, ambos decidem sobre combate. Um voto a favor inicia a formação secreta; dois votos contra avançam a rodada. Cada jogador distribui até três criaturas e confirma. Não é possível reiniciar uma partida em andamento.
+8. Magias de posição, Revelações e ataques resolvem nessa ordem. Ataques comuns trocam dano simultaneamente, mesmo com animações em sequência. Iniciativa causa dano antes de um rival sem Iniciativa; um derrotado não revida. Posição sem defensor recebe dano no Patrono.
 
-1. Cada pessoa escolhe um dos três decks. Quem vence a moeda escolhe quem prepara primeiro.
-2. Cada pessoa recebe cinco cartas. Cada deck tem 24 cartas: lacaios podem ter três cópias, padrões duas e elites uma. No começo de cada preparação, aumenta seu máximo de mana em um (até dez), recupera toda a mana e compra uma carta. A mão comporta nove; compras excedentes vão ao cemitério.
-3. Jogue criaturas na reserva e, quando possível, coloque uma criatura elegível em uma das **duas vagas de Emanação**. Da mão diretamente para Emanação, pague somente o custo impresso. Mover uma criatura que já está em campo entre reserva e Emanação custa **1 mana por movimento**. Selecione uma magia para usá-la imediatamente ou prepará-la em uma das três posições.
-4. Após as duas preparações, cada pessoa decide se quer combate. O primeiro “sim” inicia imediatamente a formação secreta, sem esperar outra resposta. A rodada só passa sem combate se ambas disserem “não”. Arraste até três criaturas da reserva para as posições e confirme.
-5. O servidor resolve apenas as etapas que ocorreram: magias posicionadas, habilidades de Revelação e ataques de posições correspondentes. Ataques a posições vazias reduzem a vida do Patrono. Dano em criaturas persiste.
+## Magias e habilidades
 
-Magias ofensivas podem ser usadas imediatamente contra uma criatura inimiga na reserva ou colocadas ocultas em uma posição rival. Magias de cura e melhoria podem ser usadas imediatamente na reserva aliada ou colocadas abertas junto a uma posição aliada. Uma magia de compra pode resolver imediatamente ou ficar aberta na sua posição e disparar quando uma criatura aliada for revelada ali. Na posição, o custo é pago no momento de colocação e o efeito só dispara quando uma criatura entra naquela posição em combate. Cada pessoa pode preparar no máximo uma magia sua por posição de cada lado; a magia persiste se a posição correspondente ficar vazia.
+- Magias ofensivas exigem inimigos; cura e melhoria exigem aliados. As mesmas restrições valem para preparar e reposicionar. Âncora permite qualquer lado.
+- Retirar uma magia durante a mesma preparação devolve a carta e reembolsa somente o valor pago, limitado à mana máxima. Não há reembolso entre rodadas.
+- Dano em área direta usa o valor reduzido da carta e atinge inimigos fora da Emanação; preparado atinge até três posições. Armadilhas de dano em área expiram ao fim da rodada mesmo sem ativar. Outros efeitos seguem sua duração específica.
+- Barreira dá vida temporária ao ocupante de uma posição aliada durante dois combates. Bônus em todo o campo aliado, como Banquete dos Heróis, podem incluir Emanação e atingir 10 criaturas.
+- Adormecer prende a criatura na posição, sem atacar ou ser reposicionada, até o fim do próximo combate após a ativação. Ainda recebe dano. Provocar continua sendo uma habilidade passiva enquanto adormecida.
+- Retornar à mão restaura atributos originais e remove dano e bônus. Ao jogar novamente, o custo original é pago. Com mão cheia, a carta vai ao Nartvanyr.
+- Provocar redireciona o atacante de uma posição adjacente escolhida, sem conceder ataque extra. Transpassar causa ao Patrono o excedente do dano de combate.
 
-O projeto editável do [criador](../criador-isolado/LEIA-ME.md) pode ser importado na escolha de deck. A mesa associa as ilustrações pelos nomes dos modelos iniciais. Você também pode importar PNGs completos das cartas: o nome do arquivo precisa corresponder ao nome da carta, como `rastreadora-das-fronteiras.png`. PNGs completos aparecem por inteiro na mesa; o JSON editável contém somente a ilustração, que aparece com nome e atributos montados na interface. Os efeitos e valores continuam vindo do protótipo oficial; editar regras no criador não altera o motor da mesa.
+## Interface e criação
 
-Passe o mouse sobre uma carta para ampliar sua imagem e seu texto ao lado. Clique duas vezes para abrir o detalhe. Durante a formação, arraste criaturas da reserva para o centro da posição; o destaque indica a área de encaixe. Em telas pequenas, os três botões de posição continuam disponíveis. Cada lado do tabuleiro mostra as duas vagas de Emanação e o cemitério público. Os retratos iniciais dos três Patronos são arte conceitual gerada para esta mesa e podem ser substituídos pela imagem de Patrono importada no início da partida.
+Arraste criaturas e magias para as zonas permitidas. Clique em magia para selecionar o alvo. Curadores em Emanação usam um seletor visual e uma linha de alvo. Passe o mouse para ver a carta completa, explicações à direita e narrativa à esquerda após uma breve espera. Cartas em combate usam a mesma ilustração, sem gerar conteúdo adicional. Mãos e armadilhas rivais permanecem ocultas.
 
-Os [prompts e arquivos dos retratos](patrons/PROMPTS.md) registram o conceito visual usado como referência: caçador de fronteira, mago de Virelion e guardiã anã da forja. A arte foi gerada com a ferramenta integrada `image_gen`; estes personagens ainda são visuais provisórios do protótipo.
+O criador salva modelos editáveis no armazenamento do navegador. Se estiver indisponível, informa que a carta está apenas na memória: exporte o JSON antes de sair. O JSON pode ser importado em outro navegador. A referência de pontos usa dados das habilidades atuais; mecânicas sem preço calibrado deixam o saldo incompleto.
 
-## Limites atuais
+Na seleção de deck, importar um projeto aplica **arte, enquadramento, fala e narrativa** aos modelos existentes. Não substitui regras, atributos nem composição do catálogo. Campos históricos não representam automações do motor atual.
 
-O objetivo é facilitar testes com dois jogadores e espectadores. Salas não persistem após reiniciar o servidor e o serviço deve ter uma única instância. O combate é automático; sua duração varia conforme os efeitos que realmente disparam. O registro e “Último confronto” conservam o resumo. Cada lado tem um cemitério público para criaturas derrotadas e magias consumidas. A duração de 15 a 25 minutos e o equilíbrio dos decks ainda precisam ser medidos em partidas humanas. A vitória por estrelas de procurado continua reservada para outra versão. Veja [BALANCEAMENTO-V02.md](BALANCEAMENTO-V02.md) para hipóteses de teste e a proposta de Provocar.
+O final mostra a captura do Patrono derrotado e o vencedor em destaque, com a opção de nova partida. O histórico usa PostgreSQL quando configurado; a gravação pode ser tentada novamente após uma falha temporária.
 
-Teste técnico: `node --preserve-symlinks --preserve-symlinks-main mesa-nova/test.mjs` nesta instalação, ou `npm test` em um ambiente Node convencional.
+## Limites e testes
+
+Salas ficam em memória: use uma instância. Sair ou ir à arquibancada durante uma partida ainda cancela a mesa e retorna à escolha de decks; não é registrado como derrota automática. Fechar a aba não equivale a sair.
+
+Execute `npm test` na raiz. Testes isolados verificam regras e apresentação; não garantem equilíbrio de decks nem qualidade subjetiva do áudio. Resultados de baterias antigas correspondem ao código e catálogo registrados em seus respectivos arquivos.

@@ -18,7 +18,7 @@ const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8'
 function scheduleBot(room){if(room.botTimer||!room.players.some(p=>p.bot))return;room.botTimer=setTimeout(()=>{room.botTimer=null;const bot=room.players.find(p=>p.bot),next=easyBotAction(room);if(!bot||!next)return;try{act(room,bot,next,catalog);void persistMatch(room,'runamarca');scheduleBot(room);}catch(error){room.log.push({message:`Bot fácil interrompido: ${error.message}`,round:room.round,turn:room.turn,phase:room.phase});room.log=room.log.slice(-10);room.revision++;}},700);}
 function json(res,status,value){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));}
 async function payload(req){let size=0;const parts=[];for await(const part of req){size+=part.length;if(size>32_000_000)throw Error('Arquivo acima do limite de 32 MB.');parts.push(part);}try{return JSON.parse(Buffer.concat(parts).toString('utf8'));}catch{throw Error('JSON inválido.');}}
-function auth(req,room){const p=findPlayer(room,req.headers['x-player-token']);if(!p)throw Error('Acesso inválido.');return p;}
+function auth(req,room){const p=findPlayer(room,req.headers['x-player-token']);if(!p)throw Object.assign(Error('Acesso inválido.'),{code:'SEAT_INVALID'});return p;}
 function hasAccess(req){const value=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('rm_access='))?.slice(10);const expiry=value&&sessions.get(value);if(!expiry)return false;if(expiry<Date.now()){sessions.delete(value);return false;}return true;}
 function grantAccess(req,res,base){const session=randomBytes(32).toString('hex');sessions.set(session,Date.now()+sessionAge);const secure=req.socket.encrypted||req.headers['x-forwarded-proto']==='https'?'; Secure':'';res.setHeader('Set-Cookie',`rm_access=${session}; HttpOnly; SameSite=Lax; Path=${base||'/'}; Max-Age=${sessionAge/1000}${secure}`);}
 export async function handleNewGame(req,res,url=new URL(req.url,'http://localhost'),base=''){
@@ -45,13 +45,13 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
     }
     if(!hasAccess(req)&&!invited){
       if(req.method==='GET'&&!routePath.startsWith('/api/')){res.writeHead(302,{Location:`${base}/access`,'Cache-Control':'no-store'});res.end();return;}
-      return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.'});
+      return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.',code:'ACCESS_REQUIRED'});
     }
     if(routePath==='/api/create'&&req.method==='POST'){
       const data=await payload(req);let id;do{id=code();}while(rooms.has(id));const room=makeRoom(id,data.name,data.role==='spectator'?'spectator':'player');room.stake=normalizeWager(data.stake);room.onChange=()=>{scheduleBot(room);void persistMatch(room,'runamarca');};const p=room.players[0]||room.spectators[0];await bindParticipant(req,room,p);rooms.set(id,room);return json(res,200,{code:id,token:p.token,state:view(room,p)});
     }
     const route=routePath.match(/^\/api\/rooms\/([A-F0-9]{6})\/(join|state|act)$/);
-    if(route){const room=rooms.get(route[1]);if(!room)throw Error('Sala não encontrada.');const operation=route[2];
+    if(route){const room=rooms.get(route[1]);if(!room)throw Object.assign(Error('Sala não encontrada.'),{code:'ROOM_NOT_FOUND'});const operation=route[2];
       if(operation==='join'&&req.method==='POST'){const data=await payload(req);const role=data.role==='spectator'||(data.role==='auto'&&(room.phase!=='lobby'||room.players.length>=2))?'spectator':'player';const probe={};await bindParticipant(req,room,probe);assertUniqueAccount(room,probe);const p=join(room,probe.name||data.name,role);p.discordId=probe.discordId;return json(res,200,{code:room.code,token:p.token,state:view(room,p)});}
       const p=auth(req,room);await verifyParticipant(req,p);room.updatedAt=Date.now();
       if(operation==='state'&&req.method==='GET'){
@@ -67,7 +67,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
     const rel=decodeURIComponent(assetPath).replace(/^\/+/, '')||'index.html';const file=path.resolve(root,rel);
     if(!file.startsWith(root+path.sep)||!types[path.extname(file)])return json(res,404,{error:'Não encontrado.'});
     try{const content=await readFile(file);res.writeHead(200,{'Content-Type':types[path.extname(file)],'Cache-Control':'no-cache','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(content);}catch{return json(res,404,{error:'Não encontrado.'});}
-  }catch(error){json(res,400,{error:error.message||'Erro na mesa.'});}
+  }catch(error){json(res,400,{error:error.message||'Erro na mesa.',code:error.code||'INVALID_ACTION'});}
 }
 if(process.argv[1]&&fileURLToPath(import.meta.url)===path.resolve(process.argv[1])){
   http.createServer((req,res)=>handleNewGame(req,res)).listen(Number(process.env.PORT)||3042,process.env.PORT?'0.0.0.0':'127.0.0.1',()=>console.log(`RunaMarca novo: porta ${Number(process.env.PORT)||3042}`));

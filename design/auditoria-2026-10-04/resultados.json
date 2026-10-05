@@ -1,0 +1,345 @@
+{
+  "executedAt": "2026-10-05T03:28:06.002Z",
+  "findings": [
+    {
+      "id": "A01",
+      "observed": {
+        "phaseBefore": "formation",
+        "phaseAfter": "lobby",
+        "opponentConsent": false
+      }
+    },
+    {
+      "id": "A02",
+      "observed": {
+        "barrierMovedToEnemy": true,
+        "enemyHealthInCombat": 4
+      }
+    },
+    {
+      "id": "A03",
+      "observed": {
+        "card": "Reforço Divino",
+        "text": "Conceda +2/+2 permanentemente a uma criatura aliada.",
+        "enemyReceivedBuff": [
+          2,
+          4
+        ]
+      }
+    },
+    {
+      "id": "A04",
+      "observed": {
+        "requestedTokenAttack": 0,
+        "actualTokenAttack": 1
+      }
+    },
+    {
+      "id": "A05",
+      "observed": {
+        "baseAttack": 1,
+        "revelationBonuses": [
+          1,
+          2
+        ],
+        "actualCombatAttack": 2
+      }
+    },
+    {
+      "id": "A06",
+      "observed": {
+        "originalMaxHealth": 2,
+        "discardedMaxHealth": 4,
+        "temporaryHealthInDiscard": 2
+      }
+    },
+    {
+      "id": "A07",
+      "observed": {
+        "creature": "Anão escudeiro",
+        "previewAttack": 0,
+        "actualCombatAttack": 1
+      }
+    },
+    {
+      "id": "A08",
+      "observed": {
+        "patronHealth": 16,
+        "patronMaxHealth": 16,
+        "injuredAlly": true,
+        "botChosenTarget": "patron"
+      }
+    },
+    {
+      "id": "A09",
+      "observed": {
+        "temporaryNetworkFailure": true,
+        "seatTokenRemoved": true,
+        "stateCleared": true
+      }
+    },
+    {
+      "id": "A10",
+      "observed": {
+        "returnedEvents": 20,
+        "drawEventRetained": false,
+        "cardAwaitingMissingDrawAnimation": true
+      }
+    },
+    {
+      "id": "A11",
+      "observed": {
+        "cards": [
+          {
+            "id": "FL06",
+            "name": "Anão estudioso",
+            "actualEffects": [
+              {
+                "op": "draw",
+                "amount": 1,
+                "timing": "on_enter"
+              },
+              {
+                "op": "lane_health_aura",
+                "amount": 1,
+                "lane": 0,
+                "timing": "emanation"
+              }
+            ],
+            "budgetEffects": [
+              {
+                "name": "Entrada: comprar 1",
+                "effect": "draw",
+                "amount": 1,
+                "tokenAttack": 1,
+                "tokenHealth": 1,
+                "timing": "enter",
+                "target": "owner",
+                "count": 1,
+                "duration": "instant",
+                "condition": "none",
+                "activationCost": 0,
+                "group": "sum",
+                "customPoints": 0,
+                "reason": ""
+              },
+              {
+                "name": "Emanação: +1 ataque na primeira posição",
+                "effect": "custom",
+                "customPoints": 0,
+                "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
+                "timing": "enter",
+                "target": "owner",
+                "group": "sum"
+              }
+            ],
+            "abilityPoints": 3
+          },
+          {
+            "id": "FL08",
+            "name": "Monge Rúnico",
+            "actualEffects": [
+              {
+                "op": "attack_modifier",
+                "amount": -2,
+                "timing": "revelation",
+                "target": "enemy_same_lane"
+              }
+            ],
+            "budgetEffects": [],
+            "abilityPoints": 0
+          },
+          {
+            "id": "FL16",
+            "name": "João Bobão",
+            "actualEffects": [
+              {
+                "op": "taunt"
+              }
+            ],
+            "budgetEffects": [],
+            "abilityPoints": 0
+          },
+          {
+            "id": "FV05",
+            "name": "Banquete dos Heróis",
+            "actualEffects": [
+              {
+                "op": "area_stat_buff",
+                "attack": 2,
+                "health": 2
+              }
+            ],
+            "budgetEffects": [],
+            "abilityPoints": 0
+          },
+          {
+            "id": "FV06",
+            "name": "Bruxa da Floresta Negra",
+            "actualEffects": [
+              {
+                "op": "damage_curse",
+                "amount": 1,
+                "timing": "revelation"
+              }
+            ],
+            "budgetEffects": [
+              {
+                "name": "",
+                "effect": "custom",
+                "amount": 1,
+                "tokenAttack": 1,
+                "tokenHealth": 1,
+                "timing": "enter",
+                "target": "owner",
+                "count": 1,
+                "duration": "instant",
+                "condition": "none",
+                "activationCost": 0,
+                "group": "sum",
+                "customPoints": 2,
+                "reason": ""
+              },
+              {
+                "name": "Dreno Etéreo",
+                "effect": "damage",
+                "amount": 2,
+                "tokenAttack": 1,
+                "tokenHealth": 1,
+                "timing": "reveal",
+                "target": "lane",
+                "count": 1,
+                "duration": "instant",
+                "condition": "none",
+                "activationCost": 0,
+                "group": "sum",
+                "customPoints": 0,
+                "reason": ""
+              }
+            ],
+            "abilityPoints": 6
+          },
+          {
+            "id": "FV07",
+            "name": "Olho Flutuante",
+            "actualEffects": [],
+            "budgetEffects": [
+              {
+                "name": "",
+                "effect": "custom",
+                "amount": 1,
+                "tokenAttack": 1,
+                "tokenHealth": 1,
+                "timing": "enter",
+                "target": "owner",
+                "count": 1,
+                "duration": "instant",
+                "condition": "none",
+                "activationCost": 0,
+                "group": "sum",
+                "customPoints": 0,
+                "reason": ""
+              },
+              {
+                "name": "Emanação: pagar 1 para curar 1",
+                "effect": "heal",
+                "amount": 1,
+                "tokenAttack": 1,
+                "tokenHealth": 1,
+                "timing": "emanation",
+                "target": "ally",
+                "count": 1,
+                "duration": "instant",
+                "condition": "none",
+                "activationCost": 1,
+                "group": "sum",
+                "customPoints": 0,
+                "reason": ""
+              }
+            ],
+            "abilityPoints": 1
+          },
+          {
+            "id": "FV13",
+            "name": "Evasão Dimensional",
+            "actualEffects": [
+              {
+                "op": "return_to_hand",
+                "reset": true
+              }
+            ],
+            "budgetEffects": [],
+            "abilityPoints": 0
+          },
+          {
+            "id": "FV14",
+            "name": "Sono Profundo",
+            "actualEffects": [
+              {
+                "op": "sleep",
+                "combats": 2
+              }
+            ],
+            "budgetEffects": [],
+            "abilityPoints": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "A12",
+      "observed": {
+        "creatorValidationAcceptedRune": true,
+        "reimportedOwnExportError": "Tipo de carta inválido."
+      }
+    },
+    {
+      "id": "A13",
+      "observed": {
+        "databaseRetrySucceeded": true,
+        "roomRecordingStill": "pending"
+      }
+    },
+    {
+      "id": "A14",
+      "observed": {
+        "persistentStorageAvailable": false,
+        "onlyInMemory": true,
+        "message": "Teste guardada neste navegador."
+      }
+    },
+    {
+      "id": "A15",
+      "observed": {
+        "previewRemainingHealth": 2,
+        "actualTargetDefeated": true,
+        "fixture": "Simultaneous prepared defeat and +2/+2"
+      }
+    },
+    {
+      "id": "A16",
+      "observed": {
+        "originalAttack": 5,
+        "currentCardAttackAfterPermanentBuff": 7,
+        "updateAttack": 7,
+        "greenBuffHighlight": false
+      }
+    },
+    {
+      "id": "A17",
+      "observed": {
+        "creatorMaximumAreaTargets": 8,
+        "maximumFriendlyCreaturesInField": 10,
+        "reason": "8 reserve creatures plus 2 Emanação; area_stat_buff includes both"
+      }
+    },
+    {
+      "id": "A18",
+      "observed": {
+        "bothPatronsAtZero": true,
+        "result": "B wins instead of a consistent terminal state",
+        "cause": "Two prepared draws with empty decks; checkWin stops reconsidering after first fatigue death"
+      }
+    }
+  ]
+}

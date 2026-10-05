@@ -1,0 +1,23 @@
+{
+  "reviewCompleted": "2026-10-05",
+  "publishedCommit": "ac1786b",
+  "sources": {
+    "mesa-nova/game.mjs": "e69e15ad4002c2e44f2c7e7d83e5ae11ad6572e59428dde53d47f6c913cf7fe3",
+    "mesa-nova/app.js": "a964e30d2135205fa548f0706c146ef41a2cc28c4fe50f3fff534cb80b0dc831",
+    "mesa-nova/card-visual.js": "2483f8e352a122ad19bffa654da1c7c519c12b9f9de88d69361c1bb02f390c52",
+    "mesa-nova/combat-motion.js": "49aad2095a6e575df5c4353a12e7eb33aa5c135e7cdafaa9bbcb3b726eade6bc",
+    "mesa-nova/combat-effects.mjs": "7d59c7aa94270cc9a2bae728b37123905c0380c3c1238c9d4024c0044f830771",
+    "mesa-nova/fluxo-effects.mjs": "bee3f78018f513bd98e20c3a6d4d52a6573135ef61b106db200c431f03823c73",
+    "mesa-nova/server.mjs": "3b070705e403ade432e26b8cb79fec777fd9cafb7244e403cb401301105a6a3c",
+    "mesa-nova/style.css": "3fd0e8580616d4bfe9524f97a9255ce4739643787c0bbc46c9242b915611df3c",
+    "mesa-nova/cartas.json": "b57b0a52e810ff776241af549495456512b76affc6a467a190790edca2d0fd9d",
+    "mesa-nova/criador/editor.js": "554d0bf30d7a5f6726d6ebc3f1ff2d6711ac45b916a64998a20046be14733c4b",
+    "mesa-nova/criador/budget-model.js": "0e1e3f0fc47596e921a6c53adacc455f241d3d6a50da5d1cea0a49314a47e248",
+    "mesa-nova/criador/budget.js": "9c9f7e33b915f5bd665d845535d0270df183327ab0ddb1d11450e6eb611d787f",
+    "mesa-nova/criador/prototipo.json": "b57b0a52e810ff776241af549495456512b76affc6a467a190790edca2d0fd9d",
+    "accounts.mjs": "867f242e147b540eaa3781e612c3020c4df14fceca206f4f925944e6ac0bd693",
+    "server.js": "c4bd9f12dcb9cbc211190fa3486341c3786a962d3fb6c8efc92f2a44348f51d9",
+    "package.json": "b95a68b498906c82b3723148432947504aec86958de3c79152c0889a762ddb6b"
+  },
+  "reproductionCases": 18
+}

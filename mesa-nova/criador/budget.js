@@ -72,7 +72,7 @@ function addBudgetEffect(effect={}) {
  group=step('B. Quando acontece');
  budgetField(group,'timing','Momento',e.timing,budgetTimingLabels);
  group=step('C. Quem recebe e por quanto tempo');
- budgetField(group,'target','Alvo / alcance',e.target,RunaBudget.targets);budgetField(group,'count','Máximo de alvos em área',e.count,null,8);
+ budgetField(group,'target','Alvo / alcance',e.target,RunaBudget.targets);budgetField(group,'count','Máximo de alvos em área',e.count,null,10);
  budgetField(group,'duration','Duração de modificadores',e.duration,budgetDurationLabels);
  const fixed=document.createElement('p');fixed.className='budget-fixed-target field-hint';group.append(fixed);
  group=step('D. Restrições e alternativas');
@@ -102,9 +102,9 @@ function updateBudget(card){
  document.getElementById('budget-spell-step').hidden=creature;
  document.getElementById('budget-rule').textContent=creature?'Pontos = 2 × mana + 1. Atributos e habilidades gastam o mesmo saldo.':'Pontos = 2 × mana. Sem corpo: distribua o saldo entre efeitos, alcance, duração e condições.';
  document.getElementById('budget-total').textContent=b.supported?b.available:'—';
- document.getElementById('budget-spent').textContent=b.spent;document.getElementById('budget-remaining').textContent=b.supported?b.remaining:'—';
+ document.getElementById('budget-spent').textContent=b.spent;document.getElementById('budget-remaining').textContent=b.supported&&b.complete?b.remaining:'—';
  document.getElementById('budget-breakdown').textContent=creature?`${b.attack} ataque + ${b.health} vida + ${b.abilityPoints} efeitos = ${b.spent} pontos.`:`${b.abilityPoints} pontos em efeitos, incluindo ${b.flexibility} por alternativas.`;
- panel.dataset.over=String(b.supported&&b.remaining<0);
+ panel.dataset.over=String(b.supported&&b.complete&&b.remaining<0);
  const rows=[...document.querySelectorAll('.budget-effect')];
  b.lines.forEach((line,i)=>{
   const row=rows[i],e=line.effect;
@@ -114,6 +114,7 @@ function updateBudget(card){
  });
  const messages=[];
  if(!b.supported)messages.push('Custo fora da referência de 1 a 10 mana.');
+ else if(!b.complete)messages.push('Avaliação incompleta: faltam efeitos ou preços fundamentados. A soma exibida é parcial; não determina um custo balanceado.');
  else messages.push(b.remaining<0?`Faltam ${-b.remaining} pontos. Pela soma, custo sugerido: ${b.suggestedMana}.`:b.remaining?`Restam ${b.remaining} pontos para distribuir.`:'Todos os pontos foram distribuídos.');
  if(creature&&b.health<1)messages.push('Adicione pelo menos 1 de vida.');
  if(card.rules.trim()&&!b.lines.length)messages.push('Registre os efeitos do texto para completar a avaliação.');

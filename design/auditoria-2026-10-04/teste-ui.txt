@@ -1,0 +1,9 @@
+evalmachine.<anonymous>:10
+  const motion=RunaMotion.link(from.getBoundingClientRect(),to.getBoundingClientRect()),matrix=svg.getScreenCTM();if(!matrix)continue;const convert=p=>new DOMPoint(p.x,p.y).matrixTransform(matrix.inverse()),a=convert(motion.start),b=convert(motion.end),c=convert(motion.control),d='M '+a.x+' '+a.y+' Q '+c.x+' '+c.y+' '+b.x+' '+b.y;group.children[0].setAttribute('d',d);group.children[1].setAttribute('d',d);const angle=Math.atan2(b.y-c.y,b.x-c.x),backX=b.x-10*Math.cos(angle),backY=b.y-10*Math.sin(angle);group.children[2].setAttribute('d',`M ${backX+5*Math.sin(angle)} ${backY-5*Math.cos(angle)} L ${b.x} ${b.y} L ${backX-5*Math.sin(angle)} ${backY+5*Math.cos(angle)}`);
+               ^
+
+ReferenceError: RunaMotion is not defined
+    at Object.renderTargetLinks (evalmachine.<anonymous>:10:16)
+    at file:///C:/Users/vanxf/OneDrive/Documentos/ChatGPT/RUNAMARCA/mesa-nova/test-ui.mjs:14:129
+
+Node.js v20.20.0

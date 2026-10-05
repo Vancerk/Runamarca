@@ -125,14 +125,8 @@
           "image": "art/R01.webp",
           "speech": "O rastro ainda está quente.",
           "budgetEffects": [],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 3,
-            "spent": 3,
-            "remaining": 0,
-            "abilityPoints": 0
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "R02",
@@ -164,28 +158,24 @@
           "speech": "Eu conheço o caminho.",
           "budgetEffects": [
             {
-              "name": "Explorador Faelen",
+              "sourceIndex": 0,
+              "name": "Batedor Faelen",
               "timing": "enter",
-              "target": "self",
+              "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "reason": "",
               "effect": "summon",
-              "amount": 1,
               "tokenAttack": 1,
               "tokenHealth": 1
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Ficha 1/1 ocupa 2 pontos. Corpo reduzido mantém pressão e reposição.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 5,
-            "remaining": 0,
-            "abilityPoints": 2
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Ficha 1/1 ocupa 2 pontos. Corpo reduzido mantém pressão e reposição."
         },
         {
           "id": "R03",
@@ -207,14 +197,8 @@
           "image": "art/R03.webp",
           "speech": "Contrato aceito.",
           "budgetEffects": [],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 5,
-            "remaining": 0,
-            "abilityPoints": 0
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "R04",
@@ -244,26 +228,22 @@
           "speech": "Mão longe do coldre.",
           "budgetEffects": [
             {
-              "name": "Pistoleira de Cartucho",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "reveal",
               "target": "lane",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 1
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Revelação de dano consome 2 pontos; reduzir resistência preserva o ataque agressivo.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 5,
-            "remaining": 0,
-            "abilityPoints": 2
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Revelação de dano consome 2 pontos; reduzir resistência preserva o ataque agressivo."
         },
         {
           "id": "R05",
@@ -293,26 +273,22 @@
           "speech": "A marca foi lançada.",
           "budgetEffects": [
             {
-              "name": "Arauto Lezhar",
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "emanation",
               "target": "fixedAlly",
-              "duration": "instant",
+              "duration": "round",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "attack",
-              "amount": 1
+              "reason": "",
+              "effect": "attack"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 5,
-            "remaining": 0,
-            "abilityPoints": 1
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "R06",
@@ -344,28 +320,24 @@
           "speech": "A arena é minha.",
           "budgetEffects": [
             {
-              "name": "Duelista das Arenas",
+              "sourceIndex": 0,
+              "name": "Recruta da Arena",
               "timing": "enter",
-              "target": "self",
+              "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "reason": "",
               "effect": "summon",
-              "amount": 2,
               "tokenAttack": 1,
               "tokenHealth": 1
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Duas fichas custam 4 pontos. Corpo 4/1 fica vulnerável em troca de quantidade.",
-          "budgetAudit": {
-            "available": 9,
-            "spent": 9,
-            "remaining": 0,
-            "abilityPoints": 4
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Duas fichas custam 4 pontos. Corpo 4/1 fica vulnerável em troca de quantidade."
         },
         {
           "id": "R07",
@@ -387,14 +359,8 @@
           "image": "art/R07.webp",
           "speech": "Seguimos juntos.",
           "budgetEffects": [],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 9,
-            "spent": 9,
-            "remaining": 0,
-            "abilityPoints": 0
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "R08",
@@ -426,28 +392,24 @@
           "speech": "Minha presa não escapa.",
           "budgetEffects": [
             {
-              "name": "Azura da Caçada",
+              "sourceIndex": 0,
+              "name": "Caçador da Fronteira",
               "timing": "enter",
-              "target": "self",
+              "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
+              "reason": "",
               "effect": "summon",
-              "amount": 1,
               "tokenAttack": 2,
               "tokenHealth": 1
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Ficha 2/1 custa 3 pontos. Mantém finalizador de alto ataque, sem resistência gratuita.",
-          "budgetAudit": {
-            "available": 11,
-            "spent": 11,
-            "remaining": 0,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Ficha 2/1 custa 3 pontos. Mantém finalizador de alto ataque, sem resistência gratuita."
         },
         {
           "id": "R09",
@@ -475,26 +437,22 @@
           "image": "art/R09.webp",
           "budgetEffects": [
             {
-              "name": "Avançar sob o Rugido",
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "direct",
               "target": "ally",
               "duration": "round",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "attack",
-              "amount": 2
+              "reason": "",
+              "effect": "attack"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 2,
-            "spent": 2,
-            "remaining": 0,
-            "abilityPoints": 2
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "R10",
@@ -522,38 +480,23 @@
           "image": "art/R10.webp",
           "budgetEffects": [
             {
-              "name": "Tiro de Cobertura",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "direct",
               "target": "enemy",
-              "duration": "instant",
+              "duration": "round",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 2
-            },
-            {
-              "name": "Tiro de Cobertura",
-              "timing": "direct",
-              "target": "owner",
-              "duration": "instant",
-              "condition": "kill",
-              "activationCost": 0,
-              "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "draw",
-              "amount": 1
+              "reason": "Mecânica sem preço calibrado: {\"timing\":\"on_play\",\"op\":\"damage\",\"target\":\"chosen_enemy_creature\",\"amount\":2,\"draw_on_kill\":1}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Dano 2 custa 4 pontos, compra condicional 2. A magia passa a orçamento de 6.",
-          "budgetAudit": {
-            "available": 6,
-            "spent": 6,
-            "remaining": 0,
-            "abilityPoints": 6
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Dano 2 custa 4 pontos, compra condicional 2. A magia passa a orçamento de 6."
         },
         {
           "id": "R11",
@@ -580,26 +523,22 @@
           "image": "art/R11.webp",
           "budgetEffects": [
             {
-              "name": "Selo de Estilhaços",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "trap",
               "target": "trigger",
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 2
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 4,
-            "spent": 3,
-            "remaining": 1,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "R12",
@@ -631,26 +570,23 @@
           "image": "art/R12.webp",
           "budgetEffects": [
             {
-              "name": "Marca do Compêndio",
+              "sourceIndex": 0,
+              "name": "conditional_damage",
               "timing": "trap",
               "target": "trigger",
-              "duration": "instant",
-              "condition": "threshold",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 4
+              "reason": "Mecânica sem preço calibrado: {\"timing\":\"prepared_trigger\",\"op\":\"conditional_damage\",\"target\":\"triggering_creature\",\"condition\":{\"stat\":\"attack\",\"gte\":4},\"amount_if_true\":4,\"amount_if_false\":1}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Dano alto contra ameaças grandes precisa de custo maior, mesmo condicionado e preparado.",
-          "budgetAudit": {
-            "available": 6,
-            "spent": 6,
-            "remaining": 0,
-            "abilityPoints": 6
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Dano alto contra ameaças grandes precisa de custo maior, mesmo condicionado e preparado."
         }
       ]
     },
@@ -696,14 +632,8 @@
           "image": "art/M01.webp",
           "speech": "O Éter responde.",
           "budgetEffects": [],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 3,
-            "spent": 3,
-            "remaining": 0,
-            "abilityPoints": 0
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "M02",
@@ -735,26 +665,22 @@
           "speech": "O selo está pronto.",
           "budgetEffects": [
             {
-              "name": "Discípula de Dravorn",
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "reveal",
               "target": "self",
               "duration": "round",
               "condition": "spell",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "attack",
-              "amount": 1
+              "reason": "",
+              "effect": "attack"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 5,
-            "remaining": 0,
-            "abilityPoints": 1
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "M03",
@@ -776,14 +702,8 @@
           "image": "art/M03.webp",
           "speech": "Atrás de mim.",
           "budgetEffects": [],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 5,
-            "remaining": 0,
-            "abilityPoints": 0
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "M04",
@@ -814,26 +734,23 @@
           "speech": "Circuitos em harmonia.",
           "budgetEffects": [
             {
-              "name": "Axiom de Circuito Rúnico",
+              "sourceIndex": 0,
+              "name": "cost_discount",
               "timing": "emanation",
-              "target": "owner",
-              "duration": "instant",
+              "target": "enemy",
+              "duration": "round",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "discount",
-              "amount": 1
+              "reason": "Mecânica sem preço calibrado: {\"timing\":\"while_emanating\",\"op\":\"cost_discount\",\"target\":\"owners_first_direct_spell_of_preparation\",\"amount\":1,\"minimum_cost\":1}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Desconto recorrente ocupa 3 pontos. Menos ataque torna o apoio um investimento.",
-          "budgetAudit": {
-            "available": 7,
-            "spent": 7,
-            "remaining": 0,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Desconto recorrente ocupa 3 pontos. Menos ataque torna o apoio um investimento."
         },
         {
           "id": "M05",
@@ -863,26 +780,22 @@
           "speech": "Já li esse destino.",
           "budgetEffects": [
             {
-              "name": "Arquivista de Virelion",
+              "sourceIndex": 0,
+              "name": "draw",
               "timing": "enter",
               "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "draw",
-              "amount": 1
+              "reason": "",
+              "effect": "draw"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Compra de entrada ocupa 3 pontos; reduzir vida mantém corpo e reposição no custo 4.",
-          "budgetAudit": {
-            "available": 9,
-            "spent": 9,
-            "remaining": 0,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Compra de entrada ocupa 3 pontos; reduzir vida mantém corpo e reposição no custo 4."
         },
         {
           "id": "M06",
@@ -912,26 +825,22 @@
           "speech": "Selos, despertem.",
           "budgetEffects": [
             {
-              "name": "Mestra dos Selos de Virelion",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "reveal",
               "target": "lane",
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 2
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Revelação de 2 dano custa 4 pontos. Vida 5 deixa total 13 no custo 6.",
-          "budgetAudit": {
-            "available": 13,
-            "spent": 13,
-            "remaining": 0,
-            "abilityPoints": 4
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Revelação de 2 dano custa 4 pontos. Vida 5 deixa total 13 no custo 6."
         },
         {
           "id": "M07",
@@ -958,26 +867,22 @@
           "image": "art/M07.webp",
           "budgetEffects": [
             {
-              "name": "Pulso de Éter",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "direct",
               "target": "enemy",
               "duration": "instant",
               "condition": "none",
+              "amount": 3,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 3
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 6,
-            "spent": 6,
-            "remaining": 0,
-            "abilityPoints": 6
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "M08",
@@ -1004,26 +909,22 @@
           "image": "art/M08.webp",
           "budgetEffects": [
             {
-              "name": "Consulta à Biblioteca",
+              "sourceIndex": 0,
+              "name": "draw",
               "timing": "direct",
               "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "draw",
-              "amount": 2
+              "reason": "",
+              "effect": "draw"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 6,
-            "spent": 6,
-            "remaining": 0,
-            "abilityPoints": 6
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "M09",
@@ -1050,26 +951,22 @@
           "image": "art/M09.webp",
           "budgetEffects": [
             {
-              "name": "Recompor o Éter",
+              "sourceIndex": 0,
+              "name": "heal",
               "timing": "direct",
               "target": "ally",
               "duration": "instant",
               "condition": "none",
+              "amount": 3,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "heal",
-              "amount": 3
+              "reason": "",
+              "effect": "heal"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 4,
-            "spent": 3,
-            "remaining": 1,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "M10",
@@ -1097,40 +994,36 @@
           "image": "art/M10.webp",
           "budgetEffects": [
             {
-              "name": "Ruptura do Círculo",
+              "sourceIndex": 0,
+              "name": "area_damage",
               "timing": "direct",
               "target": "area",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 8,
               "activationCost": 0,
               "group": "choice",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 1,
-              "count": 8
+              "reason": "",
+              "effect": "damage"
             },
             {
-              "name": "Ruptura do Círculo",
+              "sourceIndex": 0,
+              "name": "area_damage",
               "timing": "trap",
               "target": "area",
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 3,
               "activationCost": 0,
               "group": "choice",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 2,
-              "count": 3
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 10,
-            "spent": 10,
-            "remaining": 0,
-            "abilityPoints": 10
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "M11",
@@ -1157,26 +1050,22 @@
           "image": "art/M11.webp",
           "budgetEffects": [
             {
-              "name": "Glifo Incandescente",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "trap",
               "target": "trigger",
               "duration": "instant",
               "condition": "none",
+              "amount": 3,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 3
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "3 dano preparado custa 5 pontos. Custo 2 oferecia apenas 4.",
-          "budgetAudit": {
-            "available": 6,
-            "spent": 5,
-            "remaining": 1,
-            "abilityPoints": 5
-          }
+          "budgetVersion": 3,
+          "budgetReason": "3 dano preparado custa 5 pontos. Custo 2 oferecia apenas 4."
         },
         {
           "id": "M12",
@@ -1209,38 +1098,36 @@
           "image": "art/M12.webp",
           "budgetEffects": [
             {
-              "name": "Eco de Arkhavel",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "trap",
               "target": "trigger",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 1
+              "reason": "",
+              "effect": "damage"
             },
             {
-              "name": "Eco de Arkhavel",
+              "sourceIndex": 1,
+              "name": "draw",
               "timing": "trap",
               "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "draw",
-              "amount": 1
+              "reason": "",
+              "effect": "draw"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 4,
-            "spent": 3,
-            "remaining": 1,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         }
       ]
     },
@@ -1295,26 +1182,22 @@
           "speech": "Ninguém passa.",
           "budgetEffects": [
             {
-              "name": "Vigia do Clã",
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "reveal",
               "target": "self",
               "duration": "round",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "attack",
-              "amount": 1
+              "reason": "",
+              "effect": "attack"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Ataque efetivo 2 na Revelação precisa entrar na conta. Reduzir vida abre respostas cedo.",
-          "budgetAudit": {
-            "available": 3,
-            "spent": 3,
-            "remaining": 0,
-            "abilityPoints": 1
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Ataque efetivo 2 na Revelação precisa entrar na conta. Reduzir vida abre respostas cedo."
         },
         {
           "id": "F02",
@@ -1346,26 +1229,22 @@
           "speech": "Escudo erguido.",
           "budgetEffects": [
             {
-              "name": "Escudeiro Sheldran",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "reveal",
               "target": "lane",
-              "duration": "round",
+              "duration": "instant",
               "condition": "wounded",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 1
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Revelação condicionada ocupa 2 pontos pela regra de desconto máximo. Defesa continua barata, porém frágil.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 5,
-            "remaining": 0,
-            "abilityPoints": 2
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Revelação condicionada ocupa 2 pontos pela regra de desconto máximo. Defesa continua barata, porém frágil."
         },
         {
           "id": "F03",
@@ -1397,26 +1276,22 @@
           "speech": "A chama nos guarda.",
           "budgetEffects": [
             {
-              "name": "Clériga da Forja",
+              "sourceIndex": 0,
+              "name": "heal",
               "timing": "emanation",
               "target": "ally",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 1,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "heal",
-              "amount": 1
+              "reason": "",
+              "effect": "heal"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 5,
-            "spent": 4,
-            "remaining": 1,
-            "abilityPoints": 1
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "F04",
@@ -1446,26 +1321,22 @@
           "speech": "Protocolos ativos.",
           "budgetEffects": [
             {
-              "name": "Sentinela Engrenauta",
+              "sourceIndex": 0,
+              "name": "draw",
               "timing": "enter",
               "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "draw",
-              "amount": 1
+              "reason": "",
+              "effect": "draw"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Compra não é gratuita em um bloqueador. Corpo 2/4 + compra = 9 pontos.",
-          "budgetAudit": {
-            "available": 9,
-            "spent": 9,
-            "remaining": 0,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Compra não é gratuita em um bloqueador. Corpo 2/4 + compra = 9 pontos."
         },
         {
           "id": "F05",
@@ -1496,26 +1367,22 @@
           "speech": "Já vi pior.",
           "budgetEffects": [
             {
-              "name": "Veterano das Arenas",
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "reveal",
               "target": "self",
               "duration": "round",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "attack",
-              "amount": 1
+              "reason": "",
+              "effect": "attack"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 9,
-            "spent": 9,
-            "remaining": 0,
-            "abilityPoints": 1
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "F06",
@@ -1546,26 +1413,22 @@
           "speech": "Os túmulos vigiam.",
           "budgetEffects": [
             {
-              "name": "Drakonir dos Túmulos",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "reveal",
               "target": "lane",
-              "duration": "round",
+              "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 1
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 11,
-            "spent": 10,
-            "remaining": 1,
-            "abilityPoints": 2
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "F07",
@@ -1596,26 +1459,22 @@
           "speech": "Este bastião resiste.",
           "budgetEffects": [
             {
-              "name": "Gigante do Bastião",
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "reveal",
               "target": "self",
               "duration": "round",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "attack",
-              "amount": 2
+              "reason": "",
+              "effect": "attack"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Bônus de ataque 2 ocupa 2 pontos. Reduzir vida mantém ameaça forte com janela de remoção.",
-          "budgetAudit": {
-            "available": 13,
-            "spent": 13,
-            "remaining": 0,
-            "abilityPoints": 2
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Bônus de ataque 2 ocupa 2 pontos. Reduzir vida mantém ameaça forte com janela de remoção."
         },
         {
           "id": "F08",
@@ -1645,26 +1504,22 @@
           "speech": "Iniciar cerco.",
           "budgetEffects": [
             {
-              "name": "Axiom de Cerco",
+              "sourceIndex": 0,
+              "name": "draw",
               "timing": "enter",
               "target": "owner",
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "draw",
-              "amount": 1
+              "reason": "",
+              "effect": "draw"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 19,
-            "spent": 19,
-            "remaining": 0,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "F09",
@@ -1701,38 +1556,36 @@
           "image": "art/F09.webp",
           "budgetEffects": [
             {
-              "name": "Restauração Etérea",
+              "sourceIndex": 0,
+              "name": "choose_one",
               "timing": "direct",
               "target": "ally",
               "duration": "instant",
               "condition": "none",
+              "amount": 3,
+              "count": 1,
               "activationCost": 0,
               "group": "choice",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "heal",
-              "amount": 3
+              "reason": "",
+              "effect": "heal"
             },
             {
-              "name": "Restauração Etérea",
+              "sourceIndex": 0,
+              "name": "choose_one",
               "timing": "direct",
               "target": "patron",
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "choice",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "heal",
-              "amount": 2
+              "reason": "",
+              "effect": "heal"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 4,
-            "spent": 4,
-            "remaining": 0,
-            "abilityPoints": 4
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "F10",
@@ -1759,26 +1612,22 @@
           "image": "art/F10.webp",
           "budgetEffects": [
             {
-              "name": "Martelo Rúnico",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "direct",
               "target": "enemy",
               "duration": "instant",
               "condition": "none",
+              "amount": 3,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 3
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 6,
-            "spent": 6,
-            "remaining": 0,
-            "abilityPoints": 6
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "F11",
@@ -1805,26 +1654,22 @@
           "image": "art/F11.webp",
           "budgetEffects": [
             {
-              "name": "Selo de Estacas",
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "trap",
               "target": "trigger",
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "damage",
-              "amount": 2
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 4,
-            "spent": 3,
-            "remaining": 1,
-            "abilityPoints": 3
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         },
         {
           "id": "F12",
@@ -1852,26 +1697,22 @@
           "image": "art/F12.webp",
           "budgetEffects": [
             {
-              "name": "Névoa de Fuligem",
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "trap",
               "target": "trigger",
               "duration": "round",
               "condition": "none",
+              "amount": 3,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Derivado dos efeitos executáveis do catálogo.",
-              "effect": "weaken",
-              "amount": 3
+              "reason": "",
+              "effect": "weaken"
             }
           ],
-          "budgetVersion": 2,
-          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio.",
-          "budgetAudit": {
-            "available": 4,
-            "spent": 2,
-            "remaining": 2,
-            "abilityPoints": 2
-          }
+          "budgetVersion": 3,
+          "budgetReason": "Mantida: atributos e efeitos cabem na referência. Não é prova de equilíbrio."
         }
       ]
     },
@@ -1923,16 +1764,22 @@
           ],
           "budgetEffects": [
             {
-              "name": "Iniciativa",
+              "sourceIndex": 0,
+              "name": "initiative",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"initiative\"}",
               "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -1965,16 +1812,22 @@
           ],
           "budgetEffects": [
             {
-              "name": "Enquanto ferido: +1 ataque",
+              "sourceIndex": 0,
+              "name": "wounded_attack",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"wounded_attack\",\"amount\":1}",
               "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2008,23 +1861,21 @@
           ],
           "budgetEffects": [
             {
-              "name": "Entrada: comprar 1",
-              "effect": "draw",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
+              "sourceIndex": 0,
+              "name": "draw",
               "timing": "enter",
               "target": "owner",
-              "count": 1,
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "customPoints": 0,
-              "reason": ""
+              "reason": "",
+              "effect": "draw"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2058,16 +1909,22 @@
           ],
           "budgetEffects": [
             {
-              "name": "Sobreviver ao combate: +1/+1 permanente",
+              "sourceIndex": 0,
+              "name": "survive_growth",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"survive_growth\",\"attack\":1,\"health\":1}",
               "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2099,16 +1956,22 @@
           ],
           "budgetEffects": [
             {
-              "name": "Transpassar",
+              "sourceIndex": 0,
+              "name": "trample",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"trample\"}",
               "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2148,32 +2011,35 @@
           ],
           "budgetEffects": [
             {
-              "name": "Entrada: comprar 1",
-              "effect": "draw",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
+              "sourceIndex": 0,
+              "name": "draw",
               "timing": "enter",
               "target": "owner",
-              "count": 1,
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "customPoints": 0,
-              "reason": ""
+              "reason": "",
+              "effect": "draw"
             },
             {
-              "name": "Emanação: +1 ataque na primeira posição",
-              "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "sourceIndex": 1,
+              "name": "Emanação: +1 de vida na posição 1",
+              "timing": "emanation",
+              "target": "fixedAlly",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "health"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2210,23 +2076,35 @@
           ],
           "budgetEffects": [
             {
-              "name": "Emanação: pagar 1 para curar 1",
-              "effect": "heal",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
+              "sourceIndex": 0,
+              "name": "heal",
               "timing": "emanation",
               "target": "ally",
-              "count": 1,
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 1,
-              "group": "sum",
-              "customPoints": 0,
-              "reason": ""
+              "group": "choice",
+              "reason": "",
+              "effect": "heal"
+            },
+            {
+              "sourceIndex": 0,
+              "name": "heal",
+              "timing": "emanation",
+              "target": "patron",
+              "duration": "instant",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 1,
+              "group": "choice",
+              "reason": "",
+              "effect": "heal"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2259,8 +2137,23 @@
               "target": "enemy_same_lane"
             }
           ],
-          "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "attack_modifier",
+              "timing": "reveal",
+              "target": "lane",
+              "duration": "round",
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "weaken"
+            }
+          ],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2292,16 +2185,22 @@
           ],
           "budgetEffects": [
             {
-              "name": "Provocar",
+              "sourceIndex": 0,
+              "name": "taunt",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"taunt\"}",
               "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2334,23 +2233,35 @@
           ],
           "budgetEffects": [
             {
-              "effect": "attack",
-              "amount": 2,
+              "sourceIndex": 0,
+              "name": "stat_buff",
               "timing": "direct",
               "target": "ally",
               "duration": "permanent",
-              "group": "sum"
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "attack"
             },
             {
-              "effect": "health",
-              "amount": 2,
+              "sourceIndex": 0,
+              "name": "stat_buff",
               "timing": "direct",
               "target": "ally",
               "duration": "permanent",
-              "group": "sum"
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "health"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2384,16 +2295,22 @@
           ],
           "budgetEffects": [
             {
-              "name": "Participar de eliminação: +1/+1 permanente",
+              "sourceIndex": 0,
+              "name": "kill_growth",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"kill_growth\",\"attack\":1,\"health\":1}",
               "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2426,16 +2343,22 @@
           ],
           "budgetEffects": [
             {
-              "name": "Dano de combate: 1 nas posições adjacentes",
+              "sourceIndex": 0,
+              "name": "adjacent_damage",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"adjacent_damage\",\"amount\":1}",
               "effect": "custom",
-              "customPoints": 0,
-              "reason": "Habilidade nova importada. Preço ainda não calibrado por testes; não é uma habilidade gratuita.",
-              "timing": "enter",
-              "target": "owner",
-              "group": "sum"
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
@@ -2469,19 +2392,21 @@
           "enemyOnly": true,
           "budgetEffects": [
             {
-              "name": "Redução permanente de 1 de ataque",
-              "effect": "weaken",
-              "amount": 1,
+              "sourceIndex": 0,
+              "name": "attack_modifier",
               "timing": "trap",
               "target": "trigger",
-              "count": 1,
               "duration": "permanent",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
-              "group": "sum"
+              "group": "sum",
+              "reason": "",
+              "effect": "weaken"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio."
         },
@@ -2514,19 +2439,35 @@
           "enemyOnly": true,
           "budgetEffects": [
             {
-              "name": "Redução permanente de 1 de ataque",
-              "effect": "weaken",
-              "amount": 1,
+              "sourceIndex": 0,
+              "name": "area_attack_modifier",
               "timing": "direct",
               "target": "area",
-              "count": 8,
               "duration": "permanent",
               "condition": "none",
+              "amount": 1,
+              "count": 8,
               "activationCost": 0,
-              "group": "sum"
+              "group": "choice",
+              "reason": "",
+              "effect": "weaken"
+            },
+            {
+              "sourceIndex": 0,
+              "name": "area_attack_modifier",
+              "timing": "trap",
+              "target": "area",
+              "duration": "permanent",
+              "condition": "none",
+              "amount": 1,
+              "count": 3,
+              "activationCost": 0,
+              "group": "choice",
+              "reason": "",
+              "effect": "weaken"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio."
         },
@@ -2558,19 +2499,21 @@
           "enemyOnly": true,
           "budgetEffects": [
             {
-              "name": "Dano direto de 2",
-              "effect": "damage",
-              "amount": 2,
+              "sourceIndex": 0,
+              "name": "damage",
               "timing": "direct",
               "target": "enemy",
-              "count": 1,
               "duration": "instant",
               "condition": "none",
+              "amount": 2,
+              "count": 1,
               "activationCost": 0,
-              "group": "sum"
+              "group": "sum",
+              "reason": "",
+              "effect": "damage"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio."
         },
@@ -2595,7 +2538,25 @@
           "artZoom": 100,
           "artX": 50,
           "artY": 50,
-          "subtype": ""
+          "subtype": "",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "taunt",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"taunt\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3
         }
       ]
     },
@@ -2643,7 +2604,7 @@
           "effects": [],
           "positionOnly": false,
           "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -2675,23 +2636,22 @@
           "positionOnly": true,
           "budgetEffects": [
             {
-              "name": "Personalizada: informar preço e motivo",
-              "effect": "custom",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
-              "timing": "direct",
-              "target": "owner",
-              "count": 1,
-              "duration": "instant",
+              "sourceIndex": 0,
+              "name": "anchor",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "round",
               "condition": "none",
+              "amount": 0,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "customPoints": 4,
-              "reason": "FIxa o alvo revelado no espaço de combate"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"anchor\",\"combats\":2}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -2726,8 +2686,24 @@
             }
           ],
           "positionOnly": false,
-          "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "attack_modifier",
+              "timing": "reveal",
+              "target": "self",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"attack_modifier\",\"amount\":1,\"timing\":\"revelation\",\"target\":\"self\",\"condition\":\"allied_spell_buff\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -2764,39 +2740,21 @@
           "positionOnly": false,
           "budgetEffects": [
             {
-              "name": "Personalizada: informar preço e motivo",
-              "effect": "custom",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
-              "timing": "enter",
-              "target": "owner",
-              "count": 1,
-              "duration": "instant",
-              "condition": "none",
-              "activationCost": 0,
-              "group": "sum",
-              "customPoints": 0,
-              "reason": ""
-            },
-            {
-              "name": "Emanação: pagar 1 para curar 1",
-              "effect": "heal",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
+              "sourceIndex": 0,
+              "name": "heal",
               "timing": "emanation",
               "target": "ally",
-              "count": 1,
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 1,
               "group": "sum",
-              "customPoints": 0,
-              "reason": ""
+              "reason": "",
+              "effect": "heal"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -2827,8 +2785,37 @@
             }
           ],
           "positionOnly": false,
-          "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "area_stat_buff",
+              "timing": "direct",
+              "target": "area",
+              "duration": "permanent",
+              "condition": "none",
+              "amount": 2,
+              "count": 10,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "attack"
+            },
+            {
+              "sourceIndex": 0,
+              "name": "area_stat_buff",
+              "timing": "direct",
+              "target": "area",
+              "duration": "permanent",
+              "condition": "none",
+              "amount": 2,
+              "count": 10,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "health"
+            }
+          ],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -2863,39 +2850,22 @@
           "positionOnly": false,
           "budgetEffects": [
             {
-              "name": "",
-              "effect": "custom",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
-              "timing": "enter",
-              "target": "owner",
-              "count": 1,
-              "duration": "instant",
-              "condition": "none",
-              "activationCost": 0,
-              "group": "sum",
-              "customPoints": 2,
-              "reason": ""
-            },
-            {
-              "name": "Dreno Etéreo",
-              "effect": "damage",
-              "amount": 2,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
+              "sourceIndex": 0,
+              "name": "damage_curse",
               "timing": "reveal",
-              "target": "lane",
-              "count": 1,
-              "duration": "instant",
+              "target": "enemy",
+              "duration": "round",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "customPoints": 0,
-              "reason": ""
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"damage_curse\",\"amount\":1,\"timing\":\"revelation\"}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -2922,41 +2892,8 @@
           "fontRules": 40,
           "effects": [],
           "positionOnly": false,
-          "budgetEffects": [
-            {
-              "name": "",
-              "effect": "custom",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
-              "timing": "enter",
-              "target": "owner",
-              "count": 1,
-              "duration": "instant",
-              "condition": "none",
-              "activationCost": 0,
-              "group": "sum",
-              "customPoints": 0,
-              "reason": ""
-            },
-            {
-              "name": "Emanação: pagar 1 para curar 1",
-              "effect": "heal",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
-              "timing": "emanation",
-              "target": "ally",
-              "count": 1,
-              "duration": "instant",
-              "condition": "none",
-              "activationCost": 1,
-              "group": "sum",
-              "customPoints": 0,
-              "reason": ""
-            }
-          ],
-          "budgetVersion": 2,
+          "budgetEffects": [],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -2988,23 +2925,21 @@
           "positionOnly": false,
           "budgetEffects": [
             {
-              "name": "",
-              "effect": "draw",
-              "amount": 1,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
+              "sourceIndex": 0,
+              "name": "draw",
               "timing": "direct",
               "target": "owner",
-              "count": 1,
               "duration": "instant",
               "condition": "none",
+              "amount": 1,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "customPoints": 0,
-              "reason": ""
+              "reason": "",
+              "effect": "draw"
             }
           ],
-          "budgetVersion": 2,
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -3037,8 +2972,24 @@
             }
           ],
           "positionOnly": false,
-          "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "adjacent_attack_buff",
+              "timing": "reveal",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 3,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"adjacent_attack_buff\",\"amount\":3,\"timing\":\"revelation\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -3070,8 +3021,24 @@
             }
           ],
           "positionOnly": true,
-          "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "barrier",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"barrier\",\"health\":2,\"combats\":2,\"target\":\"chosen_allied_creature\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
@@ -3094,8 +3061,24 @@
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 35,
-          "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "return_to_hand",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"return_to_hand\",\"reset\":true}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "effects": [
             {
@@ -3126,8 +3109,24 @@
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 36,
-          "budgetEffects": [],
-          "budgetVersion": 2,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "sleep",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"sleep\",\"combats\":2}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "positionOnly": true,
           "enemyOnly": true,

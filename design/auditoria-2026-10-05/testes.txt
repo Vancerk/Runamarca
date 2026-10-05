@@ -1,0 +1,179 @@
+
+> runamarca@0.1.0 test
+> node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs test/review-regression.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs && node mesa-nova/test-oficina.mjs && node mesa-nova/test-fluxo.mjs && node mesa-nova/test-presentation.mjs && node mesa-nova/test-ui.mjs && node test/audit-regression.mjs
+
+TAP version 13
+# Subtest: Bronze mantém equivalência das moedas e itens separados
+ok 1 - Bronze mantém equivalência das moedas e itens separados
+  ---
+  duration_ms: 2.3405
+  ...
+# Subtest: login OAuth, sessão persistente, administrador, inventário e resultados
+ok 2 - login OAuth, sessão persistente, administrador, inventário e resultados
+  ---
+  duration_ms: 257.3026
+  ...
+# Subtest: Fichas e compra têm destino fixo; cartas e magias têm momentos próprios
+ok 3 - Fichas e compra têm destino fixo; cartas e magias têm momentos próprios
+  ---
+  duration_ms: 1.8265
+  ...
+# Subtest: Campos incompatíveis são normalizados antes de gastar os pontos
+ok 4 - Campos incompatíveis são normalizados antes de gastar os pontos
+  ---
+  duration_ms: 0.811
+  ...
+# Subtest: Corpo e dano na Revelação compartilham o saldo; magia não compra atributos
+ok 5 - Corpo e dano na Revelação compartilham o saldo; magia não compra atributos
+  ---
+  duration_ms: 0.4772
+  ...
+# Subtest: Área conta alcance e cobra somente o modo escolhido, mais flexibilidade
+ok 6 - Área conta alcance e cobra somente o modo escolhido, mais flexibilidade
+  ---
+  duration_ms: 0.2245
+  ...
+# Subtest: Restrições não zeram recorrência nem dão desconto ilimitado
+ok 7 - Restrições não zeram recorrência nem dão desconto ilimitado
+  ---
+  duration_ms: 0.1965
+  ...
+# Subtest: Preço manual pede justificativa; fichas sem vida são sinalizadas
+ok 8 - Preço manual pede justificativa; fichas sem vida são sinalizadas
+  ---
+  duration_ms: 0.2665
+  ...
+# Subtest: Os 36 modelos testados respeitam saldo e limites de cópias
+ok 9 - Os 36 modelos testados respeitam saldo e limites de cópias
+  ---
+  duration_ms: 9.4878
+  ...
+# Subtest: Sem evento de compra, a carta da mão não fica aguardando uma animação inexistente
+ok 10 - Sem evento de compra, a carta da mão não fica aguardando uma animação inexistente
+  ---
+  duration_ms: 3.185
+  ...
+# Subtest: Uma conexão temporária preserva a vaga; token inválido e sala inexistente a encerram
+ok 11 - Uma conexão temporária preserva a vaga; token inválido e sala inexistente a encerram
+  ---
+  duration_ms: 2.5773
+  ...
+# Subtest: Abertura de uma partida nova cancela efeitos antigos e ainda reproduz a moeda e a mão inicial
+ok 12 - Abertura de uma partida nova cancela efeitos antigos e ainda reproduz a moeda e a mão inicial
+  ---
+  duration_ms: 1.2348
+  ...
+# Subtest: Lacuna de eventos cancela a fila antiga e recupera a visibilidade de cartas
+ok 13 - Lacuna de eventos cancela a fila antiga e recupera a visibilidade de cartas
+  ---
+  duration_ms: 1.0449
+  ...
+# Subtest: Animação que não finaliza possui prazo de recuperação e é cancelada
+ok 14 - Animação que não finaliza possui prazo de recuperação e é cancelada
+  ---
+  duration_ms: 1.1366
+  ...
+# Subtest: Reiniciar durante a abertura interrompe as compras animadas restantes
+ok 15 - Reiniciar durante a abertura interrompe as compras animadas restantes
+  ---
+  duration_ms: 2.4974
+  ...
+# Subtest: Um Banquete pendente não altera a vida da partida seguinte
+ok 16 - Um Banquete pendente não altera a vida da partida seguinte
+  ---
+  duration_ms: 1.0838
+  ...
+# Subtest: Escrita tardia de histórico não marca outra partida como salva
+ok 17 - Escrita tardia de histórico não marca outra partida como salva
+  ---
+  duration_ms: 1.1963
+  ...
+# Subtest: Catálogos sincronizados: efeitos atuais cobertos e preços desconhecidos explicitamente incompletos
+ok 18 - Catálogos sincronizados: efeitos atuais cobertos e preços desconhecidos explicitamente incompletos
+  ---
+  duration_ms: 7.9067
+  ...
+# Subtest: combinações de seis dados e poderes das insígnias
+ok 19 - combinações de seis dados e poderes das insígnias
+  ---
+  duration_ms: 2.5652
+  ...
+# Subtest: hub, cartas automáticas, ataque e mesa de dados online
+ok 20 - hub, cartas automáticas, ataque e mesa de dados online
+  ---
+  duration_ms: 132.0804
+  ...
+# Subtest: espectadores não veem mãos; fichas, ataque e descarte ficam sincronizados
+ok 21 - espectadores não veem mãos; fichas, ataque e descarte ficam sincronizados
+  ---
+  duration_ms: 29.3543
+  ...
+# Subtest: RunaMarca: defesa múltipla, sono e desconto de custo são validados pelo servidor
+ok 22 - RunaMarca: defesa múltipla, sono e desconto de custo são validados pelo servidor
+  ---
+  duration_ms: 31.4285
+  ...
+# Subtest: RunaMarca permite anfitrião espectador e troca de vaga na sala
+ok 23 - RunaMarca permite anfitrião espectador e troca de vaga na sala
+  ---
+  duration_ms: 16.5129
+  ...
+# Subtest: efeito de fichas pode contar cópias no descarte
+ok 24 - efeito de fichas pode contar cópias no descarte
+  ---
+  duration_ms: 16.2912
+  ...
+# Subtest: Seis Ossos valida proposta, insígnia perdida e seleção pontuável no servidor
+ok 25 - Seis Ossos valida proposta, insígnia perdida e seleção pontuável no servidor
+  ---
+  duration_ms: 16.1472
+  ...
+# Subtest: Seis Ossos permite anfitrião espectador, ocupar vaga, arquibancada e sair da sala
+ok 26 - Seis Ossos permite anfitrião espectador, ocupar vaga, arquibancada e sair da sala
+  ---
+  duration_ms: 22.5332
+  ...
+# Subtest: Aura fica anexada, modifica atributos e acompanha o alvo ao descarte
+ok 27 - Aura fica anexada, modifica atributos e acompanha o alvo ao descarte
+  ---
+  duration_ms: 29.8283
+  ...
+# Subtest: Runa pode gerar energia no mesmo turno em que entra
+ok 28 - Runa pode gerar energia no mesmo turno em que entra
+  ---
+  duration_ms: 14.4278
+  ...
+# Subtest: Seis Ossos permite iniciar uma nova partida após a vitória
+ok 29 - Seis Ossos permite iniciar uma nova partida após a vitória
+  ---
+  duration_ms: 28.232
+  ...
+# Subtest: Rei dos Pássaros separa um dado por 50, renova por turno e Troca foi removida
+ok 30 - Rei dos Pássaros separa um dado por 50, renova por turno e Troca foi removida
+  ---
+  duration_ms: 86.8258
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 597.7744
+OK: máximo de 30 cartas, quatro raridades, fadiga exponencial e derrota por fadiga.
+OK: fala e narrativa importadas sem nova arte, balão compartilhado e mão rival protegida.
+OK: raridades, espectadores, mulligan, combate, bot fácil e limite de mão.
+OK: abertura, mana, sigilo, duas magias posicionadas, três fases e dano ao Patrono.
+OK: reembolso imediato limitado, expiração seletiva em área e sigilo durante formação.
+OK: sem reembolso entre rodadas, sem dupla devolução e alvo visual da cura.
+Oficina de Lyrik: composição, artes, Iniciativa, Transpassar, Provocar, crescimento, área adjacente, cura e sigilo aprovados.
+Forja revisado: 30 cartas, custos/atributos, redução permanente, sigilo, Emanação imune a área e dano direto aprovados.
+Fluxo: 30 cartas, maldição por alvo, simultaneidade, contato, âncora, barreira, buffs, descarte e reserva aprovados.
+Correções: alternância em seis rodadas, Auramora, fala compartilhada e geometria da seta aprovadas.
+Fluxo atualizado: Evasão com reset/custo/sigilo/mão cheia e Sono com posição fixa, ataque suspenso, duração e despertar aprovados.
+Apresentação: balões de ambos os jogadores na camada da janela e alvo letal preservado.
+OK: alvos individuais, seta nos três locais durante turno rival, voo para mão e áudio no momento da colisão.
+OK: devolução visível da magia e HP atualizado no impacto.
+OK: 18 casos de regressão da auditoria.
