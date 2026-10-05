@@ -9,7 +9,7 @@ export function resolveDirectedCombat(room,{effects,attack,laneCard,alive,applyD
  });
  const contributors=new Map(),steps=[];
  for(const initiative of [true,false]){
-  const eligible=strikes.filter(s=>s.initiative===initiative&&alive(s.card));
+  const eligible=strikes.filter(s=>s.initiative===initiative&&alive(s.card)&&!s.card.sleep);
   const changes=new Map(),patronChanges=new Map();
   const damage=(target,amount,source)=>{if(!target||amount<=0)return;changes.set(target,(changes.get(target)||0)+amount);if(!contributors.has(target))contributors.set(target,new Set());contributors.get(target).add(source);};
   const patron=(p,amount)=>{if(amount>0)patronChanges.set(p,(patronChanges.get(p)||0)+amount);};

@@ -396,3 +396,6 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 .game[data-phase="resolving"] .lane-side .card{animation:none!important;transition:none!important;transform:none}
 @media(max-width:620px){#hover-preview{gap:5px}#hover-preview .hover-context{width:18vw}#hover-preview .hover-keywords{padding:6px}#hover-preview .hover-keywords strong{font-size:10px}.hover-dream{font-size:11px}#hover-preview .card.big{width:55vw!important}}
 #hover-preview .hover-context{overflow-x:hidden;overflow-y:auto}
+
+/* Sono Profundo: estado visível sem ocultar os atributos. */
+.sleeping-card{box-shadow:0 0 10px #6989b977;}.sleep-badge{position:absolute;right:8%;top:12%;z-index:6;color:#d9e7ff;font:bold 16px Georgia;text-shadow:0 1px 4px #161b2f;}.sleeping-space{border-color:#7895b7!important;}.sleep-space-mark{position:absolute;top:6px;right:8px;color:#bfd4ef;font-size:22px;}

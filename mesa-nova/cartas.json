@@ -2985,58 +2985,6 @@
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
         {
-          "id": "FV09",
-          "name": "\"... uma a menos\"",
-          "type": "direct_spell",
-          "affinity": "fluxo",
-          "cost": 2,
-          "quantity": 2,
-          "rarity": "padrao",
-          "subtype": "",
-          "text": "Compra 2 cartas, descarta uma carta da mão",
-          "speech": "",
-          "narrative": "",
-          "image": "art/virelion/FV09.jpg",
-          "artZoom": 100,
-          "artX": 8,
-          "artY": 84,
-          "fontName": 43,
-          "fontSubtype": 21,
-          "fontRules": 40,
-          "effects": [
-            {
-              "op": "draw",
-              "amount": 2
-            },
-            {
-              "op": "discard",
-              "amount": 1
-            }
-          ],
-          "positionOnly": false,
-          "budgetEffects": [
-            {
-              "name": "",
-              "effect": "draw",
-              "amount": 2,
-              "tokenAttack": 1,
-              "tokenHealth": 1,
-              "timing": "direct",
-              "target": "owner",
-              "count": 1,
-              "duration": "instant",
-              "condition": "spell",
-              "activationCost": 0,
-              "group": "sum",
-              "customPoints": 0,
-              "reason": "Descartar uma carta da sua mesa"
-            }
-          ],
-          "budgetVersion": 2,
-          "authoredBy": "Grupo Elysium",
-          "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
-        },
-        {
           "id": "FV10",
           "name": "Vaelgor Dareth, O Diretor",
           "type": "creature",
@@ -3104,37 +3052,67 @@
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
         {
-          "id": "FV12",
-          "name": "Benção Estelar",
+          "id": "FV13",
+          "name": "Evasão Dimensional",
           "type": "direct_spell",
           "affinity": "fluxo",
-          "cost": 5,
+          "cost": 2,
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Dá +2 de ataque permanentemente à criatura que se revelar neste espaço de combate.",
+          "text": "Devolva uma criatura da reserva inimiga à mão de seu dono. Ela perde dano e bônus e volta com os atributos originais.",
           "speech": "",
           "narrative": "",
-          "image": "art/virelion/FV12.jpg",
-          "artZoom": 100,
-          "artX": 48,
-          "artY": 0,
+          "image": "art/virelion/evasao-dimensional.jpg",
+          "artZoom": 119,
+          "artX": 18,
+          "artY": 63,
           "fontName": 43,
           "fontSubtype": 21,
-          "fontRules": 41,
-          "effects": [
-            {
-              "op": "stat_buff",
-              "attack": 2,
-              "health": 0,
-              "target": "chosen_allied_creature"
-            }
-          ],
-          "positionOnly": true,
+          "fontRules": 35,
           "budgetEffects": [],
           "budgetVersion": 2,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
+          "effects": [
+            {
+              "op": "return_to_hand",
+              "reset": true
+            }
+          ],
+          "reserveOnly": true,
+          "enemyOnly": true,
+          "directOnly": true
+        },
+        {
+          "id": "FV14",
+          "name": "Sono Profundo",
+          "type": "prepared_spell",
+          "affinity": "fluxo",
+          "cost": 3,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "",
+          "text": "Prepare em uma posição inimiga. Adormeça a criatura revelada nela: fica presa nesta posição e não ataca até o fim do próximo combate após a ativação.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/virelion/sono-profundo.jpg",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 0,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36,
+          "budgetEffects": [],
+          "budgetVersion": 2,
+          "authoredBy": "Grupo Elysium",
+          "positionOnly": true,
+          "enemyOnly": true,
+          "effects": [
+            {
+              "op": "sleep",
+              "combats": 2
+            }
+          ]
         }
       ]
     }

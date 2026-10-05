@@ -537,7 +537,7 @@ async function importProject(file){
   }catch(error){status(error.message,true);}
 }
 let starterDecks=[];
-fetch('prototipo.json?v=20261004-forja-revisao2').then(response=>{if(!response.ok)throw Error('Falha ao ler os decks.');return response.json();}).then(data=>{
+fetch('prototipo.json?v=20261004-fluxo-controle').then(response=>{if(!response.ok)throw Error('Falha ao ler os decks.');return response.json();}).then(data=>{
   starterDecks=data.decks;
   starterDecks.forEach(deck=>{const option=document.createElement('option');option.value=deck.id;option.textContent=deck.name;$('starter-deck').append(option);});
 }).catch(error=>status(error.message,true));
