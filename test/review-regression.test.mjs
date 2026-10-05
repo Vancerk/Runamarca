@@ -19,7 +19,7 @@ test('Uma conexão temporária preserva a vaga; token inválido e sala inexisten
 });
 function visualContext(){
  const node={dataset:{uid:'card'},classList:{remove(){}},remove(){},style:{visibility:'hidden'}};
- const ctx={state:{code:'AUD123',you:'me',matchId:'new',eventId:12,eventsFrom:1,events:[{id:11,type:'coin'},{id:12,type:'opening'}]},visualMatchKey:'AUD123:me:lobby',visualBooted:true,lastVisualId:10,lastBattleStep:'',visualGeneration:0,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:['card'],movingCards:new Set(['card']),deadVisuals:new Map(),displayedAttack:new Map(),pendingAttack:new Map(),displayedHealth:new Map(),pendingHealth:new Map(),displayedPatronHealth:new Map(),spellTargetRects:new Map(),$:()=>({replaceChildren(){}}),document:{querySelectorAll:()=>[node]},setTimeout(){},serverClockOffset:0,played:[],Date,animateEvent:async e=>{ctx.played.push(e.type);}};
+ const ctx={state:{code:'AUD123',you:'me',matchId:'new',eventId:12,eventsFrom:1,events:[{id:11,type:'coin'},{id:12,type:'opening'}]},visualMatchKey:'AUD123:me:lobby',visualBooted:true,lastVisualId:10,lastBattleStep:'',visualGeneration:0,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:['card'],movingCards:new Set(['card']),deadVisuals:new Map(),displayedAttack:new Map(),pendingAttack:new Map(),displayedHealth:new Map(),pendingHealth:new Map(),displayedPatronHealth:new Map(),spellTargetRects:new Map(),mulliganDepartures:new Map(),$:()=>({replaceChildren(){}}),document:{querySelectorAll:()=>[node]},setTimeout(){},serverClockOffset:0,played:[],Date,animateEvent:async e=>{ctx.played.push(e.type);}};
  vm.createContext(ctx);vm.runInContext(section(app,'function resetVisualSession()','function tickCombat()'),ctx);return {ctx,node};
 }
 test('Abertura de uma partida nova cancela efeitos antigos e ainda reproduz a moeda e a mão inicial',async()=>{
@@ -66,6 +66,24 @@ test('Par de ataques conserva os IDs e donos mesmo sem metadados da prévia visu
  vm.createContext(ctx);vm.runInContext(section(app,'async function animateDirectedStrike','function animateCasualties'),ctx);
  await ctx.animateDirectedStrike({sourceId:'first',owner:'a',targetId:'second',targetOwner:'b',amount:3,lane:0,healthUpdates:[],pair:{sourceId:'second',owner:'b',targetId:'first',targetOwner:'a',amount:2}});
  assert.deepEqual(Array.from(entry.cards,c=>[c.uid,c.owner,c.attack]),[['first','a',3],['second','b',2]]);
+});
+test('Recomprar a mesma instância após a troca ainda aguarda a animação de chegada',()=>{
+ const ctx={pendingArrival:[]};vm.createContext(ctx);vm.runInContext(section(app,'function trackArrivals','function prepareOpeningArrivals'),ctx);
+ ctx.trackArrivals({you:'me',matchId:'match',eventId:10,players:[{id:'me',hand:[{uid:'same'}]}]},{you:'me',matchId:'match',eventId:12,events:[{id:11,type:'mulligan',playerId:'me',cardIds:['same']},{id:12,type:'draw',playerId:'me',cardId:'same'}],players:[{id:'me',hand:[{uid:'same'}]}]});
+ assert.deepEqual(Array.from(ctx.pendingArrival),['same']);
+});
+test('A devolução da troca voa até o deck sem revelar antecipadamente a carta recomprada',async()=>{
+ const flights=[],removed=[],copy={classList:{remove(){},add(){}},removeAttribute(){}},ctx={visualGeneration:0,mulliganDepartures:new Map([[4,[{copy,rect:{left:400,top:200,width:140,height:200}}]]]),pendingArrival:['same'],center:()=>({x:100,y:600}),$:()=>({getBoundingClientRect:()=>({left:0,top:0}),append(){}}),document:{createElement:()=>({style:{},append(){},remove(){removed.push(true);},animate(frames){flights.push(frames);return {};}})},settleAnimation:async()=>{},sound(){}};
+ vm.createContext(ctx);vm.runInContext(section(app,'async function animateMulliganReturn','async function animateOpeningToHand'),ctx);await ctx.animateMulliganReturn({id:4});
+ assert.equal(flights.length,1);assert.equal(flights[0].at(-1).transform,'translate(-370px,300px) scale(.28)');assert.equal(removed.length,1);assert.deepEqual(ctx.pendingArrival,['same']);assert.equal(ctx.mulliganDepartures.size,0);
+});
+test('Textos usam travessão, itálico nas mecânicas e ajuste integral na caixa',()=>{
+ const ctx={window:{}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('mesa-nova/card-visual.js','utf8'),ctx);const visual=ctx.window.RunaCardVisual;
+ assert.equal(visual.formatRulesText('Ao entrar: compre 1 carta. Revelação: +1.'),'Entrada — compre 1 carta. Revelação — +1.');
+ const runs=visual.richRuns('Iniciativa. Entrada: compre 1 carta. *Texto manual*.');assert.ok(runs.some(r=>r.text==='Iniciativa'&&r.italic));assert.ok(runs.some(r=>r.text==='Entrada'&&r.italic));assert.ok(runs.some(r=>r.text.includes('Texto manual')&&r.italic));
+ const measure={font:'',measureText(text){const size=Number(this.font.match(/(\d+)px/)[1]);return {width:Array.from(text).length*size*.52,actualBoundingBoxAscent:size*.8,actualBoundingBoxDescent:size*.2};}};
+ const catalog=JSON.parse(fs.readFileSync('mesa-nova/cartas.json','utf8'));
+ for(const deck of catalog.decks)for(const c of deck.cards){const layout=visual.layoutRules(measure,{rules:c.text,fontRules:c.fontRules||36});assert.ok(layout.fits,c.id);assert.ok(layout.y-measure.measureText('').actualBoundingBoxAscent>=883,c.id);assert.ok(layout.y+(layout.lines.length-1)*layout.lineHeight+layout.size*.2<=1097.001,c.id);assert.equal(layout.lines.flat().map(r=>r.text).join('').replace(/\s/g,''),visual.formatRulesText(c.text).replace(/\s/g,''),c.id+' preserves the complete text');assert.ok(!/\b(?:Entrada|Revelação|Emanação):/.test(c.text),c.id);}
 });
 test('Escrita tardia de histórico não marca outra partida como salva',async()=>{
  const source=fs.readFileSync('accounts.mjs','utf8');let finish;

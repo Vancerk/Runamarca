@@ -26,16 +26,20 @@ function round(ctx, x, y, w, h, r, fill, stroke, line = 1) {
   if (stroke) { ctx.lineWidth = line; ctx.strokeStyle = stroke; ctx.stroke(); }
 }
 
+function formatRulesText(text){
+ return String(text||'').replace(/(?<![\p{L}\p{N}_])(Ao entrar|Entrada|Revelação|Emanação|Direta|Preparada|Escolha um|Âncoragem|Ancoragem)\s*:/giu,(_,label)=>({ 'ao entrar':'Entrada','âncoragem':'Ancoragem' }[label.toLowerCase()]||label)+' —');
+}
+const mechanicPattern=/((?<![\p{L}\p{N}_])(?:Entrada|Revelação|Emanação|Iniciativa|Transpassar|Provocar|Adormecer|Ancoragem|Barreira)(?![\p{L}\p{N}_]))/giu;
 function richRuns(text, allItalic = false) {
   const runs = []; let italic = allItalic; let part = '';
-  for (const character of String(text || '')) {
+  for (const character of formatRulesText(text)) {
     if (character === '*') {
       if (part) runs.push({ text: part, italic });
       part = ''; italic = !italic;
     } else part += character;
   }
   if (part) runs.push({ text: part, italic });
-  return runs;
+  return runs.flatMap(run=>run.text.split(mechanicPattern).map((text,index)=>({text,italic:run.italic||index%2===1})).filter(part=>part.text));
 }
 function wrapRichLines(ctx, runs, width, size) {
   const font = italic => `${italic ? 'italic ' : ''}600 ${size}px "EB Garamond",Georgia,serif`;
@@ -68,6 +72,16 @@ function wrapRichLines(ctx, runs, width, size) {
     }
   }
   return lines;
+}
+function layoutRules(ctx,card,{width=650,top=884,bottom=1097}={}){
+ const runs=richRuns(card.rules||'',Boolean(card.rulesItalic));let size=number(card.fontRules,16,52,31),lines,lineHeight,ascent,descent,total;
+ do{
+  lines=wrapRichLines(ctx,runs,width,size);lineHeight=size*1.2;ascent=0;descent=0;
+  for(const line of lines)for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+size+'px "EB Garamond",Georgia,serif';const m=ctx.measureText(run.text);ascent=Math.max(ascent,m.actualBoundingBoxAscent??size*.85);descent=Math.max(descent,m.actualBoundingBoxDescent??size*.25);}
+  total=ascent+descent+Math.max(0,lines.length-1)*lineHeight;
+  if(total<=bottom-top||size<=1)break;size--;
+ }while(true);
+ return {size,lines,lineHeight,y:top+(bottom-top-total)/2+ascent,total,fits:total<=bottom-top};
 }
 
 let grainTexture=null;
@@ -126,7 +140,7 @@ async function drawCard(canvas,card,{assets="",hideStats=false}={}){
  // Cost set into a gold medallion, instead of a detached label.
  const affinity=card.themeEnergy||'ruptura',cx=805,cy=87;ctx.beginPath();ctx.arc(cx,cy,52.7,0,Math.PI*2);const orb=ctx.createRadialGradient(cx-17,cy-20.4,2,cx,cy,56.1);orb.addColorStop(0,energyColors[affinity]||'#bd5847');orb.addColorStop(1,{ruptura:'#702d23',forja:'#765013',fluxo:'#244e78'}[affinity]||'#702d23');ctx.fillStyle=orb;ctx.fill();ctx.strokeStyle='#f0ca82';ctx.lineWidth=5;ctx.stroke();ctx.fillStyle='#fff7dc';ctx.strokeStyle='#26160f';ctx.lineWidth=5;ctx.font='700 54.6px Georgia,serif';ctx.textAlign='center';const cost=card.kind==='patron'?'◈':String(number(card.generic,0,20));ctx.textBaseline='alphabetic';const metrics=ctx.measureText(cost),costY=cy+(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2;ctx.strokeText(cost,cx,costY);ctx.fillText(cost,cx,costY);
  const paper=ctx.createRadialGradient(450,970,10,450,995,470);paper.addColorStop(0,'#f4dfb7');paper.addColorStop(.7,'#dfbf8b');paper.addColorStop(1,'#aa7548');framedPanel(ctx,64,855,772,272,paper,20);ctx.save();bevelPath(ctx,69,860,762,262,17);ctx.clip();grain(ctx,64,855,772,272,.28);if(icons[affinity]){ctx.globalAlpha=.12;ctx.drawImage(icons[affinity],329.25,870.25,241.5,241.5);}ctx.restore();
- const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora do limite de 30 cartas.':'Escreva aqui o efeito da carta.'),size=number(card.fontRules,16,52,31),lines=wrapRichLines(ctx,richRuns(rules,card.rulesItalic),650,size),lineHeight=size*1.2;let y=Math.max(926,990-(lines.length-1)*lineHeight/2);ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of lines){if(y>1095)break;let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+size+'px "EB Garamond",Georgia,serif';ctx.fillText(run.text,x,y);x+=run.width;}y+=lineHeight;}
+ const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora do limite de 30 cartas.':'Escreva aqui o efeito da carta.'),layout=layoutRules(ctx,{...card,rules});let y=layout.y;ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of layout.lines){let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+layout.size+'px "EB Garamond",Georgia,serif';ctx.fillText(run.text,x,y);x+=run.width;}y+=layout.lineHeight;}
  framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#f6e5be';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.textAlign='left';ctx.font='700 25px Cinzel,Georgia,serif';ctx.fillText((kindNames[card.kind]||'Carta').toUpperCase(),174,1174,190);ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();ctx.font='600 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.fillText((card.subtype||'').toUpperCase(),395,1174,325);
  for(const [x,y] of [[48,155],[852,155],[48,550],[852,550],[48,1004],[852,1004],[450,1216]])diamond(ctx,x,y,y===1216?15:9);
  if(card.kind==='creature'&&attackIcon)ctx.drawImage(attackIcon,5,1085,159.85,159.85);
@@ -145,5 +159,5 @@ async function drawCombat(canvas,card,{assets='',flat=false}={}){
  if(art){const source=flat?{x:art.width*49/900,y:art.height*129/1260,w:art.width*802/900,h:art.height*713/1260}:{x:0,y:0,w:art.width,h:art.height};const scale=Math.max(802/source.w,713/source.h)*(Number(card.artZoom||100)/100),w=source.w*scale,h=source.h*scale;ctx.drawImage(art,source.x,source.y,source.w,source.h,49+(802-w)*Number(card.artX??50)/100,49+(713-h)*Number(card.artY??0)/100,w,h);}else{ctx.fillStyle='#39392d';ctx.fillRect(49,49,802,713);}
  ctx.restore();if(shield)ctx.drawImage(shield,5,653,159.85,159.85);drawHeart(ctx,826,747);
 }
-window.RunaCardVisual={drawCard,drawCombat,drawLiquidHeart};
+window.RunaCardVisual={drawCard,drawCombat,drawLiquidHeart,formatRulesText,richRuns,layoutRules};
 })();

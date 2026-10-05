@@ -32,7 +32,7 @@ function validateDesign(card) {
   if (card.kind === 'creature' && Number(card.health) < 1) return ['A criatura precisa de pelo menos 1 de vida.', 'card-health'];
   if (card.kind === 'spell' && !card.rules?.trim()) return ['Escreva o efeito da Magia.', 'card-rules'];
   if (card.kind === 'rune' && !card.rules?.trim() && !runeTokens(card).length) return ['Informe a energia gerada pela Essência ou escreva seu efeito.', 'cost-forja'];
-  if (card.kind !== 'patron' && card.rules?.trim() && rulesOverflow(card)) return ['O texto ultrapassa a altura da caixa. Reduza manualmente o tamanho da fonte ou encurte o texto.', 'card-rules'];
+  if (card.kind !== 'patron' && card.rules?.trim() && rulesOverflow(card)) return ['O ajuste automático deixou a fonte pequena demais. Encurte o texto para manter a leitura.', 'card-rules'];
   if (card.tokenTrigger && !card.tokenName?.trim()) return ['Dê um nome à ficha criada por esta carta.', 'token-name'];
   if (!Number.isInteger(Number(card.quantity)) || Number(card.quantity) < 1 || Number(card.quantity) > (card.kind==='patron'?1:({lacaio:4,padrao:3,elite:2,soberano:1}[card.rarity]||2))) return ['Quantidade acima do limite da raridade (Bronze 4, Prata 3, Ouro 2 e Platina 1).' , 'card-quantity'];
   return null;
@@ -176,7 +176,7 @@ function wrapRichLines(ctx, runs, width, size) {
   }
   return lines;
 }
-function rulesOverflow(card){const size=number(card.fontRules,16,52,31),ctx=document.createElement('canvas').getContext('2d'),lines=wrapRichLines(ctx,richRuns(card.rules,Boolean(card.rulesItalic)),650,size),lineHeight=size*1.2;return Math.max(926,990-(lines.length-1)*lineHeight/2)+(lines.length-1)*lineHeight>1095;}
+function rulesOverflow(card){const ctx=document.createElement('canvas').getContext('2d'),layout=RunaCardVisual.layoutRules(ctx,card);return !layout.fits||layout.size<16;}
 function drawRichRules(ctx, card, x, y, width, bottom) {
   const source = card.rules || 'Escreva aqui o efeito da carta.';
   const runs = richRuns(source, Boolean(card.rulesItalic));

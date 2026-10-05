@@ -216,7 +216,7 @@ export function act(room,p,data,catalog){
     if(data.type==='mulligan'){
       if(p.mulligansLeft<=0)throw Error('Você não tem mais trocas disponíveis.');
       const ids=data.cardIds;if(!Array.isArray(ids)||ids.length<1||ids.length>5||new Set(ids).size!==ids.length||ids.some(id=>!p.hand.some(c=>c.uid===id)))throw Error('Selecione de uma a cinco cartas da sua mão.');
-      const returning=p.hand.filter(c=>ids.includes(c.uid));p.hand=p.hand.filter(c=>!ids.includes(c.uid));p.deck=shuffle([...p.deck,...returning]);p.mulligansLeft--;emit(room,'mulligan',{playerId:p.id,count:returning.length});draw(room,p,returning.length);pushLog(room,`${p.name} trocou ${returning.length} carta(s) da mão inicial.`,p.id);
+      const returning=p.hand.filter(c=>ids.includes(c.uid));p.hand=p.hand.filter(c=>!ids.includes(c.uid));p.deck=shuffle([...p.deck,...returning]);p.mulligansLeft--;emit(room,'mulligan',{playerId:p.id,count:returning.length,cardIds:returning.map(c=>c.uid)});draw(room,p,returning.length);pushLog(room,`${p.name} trocou ${returning.length} carta(s) da mão inicial.`,p.id);
     }else if(data.type==='confirmMulligan'){
       p.mulliganReady=true;pushLog(room,`${p.name} confirmou a mão inicial.`,p.id);if(room.players.every(x=>x.mulliganReady))startPrep(room,own(room,room.first));
     }else throw Error('Ação indisponível na troca inicial.');room.revision++;return;

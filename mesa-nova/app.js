@@ -4,6 +4,7 @@ const gameBase=location.pathname.startsWith('/runamarca')?'/runamarca/':'/';
 let state=null,models=null,selected=null,importedArt={},lastRevision=-1,toastTimer=null,hoverUid=null,serverClockOffset=0,pendingSnap=null,refreshing=false;
 let visualGeneration=0,visualMatchKey=null,connectionLost=false;
 let visualBooted=false,lastVisualId=0,lastPhase=null,lastBattleStep='',handOrder=[],mulliganSelected=new Set(),audioContext=null,pendingArrival=[],suppressClickUntil=0;let visualQueue=Promise.resolve();
+const mulliganDepartures=new Map();
 const emanationChoices=new Map(),spellTargets=new Map(),promptedEmanations=new Set();let emanationChoiceTurn='',autoMulliganKey='',noticeQueue=Promise.resolve();
 const displayedHealth=new Map(),pendingHealth=new Map(),displayedPatronHealth=new Map();let healthDisplayCombat=null;
 const displayedAttack=new Map(),pendingAttack=new Map();let attackDisplayCombat=null;
@@ -46,8 +47,8 @@ async function api(route,data,method='POST'){
 function trackArrivals(previous,next){
  const hand=next.players.find(p=>p.id===next.you)?.hand||[],present=new Set(hand.map(c=>c.uid));pendingArrival=pendingArrival.filter(uid=>present.has(uid));
  if(!previous||previous.you!==next.you||next.spectator||previous.matchId!==next.matchId)return;
- const before=new Set(previous.players.find(p=>p.id===previous.you)?.hand?.map(c=>c.uid)||[]),draws=new Set((next.events||[]).filter(e=>e.type==='draw'&&e.playerId===next.you&&e.id>(previous.eventId??previous.events?.at(-1)?.id??0)).map(e=>e.cardId));
- for(const card of hand)if(!before.has(card.uid)&&draws.has(card.uid)&&!pendingArrival.includes(card.uid))pendingArrival.push(card.uid);
+ const draws=new Set((next.events||[]).filter(e=>e.type==='draw'&&e.playerId===next.you&&e.id>(previous.eventId??previous.events?.at(-1)?.id??0)).map(e=>e.cardId));
+ for(const card of hand)if(draws.has(card.uid)&&!pendingArrival.includes(card.uid))pendingArrival.push(card.uid);
 }
 function prepareOpeningArrivals(){
  if(!visualBooted||!state||state.spectator)return;
@@ -57,7 +58,7 @@ function prepareOpeningArrivals(){
 }
 async function command(data,dragRect=null){if(commandBusy)return;commandBusy=true;try{
  const movingId=data.cardId||(data.type==='assign'?seat()?.formation[data.lane]:null),source=tableCard(movingId),movedCard=[...(seat()?.hand||[]),...(seat()?.reserve||[]),...(state?.players.flatMap(p=>p.prepared?.map(item=>item.card).filter(Boolean)||[])||[])].find(c=>c.uid===movingId);
- const transfer=source&&['play','assign','emanate','unprepare','movePrepared'].includes(data.type)?{uid:movingId,copy:data.type==='unprepare'&&movedCard?cardEl(movedCard):cloneVisual(source),rect:dragRect||source.getBoundingClientRect(),card:movedCard}:null;const opening=data.type==='confirmMulligan'?[...$('mulligan-cards').querySelectorAll('.card')].map(node=>({uid:node.dataset.uid,copy:cloneVisual(node),rect:node.getBoundingClientRect()})):null;if(data.type==='emanate')promptedEmanations.delete(data.cardId);const next=await api(`/api/rooms/${state.code}/act`,data);if(next.left){sessionStorage.removeItem('runamarca-nova-seat');state=null;selected=null;visualBooted=false;lastRevision=-1;history.replaceState(null,'',gameBase);render();return;}trackArrivals(state,next);serverClockOffset=Date.now()-next.serverNow;state=next;if(opening?.length)for(const item of opening)movingCards.add(item.uid);if(transfer)movingCards.add(transfer.uid);render();if(opening?.length)await animateOpeningToHand(opening);if(transfer)await animateTransfer(transfer);}catch(e){err(e);}finally{commandBusy=false;if(data.type==='assign'&&data.cardId){const card=seat()?.reserve.find(c=>c.uid===data.cardId);if(card?.effects?.some(e=>e.op==='taunt')&&!Number.isInteger(seat().taunts?.[card.uid]))showTauntPicker(card);}}}
+ const transfer=source&&['play','assign','emanate','unprepare','movePrepared'].includes(data.type)?{uid:movingId,copy:data.type==='unprepare'&&movedCard?cardEl(movedCard):cloneVisual(source),rect:dragRect||source.getBoundingClientRect(),card:movedCard}:null;const opening=data.type==='confirmMulligan'?[...$('mulligan-cards').querySelectorAll('.card')].map(node=>({uid:node.dataset.uid,copy:cloneVisual(node),rect:node.getBoundingClientRect()})):null;const returning=data.type==='mulligan'?data.cardIds.map(uid=>{const node=tableCard(uid);return node?{uid,copy:cloneVisual(node),rect:node.getBoundingClientRect()}:null;}).filter(Boolean):null;if(data.type==='emanate')promptedEmanations.delete(data.cardId);const next=await api(`/api/rooms/${state.code}/act`,data);if(next.left){sessionStorage.removeItem('runamarca-nova-seat');state=null;selected=null;visualBooted=false;lastRevision=-1;history.replaceState(null,'',gameBase);render();return;}if(returning?.length){const event=next.events?.find(e=>e.type==='mulligan'&&e.playerId===state.you&&e.id>(state.eventId||0));if(event)mulliganDepartures.set(event.id,returning);}trackArrivals(state,next);serverClockOffset=Date.now()-next.serverNow;state=next;if(opening?.length)for(const item of opening)movingCards.add(item.uid);if(transfer)movingCards.add(transfer.uid);render();if(opening?.length)await animateOpeningToHand(opening);if(transfer)await animateTransfer(transfer);}catch(e){err(e);}finally{commandBusy=false;if(data.type==='assign'&&data.cardId){const card=seat()?.reserve.find(c=>c.uid===data.cardId);if(card?.effects?.some(e=>e.op==='taunt')&&!Number.isInteger(seat().taunts?.[card.uid]))showTauntPicker(card);}}}
 async function refresh(){const saved=sessionStorage.getItem('runamarca-nova-seat');if(!saved||refreshing||commandBusy||activeDrag)return;refreshing=true;try{const info=JSON.parse(saved);const next=await api(`/api/rooms/${info.code}/state?revision=${lastRevision}`,null,'GET');if(!next){connectionLost=false;return;}connectionLost=false;serverClockOffset=Date.now()-next.serverNow;if(next.revision>lastRevision||!state){trackArrivals(state,next);state=next;render();}}catch(e){if(['SEAT_INVALID','ROOM_NOT_FOUND'].includes(e.code)){sessionStorage.removeItem('runamarca-nova-seat');state=null;render();err(e);}else if(e.code!=='ACCESS_REQUIRED'&&!connectionLost){connectionLost=true;err(e.code==='ACCOUNT_REQUIRED'?e:Error('Conexão interrompida. Tentando reconectar sem perder sua vaga.'));}}finally{refreshing=false;}}
 function button(label,handler,klass='',disabled=false){const b=document.createElement('button');b.type='button';b.textContent=label;b.className=klass;b.disabled=disabled;b.onclick=handler;return b;}
 function text(parent,tag,value,klass){const el=document.createElement(tag);el.textContent=value;if(klass)el.className=klass;parent.append(el);return el;}
@@ -86,7 +87,7 @@ function cardEl(card,{mini=false,back=false,active=false,combat=false}={}){
 let narrativeTimer=null;
 const keywordGlossary=[
  [/adorme[çc]|adormec/i,'Adormecer','A criatura fica presa na posição e não ataca durante o combate de ativação e o seguinte. Continua recebendo dano.'],
- [/âncor|ancor/i,'Âncoragem','A criatura permanece na mesma posição até participar de mais um combate.'],
+ [/âncor|ancor/i,'Ancoragem','A criatura permanece na mesma posição até participar de mais um combate.'],
  [/barreira/i,'Barreira','A posição protege seu ocupante com 2 de vida temporária durante dois combates.'],
  [/transpassar/i,'Transpassar','O dano de combate que excede a vida do defensor atinge o Patrono.'],
  [/provocar/i,'Provocar','Escolha uma posição adjacente: seu atacante enfrenta esta criatura.'],
@@ -331,6 +332,17 @@ async function animateTransfer({uid,copy,rect,card,duration:customDuration,delay
   await Promise.all([settleAnimation(departing,duration+delay),settleAnimation(arriving,duration+delay)]);if(generation===visualGeneration)sound('place');
  }catch(error){console.error(error);}finally{flight?.remove();if(generation===visualGeneration)finishVisual(uid,arrival);else arrival?.remove();if(!flight)copy?.remove();}
 }
+async function animateMulliganReturn(event){
+ const generation=visualGeneration,cards=mulliganDepartures.get(event.id)||[];mulliganDepartures.delete(event.id);
+ if(!cards.length){await pause(350);return;}
+ const end=center($('self-deck')),bounds=$('visual-layer').getBoundingClientRect();
+ await Promise.all(cards.map(async({copy,rect},i)=>{
+  const wrapper=document.createElement('div');wrapper.className='card-flight';Object.assign(wrapper.style,{left:(rect.left-bounds.left)+'px',top:(rect.top-bounds.top)+'px',width:rect.width+'px',height:rect.height+'px'});
+  copy.classList.remove('opening-card','hand-card','selected','pending-arrival','arrived','payable');copy.classList.add('flight-face');copy.removeAttribute('style');wrapper.append(copy);$('visual-layer').append(wrapper);
+  const dx=end.x-rect.left-rect.width/2,dy=end.y-rect.top-rect.height/2;
+  try{await settleAnimation(wrapper.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+dx+'px,'+dy+'px) scale(.28)',opacity:0}],{duration:600,delay:i*75,easing:'cubic-bezier(.4,0,.6,1)',fill:'both'}),600+i*75);}finally{wrapper.remove();}
+ }));if(generation===visualGeneration)sound('place');
+}
 async function animateOpeningToHand(cards){
  const notice=visualMessage('MÃO CONFIRMADA','As cartas seguem para sua mão',1450);
  await Promise.all(cards.map((item,index)=>animateTransfer({...item,destination:'#hand .card[data-uid="'+item.uid+'"]',duration:1150,delay:index*110})));await notice;
@@ -386,7 +398,7 @@ async function animateEvent(event,generation=visualGeneration){await noticeQueue
    if(event.type==='coin'){$('mulligan-overlay').classList.add('coin-pending');sound('coin');visualMessage('A MOEDA DECIDIU',`${player?.name||'Jogador'} joga primeiro`,1900);const coin=document.createElement('div');coin.className='coin-toss';coin.textContent='✦';$('visual-layer').append(coin);setTimeout(()=>coin.remove(),1900);await pause(1900);if(generation===visualGeneration)$('mulligan-overlay').classList.remove('coin-pending');}
    else if(event.type==='first'){visualMessage('ORDEM DEFINIDA',`${player?.name||'Jogador'} joga primeiro`,1500);await pause(1250);}
    else if(event.type==='opening'){if(mine){visualMessage('MÃO INICIAL','Você recebe cinco cartas',1900);const ids=event.cardIds||[...(seat()?.hand||[])].slice(0,event.count||5).map(c=>c.uid);for(const uid of ids){if(generation!==visualGeneration)break;await animateDraw(uid,true);}}}
-   else if(event.type==='mulligan'){visualMessage('TROCA INICIAL',`${player?.name||'Jogador'} troca ${event.count} carta(s)`,950);await pause(600);}
+   else if(event.type==='mulligan'){visualMessage('TROCA INICIAL',`${player?.name||'Jogador'} troca ${event.count} carta(s)`,950);await animateMulliganReturn(event);}
    else if(event.type==='turn'){await visualMessage('INÍCIO DE TURNO',`${player?.name||'Jogador'} · rodada ${event.round}`,1150);}
    else if(event.type==='draw'){await animateDraw(event.cardId||pendingArrival[0],mine);}
    else if(event.type==='burn'){visualMessage('CARTA QUEIMADA',`Mão cheia: ${event.name||'uma carta'} foi para o Nartvanyr`,1700);$('hand').classList.add('hand-burn');setTimeout(()=>$('hand').classList.remove('hand-burn'),1000);fly('▰',from,$(mine?'self-grave':'opponent-grave'),'burn');sound('burn');await pause(1550);}
@@ -400,13 +412,13 @@ async function animateEvent(event,generation=visualGeneration){await noticeQueue
 }
 function resetVisualSession(){
  const key=state?[state.code,state.you,state.matchId||'lobby'].join(':'):null;if(key===visualMatchKey)return;const sameSeat=state&&visualMatchKey?.startsWith([state.code,state.you].join(':')+':'),previousId=lastVisualId,wasBooted=visualBooted;
- visualMatchKey=key;visualGeneration++;visualQueue=Promise.resolve();noticeQueue=Promise.resolve();visualBooted=Boolean(sameSeat&&wasBooted);lastVisualId=sameSeat?previousId:0;lastBattleStep='';pendingArrival=[];movingCards.clear();deadVisuals.clear();displayedAttack.clear();pendingAttack.clear();displayedHealth.clear();pendingHealth.clear();displayedPatronHealth.clear();spellTargetRects.clear();
+ visualMatchKey=key;visualGeneration++;visualQueue=Promise.resolve();noticeQueue=Promise.resolve();visualBooted=Boolean(sameSeat&&wasBooted);lastVisualId=sameSeat?previousId:0;lastBattleStep='';pendingArrival=[];movingCards.clear();deadVisuals.clear();displayedAttack.clear();pendingAttack.clear();displayedHealth.clear();pendingHealth.clear();displayedPatronHealth.clear();spellTargetRects.clear();mulliganDepartures.clear();
  for(const layer of ['visual-layer','notice-layer']){const node=$(layer);node?.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());node?.replaceChildren();}document.querySelectorAll('.speech-bubble,.banquet-halo').forEach(node=>node.remove());
 }
 function recoverVisualGap(){
  const events=state?.events||[],newest=state?.eventId??events.at(-1)?.id??0;
  if(!visualBooted||(state?.eventsFrom??events[0]?.id??newest+1)<=lastVisualId+1)return;
- visualGeneration++;visualQueue=Promise.resolve();noticeQueue=Promise.resolve();pendingArrival=[];movingCards.clear();deadVisuals.clear();displayedHealth.clear();pendingHealth.clear();displayedAttack.clear();pendingAttack.clear();displayedPatronHealth.clear();lastVisualId=newest;
+ visualGeneration++;visualQueue=Promise.resolve();noticeQueue=Promise.resolve();pendingArrival=[];movingCards.clear();deadVisuals.clear();displayedHealth.clear();pendingHealth.clear();displayedAttack.clear();pendingAttack.clear();displayedPatronHealth.clear();mulliganDepartures.clear();lastVisualId=newest;
  const layer=$('visual-layer');layer?.getAnimations?.({subtree:true}).forEach(a=>a.cancel());layer?.replaceChildren();$('notice-layer')?.replaceChildren();document.querySelectorAll('#game .card,#game .spell-mark').forEach(node=>{node.classList.remove('pending-arrival');node.style.visibility='';});
 }
 function queueEvents(){const events=state?.events||[];const newest=state?.eventId??events.at(-1)?.id??0,generation=visualGeneration;if(!visualBooted){lastVisualId=newest;visualBooted=true;for(const event of events.filter(e=>['creature','summon'].includes(e.type)&&Date.now()-serverClockOffset-e.at<3000))setTimeout(()=>{if(generation===visualGeneration)speechBubble(event);},850);return;}for(const event of events.filter(x=>x.id>lastVisualId)){visualQueue=visualQueue.then(()=>generation===visualGeneration?animateEvent(event,generation):null).catch(()=>{});}lastVisualId=newest;}
