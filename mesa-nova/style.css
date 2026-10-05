@@ -399,3 +399,6 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 
 /* Sono Profundo: estado visível sem ocultar os atributos. */
 .sleeping-card{box-shadow:0 0 10px #6989b977;}.sleep-badge{position:absolute;right:8%;top:12%;z-index:6;color:#d9e7ff;font:bold 16px Georgia;text-shadow:0 1px 4px #161b2f;}.sleeping-space{border-color:#7895b7!important;}.sleep-space-mark{position:absolute;top:6px;right:8px;color:#bfd4ef;font-size:22px;}
+.speech-bubble{pointer-events:none;animation-duration:3.6s;font-size:14px;max-width:280px}
+.banquet-halo{position:fixed;z-index:180;pointer-events:none;width:120px;height:120px;border:3px solid #ccebb0;border-radius:50%;box-shadow:0 0 24px #8bbf62,inset 0 0 30px #e7d28c;animation:banquet-bloom 1.5s ease-out both}
+@keyframes banquet-bloom{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.7)}}

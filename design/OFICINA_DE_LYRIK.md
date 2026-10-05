@@ -1,6 +1,6 @@
 # Oficina de Lyrik — novo deck de Forja
 
-O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem **30 cartas, 15 modelos**, com as ilustrações, os enquadramentos, as falas e os textos narrativos enviados. Como não foi enviado outro Patrono, utiliza **A Bigorna Desperta**, com 16 de vida.
+O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem **30 cartas, 16 modelos**, com as ilustrações, os enquadramentos, as falas e os textos narrativos enviados. Como não foi enviado outro Patrono, utiliza **A Bigorna Desperta**, com 16 de vida.
 
 ## Composição
 
@@ -8,11 +8,11 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 |---|---|---:|---:|---|
 | Mecânico Proativo | Bronze | 2 | 3 | 2 / 2 |
 | Anão escudeiro | Bronze | 3 | 2 | 1 / 3 |
-| Anão Taverneiro | Bronze | 4 | 2 | 1 / 1 |
+| Anão Taverneiro | Bronze | 3 | 2 | 1 / 1 |
 | Sintético Próspero | Ouro | 2 | 2 | 0 / 1 |
 | Rompe-problema | Prata | 3 | 5 | 5 / 2 |
-| Anão estudioso | Prata | 2 | 4 | 1 / 2 |
-| Elfo estudioso | Prata | 2 | 4 | 1 / 2 |
+| Anão estudioso | Prata | 1 | 4 | 1 / 2 |
+| Elfo estudioso | Prata | 1 | 4 | 1 / 2 |
 | Monge Rúnico | Prata | 1 | 5 | 3 / 4 |
 | G.0.L.1.A.5, o Terror Náutico | Ouro | 2 | 8 | 5 / 12 |
 | Reforço Divino | Ouro | 1 | 5 | Magia: +2 / +2 |
@@ -22,6 +22,8 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 | Toque Gélido | Prata | 2 | 2 | Magia: -1 ataque permanente na posição |
 | Geada Implacável | Ouro | 2 | 4 | Magia: -1 ataque permanente em área |
 | Disparo de Forja | Bronze | 2 | 3 | Magia: 2 de dano |
+
+| João Bobão | Bronze | 3 | 1 | 0 / 2 |
 
 ## Regras implementadas e aprovadas
 
@@ -33,10 +35,10 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 - **Sintético:** ganha +1/+1 permanente ao sobreviver **participando da formação**. Não cresce por ficar na reserva ou em Emanação.
 - **Cataclisma:** após seu ataque causar dano em uma criatura, causa 1 nas criaturas das posições adjacentes à posição atingida. Não atinge Emanação, reserva ou Patrono em posição vazia. Com Provocar, a referência é a posição do defensor atingido.
 - **Escudeiro:** recebe o ataque adicional enquanto tiver dano acumulado. A cura que remove todo o dano remove esse bônus.
-- **Elfo:** cura um aliado selecionado ao encerrar a preparação, pagando 1 mana por ativação. Pode curar a si mesmo; não cura Patrono, conforme o texto enviado.
-- **Anão estudioso:** compra 1 ao entrar. Em Emanação, cada cópia acrescenta 1 de ataque à primeira posição; os bônus se acumulam.
+- **Elfo:** cura um aliado selecionado ao encerrar a preparação, pagando 1 mana por ativação. Pode curar a si mesmo ou o Patrono, conforme a revisão de 04/10.
+- **Anão estudioso:** compra 1 ao entrar. Em Emanação, cada cópia concede 1 de vida temporária ao ocupante aliado da primeira posição durante o combate. A remoção da aura segue a regra de vida temporária da Barreira. Não concede ataque.
 - **Reforço Divino:** +2/+2 permanente. Pode ser usado diretamente em um aliado ou preparado em uma posição aliada. A vida acrescentada não apaga danos já recebidos.
-- **Posição beneficiada:** borda verde pulsante para magia de bônus preparada ou aura de ataque de Emanação.
+- **Posição beneficiada:** borda verde pulsante para magia de bônus preparada ou aura de ataque ou vida de Emanação.
 
 ## Divergências corrigidas
 

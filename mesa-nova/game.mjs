@@ -89,6 +89,7 @@ function beginCombat(room){
   const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...revelations.map(ability=>({kind:'revelation',duration:1200,ability})),...Array.from({length:3},(_,lane)=>({kind:'clash',lane,duration:2200})),{kind:'result',duration:1200}];
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id}:null;})})),spells};
+  room.combat.auraHealthUpdates=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const c=findCreature(p,uid),bonus=p.emanation.flatMap(id=>effects(findCreature(p,id))).filter(e=>e.op==='lane_health_aura'&&e.lane===lane).reduce((n,e)=>n+e.amount,0);return c&&bonus?[{uid:c.uid,hp:c.health-c.damage+bonus,maxHp:c.health+bonus}]:[];}));
   // Simulate on a detached snapshot so the animation knows which cards actually
   // reach the clash after prepared spells and Revelation have resolved.
   const preview=structuredClone({...room,onChange:null,botTimer:null,combat:null,collectPreview:true});
@@ -110,6 +111,7 @@ export function resolveCombat(room){
   if(room.collectPreview){room.spellHealthUpdates=[];room.revelationHealthUpdates=[];}
   const [left,right]=room.players;
   room.lastCombat={round:room.round,names:[left.name,right.name],lanes:Array.from({length:3},(_,lane)=>({left:laneCard(room,left.id,lane)?.name||'Vazia',right:laneCard(room,right.id,lane)?.name||'Vazia'})),spells:[],patronHits:[]};
+  for(const p of room.players)for(let lane=0;lane<3;lane++){const c=laneCard(room,p.id,lane);if(!c)continue;const bonus=p.emanation.flatMap(uid=>effects(findCreature(p,uid))).filter(e=>e.op==='lane_health_aura'&&e.lane===lane).reduce((n,e)=>n+e.amount,0);if(bonus){c.health+=bonus;c.temporaryHealth=(c.temporaryHealth||0)+bonus;}}
   const triggered=[];
   for(const p of room.players)for(const prep of p.prepared){const targetSide=own(room,prep.targetSide);const target=laneCard(room,targetSide.id,prep.lane);if(target)triggered.push({prep,caster:p,target,targetSide});}
   const spellChanges=new Map();const spellDraws=[];const killDraws=[];
@@ -266,11 +268,11 @@ export function act(room,p,data,catalog){
       emit(room,'creature',{playerId:p.id,cardId:card.uid,name:card.name,zone:leaving?'reserve':'emana',speech:card.speech||'Estou a postos.'});
     }else if(data.type==='endPrep'){
       const clerics=p.emanation.filter(uid=>effects(p.reserve.find(c=>c.uid===uid)).some(e=>e.op==='heal'&&String(e.timing).includes('emanat')));
-      const healingCost=clerics.reduce((sum,uid,index)=>{const c=findCreature(p,uid),ef=effects(c).find(e=>e.op==='heal'&&String(e.timing).includes('emanat')),t=findCreature(p,data.healTargetIds?.[index]||data.healTargetId);return sum+(t?.damage>0&&(!ef.exclude_self||t.uid!==uid)?ef.mana_cost||0:0);},0);if(p.mana<healingCost)throw Error('Mana insuficiente para as curas escolhidas. Cancele uma cura ou preserve a mana.');
+      const healingCost=clerics.reduce((sum,uid,index)=>{const c=findCreature(p,uid),ef=effects(c).find(e=>e.op==='heal'&&String(e.timing).includes('emanat')),targetId=data.healTargetIds?.[index]||data.healTargetId,t=targetId==='patron'&&ef.allow_patron?{damage:p.patron.maxHp-p.patron.hp}:findCreature(p,targetId);return sum+(t?.damage>0&&(!ef.exclude_self||t.uid!==uid)?ef.mana_cost||0:0);},0);if(p.mana<healingCost)throw Error('Mana insuficiente para as curas escolhidas. Cancele uma cura ou preserve a mana.');
       clerics.forEach((uid,index)=>{
-        const cleric=findCreature(p,uid),ef=effects(cleric).find(ef=>ef.op==='heal'&&String(ef.timing).includes('emanat')),target=findCreature(p,data.healTargetIds?.[index]||data.healTargetId),cost=ef?.mana_cost||0;
+        const cleric=findCreature(p,uid),ef=effects(cleric).find(ef=>ef.op==='heal'&&String(ef.timing).includes('emanat')),targetId=data.healTargetIds?.[index]||data.healTargetId,target=targetId==='patron'&&ef?.allow_patron?{patron:true,damage:p.patron.maxHp-p.patron.hp}:findCreature(p,targetId),cost=ef?.mana_cost||0;
         if(!target||target.damage<=0||(ef?.exclude_self&&target.uid===uid)||p.mana<cost)return;
-        p.mana-=cost;target.damage=Math.max(0,target.damage-(ef.amount||1));
+        p.mana-=cost;if(target.patron){p.patron.hp=Math.min(p.patron.maxHp,p.patron.hp+(ef.amount||1));emit(room,'cleric_heal',{playerId:p.id,sourceId:uid,targetPatronId:p.id,amount:ef.amount||1,mana:cost,healthUpdates:[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}]});return;}target.damage=Math.max(0,target.damage-(ef.amount||1));
         emit(room,'cleric_heal',{playerId:p.id,sourceId:uid,targetId:target.uid,amount:ef.amount||1,mana:cost,healthUpdates:[{uid:target.uid,hp:target.health-target.damage,maxHp:target.health}]});
       });
       room.preparationsDone=(room.preparationsDone||0)+1;
