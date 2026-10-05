@@ -44,6 +44,29 @@ test('Um Banquete pendente não altera a vida da partida seguinte',async()=>{
  vm.createContext(ctx);vm.runInContext(section(app,'async function animateBanquet','async function animateEvent'),ctx);
  await ctx.animateBanquet({healthUpdates:[{uid:'old',hp:7}]});assert.deepEqual(updates,[]);
 });
+test('A mão inicial espera cada compra, sem ocultar cartas de uma sessão já carregada',()=>{
+ const ctx={visualBooted:true,lastVisualId:4,pendingArrival:[],state:{you:'me',events:[{id:5,type:'opening',playerId:'me',cardIds:['a','b'],count:2}]},seat:()=>({hand:[{uid:'a'},{uid:'b'},{uid:'later'}]})};
+ vm.createContext(ctx);vm.runInContext(section(app,'function prepareOpeningArrivals','async function command'),ctx);ctx.prepareOpeningArrivals();assert.deepEqual(Array.from(ctx.pendingArrival),['a','b']);
+ ctx.pendingArrival=[];ctx.lastVisualId=5;ctx.prepareOpeningArrivals();assert.deepEqual(Array.from(ctx.pendingArrival),[]);
+ ctx.lastVisualId=0;ctx.visualBooted=false;ctx.prepareOpeningArrivals();assert.deepEqual(Array.from(ctx.pendingArrival),[]);
+});
+test('Alvos de ataque seguem o dono e a posição reais nos dois lados da mesa',()=>{
+ const nodes=[{dataset:{uid:'taunt'},closest:()=>({dataset:{owner:'b'}})},{dataset:{uid:'other'},closest:()=>({dataset:{owner:'b'}})}],patrons={a:{id:'patron-a'},b:{id:'patron-b'}};
+ for(const viewer of ['a','b']){
+  const ctx={seat:()=>({id:viewer}),document:{querySelectorAll:()=>nodes},$:id=>({querySelector:()=>patrons[id==='self-head'?viewer:viewer==='a'?'b':'a']})};vm.createContext(ctx);vm.runInContext(section(app,'function attackTarget','async function animateLaneClash'),ctx);
+  assert.equal(ctx.attackTarget({owner:'a',targetOwner:'b',targetId:null}),patrons.b);
+  assert.equal(ctx.attackTarget({owner:'b',targetOwner:'a',targetId:null}),patrons.a);
+  assert.equal(ctx.attackTarget({owner:'a',targetOwner:'b',targetId:'taunt'}),nodes[0]);
+  assert.equal(ctx.attackTarget({owner:'a',targetOwner:'b',targetId:'missing'}),null);
+  assert.equal(ctx.attackTarget({owner:'a',targetOwner:'a',targetId:null}),null);
+ }
+});
+test('Par de ataques conserva os IDs e donos mesmo sem metadados da prévia visual',async()=>{
+ let entry;const ctx={visualGeneration:0,state:{combat:{visual:[]}},animateLaneClash:async value=>{entry=value;}};
+ vm.createContext(ctx);vm.runInContext(section(app,'async function animateDirectedStrike','function animateCasualties'),ctx);
+ await ctx.animateDirectedStrike({sourceId:'first',owner:'a',targetId:'second',targetOwner:'b',amount:3,lane:0,healthUpdates:[],pair:{sourceId:'second',owner:'b',targetId:'first',targetOwner:'a',amount:2}});
+ assert.deepEqual(Array.from(entry.cards,c=>[c.uid,c.owner,c.attack]),[['first','a',3],['second','b',2]]);
+});
 test('Escrita tardia de histórico não marca outra partida como salva',async()=>{
  const source=fs.readFileSync('accounts.mjs','utf8');let finish;
  const room={phase:'finished',matchId:'old',recording:'not-finished',matchPlayers:[{id:'a',discordId:'a'},{id:'b',discordId:'b'}],winner:'a',code:'AUD123'};
