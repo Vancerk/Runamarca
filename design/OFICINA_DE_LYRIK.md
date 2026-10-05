@@ -9,19 +9,19 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 | Mecânico Proativo | Bronze | 2 | 3 | 2 / 2 |
 | Anão escudeiro | Bronze | 3 | 2 | 1 / 3 |
 | Anão Taverneiro | Bronze | 4 | 2 | 1 / 1 |
-| Sintético Próspero | Ouro | 2 | 3 | 0 / 2 |
-| Rompe-problema | Prata | 3 | 5 | 6 / 2 |
+| Sintético Próspero | Ouro | 2 | 2 | 0 / 1 |
+| Rompe-problema | Prata | 3 | 5 | 5 / 2 |
 | Anão estudioso | Prata | 2 | 4 | 1 / 2 |
 | Elfo estudioso | Prata | 2 | 4 | 1 / 2 |
 | Monge Rúnico | Prata | 1 | 5 | 3 / 4 |
-| G.0.L.1.A.5, o Terror Náutico | Ouro | 2 | 8 | 7 / 10 |
-| Reforço Divino | Ouro | 1 | 4 | Magia: +2 / +2 |
-| v.3.r.0.n.1.c.a | Platina | 1 | 8 | 6 / 8 |
+| G.0.L.1.A.5, o Terror Náutico | Ouro | 2 | 8 | 5 / 12 |
+| Reforço Divino | Ouro | 1 | 5 | Magia: +2 / +2 |
+| v.3.r.0.n.1.c.a | Platina | 1 | 8 | 5 / 7 |
 | c.4.t.4.c.l.1.s.m.4 | Platina | 1 | 10 | 6 / 10 |
 
 | Toque Gélido | Prata | 2 | 2 | Magia: -1 ataque permanente na posição |
 | Geada Implacável | Ouro | 2 | 4 | Magia: -1 ataque permanente em área |
-| Disparo de Forja | Bronze | 2 | 2 | Magia: 2 de dano |
+| Disparo de Forja | Bronze | 2 | 3 | Magia: 2 de dano |
 
 ## Regras implementadas e aprovadas
 
@@ -51,9 +51,9 @@ O deck anterior **Juramento de Aço** permanece disponível. Este novo deck tem 
 - **Nome:** arquivo e campo do nome dizem `v.3.r.0.n.1.c.a`; a mensagem menciona `v.3.r.0.n.1.c.4`. Foi preservado o nome do arquivo; confirmar se a última letra deve virar algarismo.
 - **Patrono:** confirmar futuramente se o deck deve ter outro Patrono; por enquanto usa a Bigorna existente.
 - **Preço das novas habilidades:** o contador não possui fórmula calibrada para Iniciativa, Transpassar, Provocar, crescimento recorrente ou dano adjacente. Elas aparecem como efeitos personalizados **ainda sem preço**, com aviso explícito; zero provisório não significa habilidade gratuita. Nenhum custo ou atributo foi rebalanceado automaticamente.
-- **Orçamento mínimo:** Mecânico 2/2 por 3 mana gasta 4/7 pontos antes de Iniciativa; Rompe-problema 6/2 por 5 gasta 8/11 antes de Transpassar; Golias 7/10 por 8 gasta 17/17 antes de Provocar. Precisam de revisão do custo da habilidade ou de exceção de design justificada.
+- **Orçamento mínimo:** Mecânico 2/2 por 3 mana gasta 4/7 pontos antes de Iniciativa; Rompe-problema 5/2 por 5 gasta 7/11 antes de Transpassar; Golias 5/12 por 8 gasta 17/17 antes de Provocar. Precisam de revisão do custo da habilidade ou de exceção de design justificada.
 - **Taverneiro:** 1/1 por 2 mana com compra de 1 soma 5 pontos na referência atual, diante de 5 disponíveis. É um motor de compra eficiente, especialmente com quatro cópias.
-- **Sintético:** duas cópias de custo 3 com crescimento permanente podem gerar pressão cumulativa. O crescimento depende de entrar em combate e sobreviver, oferecendo ao rival oportunidade de eliminá-lo antes de crescer.
+- **Sintético:** duas cópias de custo 2, corpo 0/1, com crescimento permanente podem gerar pressão cumulativa. O crescimento depende de entrar em combate e sobreviver, oferecendo ao rival oportunidade de eliminá-lo antes de crescer.
 - **Duração do Reforço Divino:** foi interpretado como permanente por não haver duração no texto. Caso devesse terminar no combate, precisa de alteração explícita.
 - **Economia do deck:** tem 23 criaturas e sete magias. Isso concentra respostas e compra em criaturas; 4 Taverneiros + 2 Estudiosos representam até seis compras de entrada.
 - **Custo 10:** Cataclisma só pode entrar com a mana máxima. Pode aparecer cedo e ocupar espaço na mão; não foi concedido desconto especial.
@@ -75,3 +75,9 @@ Custos e atributos alterados por autorização do autor. Composição atual: Mec
 Toque Gélido custa 2 e reduz permanentemente 1 de ataque da criatura que ativar sua posição inimiga. Geada Implacável custa 4: diretamente atinge a reserva inimiga fora da Emanação; como armadilha, apenas as três posições. Não causa dano e portanto não segue a redução pela metade do dano em área. A redução não deixa ataque negativo. Disparo de Forja custa 2 e causa 2 de dano a uma criatura inimiga, incluindo Emanação no uso direto. Não atinge Patronos. Usa provisoriamente a arte de Selo de Estacas, enquanto as duas magias de gelo usam as imagens enviadas.
 
 Raciocínio de custo: Toque recebe custo 2 pela redução permanente, com dependência de ativação da posição; Geada recebe custo 4 pela abrangência e permanência; Disparo usa a referência de 2 pontos por dano (4 pontos para 2 mana). Esses são custos iniciais de teste, não uma certificação de balanceamento. O relatório de 20 partidas permanece histórico, anterior a estas mudanças. Não foi executada nova bateria de partidas nesta revisão.
+
+## Terceira revisão de 4 de outubro — nova bateria de 20 partidas
+
+Disparo passa de 2 para 3 mana; Reforço de 4 para 5 mana; Rompe-problema de 6/2 para 5/2; Golias de 7/10 para 5/12; Veronica de 6/8 para 5/7; Sintético de custo 3 e 0/2 para custo 2 e 0/1. Quantidades e habilidades preservadas.
+
+A bateria anterior à revisão terminou 13–7 para Forja; esta terminou 14–6, com média de 8,85 rodadas contra 8,20. As mesmas 20 sementes e a mesma política foram usadas. Essa diferença de uma vitória não demonstra aumento real de força. O relatório detalhado está em `testes-2026-10-04-novos-revisao2/RELATORIO.md`; resultados anteriores permanecem históricos.
