@@ -14,13 +14,14 @@ const pushLog = (room,message,actor=room.turn) => {room.log.push({message,round:
 const emit = (room,type,details={}) => {room.events??=[];room.events.push({id:++room.eventId,type,at:Date.now(),...details});if(room.events.length>128)room.events.shift();};
 const alive = card => card && card.damage < card.health;
 const reserveSize = p => p.reserve.filter(c=>alive(c)&&!p.emanation.includes(c.uid)).length;
+const auraApplies=(e,card,lane)=>e.lane===lane&&(!e.subtypeIncludes||String(card?.subtype||'').toLowerCase().includes(e.subtypeIncludes.toLowerCase()));
 const attack = (card,room,lane) => {
   if(!card||card.sleep)return 0;
   let value=card.attack+(card.attackMod||0)+(room.laneBonuses?.[card.owner]?.[lane]||0);
   if(card.damage>0)value+=effects(card).filter(e=>e.op==='wounded_attack').reduce((sum,e)=>sum+e.amount,0);
   const p=own(room,card.owner);
   if(p&&lane===0)value+=p.emanation.filter(uid=>p.reserve.find(c=>c.uid===uid)?.modelId==='R05').length;
-  if(p)value+=p.emanation.flatMap(uid=>effects(p.reserve.find(c=>c.uid===uid))).filter(e=>e.op==='lane_attack_aura'&&e.lane===lane).reduce((sum,e)=>sum+e.amount,0);
+  if(p)value+=p.emanation.flatMap(uid=>effects(p.reserve.find(c=>c.uid===uid))).filter(e=>e.op==='lane_attack_aura'&&auraApplies(e,card,lane)).reduce((sum,e)=>sum+e.amount,0);
   return Math.max(0,value);
 };
 const laneCard = (room,ownerId,lane) => own(room,ownerId).formation[lane] ? own(room,ownerId).reserve.find(c=>c.uid===own(room,ownerId).formation[lane]) : null;
@@ -60,6 +61,7 @@ function applyDamage(room,card,amount){if(card && amount>0)card.damage+=amount;}
 function applyEffect(room,caster,spell,target,phase){
   for(const ef of effects(spell)){
     if(room.phase==='finished')break;
+    if(ef.op==='heal_patron'){caster.patron.hp=Math.min(caster.patron.maxHp,caster.patron.hp+ef.amount);continue;}
     if(ef.op==='draw'){draw(room,caster,ef.amount);continue;}
     if(ef.op==='discard'){caster.pendingDiscard=Math.min(caster.hand.length,(caster.pendingDiscard||0)+ef.amount);continue;}
     if(ef.op==='area_stat_buff'){for(const c of caster.reserve.filter(alive)){c.attack+=ef.attack;c.health+=ef.health;spellBuff(c,room.round,true);}continue;}
@@ -97,7 +99,7 @@ function beginCombat(room){
   const timeline=[{kind:'reveal',duration:1200},...spells.map(spell=>({kind:'magic',duration:1250,spell})),...Array.from({length:3},(_,lane)=>({kind:'clash',lane,duration:2200})),{kind:'result',duration:1200}];
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCard(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id}:null;})})),spells};
-  room.combat.auraHealthUpdates=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const c=findCreature(p,uid),bonus=p.emanation.flatMap(id=>effects(findCreature(p,id))).filter(e=>e.op==='lane_health_aura'&&e.lane===lane).reduce((n,e)=>n+e.amount,0);return c&&bonus?[{uid:c.uid,hp:c.health-c.damage+bonus,maxHp:c.health+bonus}]:[];}));
+  room.combat.auraHealthUpdates=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const c=findCreature(p,uid),bonus=p.emanation.flatMap(id=>effects(findCreature(p,id))).filter(e=>e.op==='lane_health_aura'&&auraApplies(e,c,lane)).reduce((n,e)=>n+e.amount,0);return c&&bonus?[{uid:c.uid,hp:c.health-c.damage+bonus,maxHp:c.health+bonus}]:[];}));
   // Simulate on a detached snapshot so the animation knows which cards actually
   // reach the clash after prepared spells and Revelation have resolved.
   const preview=structuredClone({...room,onChange:null,botTimer:null,combat:null,collectPreview:true});
@@ -119,13 +121,14 @@ export function resolveCombat(room){
   if(room.collectPreview){room.spellHealthUpdates=[];room.revelationHealthUpdates=[];room.revelationsApplied=[];}
   const [left,right]=room.players;
   room.lastCombat={round:room.round,names:[left.name,right.name],lanes:Array.from({length:3},(_,lane)=>({left:laneCard(room,left.id,lane)?.name||'Vazia',right:laneCard(room,right.id,lane)?.name||'Vazia'})),spells:[],patronHits:[]};
-  for(const p of room.players)for(let lane=0;lane<3;lane++){const c=laneCard(room,p.id,lane);if(!c)continue;const bonus=p.emanation.flatMap(uid=>effects(findCreature(p,uid))).filter(e=>e.op==='lane_health_aura'&&e.lane===lane).reduce((n,e)=>n+e.amount,0);if(bonus){c.health+=bonus;c.temporaryHealth=(c.temporaryHealth||0)+bonus;}}
+  for(const p of room.players)for(let lane=0;lane<3;lane++){const c=laneCard(room,p.id,lane);if(!c)continue;const bonus=p.emanation.flatMap(uid=>effects(findCreature(p,uid))).filter(e=>e.op==='lane_health_aura'&&auraApplies(e,c,lane)).reduce((n,e)=>n+e.amount,0);if(bonus){c.health+=bonus;c.temporaryHealth=(c.temporaryHealth||0)+bonus;}}
   const triggered=[];
   for(const p of room.players)for(const prep of p.prepared){const targetSide=own(room,prep.targetSide);const target=laneCard(room,targetSide.id,prep.lane);if(target)triggered.push({prep,caster:p,target,targetSide});}
   const spellChanges=new Map();const spellDraws=[];const killDraws=[];
   const changeFor=card=>{if(!spellChanges.has(card))spellChanges.set(card,{damage:0,heal:0,attack:0,statAttack:0,statHealth:0,defeat:false});return spellChanges.get(card);};
   for(const {prep,caster,target,targetSide} of triggered){
     for(const ef of effects(prep.card)){
+      if(ef.op==='heal_patron'){caster.patron.hp=Math.min(caster.patron.maxHp,caster.patron.hp+ef.amount);continue;}
       if(ef.op==='draw'){spellDraws.push([caster,ef.amount]);continue;}
       if(ef.op==='discard'){caster.pendingDiscardAfterCombat=(caster.pendingDiscardAfterCombat||0)+ef.amount;continue;}
       if(ef.op==='anchor'){target.anchor={lane:prep.lane,remaining:2,setAt:room.combatCount};continue;}
@@ -143,7 +146,7 @@ export function resolveCombat(room){
       if(ef.op==='attack_modifier'){if(ef.permanent)change.statAttack+=ef.amount;else change.attack+=ef.amount;if(ef.amount>0)spellBuff(target,room.round);}
       if(ef.op==='stat_buff'){change.statAttack+=ef.attack;change.statHealth+=ef.health;spellBuff(target,room.round,true);}
     }
-    if(room.collectPreview)room.spellHealthUpdates.push({cardId:prep.card.uid,targets:[...spellChanges].map(([card,change])=>{const projected=projectSpellChange(card,change);return {uid:card.uid,hp:Math.max(0,projected.health-projected.damage),maxHp:projected.health,attack:attack(projected,room,own(room,card.owner).formation.indexOf(card.uid))};})});
+    if(room.collectPreview)room.spellHealthUpdates.push({cardId:prep.card.uid,targets:(effects(prep.card).some(e=>e.op==='heal_patron')?[{patronId:caster.id,hp:caster.patron.hp,maxHp:caster.patron.maxHp}]:[]).concat([...spellChanges].map(([card,change])=>{const projected=projectSpellChange(card,change);return {uid:card.uid,hp:Math.max(0,projected.health-projected.damage),maxHp:projected.health,attack:attack(projected,room,own(room,card.owner).formation.indexOf(card.uid))};}))});
     if(effects(prep.card).some(e=>e.op==='barrier')){prep.remaining??=2;prep.lastCombat=room.combatCount;}else{caster.discard.push(prep.card);caster.prepared=caster.prepared.filter(item=>item!==prep);}
     room.lastCombat.spells.push(`${prep.card.name} · posição ${prep.lane+1} de ${targetSide.name}`);
     pushLog(room,`${prep.card.name} foi ativada na posição ${prep.lane+1} de ${targetSide.name}.`,caster.id);
@@ -255,7 +258,7 @@ export function act(room,p,data,catalog){
         if(mode==='direct'){
           if(card.positionOnly)throw Error('Esta magia deve ser colocada em uma posição.');
           const {target}=validTarget(room,p,card,data.targetId);
-          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||effect(card)?.attack||0,healthUpdates:effect(card)?.op==='area_stat_buff'?p.reserve.map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,p.formation.indexOf(c.uid))})):['area_damage','area_attack_modifier'].includes(effect(card)?.op)?other(room,p.id).reserve.concat(other(room,p.id).discard.filter(c=>c.type==='creature')).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,other(room,p.id).formation.indexOf(c.uid))})):target?.patron?[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}]:target?[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,(kind==='enemy'?other(room,p.id):p).formation.indexOf(target.uid))}]:[],attackAfter:['attack_modifier','stat_buff'].includes(effect(card)?.op)&&target?attack(target,room,p.formation.indexOf(target.uid)):undefined});
+          paidCost(p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);applyEffect(room,p,card,target);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{patronHealing:effects(card).some(e=>e.op==='heal_patron')?{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}:null,playerId:p.id,targetId:target?.uid||null,targetPatronId:target?.patron?p.id:null,name:card.name,op:effect(card)?.op,amount:effect(card)?.amount||effect(card)?.attack||0,healthUpdates:effect(card)?.op==='area_stat_buff'?p.reserve.map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,p.formation.indexOf(c.uid))})):['area_damage','area_attack_modifier'].includes(effect(card)?.op)?other(room,p.id).reserve.concat(other(room,p.id).discard.filter(c=>c.type==='creature')).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,other(room,p.id).formation.indexOf(c.uid))})):target?.patron?[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}]:target?[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,(kind==='enemy'?other(room,p.id):p).formation.indexOf(target.uid))}]:[],attackAfter:['attack_modifier','stat_buff'].includes(effect(card)?.op)&&target?attack(target,room,p.formation.indexOf(target.uid)):undefined});
         }else if(mode==='lane'){
           if(card.directOnly)throw Error('Esta magia só pode ser usada diretamente.');
           const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição de 1 a 3.');

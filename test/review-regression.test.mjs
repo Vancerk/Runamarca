@@ -67,6 +67,11 @@ test('Par de ataques conserva os IDs e donos mesmo sem metadados da prévia visu
  await ctx.animateDirectedStrike({sourceId:'first',owner:'a',targetId:'second',targetOwner:'b',amount:3,lane:0,healthUpdates:[],pair:{sourceId:'second',owner:'b',targetId:'first',targetOwner:'a',amount:2}});
  assert.deepEqual(Array.from(entry.cards,c=>[c.uid,c.owner,c.attack]),[['first','a',3],['second','b',2]]);
 });
+test('Ataque usa um portador com origem e dimensões fixas, separado da aparência da carta',()=>{
+ const layer={getBoundingClientRect:()=>({left:20,top:30}),append(){}},face={classList:{remove(){},add(){}},removeAttribute(){}},source={dataset:{uid:'fighter'},style:{},getBoundingClientRect:()=>({left:420,top:230,width:132,height:120})};
+ const ctx={movingCards:new Set(),cloneVisual:()=>face,$:()=>layer,document:{createElement:()=>({style:{},dataset:{},append(){}})}};vm.createContext(ctx);vm.runInContext(section(app,'function visualCard','async function animateTransfer'),ctx);
+ const copy=ctx.visualCard(source);assert.equal(copy.style.left,'400px');assert.equal(copy.style.top,'200px');assert.equal(copy.style.width,'132px');assert.equal(copy.style.height,'120px');assert.equal(copy.dataset.uid,'fighter');assert.equal(source.style.visibility,'hidden');assert.ok(ctx.movingCards.has('fighter'));
+});
 test('Recomprar a mesma instância após a troca ainda aguarda a animação de chegada',()=>{
  const ctx={pendingArrival:[]};vm.createContext(ctx);vm.runInContext(section(app,'function trackArrivals','function prepareOpeningArrivals'),ctx);
  ctx.trackArrivals({you:'me',matchId:'match',eventId:10,players:[{id:'me',hand:[{uid:'same'}]}]},{you:'me',matchId:'match',eventId:12,events:[{id:11,type:'mulligan',playerId:'me',cardIds:['same']},{id:12,type:'draw',playerId:'me',cardId:'same'}],players:[{id:'me',hand:[{uid:'same'}]}]});

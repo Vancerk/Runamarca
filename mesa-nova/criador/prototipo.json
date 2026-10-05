@@ -1742,7 +1742,7 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 3,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "lacaio",
           "subtype": "humano",
           "attack": 2,
@@ -1789,7 +1789,7 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 2,
-          "quantity": 3,
+          "quantity": 2,
           "rarity": "lacaio",
           "subtype": "anão",
           "attack": 1,
@@ -1837,7 +1837,7 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 2,
-          "quantity": 3,
+          "quantity": 2,
           "rarity": "lacaio",
           "subtype": "anão",
           "attack": 1,
@@ -2525,8 +2525,8 @@
           "affinity": "forja",
           "cost": 1,
           "attack": 0,
-          "health": 2,
-          "quantity": 3,
+          "health": 1,
+          "quantity": 1,
           "text": "Provocar.",
           "effects": [
             {
@@ -2557,6 +2557,135 @@
             }
           ],
           "budgetVersion": 3
+        },
+        {
+          "id": "FL17",
+          "name": "Engenheiro Tímido",
+          "type": "creature",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "quantity": 2,
+          "cost": 3,
+          "attack": 1,
+          "health": 1,
+          "subtype": "humano",
+          "text": "Emanação — a criatura aliada na primeira posição tem +1 de vida. Se ela for Axiom, também tem +1 de ataque.",
+          "effects": [
+            {
+              "op": "lane_health_aura",
+              "amount": 1,
+              "lane": 0,
+              "timing": "emanation"
+            },
+            {
+              "op": "lane_attack_aura",
+              "amount": 1,
+              "lane": 0,
+              "timing": "emanation",
+              "subtypeIncludes": "axiom"
+            }
+          ],
+          "image": "art/oficina-lyrik/mecanico-proativo.jpg",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "fontRules": 36,
+          "authoredBy": "Grupo Elysium",
+          "budgetVersion": 3,
+          "budgetReview": "Ilustração provisória reutilizada; ataque adicional condicionado a Axiom.",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "Emanação: +1 de vida na posição 1",
+              "timing": "emanation",
+              "target": "fixedAlly",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "health"
+            },
+            {
+              "sourceIndex": 1,
+              "name": "lane_attack_aura",
+              "timing": "emanation",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"lane_attack_aura\",\"amount\":1,\"lane\":0,\"timing\":\"emanation\",\"subtypeIncludes\":\"axiom\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FL18",
+          "name": "Reparo de Emergência",
+          "type": "direct_spell",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "quantity": 3,
+          "cost": 3,
+          "text": "Cause 1 de dano a uma criatura inimiga e cure 1 de vida do seu Patrono.",
+          "effects": [
+            {
+              "op": "damage",
+              "amount": 1
+            },
+            {
+              "op": "heal_patron",
+              "amount": 1,
+              "target": "own_patron"
+            }
+          ],
+          "enemyOnly": true,
+          "image": "art/oficina-lyrik/reforco-divino.jpg",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "fontRules": 36,
+          "authoredBy": "Grupo Elysium",
+          "budgetVersion": 3,
+          "budgetReview": "Ilustração provisória reutilizada; dano em criatura inimiga e cura no próprio Patrono.",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "damage",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "instant",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "damage"
+            },
+            {
+              "sourceIndex": 1,
+              "name": "heal_patron",
+              "timing": "direct",
+              "target": "patron",
+              "duration": "instant",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "heal"
+            }
+          ]
         }
       ]
     },

@@ -4,7 +4,7 @@ import {act,join,makeRoom,resolveCombat,view} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url)));
 const deck=catalog.decks.find(d=>d.id==='forja-oficina-lyrik');
 assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);
-assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,3);assert.equal(deck.cards.find(c=>c.id==='FL03').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL01').cost,3);assert.equal(deck.cards.find(c=>c.id==='FL01').health,2);assert.equal(deck.cards.find(c=>c.id==='FL01').quantity,2);assert.equal(deck.cards.find(c=>c.id==='FL05').cost,5);assert.equal(deck.cards.find(c=>c.id==='FL05').health,2);assert.equal(deck.cards.find(c=>c.id==='FL04').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL07').cost,4);
+assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,2);assert.equal(deck.cards.find(c=>c.id==='FL03').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL01').cost,3);assert.equal(deck.cards.find(c=>c.id==='FL01').health,2);assert.equal(deck.cards.find(c=>c.id==='FL01').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL05').cost,5);assert.equal(deck.cards.find(c=>c.id==='FL05').health,2);assert.equal(deck.cards.find(c=>c.id==='FL04').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL07').cost,4);
 assert.equal(deck.cards.find(c=>c.id==='FL04').rarity,'elite');assert.equal(deck.cards.find(c=>c.id==='FL04').quantity,2);
 assert.equal(deck.cards.find(c=>c.id==='FL11').speech,'Protocolo: Exterminar!');
 assert.equal(catalog.decks.find(d=>d.id==='forja-juramento').cards.length,12);
@@ -64,9 +64,22 @@ console.log('Oficina de Lyrik: composição, artes, Iniciativa, Transpassar, Pro
  const {room,a,b}=setup();room.phase='prep';const target=card('FL09',b);b.reserve.push(target);a.hand.push(card('FL15',a));act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'direct',targetId:target.uid},catalog);assert.equal(target.damage,2);assert.equal(a.mana,7);assert.equal(room.events.find(e=>e.type==='spell').healthUpdates[0].hp,10);
 }
 console.log('Forja revisado: 30 cartas, custos/atributos, redução permanente, sigilo, Emanação imune a área e dano direto aprovados.');
+for(const [subtype,lane,expectedAttack,expectedHp] of [['axiom',0,3,3],['axiom Sintético',0,3,3],['humano',0,2,3],['axiom',1,2,2]]){
+ const {room,a}=setup(),engineer=card('FL17',a);a.reserve.push(engineer);a.emanation=[engineer.uid];place(a,card('FL01',a,{effects:[],subtype}),lane);resolveCombat(room);const preview=room.preClash[lane].cards[0];assert.equal(preview.attack,expectedAttack);assert.equal(preview.health,expectedHp);
+}
+for(const mode of ['direct','lane']){
+ const {room,a,b}=setup();room.phase='prep';a.patron.hp=98;const target=place(b,card('FL09',b,{attack:0,effects:[]}),0),spell=card('FL18',a);a.hand.push(spell);
+ act(room,a,{type:'play',cardId:spell.uid,mode,targetId:target.uid,lane:0,targetSide:b.id},catalog);
+ if(mode==='lane'){assert.equal(a.patron.hp,98);room.phase='resolving';resolveCombat(room);assert.equal(room.spellHealthUpdates.find(s=>s.cardId===spell.uid).targets.find(u=>u.patronId===a.id).hp,99);}
+ else{assert.equal(target.damage,1);assert.equal(room.events.find(e=>e.type==='spell').patronHealing.hp,99);}
+ assert.equal(a.patron.hp,99);assert.equal(a.mana,7);
+}
+{
+ const {room,a,b}=setup();room.phase='prep';a.patron.hp=100;const target=card('FL09',b);b.reserve.push(target);const spell=card('FL18',a);a.hand.push(spell);act(room,a,{type:'play',cardId:spell.uid,mode:'direct',targetId:target.uid},catalog);assert.equal(a.patron.hp,100,'Cura não ultrapassa a vida máxima');
+}
 {
  const {room,a,b}=setup();room.phase='prep';a.patron.hp=98;const elf=card('FL07',a);a.reserve.push(elf);a.emanation=[elf.uid];a.mana=0;assert.throws(()=>act(room,a,{type:'endPrep',healTargetIds:['patron']},catalog),/Mana insuficiente/);assert.equal(a.patron.hp,98);a.mana=1;act(room,a,{type:'endPrep',healTargetIds:['patron']},catalog);assert.equal(a.patron.hp,99);assert.equal(a.mana,0);const e=view(room,b).events.find(e=>e.type==='cleric_heal');assert.equal(e.targetPatronId,a.id);assert.equal(e.healthUpdates[0].hp,99);
 }
 {
- const {room,a,b}=setup();const dwarf=card('FL06',a);a.reserve.push(dwarf);a.emanation=[dwarf.uid];const x=place(a,card('FL16',a),0),y=place(b,card('FL01',b),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].health,3);assert.equal(room.preClash[0].cards[0].attack,0);assert.ok(a.reserve.includes(x),'A aura de vida permite sobreviver a 2 de dano');assert.equal(x.health,2,'A vida adicional é uma aura, não crescimento permanente');assert.equal(x.damage,1);assert.equal(deck.cards.find(c=>c.id==='FL16').quantity,3);assert.equal(deck.cards.find(c=>c.id==='FL06').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL07').quantity,1);
+ const {room,a,b}=setup();const dwarf=card('FL06',a);a.reserve.push(dwarf);a.emanation=[dwarf.uid];const x=place(a,card('FL16',a),0),y=place(b,card('FL01',b,{attack:1}),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].health,2);assert.equal(room.preClash[0].cards[0].attack,0);assert.ok(a.reserve.includes(x),'A aura de vida permite sobreviver a 1 de dano');assert.equal(x.health,1,'A vida adicional é uma aura, não crescimento permanente');assert.equal(x.damage,0);assert.equal(deck.cards.find(c=>c.id==='FL16').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL06').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL07').quantity,1);
 }

@@ -11,10 +11,10 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a}=setup();room.phase='formation';assert.throws(()=>act(room,a,{type:'reset'},catalog),/encerramento/);assert.equal(room.phase,'formation');room.phase='finished';act(room,a,{type:'reset'},catalog);assert.equal(room.phase,'lobby');assert.deepEqual(a.formation,[null,null,null]);
 }
 {
- const {room,a,b}=setup();const spell=card('FV11',a);a.hand.push(spell);act(room,a,{type:'play',cardId:spell.uid,mode:'lane',lane:0,targetSide:a.id},catalog);assert.throws(()=>act(room,a,{type:'movePrepared',cardId:spell.uid,lane:0,targetSide:b.id},catalog),/aliada/);place(b,card('FL16',b),0);room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[1].health,2);
+ const {room,a,b}=setup();const spell=card('FV11',a);a.hand.push(spell);act(room,a,{type:'play',cardId:spell.uid,mode:'lane',lane:0,targetSide:a.id},catalog);assert.throws(()=>act(room,a,{type:'movePrepared',cardId:spell.uid,lane:0,targetSide:b.id},catalog),/aliada/);place(b,card('FL16',b),0);room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[1].health,1);
 }
 {
- const {room,a,b}=setup();const spell=card('FL10',a);a.hand.push(spell);assert.throws(()=>act(room,a,{type:'play',cardId:spell.uid,mode:'lane',lane:0,targetSide:b.id},catalog),/aliada/);assert.ok(a.hand.includes(spell));assert.equal(a.mana,10);const target=place(b,card('FL16',b),0);room.phase='resolving';resolveCombat(room);assert.equal(target.attack,0);assert.equal(target.health,2);
+ const {room,a,b}=setup();const spell=card('FL10',a);a.hand.push(spell);assert.throws(()=>act(room,a,{type:'play',cardId:spell.uid,mode:'lane',lane:0,targetSide:b.id},catalog),/aliada/);assert.ok(a.hand.includes(spell));assert.equal(a.mana,10);const target=place(b,card('FL16',b),0);room.phase='resolving';resolveCombat(room);assert.equal(target.attack,0);assert.equal(target.health,1);
 }
 {
  const {room,a}=setup();const source=card('FL03',a,{effects:[{op:'summon',amount:1,attack:0,health:2,timing:'on_enter'}]});a.hand.push(source);act(room,a,{type:'play',cardId:source.uid},catalog);const token=a.reserve.find(c=>c.token);assert.equal(token.attack,0);
@@ -23,7 +23,7 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a}=setup();const source=place(a,card('FL03',a,{attack:1,health:20,effects:[{op:'attack_modifier',amount:1,timing:'revelation',target:'self'},{op:'attack_modifier',amount:2,timing:'revelation',target:'self'}]}),0);room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,4);assert.equal(room.revelationsApplied.length,2);
 }
 {
- const {room,a,b}=setup();const source=place(a,card('FL16',a),0),spell=card('FV11',a);a.prepared.push({card:spell,targetSide:a.id,lane:0});place(b,card('FL05',b),0);room.phase='resolving';resolveCombat(room);const dead=a.discard.find(c=>c.uid===source.uid);assert.equal(dead.health,2);assert.equal(dead.temporaryHealth,undefined);assert.ok(dead.damage>=dead.health);
+ const {room,a,b}=setup();const source=place(a,card('FL16',a),0),spell=card('FV11',a);a.prepared.push({card:spell,targetSide:a.id,lane:0});place(b,card('FL05',b),0);room.phase='resolving';resolveCombat(room);const dead=a.discard.find(c=>c.uid===source.uid);assert.equal(dead.health,1);assert.equal(dead.temporaryHealth,undefined);assert.ok(dead.damage>=dead.health);
 }
 {
  const {room,a,b}=setup();const c=place(b,card('FL02',b,{damage:1,health:20}),0),spell=card('FL13',a);a.prepared.push({card:spell,targetSide:b.id,lane:0});room.phase='resolving';resolveCombat(room);const displayed=room.spellHealthUpdates[0].targets.find(t=>t.uid===c.uid).attack,actual=room.preClash[0].cards[1].attack;assert.equal(displayed,1);assert.equal(actual,1);
