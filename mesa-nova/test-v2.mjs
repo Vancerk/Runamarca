@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {act,easyBotAction,join,makeRoom,view} from './game.mjs';
 
-const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'cartas.json'),'utf8'));
+const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'../test/fixtures/legacy-catalog.json'),'utf8'));
 const limit={lacaio:4,padrao:3,elite:2,soberano:1};
 for(const deck of catalog.decks){
   assert.ok(deck.cards.reduce((total,card)=>total+card.quantity,0)<=30);

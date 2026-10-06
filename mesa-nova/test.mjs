@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {act,join,makeRoom,view} from './game.mjs';
-const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'cartas.json'),'utf8'));
+const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'../test/fixtures/legacy-catalog.json'),'utf8'));
 const room=makeRoom('ABC123','Van');let a=room.players[0],b=join(room,'Vitu');
 const early=makeRoom('DEF456','Primeira');act(early,early.players[0],{type:'deck',deckId:'ruptura-cacada'},catalog);const late=join(early,'Segunda');assert.equal(late.deckId,null,'quem entra depois escolhe o próprio deck');
 act(room,a,{type:'deck',deckId:'ruptura-cacada',art:{R01:{image:'data:image/png;base64,iVBORw0KGgo=',kind:'card'}}},catalog);act(room,b,{type:'deck',deckId:'fluxo-selos'},catalog);

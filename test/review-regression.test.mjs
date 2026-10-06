@@ -51,9 +51,9 @@ test('A mão inicial espera cada compra, sem ocultar cartas de uma sessão já c
  ctx.lastVisualId=0;ctx.visualBooted=false;ctx.prepareOpeningArrivals();assert.deepEqual(Array.from(ctx.pendingArrival),[]);
 });
 test('Alvos de ataque seguem o dono e a posição reais nos dois lados da mesa',()=>{
- const nodes=[{dataset:{uid:'taunt'},closest:()=>({dataset:{owner:'b'}})},{dataset:{uid:'other'},closest:()=>({dataset:{owner:'b'}})}],patrons={a:{id:'patron-a'},b:{id:'patron-b'}};
+ const nodes=[{dataset:{uid:'taunt'},closest:()=>({dataset:{owner:'b'}})},{dataset:{uid:'other'},closest:()=>({dataset:{owner:'b'}})}],patrons={a:{id:'patron-a',dataset:{owner:'a'}},b:{id:'patron-b',dataset:{owner:'b'}}};
  for(const viewer of ['a','b']){
-  const ctx={seat:()=>({id:viewer}),document:{querySelectorAll:()=>nodes},$:id=>({querySelector:()=>patrons[id==='self-head'?viewer:viewer==='a'?'b':'a']})};vm.createContext(ctx);vm.runInContext(section(app,'function attackTarget','async function animateLaneClash'),ctx);
+  const ctx={seat:()=>({id:viewer}),document:{querySelectorAll:selector=>selector.includes('patron-card')?Object.values(patrons):nodes},$:id=>({querySelector:()=>patrons[id==='self-head'?viewer:viewer==='a'?'b':'a']})};vm.createContext(ctx);vm.runInContext(section(app,'function attackTarget','async function animateLaneClash'),ctx);
   assert.equal(ctx.attackTarget({owner:'a',targetOwner:'b',targetId:null}),patrons.b);
   assert.equal(ctx.attackTarget({owner:'b',targetOwner:'a',targetId:null}),patrons.a);
   assert.equal(ctx.attackTarget({owner:'a',targetOwner:'b',targetId:'taunt'}),nodes[0]);
@@ -71,6 +71,10 @@ test('Ataque usa um portador com origem e dimensões fixas, separado da aparênc
  const layer={getBoundingClientRect:()=>({left:20,top:30}),append(){}},face={classList:{remove(){},add(){}},removeAttribute(){}},source={dataset:{uid:'fighter'},style:{},getBoundingClientRect:()=>({left:420,top:230,width:132,height:120})};
  const ctx={movingCards:new Set(),cloneVisual:()=>face,$:()=>layer,document:{createElement:()=>({style:{},dataset:{},append(){}})}};vm.createContext(ctx);vm.runInContext(section(app,'function visualCard','async function animateTransfer'),ctx);
  const copy=ctx.visualCard(source);assert.equal(copy.style.left,'400px');assert.equal(copy.style.top,'200px');assert.equal(copy.style.width,'132px');assert.equal(copy.style.height,'120px');assert.equal(copy.dataset.uid,'fighter');assert.equal(source.style.visibility,'hidden');assert.ok(ctx.movingCards.has('fighter'));
+});
+test('Fonte de ataque recusa carta de outro dono com o mesmo identificador',()=>{
+ const fake={dataset:{uid:'eye'},closest:()=>({dataset:{owner:'self'}})},real={dataset:{uid:'eye'},closest:()=>({dataset:{owner:'rival'}})},ctx={document:{querySelectorAll:()=>[fake,real]}};
+ vm.createContext(ctx);vm.runInContext(section(app,'function attackSource','function attackTarget'),ctx);assert.equal(ctx.attackSource({sourceId:'eye',owner:'rival'}),real);assert.equal(ctx.attackSource({sourceId:'eye',owner:'absent'}),null);
 });
 test('Recomprar a mesma instância após a troca ainda aguarda a animação de chegada',()=>{
  const ctx={pendingArrival:[]};vm.createContext(ctx);vm.runInContext(section(app,'function trackArrivals','function prepareOpeningArrivals'),ctx);
