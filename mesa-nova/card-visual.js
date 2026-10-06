@@ -5,6 +5,12 @@ const energyIconIds = ['vazio', 'ruptura', 'forja', 'fluxo', 'eco', 'veu'];
 const kindNames = { creature: 'Criatura', spell: 'Magia', rune: 'Essência', patron: 'Patrono' };
 
 const imageCache=new Map();
+let fontsReady;
+function prepareFonts(){return fontsReady??=(document.fonts?Promise.all(['700 43px Cinzel','600 32px "EB Garamond"','italic 600 32px "EB Garamond"'].map(font=>document.fonts.load(font))).catch(()=>{}):Promise.resolve());}
+function fitLabel(ctx,label,size,family,width){
+ while(size>8){ctx.font=family.replace('{size}',size);if(ctx.measureText(label).width<=width)break;size-=.5;}
+ return label;
+}
 function number(value, min, max, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.max(min, Math.min(max, Math.trunc(parsed))) : fallback;
@@ -129,6 +135,7 @@ function rarityFrame(ctx,card,height,radius,line){
  grain(ctx,17,17,866,height-34,.38);ctx.restore();
 }
 async function drawCard(canvas,card,{assets="",hideStats=false}={}){
+ await prepareFonts();
  const [art,loadedIcons,attackIcon]=await Promise.all([img(card.art),Promise.all(energyIconIds.map(id=>img(assets+'energy-icons/'+id+'.png'))),img(assets+'attack-shield.png')]);
  const icons=Object.fromEntries(energyIconIds.map((id,i)=>[id,loadedIcons[i]])),ctx=canvas.getContext('2d');ctx.setTransform(canvas.width/900,0,0,canvas.height/1260,0,0);ctx.clearRect(0,0,900,1260);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.globalAlpha=1;ctx.shadowBlur=0;
  rarityFrame(ctx,card,1260,25,3);
@@ -136,12 +143,12 @@ async function drawCard(canvas,card,{assets="",hideStats=false}={}){
  // Broad illustration with chamfered gold edges, matching the supplied reference.
  ctx.save();bevelPath(ctx,49,129,802,713,18);ctx.clip();if(art){const zoom=number(card.artZoom,100,230,100)/100,scale=Math.max(802/art.width,713/art.height)*zoom,w=art.width*scale,h=art.height*scale;ctx.drawImage(art,49+(802-w)*number(card.artX,0,100,50)/100,129+(713-h)*number(card.artY,0,100,50)/100,w,h);}else{const g=ctx.createRadialGradient(450,420,20,450,480,560);g.addColorStop(0,'#766448');g.addColorStop(1,'#1b2324');ctx.fillStyle=g;ctx.fillRect(49,129,802,713);ctx.textAlign='center';ctx.fillStyle='#dcc296';ctx.font='110px Georgia';ctx.fillText('◈',450,450);ctx.font='24px Cinzel,Georgia';ctx.fillText('INSIRA SUA ILUSTRAÇÃO',450,520);}ctx.restore();bevelPath(ctx,49,129,802,713,18);ctx.strokeStyle='#26190f';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#cda466';ctx.lineWidth=3;ctx.stroke();
  framedPanel(ctx,49,49,802,76,wine,15);grain(ctx,55,55,790,64,.18);
- let titleSize=number(card.fontName,24,72,43);const title=card.name||'Nova carta';do{ctx.font='700 '+titleSize+'px Cinzel,Georgia,serif';if(ctx.measureText(title).width<660||titleSize<=24)break;titleSize--;}while(true);ctx.fillStyle='#fff1d2';ctx.textAlign='left';ctx.textBaseline='middle';ctx.shadowColor='#000';ctx.shadowBlur=5;ctx.fillText(title,76,88,660);ctx.shadowBlur=0;
+ let titleSize=number(card.fontName,24,72,43);const title=card.name||'Nova carta';do{ctx.font='700 '+titleSize+'px Cinzel,Georgia,serif';if(ctx.measureText(title).width<660||titleSize<=24)break;titleSize--;}while(true);ctx.fillStyle='#fff1d2';ctx.textAlign='left';ctx.textBaseline='middle';ctx.shadowColor='#000';ctx.shadowBlur=5;fitLabel(ctx,title,titleSize,'700 {size}px Cinzel,Georgia,serif',660);ctx.fillText(title,76,88);ctx.shadowBlur=0;
  // Cost set into a gold medallion, instead of a detached label.
  const affinity=card.themeEnergy||'ruptura',cx=805,cy=87;ctx.beginPath();ctx.arc(cx,cy,52.7,0,Math.PI*2);const orb=ctx.createRadialGradient(cx-17,cy-20.4,2,cx,cy,56.1);orb.addColorStop(0,energyColors[affinity]||'#bd5847');orb.addColorStop(1,{ruptura:'#702d23',forja:'#765013',fluxo:'#244e78'}[affinity]||'#702d23');ctx.fillStyle=orb;ctx.fill();ctx.strokeStyle='#f0ca82';ctx.lineWidth=5;ctx.stroke();ctx.fillStyle='#fff7dc';ctx.strokeStyle='#26160f';ctx.lineWidth=5;ctx.font='700 54.6px Georgia,serif';ctx.textAlign='center';const cost=card.kind==='patron'?'◈':String(number(card.generic,0,20));ctx.textBaseline='alphabetic';const metrics=ctx.measureText(cost),costY=cy+(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2;ctx.strokeText(cost,cx,costY);ctx.fillText(cost,cx,costY);
  const paper=ctx.createRadialGradient(450,970,10,450,995,470);paper.addColorStop(0,'#f4dfb7');paper.addColorStop(.7,'#dfbf8b');paper.addColorStop(1,'#aa7548');framedPanel(ctx,64,855,772,272,paper,20);ctx.save();bevelPath(ctx,69,860,762,262,17);ctx.clip();grain(ctx,64,855,772,272,.28);if(icons[affinity]){ctx.globalAlpha=.12;ctx.drawImage(icons[affinity],329.25,870.25,241.5,241.5);}ctx.restore();
  const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora do limite de 30 cartas.':'Escreva aqui o efeito da carta.'),layout=layoutRules(ctx,{...card,rules});let y=layout.y;ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of layout.lines){let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+layout.size+'px "EB Garamond",Georgia,serif';ctx.fillText(run.text,x,y);x+=run.width;}y+=layout.lineHeight;}
- framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#f6e5be';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.textAlign='left';ctx.font='700 25px Cinzel,Georgia,serif';ctx.fillText((kindNames[card.kind]||'Carta').toUpperCase(),174,1174,190);ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();ctx.font='600 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.fillText((card.subtype||'').toUpperCase(),395,1174,325);
+ framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#f6e5be';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.textAlign='left';ctx.font='700 25px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(kindNames[card.kind]||'Carta').toUpperCase(),25,'700 {size}px Cinzel,Georgia,serif',190),174,1174);ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();ctx.font='600 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(card.subtype||'').toUpperCase(),number(card.fontSubtype,14,38,21),'600 {size}px Cinzel,Georgia,serif',325),395,1174);
  for(const [x,y] of [[48,155],[852,155],[48,550],[852,550],[48,1004],[852,1004],[450,1216]])diamond(ctx,x,y,y===1216?15:9);
  if(card.kind==='creature'&&attackIcon)ctx.drawImage(attackIcon,5,1085,159.85,159.85);
  if(card.kind==='creature'||card.kind==='patron')drawHeart(ctx,826,1180);

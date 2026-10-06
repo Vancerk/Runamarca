@@ -30,3 +30,28 @@ const lifeClasses=new Set(),life={textContent:'5',classList:{toggle:(name,on)=>o
 vm.createContext(health);vm.runInContext(extract('function applyHealthUpdates','function damagePatron'),health);health.applyHealthUpdates([{uid:'victim',hp:2,maxHp:5}]);assert.equal(life.textContent,'2');assert.ok(lifeClasses.has('health-damaged'));health.applyHealthUpdates([{uid:'victim',hp:5,maxHp:5}]);assert.equal(lifeClasses.has('health-damaged'),false);
 console.log('OK: devolução visível da magia e HP atualizado no impacto.');
 const arrivals={pendingArrival:[]};vm.createContext(arrivals);vm.runInContext(extract('function trackArrivals','async function command'),arrivals);arrivals.trackArrivals({you:'me',players:[{id:'me',hand:[],prepared:[{card:{uid:'returned'}}]}]},{you:'me',events:[{id:1,type:'draw',playerId:'me',cardId:'drawn'}],players:[{id:'me',hand:[{uid:'returned'},{uid:'drawn'}]}]});assert.deepEqual(Array.from(arrivals.pendingArrival),['drawn'],'only an actual draw waits for a deck animation, never a returned spell');
+
+// Target selection retains hover zoom for both sides and hides it before submitting.
+{
+ const nodes=new Map(),highlight=new Set();let hovered,chosen,hidden=0;
+ const node=()=>({children:[],classList:{add(){},remove(){}},append(c){this.children.push(c);},replaceChildren(){this.children=[];},getBoundingClientRect:()=>({right:200,top:100,height:200}),setAttribute(){}});
+ const dialog=node();dialog.open=false;dialog.showModal=()=>dialog.open=true;dialog.close=()=>dialog.open=false;
+ const content=node();nodes.set('target-picker',dialog);nodes.set('target-picker-content',content);
+ const picker={state:{players:[{reserve:[{uid:'ally'},{uid:'enemy'}]}]},$:id=>nodes.get(id),hideHover:()=>hidden++,showHover:c=>hovered=c.uid,moveHover(){},cardEl:node,text(){},tableCard:uid=>({classList:{add:()=>highlight.add(uid),remove:()=>highlight.delete(uid)}}),document:{createElement:node,querySelectorAll:()=>[]}};
+ vm.createContext(picker);vm.runInContext(extract('function showTargetPicker','function chooseEmanationTarget'),picker);
+ picker.showTargetPicker({},['ally','enemy'],uid=>{chosen=uid;});
+ const [ally,enemy]=content.children[0].children;ally.onmouseenter({});assert.equal(hovered,'ally');assert.ok(highlight.has('ally'));ally.onmouseleave();assert.ok(!highlight.has('ally'));enemy.onfocus();assert.equal(hovered,'enemy');enemy.onclick();assert.equal(chosen,'enemy');assert.equal(dialog.open,false);assert.equal(hidden,3);
+}
+// Text fitting changes font size instead of horizontally stretching its glyphs.
+{
+ const visual=await readFile(new URL('./card-visual.js',import.meta.url),'utf8');const a=visual.indexOf('function fitLabel'),b=visual.indexOf('function number',a);
+ const ctx={font:'',measureText(label){return {width:label.length*parseFloat(this.font.match(/[0-9.]+px/)[0])};}},fit={};vm.createContext(fit);vm.runInContext(visual.slice(a,b),fit);assert.equal(fit.fitLabel(ctx,'LONG CLASSIFICATION',21,'600 {size}px Georgia',190),'LONG CLASSIFICATION');assert.ok(ctx.measureText('LONG CLASSIFICATION').width<=190);assert.ok(!ctx.font.includes('scale'));
+}
+console.log('OK: zoom de alvos aliados/inimigos, seleção preservada e fonte sem compressão horizontal.');
+
+// The zoom must join the modal top layer, then return to the page outside it.
+{
+ const holder={hidden:true,parentElement:null,replaceChildren(){},append(){}},host=()=>({append(el){el.parentElement=this;}}),body=host(),dialog=host();dialog.open=true;
+ const preview={hoverUid:null,narrativeTimer:null,clearTimeout(){},keywordGlossary:[],moveHover(){},cardEl:()=>({classList:{add(){}}}),document:{body},$:id=>id==='hover-preview'?holder:dialog};vm.createContext(preview);vm.runInContext(extract('function showHover','function moveHover'),preview);
+ preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,dialog);assert.equal(holder.hidden,false);dialog.open=false;preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,body);
+}

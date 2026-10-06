@@ -423,3 +423,11 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 .coin-face span{font:80px Georgia,serif;line-height:1}.coin-face small{font:700 11px Georgia,serif;letter-spacing:.15em;margin-top:8px}.coin-front{transform:translateZ(5px)}.coin-back{transform:rotateY(180deg) translateZ(5px)}
 @keyframes coin-metal-toss{0%{opacity:0;transform:translate(-50%,100px) rotateY(0deg) rotateZ(-12deg) scale(.65)}12%{opacity:1}50%{transform:translate(-50%,-95px) rotateY(900deg) rotateZ(8deg) scale(1.2)}78%{transform:translate(-50%,0) rotateY(1800deg) rotateZ(0) scale(1)}92%{opacity:1;transform:translate(-50%,0) rotateY(1800deg) scale(1)}100%{opacity:0;transform:translate(-50%,0) rotateY(1800deg) scale(.95)}}
 @media(max-width:750px){#deck-options{grid-template-columns:1fr;gap:16px}#deck-options .deck-art{height:190px}#deck-options .deck-content{padding:16px}}
+
+/* Preserve the printed proportions at every display size. */
+.card.styled-card:not(.flight-face){height:auto!important;aspect-ratio:900/1260}
+.card.styled-card.combat-card:not(.flight-face){aspect-ratio:900/820}
+.card .card-art-canvas{object-fit:contain;image-rendering:auto}
+.card.target-card,.target-options>.patron-card.target-card{width:147px;height:205.8px;flex:0 0 147px;aspect-ratio:5/7}
+#target-picker{max-height:calc(100dvh - 40px);overflow-y:auto}
+#hover-preview .patron-large{width:min(330px,calc((100dvh - 110px)*.7142857));height:auto;aspect-ratio:5/7;flex:none}
