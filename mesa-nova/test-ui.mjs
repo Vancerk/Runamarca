@@ -55,3 +55,9 @@ console.log('OK: zoom de alvos aliados/inimigos, seleção preservada e fonte se
  const preview={hoverUid:null,narrativeTimer:null,clearTimeout(){},keywordGlossary:[],moveHover(){},cardEl:()=>({classList:{add(){}}}),document:{body},$:id=>id==='hover-preview'?holder:dialog};vm.createContext(preview);vm.runInContext(extract('function showHover','function moveHover'),preview);
  preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,dialog);assert.equal(holder.hidden,false);dialog.open=false;preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,body);
 }
+
+// A slingshot winds up against the target direction, touches at the sound cue,
+// and recoils directly to origin without crossing beyond it.
+for(const [dx,dy,directionX,directionY] of [[0,-80,0,-160],[45,60,90,120],[0,0,0,150]]){
+ const frames=motion.RunaMotion.strikeFrames(dx,dy,{directionX,directionY,weight:1}),xy=f=>f.transform.match(/-?[0-9.]+/g).map(Number),pull=xy(frames[1]);assert.ok(pull[0]*directionX+pull[1]*directionY<0);assert.deepEqual(xy(frames.find(f=>f.offset===.42)),[dx,dy]);assert.deepEqual(xy(frames.at(-1)),[0,0]);assert.ok(Math.hypot(...pull)>=39.9);const recoil=xy(frames[4]);assert.ok(recoil[0]*dx+recoil[1]*dy>=-1e-8);
+}

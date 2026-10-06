@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-06",
+  "engine": "mesa-nova/game.mjs",
+  "cleanup": "mesa-nova/fluxo-effects.mjs:finishFields",
+  "setup": {
+    "ally": "FL02",
+    "health": 4,
+    "damageBefore": 2,
+    "emanation": "FL17",
+    "bonusHealth": 1,
+    "lane": 0,
+    "enemy": "FL16",
+    "enemyAttack": 0
+  },
+  "actual": {
+    "healthAfter": 4,
+    "damageAfter": 1
+  },
+  "observation": "Retirada da vida temporária reduziu dano anterior mesmo sem dano novo. Não foi alterado nesta revisão."
+}

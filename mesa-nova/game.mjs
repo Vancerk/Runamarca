@@ -309,12 +309,14 @@ export function act(room,p,data,catalog){
       const occupant=findCreature(p,p.formation[lane]);const requested=findCreature(p,data.cardId);if((occupant?.anchor&&occupant.uid!==data.cardId)||(requested?.anchor&&requested.anchor.lane!==lane))throw Error('A criatura está ancorada nesta posição até o próximo combate.');if((occupant?.sleep&&occupant.uid!==data.cardId)||(requested?.sleep&&requested.sleep.lane!==lane))throw Error('A criatura está adormecida e presa nesta posição.');
       if(data.cardId!==null){const card=findCreature(p,data.cardId);if(!card||p.emanation.includes(card.uid))throw Error('Escolha uma criatura válida da reserva.');p.formation=p.formation.map(uid=>uid===card.uid?null:uid);p.formation[lane]=card.uid;if(Number.isInteger(p.taunts?.[card.uid])&&Math.abs(p.taunts[card.uid]-lane)!==1)delete p.taunts[card.uid];}else{const uid=p.formation[lane];p.formation[lane]=null;if(p.taunts)delete p.taunts[uid];}
     }else if(data.type==='taunt'){
-      const card=findCreature(p,data.cardId),lane=Number(data.lane),ownLane=p.formation.indexOf(data.cardId);
-      if(!card||!effects(card).some(e=>e.op==='taunt')||ownLane<0||!Number.isInteger(lane)||lane<0||lane>2||Math.abs(lane-ownLane)!==1)throw Error('Provocar exige uma posição adjacente à sua posição.');
+      const card=findCreature(p,data.cardId),lane=data.lane===null?null:Number(data.lane),ownLane=p.formation.indexOf(data.cardId);
+      if(!card||!effects(card).some(e=>e.op==='taunt')||ownLane<0)throw Error('Escolha uma criatura com Provocar na formação.');
+      if(lane===null){delete p.taunts?.[card.uid];room.revision++;return;}
+      if(!Number.isInteger(lane)||lane<0||lane>2||Math.abs(lane-ownLane)!==1)throw Error('Provocar exige uma posição adjacente à sua posição.');
       if(Object.entries(p.taunts||{}).some(([uid,value])=>uid!==card.uid&&value===lane&&p.formation.includes(uid)))throw Error('Outra criatura já provoca essa posição.');
       (p.taunts??={})[card.uid]=lane;
     }else if(data.type==='ready'){
-      if(room.players.some(x=>x.pendingDiscard))throw Error('Aguarde a escolha de descarte.');if(p.formation.some(uid=>uid&&effects(findCreature(p,uid)).some(e=>e.op==='taunt')&&(!Number.isInteger(p.taunts?.[uid])||Math.abs(p.taunts[uid]-p.formation.indexOf(uid))!==1)))throw Error('Escolha a posição adicional de cada criatura com Provocar.');p.ready=true;pushLog(room,`${p.name} confirmou a formação.`,p.id);if(room.players.every(x=>x.ready))beginCombat(room);}
+      if(room.players.some(x=>x.pendingDiscard))throw Error('Aguarde a escolha de descarte.');if(p.formation.some(uid=>uid&&p.taunts?.[uid]!==undefined&&(!Number.isInteger(p.taunts[uid])||Math.abs(p.taunts[uid]-p.formation.indexOf(uid))!==1)))throw Error('Escolha uma posição adicional adjacente ou remova a escolha.');p.ready=true;pushLog(room,`${p.name} confirmou a formação.`,p.id);if(room.players.every(x=>x.ready))beginCombat(room);}
     else throw Error('Ação indisponível na formação.');room.revision++;return;
   }
   throw Error('Ação fora de fase.');

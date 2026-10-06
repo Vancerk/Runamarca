@@ -1,0 +1,588 @@
+{
+  "date": "2026-10-06",
+  "method": "Análise de catálogo e motor; sem nova bateria de partidas e sem ajustes de balanceamento.",
+  "decks": [
+    {
+      "id": "forja-oficina-lyrik",
+      "name": "Oficina de Lyrik",
+      "affinity": "forja",
+      "cards": [
+        {
+          "id": "FL01",
+          "name": "Mecânico Proativo",
+          "quantity": 1,
+          "cost": 3,
+          "attack": 2,
+          "health": 2,
+          "type": "creature",
+          "text": "Iniciativa.",
+          "effects": [
+            {
+              "op": "initiative"
+            }
+          ],
+          "rarity": "lacaio",
+          "subtype": "humano"
+        },
+        {
+          "id": "FL02",
+          "name": "Anão escudeiro",
+          "quantity": 2,
+          "cost": 2,
+          "attack": 0,
+          "health": 4,
+          "type": "creature",
+          "text": "Enquanto estiver ferido, tem +1 de ataque.",
+          "effects": [
+            {
+              "op": "wounded_attack",
+              "amount": 1
+            }
+          ],
+          "rarity": "lacaio",
+          "subtype": "anão"
+        },
+        {
+          "id": "FL03",
+          "name": "Anão Taverneiro",
+          "quantity": 2,
+          "cost": 2,
+          "attack": 1,
+          "health": 1,
+          "type": "creature",
+          "text": "Entrada — compre 1 carta.",
+          "effects": [
+            {
+              "op": "draw",
+              "amount": 1,
+              "timing": "on_enter"
+            }
+          ],
+          "rarity": "lacaio",
+          "subtype": "anão"
+        },
+        {
+          "id": "FL04",
+          "name": "Sintético Próspero",
+          "quantity": 2,
+          "cost": 2,
+          "attack": 0,
+          "health": 1,
+          "type": "creature",
+          "text": "Ao sobreviver a um combate em que participou, ganha +1/+1 permanentemente.",
+          "effects": [
+            {
+              "op": "survive_growth",
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "rarity": "elite",
+          "subtype": "axiom Sintético"
+        },
+        {
+          "id": "FL05",
+          "name": "Rompe-problema",
+          "quantity": 3,
+          "cost": 5,
+          "attack": 5,
+          "health": 2,
+          "type": "creature",
+          "text": "Transpassar.",
+          "effects": [
+            {
+              "op": "trample"
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "Engrenauta"
+        },
+        {
+          "id": "FL06",
+          "name": "Anão estudioso",
+          "quantity": 1,
+          "cost": 4,
+          "attack": 1,
+          "health": 2,
+          "type": "creature",
+          "text": "Entrada — compre 1 carta. Emanação — a criatura aliada na primeira posição tem +1 de vida.",
+          "effects": [
+            {
+              "op": "draw",
+              "amount": 1,
+              "timing": "on_enter"
+            },
+            {
+              "op": "lane_health_aura",
+              "amount": 1,
+              "lane": 0,
+              "timing": "emanation"
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "anão"
+        },
+        {
+          "id": "FL07",
+          "name": "Elfo estudioso",
+          "quantity": 1,
+          "cost": 4,
+          "attack": 1,
+          "health": 2,
+          "type": "creature",
+          "text": "Emanação — escolha uma criatura aliada ferida ou seu Patrono ferido. Ao encerrar a preparação, pague 1 mana para curar 1 de vida do alvo.",
+          "effects": [
+            {
+              "op": "heal",
+              "amount": 1,
+              "mana_cost": 1,
+              "timing": "emanation",
+              "target": "chosen_allied_creature",
+              "allow_patron": true
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "Elfo"
+        },
+        {
+          "id": "FL08",
+          "name": "Monge Rúnico",
+          "quantity": 1,
+          "cost": 5,
+          "attack": 3,
+          "health": 4,
+          "type": "creature",
+          "text": "Revelação — reduza em 2 o ataque da criatura inimiga na mesma posição neste combate.",
+          "effects": [
+            {
+              "op": "attack_modifier",
+              "amount": -2,
+              "timing": "revelation",
+              "target": "enemy_same_lane"
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "axiom"
+        },
+        {
+          "id": "FL09",
+          "name": "G.0.L.1.A.5, o Terror Náutico",
+          "quantity": 2,
+          "cost": 8,
+          "attack": 5,
+          "health": 12,
+          "type": "creature",
+          "text": "Provocar.",
+          "effects": [
+            {
+              "op": "taunt"
+            }
+          ],
+          "rarity": "elite",
+          "subtype": "Engrenauta"
+        },
+        {
+          "id": "FL10",
+          "name": "Reforço Divino",
+          "quantity": 1,
+          "cost": 5,
+          "type": "direct_spell",
+          "text": "Conceda +2/+2 permanentemente a uma criatura aliada.",
+          "effects": [
+            {
+              "op": "stat_buff",
+              "attack": 2,
+              "health": 2,
+              "target": "chosen_allied_creature"
+            }
+          ],
+          "rarity": "elite",
+          "subtype": ""
+        },
+        {
+          "id": "FL11",
+          "name": "v.3.r.0.n.1.c.a",
+          "quantity": 1,
+          "cost": 8,
+          "attack": 5,
+          "health": 7,
+          "type": "creature",
+          "text": "Ao participar da eliminação de uma criatura inimiga e sobreviver, ganha +1/+1 permanentemente.",
+          "effects": [
+            {
+              "op": "kill_growth",
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "rarity": "soberano",
+          "subtype": "axiom"
+        },
+        {
+          "id": "FL12",
+          "name": "c.4.t.4.c.l.1.s.m.4",
+          "quantity": 1,
+          "cost": 10,
+          "attack": 6,
+          "health": 10,
+          "type": "creature",
+          "text": "Ao causar dano de combate a uma criatura inimiga, cause 1 de dano às criaturas inimigas nas posições adjacentes.",
+          "effects": [
+            {
+              "op": "adjacent_damage",
+              "amount": 1
+            }
+          ],
+          "rarity": "soberano",
+          "subtype": "Engrenauta"
+        },
+        {
+          "id": "FL13",
+          "name": "Toque Gélido",
+          "quantity": 2,
+          "cost": 2,
+          "type": "prepared_spell",
+          "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque permanentemente.",
+          "effects": [
+            {
+              "op": "attack_modifier",
+              "amount": -1,
+              "permanent": true
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "",
+          "positionOnly": true,
+          "enemyOnly": true
+        },
+        {
+          "id": "FL14",
+          "name": "Geada Implacável",
+          "quantity": 2,
+          "cost": 4,
+          "type": "direct_spell",
+          "text": "Reduza permanentemente em 1 o ataque de todas as criaturas inimigas fora da Emanação. Preparada — atinge apenas as criaturas nas posições de combate.",
+          "effects": [
+            {
+              "op": "area_attack_modifier",
+              "amount": -1,
+              "permanent": true
+            }
+          ],
+          "rarity": "elite",
+          "subtype": "",
+          "enemyOnly": true
+        },
+        {
+          "id": "FL15",
+          "name": "Disparo de Forja",
+          "quantity": 2,
+          "cost": 3,
+          "type": "direct_spell",
+          "text": "Cause 2 de dano a uma criatura inimiga. Pode ser usado diretamente ou preparado em uma posição inimiga.",
+          "effects": [
+            {
+              "op": "damage",
+              "amount": 2
+            }
+          ],
+          "rarity": "lacaio",
+          "subtype": "",
+          "enemyOnly": true
+        },
+        {
+          "id": "FL16",
+          "name": "João Bobão",
+          "quantity": 1,
+          "cost": 1,
+          "attack": 0,
+          "health": 1,
+          "type": "creature",
+          "text": "Provocar.",
+          "effects": [
+            {
+              "op": "taunt"
+            }
+          ],
+          "rarity": "lacaio",
+          "subtype": ""
+        },
+        {
+          "id": "FL17",
+          "name": "Engenheiro Tímido",
+          "quantity": 2,
+          "cost": 3,
+          "attack": 1,
+          "health": 1,
+          "type": "creature",
+          "text": "Emanação — a criatura aliada na primeira posição tem +1 de vida. Se ela for Axiom, também tem +1 de ataque.",
+          "effects": [
+            {
+              "op": "lane_health_aura",
+              "amount": 1,
+              "lane": 0,
+              "timing": "emanation"
+            },
+            {
+              "op": "lane_attack_aura",
+              "amount": 1,
+              "lane": 0,
+              "timing": "emanation",
+              "subtypeIncludes": "axiom"
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "humano"
+        },
+        {
+          "id": "FL18",
+          "name": "Reparo de Emergência",
+          "quantity": 3,
+          "cost": 3,
+          "type": "direct_spell",
+          "text": "Cause 1 de dano a uma criatura inimiga e cure 1 de vida do seu Patrono.",
+          "effects": [
+            {
+              "op": "damage",
+              "amount": 1
+            },
+            {
+              "op": "heal_patron",
+              "amount": 1,
+              "target": "own_patron"
+            }
+          ],
+          "rarity": "padrao",
+          "enemyOnly": true
+        }
+      ]
+    },
+    {
+      "id": "fluxo-virelion",
+      "name": "Ecos de Virelion",
+      "affinity": "fluxo",
+      "cards": [
+        {
+          "id": "FV01",
+          "name": "A luz enganosa",
+          "quantity": 4,
+          "cost": 2,
+          "attack": 3,
+          "health": 2,
+          "type": "creature",
+          "text": "Sem habilidades.",
+          "effects": [],
+          "rarity": "lacaio",
+          "subtype": "Fogo Fátuo",
+          "positionOnly": false
+        },
+        {
+          "id": "FV02",
+          "name": "Âncora Etérea",
+          "quantity": 1,
+          "cost": 2,
+          "type": "prepared_spell",
+          "text": "Prepare em uma posição. Ancoragem — prenda a criatura revelada nessa posição durante este combate e o seguinte.",
+          "effects": [
+            {
+              "op": "anchor",
+              "combats": 2
+            }
+          ],
+          "rarity": "elite",
+          "subtype": "",
+          "positionOnly": true
+        },
+        {
+          "id": "FV03",
+          "name": "Aprendiz vireliana",
+          "quantity": 4,
+          "cost": 1,
+          "attack": 1,
+          "health": 1,
+          "type": "creature",
+          "text": "Revelação — se outra criatura aliada tiver um benefício ativo de magia, ganha +1 de ataque neste combate.",
+          "effects": [
+            {
+              "op": "attack_modifier",
+              "amount": 1,
+              "timing": "revelation",
+              "target": "self",
+              "condition": "allied_spell_buff"
+            }
+          ],
+          "rarity": "lacaio",
+          "subtype": "humana",
+          "positionOnly": false
+        },
+        {
+          "id": "FV04",
+          "name": "Auramora",
+          "quantity": 3,
+          "cost": 1,
+          "attack": 1,
+          "health": 1,
+          "type": "creature",
+          "text": "Emanação — escolha uma criatura aliada ferida. Ao encerrar a preparação, pague 1 mana para curar 1 de vida dela.",
+          "effects": [
+            {
+              "op": "heal",
+              "amount": 1,
+              "mana_cost": 1,
+              "timing": "emanation",
+              "target": "chosen_allied_creature"
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "",
+          "positionOnly": false
+        },
+        {
+          "id": "FV05",
+          "name": "Banquete dos Heróis",
+          "quantity": 1,
+          "cost": 6,
+          "type": "direct_spell",
+          "text": "Conceda +2/+2 permanentemente a todas as suas criaturas em campo, incluindo Emanação.",
+          "effects": [
+            {
+              "op": "area_stat_buff",
+              "attack": 2,
+              "health": 2
+            }
+          ],
+          "rarity": "soberano",
+          "subtype": "",
+          "positionOnly": false
+        },
+        {
+          "id": "FV06",
+          "name": "Bruxa da Floresta Negra",
+          "quantity": 3,
+          "cost": 4,
+          "attack": 1,
+          "health": 4,
+          "type": "creature",
+          "text": "Revelação — criaturas que lhe causarem dano neste combate perdem 1 de ataque permanentemente. Cada criatura só é afetada uma vez por esta Bruxa.",
+          "effects": [
+            {
+              "op": "damage_curse",
+              "amount": 1,
+              "timing": "revelation"
+            }
+          ],
+          "rarity": "lacaio",
+          "subtype": "Aberração",
+          "positionOnly": false
+        },
+        {
+          "id": "FV07",
+          "name": "Olho Flutuante",
+          "quantity": 4,
+          "cost": 2,
+          "attack": 2,
+          "health": 2,
+          "type": "creature",
+          "text": "Sem habilidades.",
+          "effects": [],
+          "rarity": "lacaio",
+          "subtype": "Aberração",
+          "positionOnly": false
+        },
+        {
+          "id": "FV08",
+          "name": "\"Uma a mais...\"",
+          "quantity": 2,
+          "cost": 1,
+          "type": "direct_spell",
+          "text": "Compre 1 carta.",
+          "effects": [
+            {
+              "op": "draw",
+              "amount": 1
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "",
+          "positionOnly": false
+        },
+        {
+          "id": "FV10",
+          "name": "Vaelgor Dareth, O Diretor",
+          "quantity": 1,
+          "cost": 6,
+          "attack": 4,
+          "health": 3,
+          "type": "creature",
+          "text": "Revelação — as criaturas aliadas nas posições adjacentes têm +3 de ataque neste combate.",
+          "effects": [
+            {
+              "op": "adjacent_attack_buff",
+              "amount": 3,
+              "timing": "revelation"
+            }
+          ],
+          "rarity": "soberano",
+          "subtype": "Humano",
+          "positionOnly": false
+        },
+        {
+          "id": "FV11",
+          "name": "Barreira espectral",
+          "quantity": 2,
+          "cost": 3,
+          "type": "direct_spell",
+          "text": "Prepare em uma posição aliada. Durante dois combates, o ocupante recebe +2 de vida temporária em cada combate.",
+          "effects": [
+            {
+              "op": "barrier",
+              "health": 2,
+              "combats": 2,
+              "target": "chosen_allied_creature"
+            }
+          ],
+          "rarity": "elite",
+          "subtype": "",
+          "positionOnly": true
+        },
+        {
+          "id": "FV13",
+          "name": "Evasão Dimensional",
+          "quantity": 3,
+          "cost": 2,
+          "type": "direct_spell",
+          "text": "Devolva uma criatura da reserva inimiga à mão de seu dono. Ela perde dano e bônus e volta com os atributos originais.",
+          "effects": [
+            {
+              "op": "return_to_hand",
+              "reset": true
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "",
+          "reserveOnly": true,
+          "directOnly": true,
+          "enemyOnly": true
+        },
+        {
+          "id": "FV14",
+          "name": "Sono Profundo",
+          "quantity": 2,
+          "cost": 3,
+          "type": "prepared_spell",
+          "text": "Prepare em uma posição inimiga. Adormecer — a criatura revelada nela fica presa nesta posição e não ataca até o fim do próximo combate após a ativação.",
+          "effects": [
+            {
+              "op": "sleep",
+              "combats": 2
+            }
+          ],
+          "rarity": "padrao",
+          "subtype": "",
+          "positionOnly": true,
+          "enemyOnly": true
+        }
+      ]
+    }
+  ]
+}

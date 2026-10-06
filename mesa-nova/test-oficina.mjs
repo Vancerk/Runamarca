@@ -44,7 +44,7 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a}=setup();room.phase='prep';const target=card('FL02',a,{damage:1}),elf=card('FL07',a);a.reserve.push(target,elf);a.emanation.push(elf.uid);const spell=card('FL10',a);a.hand.push(spell);act(room,a,{type:'play',cardId:spell.uid,mode:'direct',targetId:target.uid},catalog);assert.equal(target.attack,2);assert.equal(target.health,6);assert.equal(view(room,a).players[0].reserve.find(c=>c.uid===target.uid).effectiveAttack,3);act(room,a,{type:'endPrep',healTargetIds:[target.uid]},catalog);assert.equal(target.damage,0);assert.equal(a.mana,4,'Buff 5 e cura 1');
 }
 {
- const {room,a,b}=setup();room.phase='formation';const taunter=place(a,card('FL09',a),0);assert.throws(()=>act(room,a,{type:'ready'},catalog),/Provocar/);assert.throws(()=>act(room,a,{type:'taunt',cardId:taunter.uid,lane:0},catalog),/adjacente/);assert.throws(()=>act(room,a,{type:'taunt',cardId:taunter.uid,lane:2},catalog),/adjacente/);act(room,a,{type:'taunt',cardId:taunter.uid,lane:1},catalog);assert.equal(view(room,b).players[0].taunts[taunter.uid],undefined,'Alvo secreto até revelar');assert.equal(view(room,a).players[0].taunts[taunter.uid],1);
+ const {room,a,b}=setup();room.phase='formation';const taunter=place(a,card('FL09',a),0);assert.throws(()=>act(room,a,{type:'taunt',cardId:taunter.uid,lane:0},catalog),/adjacente/);assert.throws(()=>act(room,a,{type:'taunt',cardId:taunter.uid,lane:2},catalog),/adjacente/);act(room,a,{type:'taunt',cardId:taunter.uid,lane:1},catalog);assert.equal(view(room,b).players[0].taunts[taunter.uid],undefined,'Alvo secreto até revelar');assert.equal(view(room,a).players[0].taunts[taunter.uid],1);
 }
 {
  const {room,a,b}=setup();room.phase='lobby';act(room,a,{type:'deck',deckId:deck.id},catalog);act(room,b,{type:'deck',deckId:'fluxo-virelion'},catalog);assert.equal(a.deck.length+a.hand.length,30);const imported=a.deck.concat(a.hand).find(c=>c.modelId==='FL05');assert.equal(imported.artZoom,144);assert.equal(imported.artX,41);assert.equal(imported.artY,39);
@@ -82,4 +82,19 @@ for(const mode of ['direct','lane']){
 }
 {
  const {room,a,b}=setup();const dwarf=card('FL06',a);a.reserve.push(dwarf);a.emanation=[dwarf.uid];const x=place(a,card('FL16',a),0),y=place(b,card('FL01',b,{attack:1}),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].health,2);assert.equal(room.preClash[0].cards[0].attack,0);assert.ok(a.reserve.includes(x),'A aura de vida permite sobreviver a 1 de dano');assert.equal(x.health,1,'A vida adicional é uma aura, não crescimento permanente');assert.equal(x.damage,0);assert.equal(deck.cards.find(c=>c.id==='FL16').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL06').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL07').quantity,1);
+}
+
+// Provocar can be omitted or cancelled without extending the frontal block.
+{
+ const {room,a,b}=setup();room.phase='formation';const t=place(a,card('FL09',a),1);act(room,a,{type:'ready'},catalog);assert.equal(a.ready,true);assert.deepEqual(a.taunts,{});
+}
+{
+ const {room,a,b}=setup();room.phase='formation';const t=place(b,card('FL09',b),1);act(room,b,{type:'taunt',cardId:t.uid,lane:0},catalog);act(room,b,{type:'taunt',cardId:t.uid,lane:null},catalog);assert.equal(b.taunts[t.uid],undefined);const front=place(a,card('FL05',a),1),side=place(a,card('FL05',a),0);room.phase='resolving';resolveCombat(room);assert.equal(room.directedSteps.find(s=>s.sourceId===front.uid).targetId,t.uid);assert.equal(room.directedSteps.find(s=>s.sourceId===side.uid).targetId,null);assert.equal(b.patron.hp,95);
+}
+{
+ const {room,a}=setup();room.phase='formation';const t=place(a,card('FL16',a),1),other=place(a,card('FL09',a),0);act(room,a,{type:'taunt',cardId:t.uid,lane:0},catalog);act(room,a,{type:'taunt',cardId:other.uid,lane:1},catalog);act(room,a,{type:'ready'},catalog);assert.equal(a.ready,true);assert.throws(()=>act(room,a,{type:'taunt',cardId:t.uid,lane:null},catalog),/confirmada/);
+}
+
+{
+ const {room,a}=setup();room.phase='formation';const left=place(a,card('FL09',a),0),right=place(a,card('FL16',a),2);act(room,a,{type:'taunt',cardId:left.uid,lane:1},catalog);assert.throws(()=>act(room,a,{type:'taunt',cardId:right.uid,lane:1},catalog),/Outra criatura/);act(room,a,{type:'taunt',cardId:right.uid,lane:null},catalog);act(room,a,{type:'ready'},catalog);assert.equal(a.ready,true,'Confirma mesmo sem casa adicional disponível');
 }

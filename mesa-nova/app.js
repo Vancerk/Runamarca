@@ -90,7 +90,7 @@ const keywordGlossary=[
  [/âncor|ancor/i,'Ancoragem','A criatura permanece na mesma posição até participar de mais um combate.'],
  [/barreira/i,'Barreira','A posição protege seu ocupante com 2 de vida temporária durante dois combates.'],
  [/transpassar/i,'Transpassar','O dano de combate que excede a vida do defensor atinge o Patrono.'],
- [/provocar/i,'Provocar','Escolha uma posição adjacente: seu atacante enfrenta esta criatura.'],
+ [/provocar/i,'Provocar','Bloqueia a posição à frente. Você pode escolher também uma posição adjacente: seu atacante enfrenta esta criatura.'],
  [/iniciativa/i,'Iniciativa','Ataca antes de criaturas sem Iniciativa. Um rival morto não revida.'],
  [/revela[çc][ãa]o/i,'Revelação','Resolve após as magias de posição e antes dos ataques.'],
  [/emana[çc][ãa]o/i,'Emanação','Efeito da criatura em uma vaga de Emanação. Ataques normais e magias em área não a atingem.'],
@@ -226,7 +226,7 @@ function showTauntPicker(card){
  hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2','Escolha a posição para Provocar');
  const row=document.createElement('div');row.className='taunt-options';const ownLane=seat().formation.indexOf(card.uid);
  for(let lane=0;lane<3;lane++)if(Math.abs(lane-ownLane)===1){const occupied=Object.entries(seat().taunts||{}).some(([uid,value])=>uid!==card.uid&&value===lane&&seat().formation.includes(uid));row.append(button(laneSymbols[lane],()=>{dialog.close();command({type:'taunt',cardId:card.uid,lane});},seat().taunts?.[card.uid]===lane?'primary':'',occupied));}
- content.append(row);if(!dialog.open)dialog.showModal();
+ row.append(button('Somente à frente',()=>{dialog.close();command({type:'taunt',cardId:card.uid,lane:null});},!Number.isInteger(seat().taunts?.[card.uid])?'primary':''));content.append(row);if(!dialog.open)dialog.showModal();
 }
 function showTargetPicker(source,ids,onChoose){
  hideHover();const dialog=$('target-picker'),content=$('target-picker-content');const targets=ids.map(uid=>({uid,card:state.players.flatMap(p=>p.reserve).find(c=>c.uid===uid)})).filter(t=>t.card||t.uid==='patron');if(!targets.length){if(dialog.open)dialog.close();return;}content.replaceChildren();text(content,'h2','Escolha o alvo');const row=document.createElement('div');row.className='target-options';
@@ -369,7 +369,7 @@ async function animateLaneClash(entry){
  if(left&&right){
   if(!parts.every(Boolean))return;
   const a=center(parts[0]),b=center(parts[1]),{dx,dy}=RunaMotion.contact(parts[0].getBoundingClientRect(),parts[1].getBoundingClientRect()),copies=parts.map(visualCard),duration=1350+weight*350;
-  const animations=copies.map((copy,i)=>copy.animate(RunaMotion.strikeFrames(i?-dx:dx,i?-dy:dy),{duration,easing:'linear',fill:'forwards'}));
+  const animations=copies.map((copy,i)=>copy.animate(RunaMotion.strikeFrames(i?-dx:dx,i?-dy:dy,{directionX:(b.x-a.x)*(i?-1:1),directionY:(b.y-a.y)*(i?-1:1),weight}),{duration,easing:'linear',fill:'forwards'}));
   animationCue(animations[0],.42,()=>{copies.forEach(node=>impact(node));applyHealthUpdates(entry.healthUpdates||entry.cards.map((card,i)=>({uid:card.uid,hp:Math.max(0,card.health-entry.cards[1-i].attack),maxHp:state.players.flatMap(p=>p.reserve).find(c=>c.uid===card.uid)?.health||card.health})));sound('impact',attackStrength);});
   await Promise.all(animations.map(a=>settleAnimation(a,duration)));
   if(generation!==visualGeneration){copies.forEach(copy=>copy.remove());return;}
@@ -377,7 +377,7 @@ async function animateLaneClash(entry){
  }
  const card=left||right,source=parts[left?0:1],targetOwner=entry.targetOwner||state.players.find(p=>p.id!==card.owner)?.id,patron=attackTarget({owner:card.owner,targetOwner,targetId:null});if(!source||!card.owner||!patron)return;
  const copy=visualCard(source),motion=RunaMotion.contact(source.getBoundingClientRect(),patron.getBoundingClientRect(),false),duration=1550+weight*350;
- const hitAnimation=copy.animate(RunaMotion.strikeFrames(motion.dx,motion.dy),{duration,easing:'linear',fill:'forwards'});animationCue(hitAnimation,.42,()=>{patronImpact(patron);damagePatron(targetOwner,card.attack);sound('impact',attackStrength);});try{await settleAnimation(hitAnimation,duration);}catch{}finally{if(generation===visualGeneration)finishVisual(card.uid,copy);else copy.remove();}return;
+ const from=center(source),to=center(patron),hitAnimation=copy.animate(RunaMotion.strikeFrames(motion.dx,motion.dy,{directionX:to.x-from.x,directionY:to.y-from.y,weight}),{duration,easing:'linear',fill:'forwards'});animationCue(hitAnimation,.42,()=>{patronImpact(patron);damagePatron(targetOwner,card.attack);sound('impact',attackStrength);});try{await settleAnimation(hitAnimation,duration);}catch{}finally{if(generation===visualGeneration)finishVisual(card.uid,copy);else copy.remove();}return;
 
 }
 async function animateDirectedStrike(strike){
@@ -386,7 +386,7 @@ async function animateDirectedStrike(strike){
 
  if(strike.blocked)return;const preview=state.combat?.visual?.flatMap(entry=>entry.cards.filter(Boolean)).find(c=>c.uid===strike.sourceId);if(preview){displayedAttack.set(preview.uid,preview.attack);const number=tableCard(preview.uid)?.querySelector('.attack-value');if(number){number.textContent=String(preview.attack);number.classList.toggle('attack-buffed',preview.attack>Number(number.closest('.card').dataset.baseAttack));}}const source=attackSource(strike),target=attackTarget(strike);if(!source||!target)return;
  const card=state.players.flatMap(p=>p.reserve).find(c=>c.uid===strike.sourceId),copy=visualCard(source),from=center(source),to=center(target),motion=RunaMotion.contact(source.getBoundingClientRect(),target.getBoundingClientRect(),false),dx=motion.dx,dy=motion.dy;
- if(strike.initiative)copy.classList.add('initiative-strike');const animation=copy.animate(RunaMotion.strikeFrames(dx,dy),{duration:1150,easing:'linear',fill:'forwards'});
+ if(strike.initiative)copy.classList.add('initiative-strike');const animation=copy.animate(RunaMotion.strikeFrames(dx,dy,{directionX:to.x-from.x,directionY:to.y-from.y,weight:weightOf(card||preview)}),{duration:1150,easing:'linear',fill:'forwards'});
  animationCue(animation,.42,()=>{if(strike.targetId)impact(target);else patronImpact(target);applyHealthUpdates(strike.healthUpdates);if(strike.patronDamage)damagePatron(strike.targetOwner,strike.patronDamage);sound('impact',strike.amount);for(const uid of strike.adjacent||[]){const neighbor=tableCard(uid);if(neighbor)fly('✷',target,neighbor,'spell',()=>impact(neighbor));}});
  try{await settleAnimation(animation,1150);}catch{}finally{if(generation===visualGeneration)finishVisual(strike.sourceId,copy);else copy.remove();}
 }

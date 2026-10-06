@@ -41,7 +41,7 @@ console.log('Fluxo: 30 cartas, maldição por alvo, simultaneidade, contato, ân
  const {room,a,b}=setup();room.phase='prep';const c=card('FV03',a,{speech:'O éter é a minha arma'});a.hand.push(c);act(room,a,{type:'play',cardId:c.uid},catalog);const e=view(room,b).events.find(e=>e.type==='creature');assert.equal(e.speech,c.speech);assert.equal(e.cardId,c.uid);
 }
 {
- for(const x of [0,200,400]){const from={left:50,top:600,width:70,height:100},to={left:x,top:250,width:100,height:90},line=RunaMotion.link(from,to);assert.ok(line.end.x>=x&&line.end.x<=x+100);assert.ok(line.end.y>=250&&line.end.y<=340);assert.ok(Object.values(line).every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));}const frames=RunaMotion.strikeFrames(150,-200);assert.equal(frames.at(-1).transform,'translate(0px,0px)');assert.equal(frames[1].transform,frames[2].transform);
+ for(const x of [0,200,400]){const from={left:50,top:600,width:70,height:100},to={left:x,top:250,width:100,height:90},line=RunaMotion.link(from,to);assert.ok(line.end.x>=x&&line.end.x<=x+100);assert.ok(line.end.y>=250&&line.end.y<=340);assert.ok(Object.values(line).every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));}const frames=RunaMotion.strikeFrames(150,-200);assert.equal(frames.at(-1).transform,'translate(0px,0px)');assert.equal(frames[2].transform,frames[3].transform);
 }
 console.log('Correções: alternância em seis rodadas, Auramora, fala compartilhada e geometria da seta aprovadas.');
 
