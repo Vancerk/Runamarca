@@ -3,13 +3,16 @@ import fs from 'node:fs';
 import {act,join,makeRoom,resolveCombat,view} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url)));
 const deck=catalog.decks.find(d=>d.id==='forja-oficina-lyrik');
+// Cartas retiradas do deck seguem como fixtures para testar a mecânica geral de cura.
+const retiredHealing=JSON.parse(fs.readFileSync(new URL('./fixtures/forja-cura-retirada.json',import.meta.url)));
+assert.ok(!deck.cards.some(c=>['FL07','FL18'].includes(c.id)));
 assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);
-assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,2);assert.equal(deck.cards.find(c=>c.id==='FL03').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL01').cost,3);assert.equal(deck.cards.find(c=>c.id==='FL01').health,2);assert.equal(deck.cards.find(c=>c.id==='FL01').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL05').cost,5);assert.equal(deck.cards.find(c=>c.id==='FL05').health,2);assert.equal(deck.cards.find(c=>c.id==='FL04').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL07').cost,4);
+assert.equal(deck.cards.find(c=>c.id==='FL03').quantity,2);assert.equal(deck.cards.find(c=>c.id==='FL03').cost,2);assert.equal(deck.cards.find(c=>c.id==='FL01').cost,3);assert.equal(deck.cards.find(c=>c.id==='FL01').health,2);assert.equal(deck.cards.find(c=>c.id==='FL01').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL05').cost,5);assert.equal(deck.cards.find(c=>c.id==='FL05').health,2);assert.equal(deck.cards.find(c=>c.id==='FL04').cost,2);
 assert.equal(deck.cards.find(c=>c.id==='FL04').rarity,'elite');assert.equal(deck.cards.find(c=>c.id==='FL04').quantity,2);
 assert.equal(deck.cards.find(c=>c.id==='FL11').speech,'Protocolo: Exterminar!');
-assert.deepEqual(catalog.decks.map(d=>d.id),['forja-oficina-lyrik','fluxo-virelion']);assert.equal(deck.cards.find(c=>c.id==='FL02').attack,0);assert.equal(deck.cards.find(c=>c.id==='FL02').health,4);
+assert.deepEqual(catalog.decks.map(d=>d.id),['forja-oficina-lyrik','fluxo-virelion','ruptura-grupo']);assert.equal(deck.cards.find(c=>c.id==='FL02').attack,0);assert.equal(deck.cards.find(c=>c.id==='FL02').health,4);
 for(const c of deck.cards)assert.ok(fs.existsSync(new URL(c.image,import.meta.url)));
-const card=(id,p,overrides={})=>({...structuredClone(deck.cards.find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...overrides});
+const card=(id,p,overrides={})=>({...structuredClone(deck.cards.find(c=>c.id===id)||retiredHealing.find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...overrides});
 function setup(){const room=makeRoom('ABC123','A');const a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{patron:{hp:100,maxHp:100},mana:10,manaMax:10,deck:Array.from({length:10},()=>({uid:crypto.randomUUID()})),taunts:{}});Object.assign(room,{first:a.id,turn:a.id,phase:'resolving',collectPreview:true});return {room,a,b};}
 function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
 {
@@ -26,7 +29,7 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a,b}=setup(),taunter=place(b,card('FL09',b),1),redirected=place(a,card('FL05',a),0);b.taunts[taunter.uid]=0;resolveCombat(room);assert.equal(taunter.damage,5);assert.equal(b.patron.hp,100,'Provocar impede golpe na casa vazia');assert.equal(room.directedSteps.find(s=>s.sourceId===redirected.uid).targetId,taunter.uid);assert.equal(room.directedSteps.filter(s=>s.sourceId===taunter.uid).length,1);
 }
 {
- const {room,a,b}=setup(),veronica=place(a,card('FL11',a),0);place(b,card('FL03',b),0);resolveCombat(room);assert.equal(veronica.attack,6);assert.equal(veronica.health,8);
+ const {room,a,b}=setup(),veronica=place(a,card('FL11',a,{protocolMode:'assault'}),0);place(b,card('FL03',b),0);resolveCombat(room);assert.equal(veronica.attack,4);assert.equal(veronica.health,5);assert.equal(room.preClash[0].cards[0].attack,6);
 }
 {
  const {room,a,b}=setup(),growth=place(a,card('FL04',a),0),reserve=card('FL04',a);a.reserve.push(reserve);place(b,card('FL03',b,{attack:0}),0);resolveCombat(room);assert.equal(growth.attack,1);assert.equal(growth.health,2);assert.equal(reserve.attack,0,'Reserva não recebe bônus por sobreviver sem participar');
@@ -61,7 +64,7 @@ console.log('Oficina de Lyrik: composição, artes, Iniciativa, Transpassar, Pro
  const {room,a,b}=setup();room.phase='prep';const placed=place(b,card('FL09',b),0),reserve=card('FL09',b),emana=card('FL09',b);b.reserve.push(reserve,emana);b.emanation=[emana.uid];a.hand.push(card('FL14',a));act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'lane',lane:0,targetSide:b.id},catalog);room.phase='resolving';resolveCombat(room);assert.equal(placed.attack,4);assert.equal(reserve.attack,5);assert.equal(emana.attack,5);assert.equal(a.prepared.length,0);assert.equal(placed.attackMod,0);
 }
 {
- const {room,a,b}=setup();room.phase='prep';const target=card('FL09',b);b.reserve.push(target);a.hand.push(card('FL15',a));act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'direct',targetId:target.uid},catalog);assert.equal(target.damage,2);assert.equal(a.mana,7);assert.equal(room.events.find(e=>e.type==='spell').healthUpdates[0].hp,10);
+ const {room,a,b}=setup();room.phase='prep';const target=card('FL09',b);b.reserve.push(target);a.hand.push(card('FL15',a));act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'direct',targetId:target.uid},catalog);assert.equal(target.damage,2);assert.equal(a.mana,7);assert.equal(room.events.find(e=>e.type==='spell').healthUpdates[0].hp,8);
 }
 console.log('Forja revisado: 30 cartas, custos/atributos, redução permanente, sigilo, Emanação imune a área e dano direto aprovados.');
 for(const [subtype,lane,expectedAttack,expectedHp] of [['axiom',0,3,3],['axiom Sintético',0,3,3],['humano',0,2,3],['axiom',1,2,2]]){
@@ -81,7 +84,7 @@ for(const mode of ['direct','lane']){
  const {room,a,b}=setup();room.phase='prep';a.patron.hp=98;const elf=card('FL07',a);a.reserve.push(elf);a.emanation=[elf.uid];a.mana=0;assert.throws(()=>act(room,a,{type:'endPrep',healTargetIds:['patron']},catalog),/Mana insuficiente/);assert.equal(a.patron.hp,98);a.mana=1;act(room,a,{type:'endPrep',healTargetIds:['patron']},catalog);assert.equal(a.patron.hp,99);assert.equal(a.mana,0);const e=view(room,b).events.find(e=>e.type==='cleric_heal');assert.equal(e.targetPatronId,a.id);assert.equal(e.healthUpdates[0].hp,99);
 }
 {
- const {room,a,b}=setup();const dwarf=card('FL06',a);a.reserve.push(dwarf);a.emanation=[dwarf.uid];const x=place(a,card('FL16',a),0),y=place(b,card('FL01',b,{attack:1}),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].health,2);assert.equal(room.preClash[0].cards[0].attack,0);assert.ok(a.reserve.includes(x),'A aura de vida permite sobreviver a 1 de dano');assert.equal(x.health,1,'A vida adicional é uma aura, não crescimento permanente');assert.equal(x.damage,0);assert.equal(deck.cards.find(c=>c.id==='FL16').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL06').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL07').quantity,1);
+ const {room,a,b}=setup();const dwarf=card('FL06',a);a.reserve.push(dwarf);a.emanation=[dwarf.uid];const x=place(a,card('FL16',a),0),y=place(b,card('FL01',b,{attack:1}),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].health,2);assert.equal(room.preClash[0].cards[0].attack,0);assert.ok(a.reserve.includes(x),'A aura de vida permite sobreviver a 1 de dano');assert.equal(x.health,1,'A vida adicional é uma aura, não crescimento permanente');assert.equal(x.damage,0);assert.equal(deck.cards.find(c=>c.id==='FL16').quantity,1);assert.equal(deck.cards.find(c=>c.id==='FL06').quantity,1);
 }
 
 // Provocar can be omitted or cancelled without extending the frontal block.

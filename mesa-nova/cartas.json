@@ -100,7 +100,8 @@
         "counts_toward_deck": false,
         "ability": null,
         "text": "Seu baralho só pode conter cartas de Forja. Sua mana pode pagar os custos dessas cartas.",
-        "lore_status": "Título original de protótipo; não identifica uma divindade oficial."
+        "lore_status": "Título original de protótipo; não identifica uma divindade oficial.",
+        "image": "patrons/bigorna-desperta-nova.png"
       },
       "cards": [
         {
@@ -411,71 +412,6 @@
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
         {
-          "id": "FL07",
-          "name": "Elfo estudioso",
-          "type": "creature",
-          "affinity": "forja",
-          "cost": 4,
-          "quantity": 1,
-          "rarity": "padrao",
-          "subtype": "Elfo",
-          "attack": 1,
-          "health": 2,
-          "text": "Emanação — escolha uma criatura aliada ferida ou seu Patrono ferido. Ao encerrar a preparação, pague 1 mana para curar 1 de vida do alvo.",
-          "speech": "Do que precisa?",
-          "narrative": "Elfo estudioso? só isso? eu tenho nome e sobrenome, não quero ser resumido a minha raça e minha função — Elfo Estudioso",
-          "image": "art/oficina-lyrik/elfo-estudioso.jpg",
-          "artZoom": 120,
-          "artX": 63,
-          "artY": 21,
-          "fontName": 43,
-          "fontSubtype": 21,
-          "fontRules": 46,
-          "effects": [
-            {
-              "op": "heal",
-              "amount": 1,
-              "mana_cost": 1,
-              "timing": "emanation",
-              "target": "chosen_allied_creature",
-              "allow_patron": true
-            }
-          ],
-          "budgetEffects": [
-            {
-              "sourceIndex": 0,
-              "name": "heal",
-              "timing": "emanation",
-              "target": "ally",
-              "duration": "instant",
-              "condition": "none",
-              "amount": 1,
-              "count": 1,
-              "activationCost": 1,
-              "group": "choice",
-              "reason": "",
-              "effect": "heal"
-            },
-            {
-              "sourceIndex": 0,
-              "name": "heal",
-              "timing": "emanation",
-              "target": "patron",
-              "duration": "instant",
-              "condition": "none",
-              "amount": 1,
-              "count": 1,
-              "activationCost": 1,
-              "group": "choice",
-              "reason": "",
-              "effect": "heal"
-            }
-          ],
-          "budgetVersion": 3,
-          "authoredBy": "Grupo Elysium",
-          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
-        },
-        {
           "id": "FL08",
           "name": "Monge Rúnico",
           "type": "creature",
@@ -534,8 +470,8 @@
           "rarity": "elite",
           "subtype": "Engrenauta",
           "attack": 5,
-          "health": 12,
-          "text": "Provocar.",
+          "health": 10,
+          "text": "Provocar — pode escolher até duas posições inimigas adjacentes adicionais para redirecionar seus ataques contra si neste combate.",
           "speech": "*Barulho aterrorizante*",
           "narrative": "Se estiver em alto mar e notar um farol avermelhado… comece a escolher um deus para rezar",
           "image": "art/oficina-lyrik/g-0-l-1-a-5-o-terror-nautico.jpg",
@@ -547,7 +483,8 @@
           "fontRules": 52,
           "effects": [
             {
-              "op": "taunt"
+              "op": "taunt",
+              "maxAdditional": 2
             }
           ],
           "budgetEffects": [
@@ -562,7 +499,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"taunt\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"taunt\",\"maxAdditional\":2}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -641,9 +578,9 @@
           "quantity": 1,
           "rarity": "soberano",
           "subtype": "axiom",
-          "attack": 5,
-          "health": 7,
-          "text": "Ao participar da eliminação de uma criatura inimiga e sobreviver, ganha +1/+1 permanentemente.",
+          "attack": 4,
+          "health": 5,
+          "text": "Na formação, escolha um modo para este combate. Assalto — tem +2 de ataque; aliados nas posições adjacentes têm +1 de ataque. Escolta — tem +2 de vida; aliados nas posições adjacentes têm +1 de vida.",
           "speech": "Protocolo: Exterminar!",
           "narrative": "Dizem ser uma das criações secretas de Lyrik, e que para ele, é uma obra prima, e para seus inimigos, um problema!",
           "image": "art/oficina-lyrik/v-3-r-0-n-1-c-a.jpg",
@@ -655,24 +592,24 @@
           "fontRules": 52,
           "effects": [
             {
-              "op": "kill_growth",
-              "attack": 1,
-              "health": 1
+              "op": "combat_protocol",
+              "timing": "revelation",
+              "target": "self"
             }
           ],
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "kill_growth",
-              "timing": "turn",
-              "target": "enemy",
+              "name": "combat_protocol",
+              "timing": "reveal",
+              "target": "self",
               "duration": "round",
               "condition": "none",
               "amount": 0,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"kill_growth\",\"attack\":1,\"health\":1}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"combat_protocol\",\"timing\":\"revelation\",\"target\":\"self\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -782,7 +719,7 @@
           "name": "Geada Implacável",
           "type": "direct_spell",
           "affinity": "forja",
-          "cost": 4,
+          "cost": 5,
           "quantity": 2,
           "rarity": "elite",
           "subtype": "",
@@ -994,65 +931,99 @@
           ]
         },
         {
-          "id": "FL18",
-          "name": "Reparo de Emergência",
+          "id": "FL19",
+          "name": "De Volta a Estaca 1",
           "type": "direct_spell",
           "affinity": "forja",
-          "rarity": "padrao",
-          "quantity": 3,
-          "cost": 3,
-          "text": "Cause 1 de dano a uma criatura inimiga e cure 1 de vida do seu Patrono.",
-          "effects": [
-            {
-              "op": "damage",
-              "amount": 1
-            },
-            {
-              "op": "heal_patron",
-              "amount": 1,
-              "target": "own_patron"
-            }
-          ],
-          "enemyOnly": true,
-          "image": "art/oficina-lyrik/reforco-divino.jpg",
-          "imageKind": "illustration",
+          "cost": 4,
+          "quantity": 2,
+          "rarity": "elite",
+          "subtype": "",
+          "text": "Altere permanentemente a vida máxima e atual de uma criatura inimiga para 1.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/oficina-lyrik/toque-gelido.jpg",
           "artZoom": 100,
           "artX": 50,
           "artY": 50,
-          "fontRules": 36,
-          "authoredBy": "Grupo Elysium",
-          "budgetVersion": 3,
-          "budgetReview": "Ilustração provisória reutilizada; dano em criatura inimiga e cura no próprio Patrono.",
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 42,
+          "effects": [
+            {
+              "op": "set_health",
+              "amount": 1
+            }
+          ],
+          "enemyOnly": true,
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "damage",
+              "name": "set_health",
               "timing": "direct",
               "target": "enemy",
-              "duration": "instant",
+              "duration": "round",
               "condition": "none",
               "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "",
-              "effect": "damage"
-            },
-            {
-              "sourceIndex": 1,
-              "name": "heal_patron",
-              "timing": "direct",
-              "target": "patron",
-              "duration": "instant",
-              "condition": "none",
-              "amount": 1,
-              "count": 1,
-              "activationCost": 0,
-              "group": "sum",
-              "reason": "",
-              "effect": "heal"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"set_health\",\"amount\":1}",
+              "effect": "custom",
+              "customPoints": 0
             }
-          ]
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio.",
+          "directOnly": true
+        },
+        {
+          "id": "FL20",
+          "name": "Miragem Provocadora",
+          "type": "prepared_spell",
+          "affinity": "forja",
+          "cost": 2,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "",
+          "text": "Prepare em uma posição inimiga. Ao ativar, se sua posição à frente estiver livre, convoque nela uma Miragem 0/1 e conceda Transpassar ao atacante inimigo neste combate. Se não houver espaço, descarte esta magia sem efeito.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/oficina-lyrik/geada-implacavel.png",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 42,
+          "effects": [
+            {
+              "op": "mirage"
+            }
+          ],
+          "enemyOnly": true,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "mirage",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"mirage\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio.",
+          "positionOnly": true
         }
       ]
     },
@@ -1073,7 +1044,8 @@
         "counts_toward_deck": false,
         "ability": null,
         "text": "Seu baralho só pode conter cartas de Fluxo. Sua mana pode pagar os custos dessas cartas.",
-        "lore_status": "Título original inspirado em pactos; não identifica uma divindade oficial."
+        "lore_status": "Título original inspirado em pactos; não identifica uma divindade oficial.",
+        "image": "patrons/olho-dos-pactos-novo.png"
       },
       "cards": [
         {
@@ -1634,6 +1606,657 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ruptura-grupo",
+      "name": "Ruptura do grupo",
+      "affinity": "ruptura",
+      "cards": [
+        {
+          "id": "RG01",
+          "name": "Geometro Dedicado",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 1,
+          "quantity": 4,
+          "rarity": "lacaio",
+          "subtype": "Geometro",
+          "attack": 1,
+          "health": 1,
+          "text": "Quando esta criatura for bloqueada, crie uma ficha de criatura Geometro 1/1.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG01.jpg",
+          "artZoom": 108,
+          "artX": 100,
+          "artY": 70,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 40,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "Ficha Geometro",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"blocked_summon\",\"name\":\"Ficha Geometro\",\"subtype\":\"Geometro\",\"attack\":1,\"health\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "blocked_summon",
+              "name": "Ficha Geometro",
+              "subtype": "Geometro",
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG02",
+          "name": "Incursora Furiosa",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 1,
+          "quantity": 4,
+          "rarity": "lacaio",
+          "subtype": "Tribal",
+          "attack": 1,
+          "health": 1,
+          "text": "Revelação  — Causa 1 de dano ao bloqueador.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG02.jpg",
+          "artZoom": 100,
+          "artX": 81,
+          "artY": 50,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 48,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "damage",
+              "timing": "reveal",
+              "target": "lane",
+              "duration": "instant",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "damage"
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "damage",
+              "timing": "revelation",
+              "target": "enemy_same_lane_creature",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG03",
+          "name": "Crias Incandescentes",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 2,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "Umbro",
+          "attack": 2,
+          "health": 2,
+          "text": "*Último Suspiro* — Cause 1 de dano ao Patrono alvo.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG03.jpg",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 32,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 48,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "death_patron_damage",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"death_patron_damage\",\"amount\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "death_patron_damage",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG04",
+          "name": "Fulgor Final",
+          "type": "direct_spell",
+          "affinity": "ruptura",
+          "cost": 6,
+          "quantity": 1,
+          "rarity": "soberano",
+          "subtype": "",
+          "text": "Esta magia causa 6 de dano a qualquer alvo e não pode ser anulada.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG04.jpg",
+          "artZoom": 100,
+          "artX": 7,
+          "artY": 0,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "damage",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 6,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"damage\",\"amount\":6,\"target\":\"any\",\"uncounterable\":true}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "damage",
+              "amount": 6,
+              "target": "any",
+              "uncounterable": true
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos.",
+          "directOnly": true
+        },
+        {
+          "id": "RG05",
+          "name": "Rastreadora da Mata Sussurrante",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 4,
+          "quantity": 2,
+          "rarity": "elite",
+          "subtype": "Tribal Druida",
+          "attack": 3,
+          "health": 4,
+          "text": "Os outros Tribais que você controla recebem +1/+1.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG05.jpg",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 83,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 46,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "tribal_aura",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"tribal_aura\",\"attack\":1,\"health\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "tribal_aura",
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG06",
+          "name": "Chamado da Tradição",
+          "type": "direct_spell",
+          "affinity": "ruptura",
+          "cost": 3,
+          "quantity": 3,
+          "rarity": "lacaio",
+          "subtype": "",
+          "text": "Crie um número de fichas de criatura Tribal 1/1 igual a dois mais o número de cartas \"Chamado da Tradição\" no Natvanyr.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG06.jpg",
+          "artZoom": 100,
+          "artX": 13,
+          "artY": 0,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 44,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "Ficha Tribal",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"tradition_summon\",\"amount\":2,\"name\":\"Ficha Tribal\",\"subtype\":\"Tribal\",\"attack\":1,\"health\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "tradition_summon",
+              "amount": 2,
+              "name": "Ficha Tribal",
+              "subtype": "Tribal",
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos.",
+          "directOnly": true
+        },
+        {
+          "id": "RG07",
+          "name": "Estilhaço Elétrico",
+          "type": "direct_spell",
+          "affinity": "ruptura",
+          "cost": 1,
+          "quantity": 3,
+          "rarity": "padrao",
+          "subtype": "",
+          "text": "Cause 2 de dano a qualquer coisa.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG07.jpg",
+          "artZoom": 100,
+          "artX": 63,
+          "artY": 0,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "damage",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"damage\",\"amount\":2,\"target\":\"any\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "damage",
+              "amount": 2,
+              "target": "any"
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos.",
+          "directOnly": true
+        },
+        {
+          "id": "RG08",
+          "name": "Comandante Gnoll",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 3,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "Gnoll Guerreiro",
+          "attack": 2,
+          "health": 3,
+          "text": "Quando outra criatura que você controla com ataque igual ou menor que 1 entrar, Comandante Gnoll recebe +2 de ataque até o fim do combate.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG08.jpg",
+          "artZoom": 100,
+          "artX": 59,
+          "artY": 50,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 48,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "small_enter_attack",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"small_enter_attack\",\"amount\":2}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "small_enter_attack",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG09",
+          "name": "Cólera Trifecta",
+          "type": "direct_spell",
+          "affinity": "ruptura",
+          "cost": 3,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "",
+          "text": "Suas criaturas nas posições de combate recebem +2 de ataque no combate desta rodada.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG09.jpg",
+          "artZoom": 100,
+          "artX": 62,
+          "artY": 0,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 45,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "combat_area_attack",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"combat_area_attack\",\"amount\":2}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "combat_area_attack",
+              "amount": 2
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos.",
+          "directOnly": true
+        },
+        {
+          "id": "RG10",
+          "name": "Vultobreve, o Ousado",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 5,
+          "quantity": 1,
+          "rarity": "soberano",
+          "subtype": "Jaghut",
+          "attack": 3,
+          "health": 4,
+          "text": "A cada formação de combate, escolha uma criatura livre na reserva inimiga e puxe-a para a posição vazia em frente a Vultobreve, tornando-o seu oponente. Não pode puxar criaturas da Emanação.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG10.jpg",
+          "artZoom": 133,
+          "artX": 53,
+          "artY": 42,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 46,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "force_opponent",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"force_opponent\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "force_opponent"
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG11",
+          "name": "Aríete Protegido",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 1,
+          "quantity": 2,
+          "rarity": "lacaio",
+          "subtype": "Veículo",
+          "attack": 0,
+          "health": 4,
+          "text": "Revelação — você pode pagar 1 Éter para receber +1 de ataque neste combate.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG11.jpg",
+          "artZoom": 100,
+          "artX": 67,
+          "artY": 0,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "optional_reveal_attack",
+              "timing": "reveal",
+              "target": "self",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 1,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"optional_reveal_attack\",\"timing\":\"revelation\",\"target\":\"self\",\"cost\":1,\"amount\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "optional_reveal_attack",
+              "timing": "revelation",
+              "target": "self",
+              "cost": 1,
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG12",
+          "name": "Debulhador da Linha de Frente",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 5,
+          "quantity": 3,
+          "rarity": "lacaio",
+          "subtype": "Baluarte",
+          "attack": 4,
+          "health": 4,
+          "text": "Caso seu Patrono esteja com menos da metade da vida, Debulhador da Linha de Frente recebe +1 em Ataque.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG12.jpg",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 58,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "low_patron_attack",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"low_patron_attack\",\"amount\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "low_patron_attack",
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "RG13",
+          "name": "Bruxo da Retaliaçãozinha",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 3,
+          "quantity": 1,
+          "rarity": "elite",
+          "subtype": "Goblin Xamã",
+          "attack": 0,
+          "health": 2,
+          "text": "Emanação — quando uma criatura sua com ataque igual ou menor que 2 atacar, acumule 1 Retaliação. A cada 4 acúmulos, consuma-os e cause 1 de dano ao Patrono inimigo.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/ruptura-grupo/RG13.jpg",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 0,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 44,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "retaliation",
+              "timing": "emanation",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"retaliation\",\"timing\":\"emanation\",\"threshold\":4,\"amount\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "authoredBy": "Grupo Elysium",
+          "effects": [
+            {
+              "op": "retaliation",
+              "timing": "emanation",
+              "threshold": 4,
+              "amount": 1
+            }
+          ],
+          "budgetVersion": 3,
+          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        }
+      ],
+      "archetype": "Pressão, Tribais e fichas",
+      "plan": "Ruptura criado pelo grupo: pressão rápida, criaturas pequenas e ataques coordenados.",
+      "patron": {
+        "id": "RGP",
+        "name": "A Garra Vigilante",
+        "image": "patrons/garra-vigilante.png",
+        "hp": 16
+      }
     }
   ]
 }

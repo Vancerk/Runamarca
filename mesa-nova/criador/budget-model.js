@@ -76,10 +76,11 @@
   const rows=[],creature=card.type==='creature';
   for(const [sourceIndex,e] of (card.effects||[]).entries()){
    const timing=creature?e.timing==='on_enter'?'enter':e.timing==='revelation'?'reveal':String(e.timing).includes('emanat')?'emanation':'turn':card.type==='prepared_spell'?'trap':'direct';
-   const target=e.target==='self'?'self':['same_lane_enemy','enemy_same_lane','opposing_creature_same_lane'].includes(e.target)?'lane':e.target==='allied_creature_lane_1'?'fixedAlly':e.target==='chosen_allied_creature'?'ally':e.target==='own_patron'?'patron':timing==='trap'?'trigger':'enemy';
+   const target=e.target==='self'?'self':['same_lane_enemy','enemy_same_lane','opposing_creature_same_lane','enemy_same_lane_creature'].includes(e.target)?'lane':e.target==='allied_creature_lane_1'?'fixedAlly':e.target==='chosen_allied_creature'?'ally':e.target==='own_patron'?'patron':timing==='trap'?'trigger':'enemy';
    const base={sourceIndex,name:e.name||e.op,timing,target,duration:e.permanent?'permanent':'round',condition:e.condition==='self_wounded'?'wounded':e.condition==='owner_played_direct_spell_this_round'?'spell':'none',amount:Math.abs(e.amount||0),count:1,activationCost:e.mana_cost||e.cost||0,group:'sum',reason:''};
    const add=(effect,extra={})=>rows.push({...base,effect,...extra});
    const unknown=()=>add('custom',{customPoints:0,reason:'Mecânica sem preço calibrado: '+JSON.stringify(e)});
+   if(e.target==='any'||e.uncounterable){unknown();continue;}
    if(e.condition&& !['self_wounded','owner_played_direct_spell_this_round'].includes(e.condition)){unknown();continue;}
    if(e.op==='heal_patron'){add('heal',{target:'patron',duration:'instant'});continue;}
    if(e.subtypeIncludes){unknown();continue;}
