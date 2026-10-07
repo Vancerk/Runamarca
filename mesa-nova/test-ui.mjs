@@ -2,7 +2,7 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const motion={};vm.createContext(motion);vm.runInContext(await readFile(new URL('./combat-motion.js',import.meta.url),'utf8'),motion);
-const source=await readFile(new URL('./app.js',import.meta.url),'utf8');
+const source=(await readFile(new URL('./app.js',import.meta.url),'utf8')).replace(/\r\n/g,'\n');
 function extract(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);}
 // A spell click must submit the individual chosen UID, including the patron option.
 let choices,played;

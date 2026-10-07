@@ -1,0 +1,112 @@
+{
+  "cells": [
+    {
+      "id": "0703",
+      "x": 587.5,
+      "y": 177,
+      "color": "#6d5e50",
+      "terrain": "mountain",
+      "textColor": "#ffffff"
+    },
+    {
+      "id": "0104",
+      "x": 410,
+      "y": 205,
+      "color": "#7a6835"
+    },
+    {
+      "id": "1406",
+      "x": 828.5,
+      "y": 262,
+      "color": "#415933",
+      "terrain": "forest",
+      "textColor": "#ffffff"
+    },
+    {
+      "id": "0406",
+      "x": 506.5,
+      "y": 262,
+      "color": "#7a6835"
+    },
+    {
+      "id": "0606",
+      "x": 571.5,
+      "y": 262,
+      "color": "#7a6a36"
+    },
+    {
+      "id": "1009",
+      "x": 684,
+      "y": 345.5,
+      "color": "#7c5c2e"
+    },
+    {
+      "id": "1110",
+      "x": 732.5,
+      "y": 372.5,
+      "color": "#7b5e2f"
+    },
+    {
+      "id": "2515",
+      "x": 1167.5,
+      "y": 511,
+      "color": "#6e5f51",
+      "terrain": "mountain",
+      "textColor": "#ffffff"
+    },
+    {
+      "id": "1215",
+      "x": 748.5,
+      "y": 512,
+      "color": "#7c5b2d"
+    },
+    {
+      "id": "1516",
+      "x": 861.5,
+      "y": 540.5,
+      "color": "#7c5b2d"
+    },
+    {
+      "id": "1720",
+      "x": 925.5,
+      "y": 651,
+      "color": "#aac3c8",
+      "terrain": "snow",
+      "textColor": "#111111"
+    },
+    {
+      "id": "2621",
+      "x": 1199.5,
+      "y": 680,
+      "color": "#7a6835"
+    },
+    {
+      "id": "2824",
+      "x": 1280,
+      "y": 763,
+      "color": "#4f6a3c",
+      "terrain": "forest",
+      "textColor": "#ffffff"
+    },
+    {
+      "id": "2226",
+      "x": 1086.5,
+      "y": 818.5,
+      "color": "#7a6735"
+    },
+    {
+      "id": "2626",
+      "x": 1215.5,
+      "y": 818.5,
+      "color": "#7a6634"
+    },
+    {
+      "id": "2927",
+      "x": 1295.5,
+      "y": 847,
+      "color": "#7a6634"
+    }
+  ],
+  "dotColor": "#7a6a36",
+  "method": "Camada SVG determin\u00edstica; originais preservados."
+}

@@ -1,0 +1,62 @@
+{
+  "status": "calibracao-inicial",
+  "reference_size": [
+    1333,
+    1000
+  ],
+  "scale": 1.1849125343753575,
+  "translation": [
+    -404.6800087167894,
+    -102.90152958455269
+  ],
+  "anchors": [
+    {
+      "hex": "1401",
+      "simple": [
+        814.0,
+        121.0
+      ],
+      "detail": [
+        560.5,
+        40.0
+      ],
+      "residual_preview_px": 0.813
+    },
+    {
+      "hex": "1501",
+      "simple": [
+        846.0,
+        121.0
+      ],
+      "detail": [
+        598.5,
+        40.0
+      ],
+      "residual_preview_px": 0.882
+    },
+    {
+      "hex": "2828",
+      "simple": [
+        1281.0,
+        873.0
+      ],
+      "detail": [
+        1113.0,
+        932.0
+      ],
+      "residual_preview_px": 0.511
+    },
+    {
+      "hex": "3028",
+      "simple": [
+        1346.0,
+        873.0
+      ],
+      "detail": [
+        1189.0,
+        932.0
+      ],
+      "residual_preview_px": 1.301
+    }
+  ]
+}

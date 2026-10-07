@@ -9,9 +9,9 @@ if ((Split-Path -Parent $archivePath) -ne $projectRoot -or (Split-Path -Parent $
   throw 'O pacote precisa permanecer na pasta do projeto.'
 }
 
-$rootFiles = @('.dockerignore', '.gitignore', 'ANDAMENTO.md', 'COMO_TESTAR.md', 'Dockerfile', 'HOSPEDAGEM.md', 'INICIAR_WINDOWS.bat', 'package.json', 'README.md', 'server.js', 'dice-game.js')
+$rootFiles = @('.dockerignore', '.gitignore', 'ANDAMENTO.md', 'COMO_TESTAR.md', 'Dockerfile', 'HOSPEDAGEM.md', 'INICIAR_WINDOWS.bat', 'package.json', 'README.md', 'server.js', 'dice-game.js', 'accounts.mjs', 'read-cache.mjs', 'package-lock.json', '.env.example')
 $files = foreach ($name in $rootFiles) { Get-Item -LiteralPath (Join-Path $projectRoot $name) }
-foreach ($folder in @('public', 'mesa-nova', 'scripts', 'test')) {
+foreach ($folder in @('public', 'mesa-nova', 'scripts', 'test', 'torre')) {
   $files += Get-ChildItem -LiteralPath (Join-Path $projectRoot $folder) -File -Recurse
 }
 

@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/account.css"><script src="/account.js" defer></script><title>Torre de Comando</title>
+<style>body{margin:0;background:#151c20;color:#eee;font:16px system-ui}header{padding:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}button{padding:12px 18px;border:0;border-radius:8px;cursor:pointer;background:#e6bc70;color:#171b1e}main{position:relative;max-width:1333px;margin:auto}img{width:100%;display:block}#simple{position:absolute;inset:0;opacity:0}label{display:flex;gap:10px;align-items:center}p{margin:0;color:#becbd1}</style>
+<header><a href="/" style="color:#dcc286">← Jogos Elysium</a><strong>Legion · alinhamento inicial</strong><button id="toggle">Mostrar simplificado</button><label>Sobreposição <input id="blend" type="range" min="0" max="100" value="0"></label><p>Compare as linhas dos hexágonos. Prévia de calibração.</p></header>
+<style>body{height:100vh;display:flex;flex-direction:column}header{background:#18232c;z-index:2}main{max-width:none;width:100%;flex:1;overflow:hidden;margin:0;cursor:grab;touch-action:none}main.dragging{cursor:grabbing}#world{position:absolute;width:4096px;height:3072px;transform-origin:0 0;overflow:hidden;user-select:none;background:#1d1817}#world>img{width:4096px;height:3072px}#simple{position:absolute;inset:auto;left:0;top:0;width:5100px;height:3340px;transform-origin:0 0}#simple img,#clean{position:absolute;inset:0;width:5100px;height:3340px;pointer-events:none}#status{position:absolute;bottom:12px;left:12px;background:#18232cdd;padding:8px;pointer-events:none}</style>
+<main id="viewport"><div id="world"><img src="assets/detalhado-sem-codigos.webp" alt="Mapa detalhado em resolução original" draggable="false"><div id="simple"><img src="assets/hexagonal-simplificado.png" alt="Mapa simplificado em resolução original" draggable="false"><svg id="clean" viewBox="0 0 1400 916.862745" xmlns="http://www.w3.org/2000/svg"></svg></div></div><output id="status"></output></main><link rel="stylesheet" href="relatorios.css"><script src="mapa.js"></script><script src="relatorios.js"></script><script src="cartas.js"></script><script src="anexos.js"></script><script src="admin.js"></script><script src="ocultar-codigos.js"></script></html>
+
+
+
+

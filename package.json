@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs test/review-regression.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs && node mesa-nova/test-oficina.mjs && node mesa-nova/test-forja-protocolos.mjs && node mesa-nova/test-ruptura.mjs && node mesa-nova/test-fluxo.mjs && node mesa-nova/test-presentation.mjs && node mesa-nova/test-ui.mjs && node test/audit-regression.mjs"
+    "test": "node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs test/review-regression.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs && node mesa-nova/test-oficina.mjs && node mesa-nova/test-forja-protocolos.mjs && node mesa-nova/test-ruptura.mjs && node mesa-nova/test-fluxo.mjs && node mesa-nova/test-presentation.mjs && node mesa-nova/test-ui.mjs && node test/audit-regression.mjs",
+    "test:torre": "node --test test/torre.test.mjs torre/backend/*.test.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "dependencies": {
     "pg": "^8.23.1"
