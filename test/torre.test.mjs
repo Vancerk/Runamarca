@@ -19,15 +19,15 @@ test('Neon mirror survives restart, preserves binary files and enforces a storag
  }finally{await pool.end();await rm(first,{recursive:true,force:true});await rm(second,{recursive:true,force:true});}
 });
 
-test('Torre shares the games server and OAuth; rejects guests, users, forged origins and token setup',async()=>{
+test('Torre shares the games server and OAuth; allows public visitors while protecting administration, origins and token setup',async()=>{
  process.env.NODE_ENV='test';process.env.DISCORD_CLIENT_ID='123456789012345678';process.env.DISCORD_CLIENT_SECRET='test-placeholder';process.env.DATABASE_URL='postgresql://unused/test';process.env.DISCORD_ADMIN_ID='1080332488070672484';delete process.env.DISCORD_BOT_TOKEN;
  const pg=memoryPg(),pool=new pg.Pool(),db=new AccountStore(pool);useTestStore(db);await db.upsert({id:process.env.DISCORD_ADMIN_ID,username:'admin'});await db.upsert({id:'222222222222222222',username:'player'});const admin='elysium_session='+await db.createSession(process.env.DISCORD_ADMIN_ID),player='elysium_session='+await db.createSession('222222222222222222');
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;process.env.DISCORD_REDIRECT_URI=base+'/auth/discord/callback';
  async function call(path,cookie='',data,origin=base){return fetch(base+path,{redirect:'manual',method:data?'POST':'GET',headers:{cookie,...(data?{origin,'Content-Type':'application/json'}:{})},body:data?JSON.stringify(data):undefined});}
  try{
   assert.equal((await call('/')).status,200);assert.equal((await call('/dados')).status,200);assert.equal((await call('/health')).status,200);assert.equal((await call('/api/torre-flow-result')).status,403);
-  const guest=await call('/torre/');assert.equal(guest.status,302);assert.match(guest.headers.get('location'),/auth\/discord/);
-  assert.equal((await call('/torre/api/config')).status,401);assert.equal((await call('/torre/',player)).status,403);assert.equal((await call('/torre/assets/detalhado-sem-codigos.webp',player)).status,403);
+  const guest=await call('/torre/');assert.equal(guest.status,200);const visitor=guest.headers.get('set-cookie').split(';')[0];assert.match(visitor,/^torre_visitor=/);const again=await call('/torre/api/config',visitor);assert.equal(again.headers.get('set-cookie'),null);const guestConfig=await again.json();assert.equal(guestConfig.admin,false);assert.equal(guestConfig.botConfigured,undefined);assert.equal((await call('/torre/api/admin/reports',visitor)).status,403);assert.equal((await call('/torre/api/admin/reports','torre_visitor=forged')).status,403);
+  assert.equal((await call('/torre/api/config')).status,200);assert.equal((await call('/torre/',player)).status,200);assert.equal((await call('/torre/assets/detalhado-sem-codigos.webp',player)).status,200);
   const page=await call('/torre/',admin);assert.equal(page.status,200);assert.match(await page.text(),/\/account.js/);
   const config=await (await call('/torre/api/config',admin)).json();assert.equal(config.admin,true);assert.equal(config.managedAccount,true);assert.equal(config.ready,false);assert.equal(config.botConfigured,false);assert.equal(config.botState,'unconfigured');assert.match(config.botError,/DISCORD_BOT_TOKEN/);assert.ok(config.masters.some(m=>m.name==='Kagami'));
   const unavailable=await call('/torre/api/admin/bot/test-report',admin,{submissionKey:'a'.repeat(36)});assert.equal(unavailable.status,503);assert.match((await unavailable.json()).error,/DISCORD_BOT_TOKEN/);assert.equal((await call('/torre/api/admin/bot/test-report',player,{submissionKey:'a'.repeat(36)})).status,403);
@@ -39,6 +39,6 @@ test('Torre shares the games server and OAuth; rejects guests, users, forged ori
   const saved=await call('/torre/api/characters/discord',admin,{id:'character-test',discordId:'222222222222222222'});assert.equal(saved.status,200);await closeTorre();assert.equal((await (await call('/torre/api/characters',admin)).json())[0].discordId,'222222222222222222');
   assert.equal((await call('/torre/api/admin/start',admin,{})).status,405);assert.equal((await call('/torre/api/admin/reports',player)).status,403);
   const index=await call('/torre/api/reports/index',admin);assert.equal(index.status,200);assert.deepEqual(await index.json(),[]);const conditional=await fetch(base+'/torre/api/reports/index',{headers:{cookie:admin,'If-None-Match':index.headers.get('etag')}});assert.equal(conditional.status,304);
-  assert.equal((await call('/torre/api/reports/index',player)).status,403);
+  assert.equal((await call('/torre/api/reports/index',player)).status,200);const otherVisitor=(await call('/torre/')).headers.get('set-cookie').split(';')[0];for(let n=0;n<20;n++)assert.equal((await call('/torre/api/connect',visitor,{token:'fake'})).status,403);assert.equal((await call('/torre/api/connect',visitor,{token:'fake'})).status,429);assert.equal((await call('/torre/api/connect',otherVisitor,{token:'fake'})).status,403);assert.equal((await call('/torre/api/reports',otherVisitor,{submissionKey:'a'.repeat(36)})).status,503);
  }finally{await closeTorre();await new Promise(r=>server.close(r));await pool.end();}
 });

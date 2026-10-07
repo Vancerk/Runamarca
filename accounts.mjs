@@ -40,7 +40,7 @@ const sessionReads=createReadCache({ttl:10000}),inventoryReads=createReadCache({
 export function useTestStore(value){if(process.env.NODE_ENV!=='test')throw Error('Apenas para testes.');store=value;sessionReads.clear();inventoryReads.clear();}
 function database(){if(!store){const pool=new Pool({connectionString:process.env.DATABASE_URL,max:4,connectionTimeoutMillis:10000,idleTimeoutMillis:30000});pool.on('error',()=>console.error('Conexão do banco Elysium interrompida.'));store=new AccountStore(pool);}return store;}
 const rates=new Map();
-function throttle(req,identity){const key=identity?'user:'+identity.discord_id:'ip:'+(req.socket.remoteAddress||'local');const limit=identity&&req.method==='GET'&&req.url.split('?')[0]==='/api/account'?240:30;const now=Date.now();let r=rates.get(key);if(!r||now-r.at>60000){r={at:now,count:0};rates.set(key,r);}if(++r.count>limit)return false;if(rates.size>5000)for(const [key,r] of rates)if(now-r.at>60000)rates.delete(key);return true;}
+function throttle(req,identity){const profile=req.method==='GET'&&req.url.split('?')[0]==='/api/account';const key=(profile?'profile:':'action:')+(identity?'user:'+identity.discord_id:'ip:'+(req.socket.remoteAddress||'local'));const limit=profile?240:30;const now=Date.now();let r=rates.get(key);if(!r||now-r.at>60000){r={at:now,count:0};rates.set(key,r);}if(++r.count>limit)return false;if(rates.size>5000)for(const [key,r] of rates)if(now-r.at>60000)rates.delete(key);return true;}
 const pendingStates=new Map();
 const insignias=new Set();
 export function registerInsignias(ids){for(const id of ids)insignias.add(id);}

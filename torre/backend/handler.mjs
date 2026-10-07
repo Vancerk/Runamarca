@@ -51,7 +51,7 @@ async function handler(req,res){
       }
       if(req.method==='POST'){
         if(req.headers.origin!==origin||!req.headers['content-type']?.startsWith('application/json'))throw new ReportError('Origem inválida.',403);
-        const ip=req.torreAdminId,now=Date.now(),recent=(limits.get(ip)||[]).filter(t=>now-t<60000);if(recent.length>=20)throw new ReportError('Aguarde um minuto antes de enviar novamente.',429);recent.push(now);limits.set(ip,recent);
+        const ip=req.torreVisitorId||req.torreAdminId||req.socket?.remoteAddress||'local',now=Date.now(),recent=(limits.get(ip)||[]).filter(t=>now-t<60000);if(recent.length>=20)throw new ReportError('Aguarde um minuto antes de enviar novamente.',429);recent.push(now);limits.set(ip,recent);if(limits.size>1000)for(const [key,times]of limits)if(times.at(-1)<now-60000)limits.delete(key);
         let chunks=[],length=0;for await(const chunk of req){length+=chunk.length;if(length>7100000)throw new ReportError('Relatório muito grande.',413);chunks.push(chunk);}const text=Buffer.concat(chunks).toString('utf8');
         let body;try{body=JSON.parse(text);}catch{throw new ReportError('Dados inválidos.');}
         if(['/api/admin/start','/api/admin/finish','/api/admin/logout'].includes(url.pathname))throw new ReportError('Use sua conta Discord do Jogos Elysium.',405);
