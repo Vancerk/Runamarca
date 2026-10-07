@@ -5,11 +5,12 @@ import {fileURLToPath} from 'node:url';
 import {identify,accountsConfigured,publicOrigin,accountDatabase} from '../accounts.mjs';
 import {createDurableFiles} from './persistencia.mjs';
 import {createTorreRuntime} from './backend/handler.mjs';
+import {readFlowResult,startRequestedFlow} from './fluxo-solicitado.mjs';
 const folder=fileURLToPath(new URL('.',import.meta.url));
 let pending,runtime,tail=Promise.resolve();
 const json=(res,status,error)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({error}));};
 const serial=job=>{const result=tail.then(job);tail=result.catch(()=>{});return result;};
-async function getRuntime(){if(!pending)pending=(async()=>{const db=accountDatabase();await db.init();const dataFolder=await mkdtemp(resolve(tmpdir(),'elysium-torre-'));const persistence=await createDurableFiles(db.pool,dataFolder);runtime=createTorreRuntime({folder:resolve(folder,'backend'),root:resolve(folder,'public'),dataFolder,origin:publicOrigin(),durable:()=>persistence.flush(),serial});return {...runtime,persistence};})().catch(error=>{pending=null;throw error;});return pending;}
+async function getRuntime(){if(!pending)pending=(async()=>{const db=accountDatabase();await db.init();const dataFolder=await mkdtemp(resolve(tmpdir(),'elysium-torre-'));const persistence=await createDurableFiles(db.pool,dataFolder);runtime=createTorreRuntime({folder:resolve(folder,'backend'),root:resolve(folder,'public'),dataFolder,origin:publicOrigin(),durable:()=>persistence.flush(),serial,flowStatus:()=>readFlowResult(db)});return {...runtime,persistence};})().catch(error=>{pending=null;throw error;});return pending;}
 export async function closeTorre(){runtime?.close();runtime=null;pending=null;}
 // The beta shares the games' OAuth session, server and database. No local-server proxy.
 export async function handleTorre(req,res,url){
@@ -31,3 +32,5 @@ export async function handleTorre(req,res,url){
  }catch(error){json(res,error.status||503,error.status?error.message:'A Torre de Comando está temporariamente indisponível. Tente novamente.');}
  return true;
 }
+
+export const startFlowTest=()=>startRequestedFlow(getRuntime);

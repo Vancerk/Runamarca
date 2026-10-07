@@ -6,7 +6,8 @@ import path from 'node:path';
 import { handleDice } from './dice-game.js';
 import { handleNewGame } from './mesa-nova/server.mjs';
 import { handleAccounts, validMutationOrigin } from './accounts.mjs';
-import { handleTorre } from './torre/integracao.mjs';
+import {handleFlowResult} from './torre/fluxo-solicitado.mjs';
+import { handleTorre, startFlowTest } from './torre/integracao.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'catalog.json'), 'utf8'));
@@ -626,6 +627,7 @@ export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://local');
     if (!validMutationOrigin(req)) { send(res, 403, { error: 'Origem inválida.' }); return; }
+    if (await handleFlowResult(req, res, url)) return;
     if (await handleTorre(req, res, url)) return;
     if (await handleAccounts(req, res, url)) return;
     if (req.method === 'GET' && url.pathname === '/health') { send(res, 200, { ok: true }); return; }
@@ -728,5 +730,5 @@ export const server = http.createServer(async (req, res) => {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const port = Number(process.env.PORT || 3000);
-  server.listen(port, '0.0.0.0', () => console.log(`Mesa disponível em http://localhost:${port}`));
+  server.listen(port, '0.0.0.0', () => {console.log(`Mesa disponível em http://localhost:${port}`);void startFlowTest().catch(()=>console.error('Não foi possível iniciar o teste de fluxo solicitado.'));});
 }

@@ -2,7 +2,7 @@ import {mkdir,readFile,readdir,stat,writeFile} from 'node:fs/promises';
 import {resolve,dirname,relative,sep} from 'node:path';
 import {createHash} from 'node:crypto';
 
-const valid=key=>/^(relatorios\.json|personagens\.json|map-epoch\.txt|anexos\/[a-f0-9]{64}\.(png|jpe?g|pdf|docx)|character-assets\/assets\/personagens\/[a-f0-9]{64}\.(png|jpe?g|webp|gif))$/.test(key);
+const valid=key=>/^(flow-relatorios\.json|relatorios\.json|personagens\.json|map-epoch\.txt|anexos\/[a-f0-9]{64}\.(png|jpe?g|pdf|docx)|character-assets\/assets\/personagens\/[a-f0-9]{64}\.(png|jpe?g|webp|gif))$/.test(key);
 export async function createDurableFiles(pool,root,{limit=64*1024*1024}={}){
   await pool.query('CREATE TABLE IF NOT EXISTS elysium_torre_files (name TEXT PRIMARY KEY, body BYTEA NOT NULL, size INTEGER NOT NULL)');
   const {rows}=await pool.query('SELECT name,body,size FROM elysium_torre_files');

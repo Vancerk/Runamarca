@@ -25,3 +25,11 @@ Execute npm test e npm run test:torre antes da publicação. Acesso: /torre/ ap�
 ## Teste de entrega ao administrador
 
 Na área administrativa, o botão Enviar relatório de teste envia somente para o ID 1080332488070672484 (van_renascido). O relatório fictício contém o texto anexado, não possui botões de aprovação e não cria missão no mapa. O servidor precisa de DISCORD_BOT_TOKEN configurado no Render; o token inserido no PowerShell da prévia local não é transferido ao serviço online. A interface distingue bot não configurado, conectando e conectado. A mesma chave de teste não repete um envio cuja confirmação ficou incerta.
+
+## Campanha de fluxo autorizada em 2026-10-07
+
+Execução única solicitada pelo administrador: dez relatórios fictícios espaçados em seis segundos e, após um minuto, vinte chegadas espaçadas em meio segundo. Destinatário único: van_renascido. A campanha inicia no próximo deploy de main no serviço original do Render, após conferir origem e administrador. Uma reivindicação persistida no Neon impede repetição após reinícios; uma execução interrompida exige investigação antes de qualquer nova campanha.
+
+O teste usa validação, fila serial, persistência no Neon e envio Discord do servidor real, com registros separados em flow-relatorios.json. Não publica missões, não oferece aprovação, não testa login, navegador, ingresso HTTP nem usuários simultâneos. Relata horários de chegada, espera na fila, duração até confirmação e IDs de mensagens. Confirmação significa aceitação pelo Discord, não leitura do destinatário.
+
+O transporte observa os cabeçalhos de limites do Discord e aguarda reset ou retry_after. Só repete rejeições explícitas HTTP 429; entregas incertas não são reenviadas automaticamente. O resultado privado fica na tabela elysium_torre_flow_runs e na rota administrativa /torre/api/admin/bot/flow-result. A rota de acompanhamento /api/torre-flow-result exige um recibo aleatório privado e permite apenas leitura; seu hash não inicia campanhas nem autoriza envio de mensagens.

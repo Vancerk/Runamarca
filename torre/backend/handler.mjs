@@ -7,7 +7,7 @@ import {createDiscord} from './gateway.mjs';
 import {createCharacters} from './personagens.mjs';
 import {createAttachments} from './anexos.mjs';
 import {createBotTester} from './teste-bot.mjs';
-export function createTorreRuntime({folder,root,dataFolder,origin,durable,serial}){
+export function createTorreRuntime({folder,root,dataFolder,origin,durable,serial,flowStatus}){
 const masters=JSON.parse(readFileSync(resolve(folder,'mestres.json'),'utf8'));
 const zones=new Set(JSON.parse(readFileSync(resolve(root,'zonas.json'),'utf8')).map(z=>z.id));
 
@@ -24,6 +24,9 @@ const attachments=createAttachments(resolve(dataFolder,'anexos'));
 discordOptions.readAttachment=file=>attachments.read(file);
 let mapEpoch;try{mapEpoch=readFileSync(resolve(dataFolder,'map-epoch.txt'),'utf8').trim();}catch{mapEpoch='initial';}
 store=createStore({file:resolve(dataFolder,'relatorios.json'),masters,zones,send:r=>discord.send(r),ready:()=>discord.ready(),characters,attachments,publish:(r,id)=>discord.publish(r,id),archiveChannel,durable});
+const flowMessages=new Map();
+const flowStore=createStore({file:resolve(dataFolder,'flow-relatorios.json'),masters,zones:new Set(['1720']),ready:()=>discord.ready(),durable,send:async report=>{const message=await discord.send(report,{test:true});flowMessages.set(report.id,message.id);return message;}});
+const flowSubmit=(body,onStart)=>serial(async()=>{onStart();const report=await flowStore.submit(body);return {...report,messageId:flowMessages.get(report.id)||null};});
 const limits=new Map();
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json;charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
 const publicResponses=new Map();
@@ -35,6 +38,7 @@ async function handler(req,res){
     if(url.pathname.startsWith('/api/')){
       if(req.method==='GET'){
         if(url.pathname==='/api/config')return json(res,200,{masters,mapEpoch,ready:discord.ready(),admin:Boolean(admin.user(req)),managedAccount:true,...(admin.user(req)?{botConfigured:discord.configured(),botState:discord.state(),botError:!discord.configured()?'Configure DISCORD_BOT_TOKEN nas variáveis privadas do Render.':discord.error()}:{} )});
+        if(url.pathname==='/api/admin/bot/flow-result'){admin.require(req);return json(res,200,await flowStatus());}
         if(url.pathname==='/api/admin/reports'){admin.require(req);return json(res,200,store.adminList());}
         const download=url.pathname.match(/^\/api\/reports\/([a-f0-9-]+)\/attachments\/([a-f0-9]{64}\.(?:png|jpe?g|pdf|docx))$/);
         if(download){const meta=store.attachment(download[1],download[2],req.headers['x-report-receipt'],Boolean(admin.user(req))),bytes=attachments.read(meta);res.writeHead(200,{'Content-Type':meta.type,'Content-Disposition':"attachment; filename*=UTF-8''"+encodeURIComponent(meta.name),'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"});res.end(bytes);return;}
@@ -71,5 +75,5 @@ async function handler(req,res){
     res.writeHead(200,{'Content-Type':types[extname(path)]||'application/octet-stream','Cache-Control':url.pathname.startsWith('/assets/')?'private, max-age=86400':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:data);
   }catch(e){json(res,e.status|| (e.code==='ENOENT'?404:500),{error:e.status?e.message:'Não foi possível concluir a operação.'});}
 }
-return {handler,close:()=>discord.close()};
+return {handler,close:()=>discord.close(),flowSubmit,waitReady:timeout=>discord.waitReady(timeout),metrics:discord.metrics};
 }

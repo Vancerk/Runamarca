@@ -25,7 +25,7 @@ test('Torre shares the games server and OAuth; rejects guests, users, forged ori
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;process.env.DISCORD_REDIRECT_URI=base+'/auth/discord/callback';
  async function call(path,cookie='',data,origin=base){return fetch(base+path,{redirect:'manual',method:data?'POST':'GET',headers:{cookie,...(data?{origin,'Content-Type':'application/json'}:{})},body:data?JSON.stringify(data):undefined});}
  try{
-  assert.equal((await call('/')).status,200);assert.equal((await call('/dados')).status,200);assert.equal((await call('/health')).status,200);
+  assert.equal((await call('/')).status,200);assert.equal((await call('/dados')).status,200);assert.equal((await call('/health')).status,200);assert.equal((await call('/api/torre-flow-result')).status,403);
   const guest=await call('/torre/');assert.equal(guest.status,302);assert.match(guest.headers.get('location'),/auth\/discord/);
   assert.equal((await call('/torre/api/config')).status,401);assert.equal((await call('/torre/',player)).status,403);assert.equal((await call('/torre/assets/detalhado-sem-codigos.webp',player)).status,403);
   const page=await call('/torre/',admin);assert.equal(page.status,200);assert.match(await page.text(),/\/account.js/);
