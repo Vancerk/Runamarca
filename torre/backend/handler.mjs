@@ -23,7 +23,8 @@ const characters=createCharacters({folder,root:resolve(dataFolder,'character-ass
 const attachments=createAttachments(resolve(dataFolder,'anexos'));
 discordOptions.readAttachment=file=>attachments.read(file);
 let mapEpoch;try{mapEpoch=readFileSync(resolve(dataFolder,'map-epoch.txt'),'utf8').trim();}catch{mapEpoch='initial';}
-store=createStore({file:resolve(dataFolder,'relatorios.json'),masters,zones,send:r=>discord.send(r),ready:()=>discord.ready(),characters,attachments,publish:(r,id)=>discord.publish(r,id),archiveChannel,durable});
+const deliveredMessages=new Map();
+store=createStore({file:resolve(dataFolder,'relatorios.json'),masters,zones,send:async r=>{const message=await discord.send(r);if(deliveredMessages.size>1024)deliveredMessages.clear();deliveredMessages.set(r.id,message.id);return message;},ready:()=>discord.ready(),characters,attachments,publish:(r,id)=>discord.publish(r,id),archiveChannel,durable});
 const flowMessages=new Map();
 const flowStore=createStore({file:resolve(dataFolder,'flow-relatorios.json'),masters,zones:new Set(['1720']),ready:()=>discord.ready(),durable,send:async report=>{const message=await discord.send(report,{test:true});flowMessages.set(report.id,message.id);return message;}});
 const flowSubmit=(body,onStart)=>serial(async()=>{onStart();const report=await flowStore.submit(body);return {...report,messageId:flowMessages.get(report.id)||null};});
@@ -75,5 +76,7 @@ async function handler(req,res){
     res.writeHead(200,{'Content-Type':types[extname(path)]||'application/octet-stream','Cache-Control':url.pathname.startsWith('/assets/')?'private, max-age=86400':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:data);
   }catch(e){json(res,e.status|| (e.code==='ENOENT'?404:500),{error:e.status?e.message:'Não foi possível concluir a operação.'});}
 }
-return {handler,close:()=>discord.close(),flowSubmit,waitReady:timeout=>discord.waitReady(timeout),metrics:discord.metrics};
+const visualSubmit=(body,onStart)=>serial(async()=>{onStart();const report=await store.submit(body);return {...report,messageId:deliveredMessages.get(report.id)||null};});
+const visualAuthor=()=>serial(async()=>{const card=characters.ensureVisualTestAuthor();await durable();return card;});
+return {handler,close:()=>discord.close(),flowSubmit,visualSubmit,visualAuthor,visualZones:()=>[...zones],waitReady:timeout=>discord.waitReady(timeout),metrics:discord.metrics};
 }

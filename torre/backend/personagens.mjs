@@ -22,6 +22,10 @@ export function createCharacters({folder,root,python,extractor,dataFolder}){
  installSample();
  return {
   list:()=>cards.map(c=>({...c})),
+  ensureVisualTestAuthor(){
+   const id='torre-visual-test-author',existing=cards.find(c=>c.id===id);if(existing)return {...existing};
+   const card={id,name:'Personagem de teste visual',player:'van_renascido (teste)',level:1,division:division(1),class:'Teste',virtue:'Teste',portrait:null,discordId:'1080332488070672484',discordVerified:false,testFixture:true,updatedAt:new Date().toISOString()};cards.push(card);save();return {...card};
+  },
   bindDiscord:discordBinding,
   adminDiscord(id,discordId){if(!/^\d{17,20}$/.test(discordId||''))throw new ReportError('Informe um ID válido.');const card=cardById(id);card.discordId=discordId;card.discordVerified=false;delete card.discordUsername;save();return {...card};},
   startPairing(id){cardById(id);for(const [code,p]of pairings)if(p.expires<Date.now())pairings.delete(code);if(pairings.size>=100)throw new ReportError('Muitos cadastros em andamento. Tente mais tarde.',429);const code=randomBytes(8).toString('hex').toUpperCase();pairings.set(code,{id,expires:Date.now()+600000});return {code,command:'/vincular codigo:'+code,expiresIn:600};},
