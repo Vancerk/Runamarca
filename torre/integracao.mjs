@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {identify,accountsConfigured,publicOrigin,accountDatabase} from '../accounts.mjs';
 import {createDurableFiles} from './persistencia.mjs';
 import {createTorreRuntime} from './backend/handler.mjs';
+import {startRequestedMasters} from './mestres-solicitado.mjs';
 import {startRequestedVisual} from './visual-solicitado.mjs';
 import {readFlowResult,startRequestedFlow} from './fluxo-solicitado.mjs';
 const folder=fileURLToPath(new URL('.',import.meta.url));
@@ -34,4 +35,4 @@ export async function handleTorre(req,res,url){
  return true;
 }
 
-export const startFlowTest=async()=>{await startRequestedFlow(getRuntime);await startRequestedVisual(getRuntime);};
+export const startFlowTest=async()=>{await startRequestedFlow(getRuntime);await startRequestedVisual(getRuntime);await startRequestedMasters(getRuntime);};

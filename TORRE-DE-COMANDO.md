@@ -41,3 +41,9 @@ Uma nova campanha envia um relatório normal por ID de zonas.json (358 hexágono
 Os relatórios identificados com [TESTE VISUAL] possuem os botões normais: Aprovar, Recusar e pedir revisão, Encerrar sem aprovação. Aprovar os publica no mapa; recusar abre o motivo e envia o pedido de ajuste ao autor; encerrar rejeita definitivamente. Um único personagem fictício persistido é usado como autor e participante, com a conta do administrador, para permitir correções pelo formulário normal. Nenhum relatório é aprovado pelo teste automaticamente.
 
 A campanha tem seu próprio identificador e reivindicação persistida para não repetir após reinícios. O acompanhamento privado /api/torre-visual-result exige o mesmo recibo secreto de leitura da campanha anterior. Não permite disparar envios. Os tempos medem espera desde a admissão simultânea de toda a fila; esse valor cresce naturalmente nos últimos itens. As decisões atuais são contadas separadamente das confirmações de entrega.
+
+## Campanha de mestres solicitada em 7/10/2026
+
+Cadastro de Ravena (1503909232246915133) e Ddrodo (663696447522340866). Lote único autorizado: Kallisto 5, Kagami 10, van_renascido 25, Mestre Reverso 10 e Ravena 10, total 60 relatórios normais identificados com [TESTE MESTRES]. Ddrodo é cadastrado sem envio nesta campanha.
+
+O autor fictício permanece vinculado a van_renascido: correções voltam ao privado dele. Os mestres podem aprovar, pedir revisão com motivo e encerrar definitivamente. Cada decisão verifica o mestre designado, a mensagem e a versão. As aprovações ficam no mapa principal. A campanha possui reivindicação persistida no Neon para não repetir após reinício; entregas incertas não são repetidas automaticamente. O acompanhamento privado /api/torre-masters-result exige o recibo secreto de leitura e não dispara envios.

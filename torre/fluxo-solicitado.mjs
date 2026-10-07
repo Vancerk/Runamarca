@@ -10,12 +10,12 @@ export async function readFlowResult(db=accountDatabase(),jobId=FLOW_JOB_ID){
  await db.query(schema);const {rows}=await db.query('SELECT payload FROM elysium_torre_flow_runs WHERE id=$1',[jobId]);return rows[0]?.payload||{id:jobId,status:'not_started',botConfigured:Boolean(process.env.DISCORD_BOT_TOKEN)};
 }
 export async function handleFlowResult(req,res,url){
- const jobId=url.pathname==='/api/torre-flow-result'?FLOW_JOB_ID:url.pathname==='/api/torre-visual-result'?'van-2026-10-07-visual-all-hexagons':null;if(!jobId)return false;
+ const jobId=url.pathname==='/api/torre-flow-result'?FLOW_JOB_ID:url.pathname==='/api/torre-visual-result'?'van-2026-10-07-visual-all-hexagons':url.pathname==='/api/torre-masters-result'?'van-2026-10-07-master-delivery-60':null;if(!jobId)return false;
  const provided=req.headers['x-flow-receipt'];const valid=typeof provided==='string'&&/^[a-f0-9]{64}$/.test(provided)&&timingSafeEqual(createHash('sha256').update(provided).digest(),Buffer.from(RECEIPT_HASH,'hex'));
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
  if(req.method!=='GET'||!valid){send(403,{error:'Acesso não autorizado.'});return true;}
  try{if(!accountsConfigured()){send(503,{status:'unconfigured'});return true;}const db=accountDatabase(),result=await readFlowResult(db,jobId);
-  if(jobId==='van-2026-10-07-visual-all-hexagons'&&result.samples?.length){const {rows}=await db.query('SELECT body FROM elysium_torre_files WHERE name=$1',['relatorios.json']);if(rows[0]){const ids=new Set(result.samples.map(s=>s.id));const reports=JSON.parse(Buffer.from(rows[0].body).toString('utf8')).filter(r=>ids.has(r.id));result.currentDecisions={};for(const r of reports)result.currentDecisions[r.status]=(result.currentDecisions[r.status]||0)+1;}}
+  if(['van-2026-10-07-visual-all-hexagons','van-2026-10-07-master-delivery-60'].includes(jobId)&&result.samples?.length){const {rows}=await db.query('SELECT body FROM elysium_torre_files WHERE name=$1',['relatorios.json']);if(rows[0]){const ids=new Set(result.samples.map(s=>s.id));const reports=JSON.parse(Buffer.from(rows[0].body).toString('utf8')).filter(r=>ids.has(r.id));result.currentDecisions={};for(const r of reports)result.currentDecisions[r.status]=(result.currentDecisions[r.status]||0)+1;}}
   send(200,result);}catch{send(503,{status:'database_unavailable'});}return true;
 }
 export async function executeClaimedFlow(db,tower,{schedule,jobId=FLOW_JOB_ID,runner=runFlow,notes}={}){
