@@ -2,7 +2,7 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const motion={};vm.createContext(motion);vm.runInContext(await readFile(new URL('./combat-motion.js',import.meta.url),'utf8'),motion);
-const source=await readFile(new URL('./app.js',import.meta.url),'utf8');
+const source=(await readFile(new URL('./app.js',import.meta.url),'utf8')).replace(/\r\n/g,'\n');
 function extract(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);}
 // A spell click must submit the individual chosen UID, including the patron option.
 let choices,played;
@@ -61,3 +61,13 @@ console.log('OK: zoom de alvos aliados/inimigos, seleção preservada e fonte se
 for(const [dx,dy,directionX,directionY] of [[0,-80,0,-160],[45,60,90,120],[0,0,0,150]]){
  const frames=motion.RunaMotion.strikeFrames(dx,dy,{directionX,directionY,weight:1}),xy=f=>f.transform.match(/-?[0-9.]+/g).map(Number),pull=xy(frames[1]);assert.ok(pull[0]*directionX+pull[1]*directionY<0);assert.deepEqual(xy(frames.find(f=>f.offset===.42)),[dx,dy]);assert.deepEqual(xy(frames.at(-1)),[0,0]);assert.ok(Math.hypot(...pull)>=39.9);const recoil=xy(frames[4]);assert.ok(recoil[0]*dx+recoil[1]*dy>=-1e-8);
 }
+
+// Disparo completes two distinct selections before paying or resolving.
+{
+ const opened=[];let submitted;
+ const dual={commandBusy:false,state:{phase:'prep',turn:'me',you:'me'},seat:()=>({reserve:[{uid:'ally',health:2,damage:0},{uid:'dead-ally',health:2,damage:2}]}),rival:()=>({reserve:[{uid:'enemy',health:4,damage:1},{uid:'dead-enemy',health:1,damage:1}]}),affordable:()=>true,showTargetPicker:(card,ids,callback,title)=>opened.push({ids:Array.from(ids),callback,title}),command:data=>submitted=data,selected:null};vm.createContext(dual);vm.runInContext(extract('function chooseSpellTarget','function renderActions'),dual);
+ dual.chooseSpellTarget({uid:'disparo',effects:[{op:'ally_attack_damage'}]});assert.equal(opened.length,1);assert.deepEqual(opened[0].ids,['ally']);assert.equal(opened[0].title,'Escolha sua criatura');assert.equal(submitted,undefined);
+ opened[0].callback('ally');assert.equal(opened.length,2);assert.deepEqual(opened[1].ids,['enemy']);assert.equal(submitted,undefined);opened[1].callback('enemy');assert.equal(submitted.sourceId,'ally');assert.equal(submitted.targetId,'enemy');assert.equal(submitted.cardId,'disparo');assert.equal(submitted.mode,'direct');
+ opened.length=0;dual.rival=()=>({reserve:[]});dual.chooseSpellTarget({effects:[{op:'ally_attack_damage'}]});assert.equal(opened.length,0,'Não abre seleção sem os dois lados válidos');
+}
+console.log('OK: Disparo escolhe aliado e inimigo vivos em etapas, envia os dois UIDs e não abre diálogo sem alvos.');

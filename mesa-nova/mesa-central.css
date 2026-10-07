@@ -104,3 +104,22 @@
 #opponent-emana-zone .emana-empty::before{top:auto;bottom:-13px}
 .reveal-paid-badge{position:absolute;z-index:8;top:22%;left:50%;transform:translateX(-50%);white-space:nowrap;border:1px solid #a4c584;border-radius:3px;padding:2px 4px;color:#edf9da;background:#24351eef;font:600 9px Arial,sans-serif;box-shadow:0 2px 5px #0008}
 .card.mini .reveal-paid-badge{font-size:7px;padding:2px}
+.upper-zone .deck-stack{transform:rotate(180deg)}
+.game .lane-side .spell-mark{left:50%!important;right:auto!important;transform:translateX(-50%);margin-inline:0!important}
+.live-speech{position:fixed!important;z-index:5000!important;animation:none!important;opacity:1!important;pointer-events:none;transform:translate(-50%,-100%)}
+.used-spell{position:fixed!important;left:50%;top:43%;width:min(300px,36vw,60vh)!important;height:auto!important;aspect-ratio:5/7;transform:translate(-50%,-50%);transform-origin:center;margin:0!important;z-index:4500!important;pointer-events:none;visibility:visible!important;transition:none!important;animation:none!important;box-shadow:0 0 55px #e7bd6977,0 16px 55px #000d}
+.force-window-clock{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);z-index:30;min-width:190px;padding:8px 12px;border:1px solid #bd9a62;border-radius:6px;background:#211810f2;color:#eed3a0;text-align:center;font-size:12px;pointer-events:none}
+.force-window-clock>div{height:4px;background:#54412c;margin-top:8px}.force-window-clock i{display:block;height:100%;background:#dbb671}
+.retaliation-points{position:absolute;inset:-8px -9px;z-index:10;pointer-events:none}.retaliation-points i{position:absolute;width:7px;height:7px;border-radius:50%;border:1px solid #da9777;background:#352625}.retaliation-points i:nth-child(1){top:5%;left:0}.retaliation-points i:nth-child(2){top:5%;right:0}.retaliation-points i:nth-child(3){bottom:5%;left:0}.retaliation-points i:nth-child(4){bottom:5%;right:0}.retaliation-points i.active{background:#ffd49c;box-shadow:0 0 9px #fa7058}
+.power-cost.illustrated-power{position:relative;width:40px;height:40px;isolation:isolate;background:#302214}
+.illustrated-power img{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 50%;display:block}
+.illustrated-power b{position:absolute;right:-5px;bottom:-4px;display:grid;place-items:center;width:19px;height:19px;border:1px solid #deb876;border-radius:50%;background:#493521;color:#fff0c7;font:bold 14px Georgia,serif;box-shadow:0 1px 4px #000}
+.patron-power:disabled .illustrated-power img{filter:saturate(.6) brightness(.75)}
+.patron-power:not(:disabled):hover{border-color:#e6c98b;background:#483020}
+.player-band .patron-powers{width:165px;gap:4px}
+.patron-power{gap:5px;padding:3px 4px}
+.power-cost.illustrated-power{width:34px;height:34px}
+.illustrated-power img{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none;max-height:none;aspect-ratio:1;object-fit:cover}
+.player-band .band-right{padding-left:12px}
+@media(max-width:1399px){.player-band .patron-powers{width:132px}.power-cost.illustrated-power{width:29px;height:29px}.power-description strong{font-size:9px}.power-description small{font-size:8px}}
+@media(min-width:1400px){.player-band .patron-powers{width:185px}.player-band .band-right{padding-left:32px}.power-description{gap:2px}}

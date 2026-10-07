@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {waitRevision} from './wait-revision.mjs';
 import {registerGame,bindParticipant,assertUniqueAccount,verifyParticipant,persistMatch,normalizeWager} from '../accounts.mjs';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -21,6 +22,7 @@ async function payload(req){let size=0;const parts=[];for await(const part of re
 function auth(req,room){const p=findPlayer(room,req.headers['x-player-token']);if(!p)throw Object.assign(Error('Acesso inválido.'),{code:'SEAT_INVALID'});return p;}
 function hasAccess(req){const value=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('rm_access='))?.slice(10);const expiry=value&&sessions.get(value);if(!expiry)return false;if(expiry<Date.now()){sessions.delete(value);return false;}return true;}
 function grantAccess(req,res,base){const session=randomBytes(32).toString('hex');sessions.set(session,Date.now()+sessionAge);const secure=req.socket.encrypted||req.headers['x-forwarded-proto']==='https'?'; Secure':'';res.setHeader('Set-Cookie',`rm_access=${session}; HttpOnly; SameSite=Lax; Path=${base||'/'}; Max-Age=${sessionAge/1000}${secure}`);}
+export function createTestAccess(){if(process.env.NODE_ENV!=='test')throw Error('Apenas testes.');const value=randomBytes(32).toString('hex');sessions.set(value,Date.now()+sessionAge);return 'rm_access='+value;}
 export async function handleNewGame(req,res,url=new URL(req.url,'http://localhost'),base=''){
   try{
     if(base&&!url.pathname.startsWith(base+'/')&&url.pathname!==base)return false;
@@ -55,6 +57,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       if(operation==='join'&&req.method==='POST'){const data=await payload(req);const role=data.role==='spectator'||(data.role==='auto'&&(room.phase!=='lobby'||room.players.length>=2))?'spectator':'player';const probe={};await bindParticipant(req,room,probe);assertUniqueAccount(room,probe);const p=join(room,probe.name||data.name,role);p.discordId=probe.discordId;return json(res,200,{code:room.code,token:p.token,state:view(room,p)});}
       const p=auth(req,room);await verifyParticipant(req,p);room.updatedAt=Date.now();
       if(operation==='state'&&req.method==='GET'){
+        if(url.searchParams.get('wait')==='1'&&url.searchParams.has('revision')){await waitRevision(room,Number(url.searchParams.get('revision')),res);if(res.destroyed)return;}
         if(url.searchParams.has('revision')&&Number(url.searchParams.get('revision'))===room.revision){res.writeHead(204,{'Cache-Control':'no-store'});return res.end();}
         return json(res,200,view(room,p));
       }

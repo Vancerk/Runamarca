@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import { randomBytes, randomUUID, randomInt } from 'node:crypto';
 import {registerGame,registerInsignias,bindParticipant,assertUniqueAccount,verifyParticipant,validateInsignias,ownedInsignias,beginMatch,persistMatch,normalizeWager} from './accounts.mjs';
 
@@ -6,12 +7,16 @@ registerGame('seis-ossos',rooms);
 const code = () => randomBytes(3).toString('hex').toUpperCase();
 const token = () => randomBytes(24).toString('hex');
 const rollDice = n => Array.from({ length: n }, () => randomInt(1, 7));
+export function rerollSelected(values, indices, rollOne = () => randomInt(1, 7)) {
+  const result = [...values];
+  for (const index of indices) result[index] = rollOne();
+  return result;
+}
 const uniqueGrades = { 'vantagem-do-carpinteiro':'estanho', 'vantagem-do-carrasco':'prata', 'vantagem-do-sacerdote':'ouro', 'rei-dos-passaros':'unica', imperador:'ouro', tique:'ouro', casamento:'ouro' };
 const gradeOf = id => uniqueGrades[id] || (id.endsWith('-estanho') ? 'estanho' : id.endsWith('-prata') ? 'prata' : 'ouro');
 const familyOf = id => id.replace(/-(estanho|prata|ouro)$/, '');
 const allowed = new Set(['casamento','defesa-estanho','defesa-prata','defesa-ouro','duplo-prata','duplo-ouro','fortuna-estanho','fortuna-prata','fortuna-ouro','imperador','largada-estanho','largada-prata','largada-ouro','poder-estanho','poder-prata','poder-ouro','rei-dos-passaros','ressurreicao-estanho','ressurreicao-prata','ressurreicao-ouro','senhor-da-guerra-estanho','senhor-da-guerra-prata','senhor-da-guerra-ouro','tique','transmutacao-estanho','transmutacao-prata','transmutacao-ouro','vantagem-do-carpinteiro','vantagem-do-carrasco','vantagem-do-sacerdote']);
 const lost = new Set(['diabo','mao-do-homem-morto','coroa-do-rei-deposto','eclipse','espelho-da-viuva','grilhao-do-carcereiro','ampulheta-quebrada','lagrima-da-santa','moeda-de-duas-caras','olho-do-profeta']);
-
 registerInsignias([...allowed,...lost]);
 
 function response(res, status, data) { res.writeHead(status, { 'content-type':'application/json; charset=utf-8', 'cache-control':'no-store' }); res.end(JSON.stringify(data)); }
@@ -61,11 +66,11 @@ function participant(name){return {id:randomUUID(),token:token(),name,score:0,in
 function player(room, req) { const p = [...room.players,...room.spectators].find(p => p.token === req.headers['x-player-token']); if (!p) fail('Acesso à sala inválido.'); return p; }
 const other = (room, p) => room.players.find(q => q.id !== p.id);
 function startMatch(room){if(room.players.length!==2||room.phase!=='lobby')return;beginMatch(room);room.phase='active';room.turn=room.players[randomInt(0,2)].id;log(room,`${room.players[0].name} e ${room.players[1].name} ocuparam a mesa. A partida começou.`);}
-function resetMatch(room){room.phase='lobby';room.turn=null;room.winner=null;room.round=1;room.roll=[];room.available=6;room.turnPoints=0;room.lastKeep=0;room.bust=false;room.proposal=null;room.rollMultiplier=1;room.prophetFace=0;room.pendingProphet=0;room.pendingCoin=null;room.extraTurn=false;room.hourglassArmed=null;room.diaboRisk=null;room.eclipseTarget=null;room.eclipseOwner=null;room.shackleTarget=null;room.shackled=false;room.noSingles=false;room.lastBust=null;room.rollId=null;room.rolledAt=0;room.lastScoreEvent=null;for(const q of room.players){q.score=0;q.insignia=null;q.charges=0;q.legendary=null;q.legendaryCharges=0;q.insigniasLocked=false;q.skipNextTurn=false;q.lastCommonUsed=null;q.birdUsed=false;}}
+function resetMatch(room){room.phase='lobby';room.turn=null;room.winner=null;room.round=1;room.roll=[];room.available=6;room.turnPoints=0;room.lastKeep=0;room.bust=false;room.proposal=null;room.rollMultiplier=1;room.prophetFace=0;room.pendingProphet=0;room.pendingCoin=null;room.extraTurn=false;room.hourglassArmed=null;room.diaboRisk=null;room.eclipseTarget=null;room.eclipseOwner=null;room.shackleTarget=null;room.shackled=false;room.noSingles=false;room.lastBust=null;room.rollId=null;room.rollChangedIndices=null;room.rolledAt=0;room.lastScoreEvent=null;for(const q of room.players){q.score=0;q.insignia=null;q.charges=0;q.legendary=null;q.legendaryCharges=0;q.insigniasLocked=false;q.skipNextTurn=false;q.lastCommonUsed=null;q.birdUsed=false;}}
 function hasPower(room, p, family) { if (!p.insignia || familyOf(p.insignia) !== family) return false; const rival = other(room,p); return !(rival?.insignia && familyOf(rival.insignia) === 'defesa' && gradeOf(rival.insignia) === gradeOf(p.insignia)); }
 function powers(room, p) { const enabled=!room.extraTurn&&!p.insigniasLocked;return { bird:enabled&&hasPower(room,p,'rei-dos-passaros')&&p.charges>0&&!p.birdUsed, tique:enabled&&hasPower(room,p,'tique'), imperador:enabled&&hasPower(room,p,'imperador'), carpinteiro:enabled&&hasPower(room,p,'vantagem-do-carpinteiro'), carrasco:enabled&&hasPower(room,p,'vantagem-do-carrasco'), sacerdote:enabled&&hasPower(room,p,'vantagem-do-sacerdote'), casamentoCharges:enabled&&hasPower(room,p,'casamento') ? p.charges : 0, noSingles:room.noSingles, prophetFace:room.prophetFace }; }
 function choices(room,p) { if (room.turn!==p.id || room.bust) return []; const out=[]; for(let mask=1;mask<(1<<room.roll.length);mask++){const indices=room.roll.map((_,i)=>i).filter(i=>mask&(1<<i));const detail=scoreDiceDetailed(indices.map(i=>room.roll[i]),powers(room,p));if(detail.score>0)out.push({indices,score:detail.score*room.rollMultiplier});} return out; }
-function view(room, p) { return { ownedInsignias:p.ownedInsignias??null,recording:room.recording||null,code:room.code, target:room.target, stake:room.stake, phase:room.phase, turn:room.turn, winner:room.winner, round:room.round, roll:room.roll, rollId:room.rollId, rolledAt:room.rolledAt, lastScoreEvent:room.lastScoreEvent, available:room.available, turnPoints:room.turnPoints, lastKeep:room.lastKeep, bust:room.bust, choices:choices(room,p), extraTurn:room.extraTurn, hourglassArmed:room.hourglassArmed===p.id, lastBust:room.lastBust, proposal:room.proposal, log:room.log.slice(-30), players:room.players.map(q => ({ id:q.id,name:q.name,score:q.score,insignia:q.insignia,insigniaActive:q.insignia?hasPower(room,q,familyOf(q.insignia)):false,charges:q.charges,legendary:q.legendary,legendaryCharges:q.legendaryCharges,insigniasLocked:q.insigniasLocked,lastCommonUsed:q.lastCommonUsed })), spectators:room.spectators.map(q=>({id:q.id,name:q.name})), spectator:room.spectators.includes(p), you:p.id }; }
+function view(room, p) { return { ownedInsignias:p.ownedInsignias??null,recording:room.recording||null,code:room.code, target:room.target, stake:room.stake, phase:room.phase, turn:room.turn, winner:room.winner, round:room.round, roll:room.roll, rollId:room.rollId, rollChangedIndices:room.rollChangedIndices, rolledAt:room.rolledAt, lastScoreEvent:room.lastScoreEvent, available:room.available, turnPoints:room.turnPoints, lastKeep:room.lastKeep, bust:room.bust, choices:choices(room,p), extraTurn:room.extraTurn, hourglassArmed:room.hourglassArmed===p.id, lastBust:room.lastBust, proposal:room.proposal, log:room.log.slice(-30), players:room.players.map(q => ({ id:q.id,name:q.name,score:q.score,insignia:q.insignia,insigniaActive:q.insignia?hasPower(room,q,familyOf(q.insignia)):false,charges:q.charges,legendary:q.legendary,legendaryCharges:q.legendaryCharges,insigniasLocked:q.insigniasLocked,lastCommonUsed:q.lastCommonUsed })), spectators:room.spectators.map(q=>({id:q.id,name:q.name})), spectator:room.spectators.includes(p), you:p.id }; }
 function emit(room) { for (const c of room.clients) c.res.write(`data: ${JSON.stringify(view(room,c.player))}\n\n`); }
 function log(room, message) { room.log.push(message); if (room.log.length > 100) room.log.shift(); }
 function next(room, p, message) {
@@ -96,7 +101,7 @@ function activate(room,p,data) {
   const grade=gradeOf(id), index=Number(data.index);
   if (family==='ressurreicao') {
     if (!room.bust) fail('Ressurreição só pode ser usada após perder a rolagem.');
-    room.bust=false; room.roll=rollDice(room.available);room.rollId=randomUUID();room.rolledAt=Date.now(); p.charges--;p.lastCommonUsed=id; log(room,`${p.name} usou Ressurreição e rolou novamente.`);
+    room.bust=false; room.roll=rollDice(room.available);room.rollId=randomUUID();room.rollChangedIndices=null;room.rolledAt=Date.now(); p.charges--;p.lastCommonUsed=id; log(room,`${p.name} usou Ressurreição e rolou novamente.`);
     if (!hasScoring(room.roll,powers(room,p))) bust(room,p);
     return;
   }
@@ -121,7 +126,7 @@ function activate(room,p,data) {
   }
   if (family==='poder') {
     if (!room.roll.length || room.roll.length>=7) fail('Role os dados antes de ganhar um dado extra.');
-    room.roll.push(...rollDice(1));room.rollId=randomUUID();room.rolledAt=Date.now(); room.available++; p.charges--; p.lastCommonUsed=id; log(room,`${p.name} ganhou um dado extra na rolagem.`); return;
+    room.roll.push(...rollDice(1));room.rollId=randomUUID();room.rollChangedIndices=[room.roll.length-1];room.rolledAt=Date.now(); room.available++; p.charges--; p.lastCommonUsed=id; log(room,`${p.name} ganhou um dado extra na rolagem.`); return;
   }
   if (!room.roll.length) fail('Role os dados antes de usar esta insígnia.');
   if (family==='fortuna') {
@@ -129,8 +134,8 @@ function activate(room,p,data) {
     const max=grade==='ouro'?3:grade==='prata'?2:1;
     selected(room,indices);
     if (indices.length>max) fail('Escolha os dados permitidos por esta insígnia.');
-    for (const i of indices) room.roll[i]=randomInt(1,7);room.rollId=randomUUID();room.rolledAt=Date.now();
-    p.charges--; p.lastCommonUsed=id; log(room,`${p.name} usou Fortuna para rolar novamente.`); room.bust=false;if(!hasScoring(room.roll,powers(room,p))) bust(room,p); return;
+    room.roll=rerollSelected(room.roll,indices);room.rollId=randomUUID();room.rollChangedIndices=[...indices];room.rolledAt=Date.now();
+    p.charges--; p.lastCommonUsed=id; log(room,`${p.name} usou Fortuna para rolar novamente ${indices.length} dado(s): ${indices.map(i=>i+1).join(', ')}.`); room.bust=false;if(!hasScoring(room.roll,powers(room,p))) bust(room,p); return;
   }
   if (family==='transmutacao') {
     if (!Number.isInteger(index)||index<0||index>=room.roll.length) fail('Selecione um dado para transmutar.');
@@ -221,7 +226,7 @@ function act(room,p,data) {
   if (type==='roll') {
     if (room.roll.length) fail('Guarde uma combinação antes de rolar novamente.');
     if(room.hourglassArmed===p.id)fail('Encerre o turno para acionar a Ampulheta Quebrada.');
-    room.roll=rollDice(room.available);room.rollId=randomUUID();room.rolledAt=Date.now();room.lastKeep=0;
+    room.roll=rollDice(room.available);room.rollId=randomUUID();room.rollChangedIndices=null;room.rolledAt=Date.now();room.lastKeep=0;
     room.rollMultiplier=1;room.prophetFace=room.pendingProphet;room.pendingProphet=0;
     if(room.prophetFace&&!room.roll.includes(room.prophetFace))room.turnPoints=Math.max(0,room.turnPoints-100);
     if(room.pendingCoin){const parity=room.roll.reduce((a,b)=>a+b,0)%2===0?'par':'impar';if(parity!==room.pendingCoin){room.pendingCoin=null;bust(room,p,'A aposta da Moeda falhou');return;}room.rollMultiplier=2;room.pendingCoin=null;}
@@ -262,7 +267,7 @@ export async function handleDice(req,res,url) {
       const target=Math.max(1000,Math.min(50000,Math.trunc(Number(data.target)||5000)));
       let roomCode; do { roomCode=code(); } while (rooms.has(roomCode));
       normalizeWager(data.stake);const p=participant(name);await bindParticipant(req,{players:[],spectators:[]},p);
-      const room={code:roomCode,target,stake:String(data.stake||'').trim().slice(0,80),phase:'lobby',players:role==='player'?[p]:[],spectators:role==='spectator'?[p]:[],turn:null,winner:null,round:1,roll:[],rollId:null,rolledAt:0,lastScoreEvent:null,available:6,turnPoints:0,lastKeep:0,bust:false,proposal:null,log:[],clients:new Set(),rollMultiplier:1,prophetFace:0,pendingProphet:0,pendingCoin:null,extraTurn:false,hourglassArmed:null,diaboRisk:null,eclipseTarget:null,eclipseOwner:null,shackleTarget:null,shackled:false,noSingles:false,lastBust:null};
+      const room={code:roomCode,target,stake:String(data.stake||'').trim().slice(0,80),phase:'lobby',players:role==='player'?[p]:[],spectators:role==='spectator'?[p]:[],turn:null,winner:null,round:1,roll:[],rollId:null,rollChangedIndices:null,rolledAt:0,lastScoreEvent:null,available:6,turnPoints:0,lastKeep:0,bust:false,proposal:null,log:[],clients:new Set(),rollMultiplier:1,prophetFace:0,pendingProphet:0,pendingCoin:null,extraTurn:false,hourglassArmed:null,diaboRisk:null,eclipseTarget:null,eclipseOwner:null,shackleTarget:null,shackled:false,noSingles:false,lastBust:null};
       await bindParticipant(req,room,p);rooms.set(roomCode,room); response(res,200,{code:roomCode,token:p.token}); return true;
     }
     const match=url.pathname.match(/^\/api\/dice\/rooms\/([A-Za-z0-9]+)\/(join|state|events|action)$/);
@@ -275,14 +280,14 @@ export async function handleDice(req,res,url) {
       await bindParticipant(req,room,p);assertUniqueAccount(room,p);if(role==='spectator'){room.spectators.push(p);log(room,`${p.name} entrou na arquibancada.`);}else{room.players.push(p);log(room,`${p.name} ocupou uma vaga de jogador.`);startMatch(room);}
       response(res,200,{code:room.code,token:p.token}); emit(room); return true;
     }
-    const p=player(room,req);await verifyParticipant(req,p);room.updatedAt=Date.now();p.ownedInsignias=await ownedInsignias(p);
-    if (op==='state' && req.method==='GET') { response(res,200,view(room,p)); return true; }
+    const p=player(room,req);await verifyParticipant(req,p);room.updatedAt=Date.now();p.ownedInsignias=await ownedInsignias(p,{fresh:req.method!=='GET'});
+    if (op==='state' && req.method==='GET') { const bytes=JSON.stringify(view(room,p)),etag='"'+createHash('sha256').update(bytes).digest('hex')+'"';res.setHeader('ETag',etag);res.setHeader('Cache-Control','private, no-cache');if(req.headers['if-none-match']===etag){res.writeHead(304);res.end();return true;}res.writeHead(200,{'content-type':'application/json; charset=utf-8'});res.end(bytes);return true; }
     if (op==='events' && req.method==='GET') {
       res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'keep-alive'});
       const c={res,player:p}; room.clients.add(c); res.write(`data: ${JSON.stringify(view(room,p))}\n\n`);
       const heartbeat=setInterval(()=>res.write(': ping\n\n'),20000); req.on('close',()=>{clearInterval(heartbeat);room.clients.delete(c);}); return true;
     }
-    if (op==='action' && req.method==='POST') {const data=await body(req);await persistMatch(room,'seis-ossos');await validateInsignias(req,room,p,data);if(data.type==='takeSeat'&&room.players.some(q=>q.discordId&&q.discordId===p.discordId))fail('Sua conta ja ocupa uma vaga.');act(room,p,data);await persistMatch(room,'seis-ossos');response(res,200,{ok:true});emit(room);if(data.type==='leave'&&!room.players.length&&!room.spectators.length)rooms.delete(room.code);return true; }
+    if (op==='action' && req.method==='POST') {const data=await body(req);await persistMatch(room,'seis-ossos');await validateInsignias(req,room,p,data);if(data.type==='takeSeat'&&room.players.some(q=>q.discordId&&q.discordId===p.discordId))fail('Sua conta já ocupa uma vaga.');act(room,p,data);await persistMatch(room,'seis-ossos');response(res,200,{ok:true});emit(room);if(data.type==='leave'&&!room.players.length&&!room.spectators.length)rooms.delete(room.code);return true; }
     response(res,405,{error:'Método inválido.'}); return true;
   } catch(error) { response(res,400,{error:error.message||'Erro inesperado.'}); return true; }
 }

@@ -26,14 +26,15 @@ export function summonRuptura(room,p,spec,{emit,pushLog,attack},stableUid){
 }
 export function blockedSummons(room,participants,helpers){
  for(const s of participants){if(!alive(s.card)||s.card.sleep||!s.target)continue;
-  for(const e of effects(s.card).filter(e=>e.op==='blocked_summon'))summonRuptura(room,s.p,{name:e.name,subtype:e.subtype,attack:e.attack,health:e.health,image:s.card.image,modelId:s.card.modelId+'-token'},helpers,`${s.card.uid}-blocked-${room.combatCount}`);
+  for(const e of effects(s.card).filter(e=>e.op==='blocked_summon')){if(e.once_per_field&&s.card.blockedSummonUsed)continue;if(e.once_per_field)s.card.blockedSummonUsed=true;summonRuptura(room,s.p,{name:e.name,subtype:e.subtype,attack:e.attack,health:e.health,image:s.card.image,modelId:s.card.modelId+'-token'},helpers,`${s.card.uid}-blocked-${room.combatCount}`);}
  }
 }
-export function retaliation(room,p){
+export function retaliation(room,p,updates=[]){
  let amount=0;const enemy=room.players.find(s=>s!==p);
  for(const uid of p.emanation){const source=p.reserve.find(c=>c.uid===uid);if(!alive(source))continue;
   for(const e of effects(source).filter(e=>e.op==='retaliation')){
    enemy.patron.retaliation=(enemy.patron.retaliation||0)+1;
+   updates.push({sourceId:source.uid,owner:p.id,targetOwner:enemy.id,count:enemy.patron.retaliation,threshold:e.threshold});
    if(enemy.patron.retaliation>=e.threshold){enemy.patron.retaliation-=e.threshold;amount+=e.amount;}
   }
  }
@@ -55,6 +56,7 @@ export function ruptureFormationAction(room,p,data,{findCreature,effects,emit,pu
  }
  if(data.type==='forceOpponent'){
   if(!effects(c).some(e=>e.op==='force_opponent'))throw Error('Esta criatura não pode puxar um adversário.');
+  if(data.targetId!==null&&(!room.forceWindow?.owners.includes(p.id)||Date.now()>room.forceWindow.until))throw Error('Os cinco segundos de Vultobreve terminaram.');
   const enemy=room.players.find(s=>s!==p);
   if(enemy.formation[lane]&&enemy.formation[lane]!==enemy.reserve.find(t=>t.forcedBy===c.uid)?.uid)throw Error('A posição inimiga já está ocupada.');
   const target=data.targetId===null?null:findCreature(enemy,data.targetId);

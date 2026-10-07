@@ -43,7 +43,7 @@
     }
   ],
   "rules": {
-    "patron_health": 24,
+    "patron_health": 20,
     "deck_size": 24,
     "max_copies": {
       "lacaio": 3,
@@ -91,8 +91,8 @@
       "plan": "Um novo Forja criado pelo grupo: máquinas, crescimento permanente e controle das posições.",
       "patron": {
         "id": "P-F-LYRIK",
-        "name": "A Bigorna Desperta",
-        "health": 16,
+        "name": "Lyrik Koltar",
+        "health": 20,
         "affinities": [
           "forja"
         ],
@@ -101,7 +101,27 @@
         "ability": null,
         "text": "Seu baralho só pode conter cartas de Forja. Sua mana pode pagar os custos dessas cartas.",
         "lore_status": "Título original de protótipo; não identifica uma divindade oficial.",
-        "image": "patrons/bigorna-desperta-nova.png"
+        "image": "patrons/bigorna-desperta-nova.png",
+        "powers": [
+          {
+            "id": "potencializar",
+            "name": "Potencializar",
+            "cost": 2,
+            "text": "Conceda +1 de ataque OU +1 de vida para uma criatura.",
+            "image": "power-forja-potencializar.png",
+            "limit": "round",
+            "duration": "permanent"
+          },
+          {
+            "id": "ultimato-forja",
+            "name": "Ultimato da Forja",
+            "cost": 4,
+            "text": "Conceda +2/+2 e Transpassar para uma criatura.",
+            "image": "power-forja-ultimato.png",
+            "limit": "match",
+            "duration": "permanent"
+          }
+        ]
       },
       "cards": [
         {
@@ -513,11 +533,11 @@
           "name": "Reforço Divino",
           "type": "direct_spell",
           "affinity": "forja",
-          "cost": 5,
+          "cost": 3,
           "quantity": 1,
           "rarity": "elite",
           "subtype": "",
-          "text": "Conceda +2/+2 permanentemente a uma criatura aliada.",
+          "text": "Conceda +1/+1 a uma criatura aliada permanentemente.",
           "speech": "",
           "narrative": "",
           "image": "art/oficina-lyrik/reforco-divino.jpg",
@@ -530,8 +550,8 @@
           "effects": [
             {
               "op": "stat_buff",
-              "attack": 2,
-              "health": 2,
+              "attack": 1,
+              "health": 1,
               "target": "chosen_allied_creature"
             }
           ],
@@ -543,7 +563,7 @@
               "target": "ally",
               "duration": "permanent",
               "condition": "none",
-              "amount": 2,
+              "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
@@ -557,7 +577,7 @@
               "target": "ally",
               "duration": "permanent",
               "condition": "none",
-              "amount": 2,
+              "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
@@ -567,7 +587,7 @@
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono."
         },
         {
           "id": "FL11",
@@ -671,7 +691,7 @@
           "name": "Toque Gélido",
           "type": "prepared_spell",
           "affinity": "forja",
-          "cost": 2,
+          "cost": 1,
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
@@ -712,7 +732,7 @@
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio."
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono."
         },
         {
           "id": "FL14",
@@ -784,7 +804,7 @@
           "quantity": 2,
           "rarity": "lacaio",
           "subtype": "",
-          "text": "Cause 2 de dano a uma criatura inimiga. Pode ser usado diretamente ou preparado em uma posição inimiga.",
+          "text": "A criatura alvo que você controla causa dano igual ao seu ataque à criatura alvo do oponente.",
           "speech": "",
           "narrative": "",
           "image": "art/F11.webp",
@@ -796,30 +816,31 @@
           "fontRules": 42,
           "effects": [
             {
-              "op": "damage",
-              "amount": 2
+              "op": "ally_attack_damage",
+              "target": "chosen_enemy_creature"
             }
           ],
-          "enemyOnly": true,
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "damage",
+              "name": "ally_attack_damage",
               "timing": "direct",
               "target": "enemy",
-              "duration": "instant",
+              "duration": "round",
               "condition": "none",
-              "amount": 2,
+              "amount": 0,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "",
-              "effect": "damage"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"ally_attack_damage\",\"target\":\"chosen_enemy_creature\"}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio."
+          "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio.",
+          "directOnly": true
         },
         {
           "id": "FL16",
@@ -987,7 +1008,7 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Prepare em uma posição inimiga. Ao ativar, se sua posição à frente estiver livre, convoque nela uma Miragem 0/1 e conceda Transpassar ao atacante inimigo neste combate. Se não houver espaço, descarte esta magia sem efeito.",
+          "text": "Prepare em uma posição inimiga. Ao ativar, se sua posição à frente estiver livre, convoque nela uma Miragem 0/1. Se não houver espaço, descarte esta magia sem efeito.",
           "speech": "",
           "narrative": "",
           "image": "art/oficina-lyrik/geada-implacavel.png",
@@ -999,7 +1020,8 @@
           "fontRules": 42,
           "effects": [
             {
-              "op": "mirage"
+              "op": "mirage",
+              "grant_trample": false
             }
           ],
           "enemyOnly": true,
@@ -1015,14 +1037,14 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"mirage\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"mirage\",\"grant_trample\":false}",
               "effect": "custom",
               "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio.",
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
           "positionOnly": true
         }
       ]
@@ -1035,8 +1057,8 @@
       "plan": "Fluxo criado pelo grupo: preparar casas, sustentar aliados e renovar a mão.",
       "patron": {
         "id": "P-FL-VIRELION",
-        "name": "O Olho dos Pactos",
-        "health": 16,
+        "name": "Marika Venn",
+        "health": 20,
         "affinities": [
           "fluxo"
         ],
@@ -1623,7 +1645,7 @@
           "subtype": "Geometro",
           "attack": 1,
           "health": 1,
-          "text": "Quando esta criatura for bloqueada, crie uma ficha de criatura Geometro 1/1.",
+          "text": "Na primeira vez que esta criatura for bloqueada enquanto estiver em campo, crie uma ficha Geometro 1/1 na sua reserva.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG01.jpg",
@@ -1645,7 +1667,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"blocked_summon\",\"name\":\"Ficha Geometro\",\"subtype\":\"Geometro\",\"attack\":1,\"health\":1}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"blocked_summon\",\"name\":\"Ficha Geometro\",\"subtype\":\"Geometro\",\"attack\":1,\"health\":1,\"once_per_field\":true}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1657,11 +1679,12 @@
               "name": "Ficha Geometro",
               "subtype": "Geometro",
               "attack": 1,
-              "health": 1
+              "health": 1,
+              "once_per_field": true
             }
           ],
           "budgetVersion": 3,
-          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+          "budgetReview": "Rebalanceamento aprovado em 07/10/2026: Gnoll +1 com aliado no combate, Chamado fixo, Geometro uma vez em campo e Estilhaço 1 de dano a qualquer alvo."
         },
         {
           "id": "RG02",
@@ -1867,7 +1890,7 @@
           "quantity": 3,
           "rarity": "lacaio",
           "subtype": "",
-          "text": "Crie um número de fichas de criatura Tribal 1/1 igual a dois mais o número de cartas \"Chamado da Tradição\" no Natvanyr.",
+          "text": "Crie duas fichas Tribais 1/1 na sua reserva.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG06.jpg",
@@ -1889,7 +1912,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"tradition_summon\",\"amount\":2,\"name\":\"Ficha Tribal\",\"subtype\":\"Tribal\",\"attack\":1,\"health\":1}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"tradition_summon\",\"amount\":2,\"name\":\"Ficha Tribal\",\"subtype\":\"Tribal\",\"attack\":1,\"health\":1,\"scaling\":\"none\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1902,11 +1925,12 @@
               "name": "Ficha Tribal",
               "subtype": "Tribal",
               "attack": 1,
-              "health": 1
+              "health": 1,
+              "scaling": "none"
             }
           ],
           "budgetVersion": 3,
-          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos.",
+          "budgetReview": "Rebalanceamento aprovado em 07/10/2026: Gnoll +1 com aliado no combate, Chamado fixo, Geometro uma vez em campo e Estilhaço 1 de dano a qualquer alvo.",
           "directOnly": true
         },
         {
@@ -1918,7 +1942,7 @@
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Cause 2 de dano a qualquer coisa.",
+          "text": "Cause 1 de dano a qualquer alvo.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG07.jpg",
@@ -1936,11 +1960,11 @@
               "target": "enemy",
               "duration": "round",
               "condition": "none",
-              "amount": 2,
+              "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"damage\",\"amount\":2,\"target\":\"any\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"damage\",\"amount\":1,\"target\":\"any\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1949,12 +1973,12 @@
           "effects": [
             {
               "op": "damage",
-              "amount": 2,
+              "amount": 1,
               "target": "any"
             }
           ],
           "budgetVersion": 3,
-          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos.",
+          "budgetReview": "Rebalanceamento aprovado em 07/10/2026: Gnoll +1 com aliado no combate, Chamado fixo, Geometro uma vez em campo e Estilhaço 1 de dano a qualquer alvo.",
           "directOnly": true
         },
         {
@@ -1968,7 +1992,7 @@
           "subtype": "Gnoll Guerreiro",
           "attack": 2,
           "health": 3,
-          "text": "Quando outra criatura que você controla com ataque igual ou menor que 1 entrar, Comandante Gnoll recebe +2 de ataque até o fim do combate.",
+          "text": "Revelação — se outra criatura aliada numa posição de combate tiver ataque igual ou menor que 1, Comandante Gnoll recebe +1 de ataque neste combate. Este efeito acontece uma única vez por combate.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG08.jpg",
@@ -1981,16 +2005,16 @@
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "small_enter_attack",
-              "timing": "turn",
-              "target": "enemy",
+              "name": "small_ally_reveal",
+              "timing": "reveal",
+              "target": "self",
               "duration": "round",
               "condition": "none",
-              "amount": 2,
+              "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"small_enter_attack\",\"amount\":2}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"small_ally_reveal\",\"timing\":\"revelation\",\"target\":\"self\",\"amount\":1,\"scope\":\"combat\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1998,12 +2022,15 @@
           "authoredBy": "Grupo Elysium",
           "effects": [
             {
-              "op": "small_enter_attack",
-              "amount": 2
+              "op": "small_ally_reveal",
+              "timing": "revelation",
+              "target": "self",
+              "amount": 1,
+              "scope": "combat"
             }
           ],
           "budgetVersion": 3,
-          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+          "budgetReview": "Rebalanceamento aprovado em 07/10/2026: Gnoll +1 com aliado no combate, Chamado fixo, Geometro uma vez em campo e Estilhaço 1 de dano a qualquer alvo."
         },
         {
           "id": "RG09",
@@ -2104,7 +2131,7 @@
           "name": "Aríete Protegido",
           "type": "creature",
           "affinity": "ruptura",
-          "cost": 1,
+          "cost": 3,
           "quantity": 2,
           "rarity": "lacaio",
           "subtype": "Veículo",
@@ -2255,7 +2282,7 @@
         "id": "RGP",
         "name": "A Garra Vigilante",
         "image": "patrons/garra-vigilante.png",
-        "hp": 16
+        "hp": 20
       }
     }
   ]

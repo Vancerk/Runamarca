@@ -62,7 +62,7 @@ test('Alvos de ataque seguem o dono e a posição reais nos dois lados da mesa',
  }
 });
 test('Par de ataques conserva os IDs e donos mesmo sem metadados da prévia visual',async()=>{
- let entry;const ctx={visualGeneration:0,state:{combat:{visual:[]}},animateLaneClash:async value=>{entry=value;}};
+ let entry;const ctx={applyRetaliationUpdates:()=>{},visualGeneration:0,state:{combat:{visual:[]}},animateLaneClash:async value=>{entry=value;}};
  vm.createContext(ctx);vm.runInContext(section(app,'async function animateDirectedStrike','function animateCasualties'),ctx);
  await ctx.animateDirectedStrike({sourceId:'first',owner:'a',targetId:'second',targetOwner:'b',amount:3,lane:0,healthUpdates:[],pair:{sourceId:'second',owner:'b',targetId:'first',targetOwner:'a',amount:2}});
  assert.deepEqual(Array.from(entry.cards,c=>[c.uid,c.owner,c.attack]),[['first','a',3],['second','b',2]]);

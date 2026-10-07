@@ -16,13 +16,22 @@ for(const [side,zoneName] of [['opponent','upper-zone'],['self','lower-zone']]){
  const right=document.createElement('div');right.className='band-right';right.append(zone.querySelector('.reserve-area'),document.getElementById(side+'-deck-mount'));
  zone.append(left,patron,right);
 }
-// Os poderes são espaços de apresentação; regras e custos serão definidos depois.
+// Poderes e disponibilidade são compartilhados com o estado da partida.
 function decorateLocalPatron(player,side){
  const head=document.getElementById(side+'-head'),band=head?.closest('.player-band');if(!band||head.querySelector('.patron-avatar'))return;
  const left=band.querySelector('.band-left');let identity=left.querySelector('.band-identity');if(!identity){identity=document.createElement('div');identity.className='band-identity';left.prepend(identity);}identity.replaceChildren();
  const info=head.querySelector('.patron-info');if(info){info.querySelector('small')?.remove();info.querySelector('.muted:last-child')?.remove();identity.append(info);}
  const powers=document.createElement('div');powers.className='patron-powers';powers.setAttribute('aria-label','Habilidades do Patrono');
- for(let index=0;index<2;index++){const power=document.createElement('button');power.type='button';power.className='patron-power';power.disabled=side!=='self'||Boolean(state?.spectator);const cost=document.createElement('span');cost.className='power-cost';cost.textContent='—';cost.setAttribute('aria-label','Custo ainda não definido');const description=document.createElement('span');description.className='power-description';const name=document.createElement('strong');name.textContent=`Habilidade ${index+1}`;const detail=document.createElement('small');detail.textContent='Custo e efeito a definir';description.append(name,detail);power.append(cost,description);power.onclick=()=>{const area=document.getElementById('detail-content');area.replaceChildren();const body=document.createElement('div');const title=document.createElement('h2');title.textContent=`${player.patron?.name||'Patrono'} · Habilidade ${index+1}`;const note=document.createElement('p');note.textContent='Prévia do espaço da habilidade. O custo de energia e o efeito serão definidos antes de ela poder ser usada na partida.';body.append(title,note);area.append(body);document.getElementById('card-detail').showModal();};powers.append(power);}
+ for(let index=0;index<2;index++){
+  const spec=player.patron?.powers?.[index],power=document.createElement('button');power.type='button';power.className='patron-power';
+  const used=spec&&(spec.limit==='match'?player.patron.usedPowers?.[spec.id]!==undefined:player.patron.usedPowers?.[spec.id]===state.round);
+  power.disabled=!spec||side!=='self'||Boolean(state?.spectator)||state.phase!=='prep'||state.turn!==player.id||player.mana<spec.cost||Boolean(used)||!player.reserve?.some(c=>c.damage<c.health)||Boolean(player.pendingDiscard);
+  const cost=document.createElement('span');cost.className='power-cost';
+  if(spec){cost.classList.add('illustrated-power');const image=document.createElement('img');image.src=spec.image;image.alt='';cost.append(image);const value=document.createElement('b');value.textContent=spec.cost;cost.append(value);cost.setAttribute('aria-label',spec.cost+' de energia');}else{cost.textContent='—';cost.setAttribute('aria-label','Custo ainda não definido');}
+  const description=document.createElement('span');description.className='power-description';const name=document.createElement('strong');name.textContent=spec?.name||('Habilidade '+(index+1));const detail=document.createElement('small');detail.textContent=spec?.text||'Custo e efeito a definir';description.append(name,detail);power.append(cost,description);
+  if(spec){power.title=spec.text+' · '+(spec.limit==='match'?'Uma vez por partida':'Uma vez por rodada')+(used?' · Já utilizado':'');power.setAttribute('aria-label',spec.name+' · '+spec.cost+' de energia'+(used?' · Já utilizado':''));power.onclick=()=>choosePatronPower(spec);}
+  powers.append(power);
+ }
  head.append(powers);decorateLocalPatronBadges(player,side);
 }
 for(const side of ['self','opponent']){const p=side==='self'?seat():rival();if(p)decorateLocalPatron(p,side);}

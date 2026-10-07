@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { server } from '../server.js';
-import { scoreDice, scoreDiceDetailed } from '../dice-game.js';
+import { scoreDice, scoreDiceDetailed, rerollSelected } from '../dice-game.js';
+
+test('Fortuna altera somente os dados escolhidos', () => {
+  const replacements = [6, 2];
+  assert.deepEqual(rerollSelected([1, 2, 3, 4, 5, 6], [1, 4], () => replacements.shift()), [1, 6, 3, 4, 2, 6]);
+});
 
 test('combinações de seis dados e poderes das insígnias', () => {
   assert.equal(scoreDice([1]),100);
