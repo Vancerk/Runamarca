@@ -38,7 +38,7 @@ export function createInteractionHandler({api,onDecision,checkDecision,checkNoti
     await api(`/interactions/${i.id}/${i.token}/callback`,{type:5,data:{flags:64}});
     let content;
     try{
-      const report=onDecision(params);
+      const report=await onDecision(params);
       content=({approved:'Relato aprovado e publicado no mapa.',correction_requested:'Correção registrada. O relatório está reservado ao autor para ajuste.',rejected:'Relato rejeitado e bloqueado; não será publicado.'})[report.status];
       if(report.status==='approved'&&onApproved){try{const link=await onApproved(report.id);if(link?.url)content+=' Cópia no canal: '+link.url;else content+=' A cópia no canal ainda não foi confirmada.';}catch{content+=' A aprovação foi salva; a publicação no canal precisa ser conferida.';}}
       if(report.status!=='approved'){

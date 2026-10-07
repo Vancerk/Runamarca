@@ -21,3 +21,7 @@ Orçamento inicial: 64 MiB para o conteúdo persistido da Torre, incluindo retra
 Os testes usam PostgreSQL simulado, arquivos temporários e identidades fictícias. Verificam autorização, origem, recuperação após recriar a Torre, preservação binária, limite e os fluxos de aprovação e correção. Não comprovam capacidade para 140 pessoas no Render. Testes de carga no site principal exigem monitoramento e sessões fictícias e não devem enviar mensagens reais em massa.
 
 Execute npm test e npm run test:torre antes da publicação. Acesso: /torre/ após entrar com Discord como administrador.
+
+## Teste de entrega ao administrador
+
+Na área administrativa, o botão Enviar relatório de teste envia somente para o ID 1080332488070672484 (van_renascido). O relatório fictício contém o texto anexado, não possui botões de aprovação e não cria missão no mapa. O servidor precisa de DISCORD_BOT_TOKEN configurado no Render; o token inserido no PowerShell da prévia local não é transferido ao serviço online. A interface distingue bot não configurado, conectando e conectado. A mesma chave de teste não repete um envio cuja confirmação ficou incerta.

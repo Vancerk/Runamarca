@@ -29,7 +29,8 @@ test('Torre shares the games server and OAuth; rejects guests, users, forged ori
   const guest=await call('/torre/');assert.equal(guest.status,302);assert.match(guest.headers.get('location'),/auth\/discord/);
   assert.equal((await call('/torre/api/config')).status,401);assert.equal((await call('/torre/',player)).status,403);assert.equal((await call('/torre/assets/detalhado-sem-codigos.webp',player)).status,403);
   const page=await call('/torre/',admin);assert.equal(page.status,200);assert.match(await page.text(),/\/account.js/);
-  const config=await (await call('/torre/api/config',admin)).json();assert.equal(config.admin,true);assert.equal(config.managedAccount,true);assert.equal(config.ready,false);assert.ok(config.masters.some(m=>m.name==='Kagami'));
+  const config=await (await call('/torre/api/config',admin)).json();assert.equal(config.admin,true);assert.equal(config.managedAccount,true);assert.equal(config.ready,false);assert.equal(config.botConfigured,false);assert.equal(config.botState,'unconfigured');assert.match(config.botError,/DISCORD_BOT_TOKEN/);assert.ok(config.masters.some(m=>m.name==='Kagami'));
+  const unavailable=await call('/torre/api/admin/bot/test-report',admin,{submissionKey:'a'.repeat(36)});assert.equal(unavailable.status,503);assert.match((await unavailable.json()).error,/DISCORD_BOT_TOKEN/);assert.equal((await call('/torre/api/admin/bot/test-report',player,{submissionKey:'a'.repeat(36)})).status,403);
   const image=await call('/torre/assets/detalhado-sem-codigos.webp',admin);assert.equal(image.status,200);assert.ok((await image.arrayBuffer()).byteLength>2000000);
   assert.equal((await call('/torre/api/connect',admin,{token:'not-a-real-token'})).status,403);
   assert.equal((await call('/torre/api/characters/discord',admin,{id:'fake',discordId:'222222222222222222'},'https://attacker.invalid')).status,403);

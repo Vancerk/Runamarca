@@ -31,7 +31,7 @@ async function refresh(){
     const control=form.elements.master;control.replaceChildren(new Option('Selecione o mestre',''),...config.masters.map(m=>new Option(m.name,m.id)));control.value=previous;
     panel.querySelector('#master-help').textContent='O relatório será enviado ao privado do mestre selecionado.';
     panel.querySelector('.notice').hidden=!config.admin;
-    panel.querySelector('.notice').textContent=config.ready?'Administrador: bot conectado.':'Administrador: bot desconectado. Confira a configuração do bot no servidor.';
+    panel.querySelector('.notice').textContent=config.ready?'Administrador: bot conectado.':(config.botError||'Administrador: bot conectando ao Discord. Aguarde alguns segundos.');
     form.querySelector('[type=submit]').textContent=revision?'Reenviar ao mestre':'Enviar ao mestre pelo Discord';
     zonePending=await request('/torre/api/zones/counts');
     const publicReports=await request('/torre/api/reports/index');serverReports.clear();for(const r of publicReports)serverReports.set(r.id,r);

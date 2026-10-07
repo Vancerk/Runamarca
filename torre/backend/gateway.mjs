@@ -3,6 +3,7 @@ import {createPublisher} from './publicacao.mjs';
 import {createInteractionHandler} from './interacoes.mjs';
 import {createCommandHandler,registerCommands} from './comandos.mjs';
 export function createDiscord(token,onDecision,options={}){
+  token=String(token||'').trim();
   let socket,sequence=null,session=null,resumeUrl=null,heartbeat,retry,stopped=false,connected=false,ack=true,attempt=0,lastError=null;
   async function api(path,body,method='POST'){
     const multipart=body instanceof FormData;
@@ -30,14 +31,15 @@ export function createDiscord(token,onDecision,options={}){
     socket.onclose=e=>{connected=false;clearInterval(heartbeat);if(stopped)return;if([4004,4010,4011,4013,4014].includes(e.code)){stopped=true;lastError=e.code===4004?'O Discord recusou o token do bot.':'O Discord recusou a configuração da conexão do bot.';console.error(lastError);return;}retry=setTimeout(connect,Math.min(30000,1000*2**attempt++));};
   }
   if(token)connect();
-  return {publish:createPublisher({api,readAttachment:meta=>options.readAttachment(meta)}),ready:()=>connected,error:()=>lastError,async notifyAuthor(r){
+  return {publish:createPublisher({api,readAttachment:meta=>options.readAttachment(meta)}),ready:()=>connected,configured:()=>Boolean(token),state:()=>!token?'unconfigured':connected?'ready':stopped?'failed':'connecting',error:()=>lastError,async waitReady(timeout=10000){if(!token)throw Object.assign(new Error('Bot não configurado.'),{status:503,publicMessage:'O token do bot não foi configurado no servidor.'});const until=Date.now()+timeout;while(!connected&&!stopped&&Date.now()<until)await new Promise(resolve=>setTimeout(resolve,100));if(!connected)throw Object.assign(new Error('Bot indisponível.'),{status:503,publicMessage:lastError||'O bot está conectando ao Discord. Aguarde alguns segundos e tente novamente.'});},async notifyAuthor(r){
     if(!r.authorDiscordId)throw new Error('Relato antigo sem autor cadastrado.');
     const channel=await api('/users/@me/channels',{recipient_id:r.authorDiscordId});
     return api('/channels/'+channel.id+'/messages',authorNotice(r,options.siteUrl));
-  },close(){stopped=true;clearTimeout(retry);clearInterval(heartbeat);socket?.close();},async send(r){
+  },close(){stopped=true;clearTimeout(retry);clearInterval(heartbeat);socket?.close();},async send(r,{test=false}={}){
     const channel=await api('/users/@me/channels',{recipient_id:r.masterId});
     const text=`${r.title}\nData: ${r.date}\nAutor: ${r.authorCard?.player||r.authorCard?.name||'Não informado'}\nMestre: ${r.master}\nParticipantes:\n${r.participants.join('\n')}\n\n${r.narrative}\n\nDocumentos:\n${(r.documentLinks||[]).join('\n')}`;
-    const payload={content:'Relatório de missão aguardando sua decisão. Leia o relato completo no arquivo anexado.',allowed_mentions:{parse:[]},embeds:[{title:r.title,description:r.narrative.slice(0,3000)+(r.narrative.length>3000?'\n\nContinuação no arquivo anexado.':''),fields:[{name:'Data da sessão',value:r.date},{name:'Participantes',value:r.participants.join('\n').slice(0,1000)}]}],components:[{type:1,components:[['approve','Aprovar',3],['correct','Recusar e pedir revisão',1],['close','Encerrar sem aprovação',4]].map(([action,label,style])=>({type:2,label,style,custom_id:`legion:${action}:${r.id}:${r.version}`}))}],attachments:[{id:0,filename:'relato.txt'}]};
+    const payload={content:test?'Relatório fictício de teste de entrega da Torre de Comando. Nenhuma missão será publicada.':'Relatório de missão aguardando sua decisão. Leia o relato completo no arquivo anexado.',allowed_mentions:{parse:[]},embeds:[{title:r.title,description:r.narrative.slice(0,3000)+(r.narrative.length>3000?'\n\nContinuação no arquivo anexado.':''),fields:[{name:'Data da sessão',value:r.date},{name:'Participantes',value:r.participants.join('\n').slice(0,1000)}]}],components:[{type:1,components:[['approve','Aprovar',3],['correct','Recusar e pedir revisão',1],['close','Encerrar sem aprovação',4]].map(([action,label,style])=>({type:2,label,style,custom_id:`legion:${action}:${r.id}:${r.version}`}))}],attachments:[{id:0,filename:'relato.txt'}]};
+    if(test)payload.components=[];
     for(const [index,file]of (r.attachments||[]).entries())payload.attachments.push({id:index+1,filename:file.name});
     const form=new FormData();form.append('payload_json',JSON.stringify(payload));form.append('files[0]',new Blob([text],{type:'text/plain;charset=utf-8'}),'relato.txt');
     for(const [index,file]of (r.attachments||[]).entries())form.append('files['+(index+1)+']',new Blob([options.readAttachment(file)],{type:file.type}),file.name);

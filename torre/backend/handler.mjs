@@ -6,6 +6,7 @@ import {createStore,ReportError} from './relatorios-core.mjs';
 import {createDiscord} from './gateway.mjs';
 import {createCharacters} from './personagens.mjs';
 import {createAttachments} from './anexos.mjs';
+import {createBotTester} from './teste-bot.mjs';
 export function createTorreRuntime({folder,root,dataFolder,origin,durable,serial}){
 const masters=JSON.parse(readFileSync(resolve(folder,'mestres.json'),'utf8'));
 const zones=new Set(JSON.parse(readFileSync(resolve(root,'zonas.json'),'utf8')).map(z=>z.id));
@@ -16,6 +17,7 @@ const discordOptions={onApproved:id=>serial(async()=>{await durable();return sto
 discordOptions.pairAccount=(code,user)=>serial(async()=>{const result=characters.completePairing(code,user);await durable();return result;});
 discordOptions.authorizeAdmin=(code,user)=>Promise.reject(new ReportError('Entre pela conta Discord no site Jogos Elysium.',403));
 let discord=createDiscord(process.env.DISCORD_BOT_TOKEN,p=>serial(async()=>{const result=store.decide(p);await durable();return result;}),discordOptions);
+const sendBotTest=createBotTester(discord);
 const python=process.env.LEGION_PYTHON||'python3';
 const characters=createCharacters({folder,root:resolve(dataFolder,'character-assets'),python,extractor:resolve(folder,'../fichas/extrair-ficha.py'),dataFolder});
 const attachments=createAttachments(resolve(dataFolder,'anexos'));
@@ -32,7 +34,7 @@ async function handler(req,res){
     if(req.headers.host!==new URL(origin).host)throw new ReportError('Host inválido.',403);
     if(url.pathname.startsWith('/api/')){
       if(req.method==='GET'){
-        if(url.pathname==='/api/config')return json(res,200,{masters,mapEpoch,ready:discord.ready(),admin:Boolean(admin.user(req)),managedAccount:true,...(admin.user(req)?{botError:discord.error()}:{} )});
+        if(url.pathname==='/api/config')return json(res,200,{masters,mapEpoch,ready:discord.ready(),admin:Boolean(admin.user(req)),managedAccount:true,...(admin.user(req)?{botConfigured:discord.configured(),botState:discord.state(),botError:!discord.configured()?'Configure DISCORD_BOT_TOKEN nas variáveis privadas do Render.':discord.error()}:{} )});
         if(url.pathname==='/api/admin/reports'){admin.require(req);return json(res,200,store.adminList());}
         const download=url.pathname.match(/^\/api\/reports\/([a-f0-9-]+)\/attachments\/([a-f0-9]{64}\.(?:png|jpe?g|pdf|docx))$/);
         if(download){const meta=store.attachment(download[1],download[2],req.headers['x-report-receipt'],Boolean(admin.user(req))),bytes=attachments.read(meta);res.writeHead(200,{'Content-Type':meta.type,'Content-Disposition':"attachment; filename*=UTF-8''"+encodeURIComponent(meta.name),'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"});res.end(bytes);return;}
@@ -50,6 +52,8 @@ async function handler(req,res){
         if(['/api/admin/start','/api/admin/finish','/api/admin/logout'].includes(url.pathname))throw new ReportError('Use sua conta Discord do Jogos Elysium.',405);
         if(url.pathname==='/api/admin/characters/discord'){admin.require(req);return json(res,200,characters.adminDiscord(body.id,body.discordId));}
         const adminAction=url.pathname.match(/^\/api\/admin\/reports\/([a-f0-9-]+)\/(edit|archive)$/);if(adminAction){const by=admin.require(req);return json(res,200,adminAction[2]==='edit'?await store.adminEdit(adminAction[1],by,body):store.archive(adminAction[1],by,body.archived!==false));}
+        if(url.pathname==='/api/admin/bot/test-report'){admin.require(req);return json(res,200,await sendBotTest(body.submissionKey));}
+        if(url.pathname==='/api/reports'||/^\/api\/reports\/[a-f0-9-]+\/revise$/.test(url.pathname)){try{await discord.waitReady();}catch(e){throw new ReportError(!discord.configured()?'Configure DISCORD_BOT_TOKEN nas variáveis privadas do Render. Seu formulário foi mantido.':e.publicMessage,503);}}
         if(url.pathname==='/api/connect')throw new ReportError('Configure o bot nas variáveis do servidor.',403);
         if(url.pathname==='/api/reports')return json(res,201,await store.submit(body));
         if(url.pathname==='/api/characters/preview')return json(res,200,await characters.preview(body.url));
