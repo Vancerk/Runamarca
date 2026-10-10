@@ -5,7 +5,7 @@ const energyColors = { ruptura: '#bd5847', forja: '#d0a44e', fluxo: '#568fc2' };
 const energyIconIds = ['vazio', 'ruptura', 'forja', 'fluxo', 'eco', 'veu'];
 const kindNames = { creature: 'Criatura', spell: 'Magia', rune: 'Essência', patron: 'Patrono' };
 const fields = { name: 'card-name', kind: 'card-kind', subtype: 'card-subtype', rarity: 'card-rarity', speech: 'card-speech', narrative: 'card-narrative', rules: 'card-rules', fontName: 'font-name', fontSubtype: 'font-subtype', fontRules: 'font-rules', quantity: 'card-quantity', power: 'card-power', health: 'card-health', generic: 'cost-generic', ruptura: 'cost-ruptura', forja: 'cost-forja', fluxo: 'cost-fluxo', artZoom: 'art-zoom', artX: 'art-x', artY: 'art-y' };
-const blank = () => ({ id: crypto.randomUUID(), name: '', kind: 'creature', subtype: '', rules: '', speech: '', narrative: '', rulesItalic: false, fontName: 43, fontSubtype: 21, fontRules: 36, themeEnergy: 'ruptura', spellMode:'direct_spell', patronHealth:16, attachmentType: '', attachmentPower: 0, attachmentHealth: 0, attachmentTap: false, attachmentLock: false, attachmentTrample: false, rarity:'padrao', quantity: 2, power: 0, health: 0, generic: 1, budgetAbilities: [], ruptura: 0, forja: 0, fluxo: 0, art: '', artZoom: 100, artX: 50, artY: 0, agile: false, quickAttack: false, drawTrigger: '', drawCount: 1, drawPowerFour: false, tokenTrigger: '', tokenAmount: 1, tokenName: '', tokenPower: 1, tokenHealth: 1, energyResource: '', energyAmount: 1, energyBoost: '', energyBoosted: 2, agileDiscount: 0, costAuraTarget: '', costAuraAmount: 1, patronFrame: '#65439d', patronOrnament: '#c9b1e8', patronAccent: '#e9d3fa', patronFont: 'display', patronOpacity: 72, patronFlourish: 'elaborate', patronAbilities: [{ cost: 2, title: '', effect: '' }, { cost: 3, title: '', effect: '' }, { cost: 5, title: '', effect: '' }] });
+const blank = () => ({ id: crypto.randomUUID(), name: '', kind: 'creature', subtype: '', rules: '', speech: '', narrative: '', rulesItalic: false, fontName: 43, fontSubtype: 21, fontRules: 36, themeEnergy: 'ruptura', spellMode:'direct_spell', patronHealth:20, attachmentType: '', attachmentPower: 0, attachmentHealth: 0, attachmentTap: false, attachmentLock: false, attachmentTrample: false, rarity:'padrao', quantity: 2, power: 0, health: 0, generic: 1, budgetAbilities: [], ruptura: 0, forja: 0, fluxo: 0, art: '', artZoom: 100, artX: 50, artY: 0, agile: false, quickAttack: false, drawTrigger: '', drawCount: 1, drawPowerFour: false, tokenTrigger: '', tokenAmount: 1, tokenName: '', tokenPower: 1, tokenHealth: 1, energyResource: '', energyAmount: 1, energyBoost: '', energyBoosted: 2, agileDiscount: 0, costAuraTarget: '', costAuraAmount: 1, patronFrame: '#65439d', patronOrnament: '#c9b1e8', patronAccent: '#e9d3fa', patronFont: 'display', patronOpacity: 72, patronFlourish: 'elaborate', patronAbilities: [{ cost: 2, title: '', effect: '' }, { cost: 3, title: '', effect: '' }, { cost: 5, title: '', effect: '' }] });
 let draft = blank();
 let project = [];
 let db = null;
@@ -256,7 +256,7 @@ function drawPatronCard(ctx, card, art) {
   ctx.font='600 38px Cinzel,Georgia,serif';
   ctx.fillText(energyNames[card.themeEnergy] || 'Ruptura',450,840);
   ctx.fillStyle='#fff9ec'; ctx.font='700 56px "Source Sans 3",sans-serif';
-  ctx.fillText(String(card.patronHealth || 16)+' de vida',450,940);
+  ctx.fillText(String(card.patronHealth || 20)+' de vida',450,940);
   ctx.font='26px "EB Garamond",Georgia,serif';
   ctx.fillText('Seu deck usa cartas desta afinidade.',450,1030);
   ctx.fillText('Começa em jogo, fora do limite de 30 cartas.',450,1070);
@@ -287,7 +287,7 @@ function readForm() {
   draft.rules = draft.rules.slice(0, 850);
   draft.speech = String(draft.speech||'').trim().slice(0,160);
   draft.narrative = String(draft.narrative||'').trim().slice(0,1200);
-  draft.themeEnergy = $('card-theme').value; draft.spellMode = $('spell-mode').value; draft.patronHealth = number($('patron-health').value,1,99,16);
+  draft.themeEnergy = $('card-theme').value; draft.spellMode = $('spell-mode').value; draft.patronHealth = number($('patron-health').value,1,99,20);
   draft.attachmentType = $('attachment-type').value;
   draft.attachmentPower = number($('attachment-power').value, -20, 20);
   draft.attachmentHealth = number($('attachment-health').value, -20, 20);
@@ -368,7 +368,7 @@ function populate(card) {
     draft.rulesItalic = false;
   }
   for (const [key,id] of Object.entries(fields)) $(id).value = draft[key] ?? blank()[key];
-  $('card-theme').value = draft.themeEnergy || 'ruptura'; $('spell-mode').value = draft.spellMode || 'direct_spell'; $('patron-health').value = draft.patronHealth || 16;
+  $('card-theme').value = draft.themeEnergy || 'ruptura'; $('spell-mode').value = draft.spellMode || 'direct_spell'; $('patron-health').value = draft.patronHealth || 20;
   $('attachment-type').value = draft.attachmentType || '';
   $('attachment-power').value = draft.attachmentPower ?? 0;
   $('attachment-health').value = draft.attachmentHealth ?? 0;
@@ -547,7 +547,7 @@ $('load-starter').addEventListener('click',async()=>{
   if(project.some(card=>card.starterDeck===deck.id))return status('Este deck já está na coleção. Edite suas cartas na lista.',true);
   const cards=deck.cards.map(card=>({...blank(),id:crypto.randomUUID(),name:card.name,kind:card.type==='creature'?'creature':'spell',subtype:card.type==='creature'?card.subtype:card.type==='prepared_spell'?'Magia preparada':'Magia direta',spellMode:card.type,themeEnergy:deck.affinity,generic:card.cost,power:card.attack||0,health:card.health||0,rules:card.text,speech:card.speech||'',narrative:card.narrative||'',fontName:card.fontName||43,fontSubtype:card.fontSubtype||21,fontRules:card.fontRules||36,artZoom:card.artZoom??100,artX:card.artX??50,artY:card.artY??0,quantity:card.quantity,rarity:card.rarity||'padrao',budgetEffects:structuredClone(card.budgetEffects||[]),budgetVersion:card.budgetVersion||2,starterDeck:deck.id,art:card.image&&location.pathname.startsWith('/runamarca/')?'../'+card.image:''}));
   const portrait={ruptura:'garra-vigilante',fluxo:'olho-dos-pactos',forja:'bigorna-desperta'};
-  cards.push({...blank(),id:crypto.randomUUID(),name:deck.patron.name,kind:'patron',themeEnergy:deck.affinity,patronHealth:16,quantity:1,starterDeck:deck.id,art:location.pathname.startsWith('/runamarca/')?'../patrons/'+portrait[deck.affinity]+'.png':''});
+  if(deck.includePatron!==false)cards.push({...blank(),id:crypto.randomUUID(),name:deck.patron.name,kind:'patron',themeEnergy:deck.affinity,patronHealth:20,quantity:1,starterDeck:deck.id,art:location.pathname.startsWith('/runamarca/')?'../patrons/'+portrait[deck.affinity]+'.png':''});
   for(const card of cards)while(rulesOverflow(card)&&card.fontRules>16)card.fontRules--;
   await Promise.all(cards.map(async card=>{if(!card.art)return;try{const response=await fetch(card.art);if(!response.ok)throw Error('Arte indisponível');const blob=await response.blob();card.art=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});}catch{card.art='';}}));
 

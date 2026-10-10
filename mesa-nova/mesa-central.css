@@ -97,10 +97,95 @@
 /* Emanação sobre as duas divisórias, espelhada para cada participante. */
 .game .board>.combat-emanation{position:absolute;inset:0;width:auto;z-index:6;pointer-events:none;overflow:visible}
 .combat-emanation>#self-emana,.combat-emanation>#opponent-emana{display:contents}
-.combat-emanation .emana-empty,.combat-emanation .card.mini{position:absolute!important;margin:0!important;width:53px!important;height:74px!important;pointer-events:auto;transform:translate(-50%,-100%);box-shadow:0 2px 8px #0007}
+.combat-emanation .emana-empty,.combat-emanation .card.mini{position:absolute!important;margin:0!important;width:var(--emanation-width)!important;height:var(--emanation-height)!important;pointer-events:auto;transform:translate(-50%,-100%);box-shadow:0 2px 8px #0007}
 #opponent-emana-zone .emana-empty,#opponent-emana-zone .card.mini{transform:translate(-50%,0)}
 .combat-emanation .emana-empty{display:grid;place-items:center;background:#34291fdb;border:1px dashed #c3a56c;border-radius:4px;color:#c9b382;font-size:11px}
 .combat-emanation .emana-empty::before{content:'EMANAÇÃO';position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:7px;letter-spacing:.06em;color:#d3b47d}
 #opponent-emana-zone .emana-empty::before{top:auto;bottom:-13px}
 .reveal-paid-badge{position:absolute;z-index:8;top:22%;left:50%;transform:translateX(-50%);white-space:nowrap;border:1px solid #a4c584;border-radius:3px;padding:2px 4px;color:#edf9da;background:#24351eef;font:600 9px Arial,sans-serif;box-shadow:0 2px 5px #0008}
 .card.mini .reveal-paid-badge{font-size:7px;padding:2px}
+.upper-zone .deck-stack{transform:rotate(180deg)}
+/* Magias na margem da posição, junto à Emanação e fora do centro da criatura. */
+.game .lane-side .spell-dock{position:absolute;z-index:7;display:flex;gap:6px;left:calc(var(--emanation-width)/2 + 10px);top:8px;pointer-events:auto}
+.game .lane[data-lane="0"] .spell-dock{left:12px}
+.game .lane-side:last-child .spell-dock{top:auto;bottom:8px}
+.game .lane-side .spell-dock>.spell-mark{position:relative;inset:auto!important;transform:none!important;margin:0!important;width:28px;height:38px;flex:none}
+.live-speech{position:fixed!important;z-index:5000!important;animation:none!important;opacity:1!important;pointer-events:none;transform:translate(-50%,-100%)}
+.used-spell{position:fixed!important;left:50%;top:43%;width:min(300px,36vw,60vh)!important;height:auto!important;aspect-ratio:5/7;transform:translate(-50%,-50%);transform-origin:center;margin:0!important;z-index:4500!important;pointer-events:none;visibility:visible!important;transition:none!important;animation:none!important;box-shadow:0 0 55px #e7bd6977,0 16px 55px #000d}
+.force-window-clock{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);z-index:30;min-width:190px;padding:8px 12px;border:1px solid #bd9a62;border-radius:6px;background:#211810f2;color:#eed3a0;text-align:center;font-size:12px;pointer-events:none}
+.force-window-clock>div{height:4px;background:#54412c;margin-top:8px}.force-window-clock i{display:block;height:100%;background:#dbb671}
+.retaliation-points{position:absolute;inset:-8px -9px;z-index:10;pointer-events:none}.retaliation-points i{position:absolute;width:7px;height:7px;border-radius:50%;border:1px solid #da9777;background:#352625}.retaliation-points i:nth-child(1){top:5%;left:0}.retaliation-points i:nth-child(2){top:5%;right:0}.retaliation-points i:nth-child(3){bottom:5%;left:0}.retaliation-points i:nth-child(4){bottom:5%;right:0}.retaliation-points i.active{background:#ffd49c;box-shadow:0 0 9px #fa7058}
+.power-cost.illustrated-power{position:relative;width:40px;height:40px;isolation:isolate;background:#302214}
+.illustrated-power img{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 50%;display:block}
+.illustrated-power b{position:absolute;right:-5px;bottom:-4px;display:grid;place-items:center;width:19px;height:19px;border:1px solid #deb876;border-radius:50%;background:#493521;color:#fff0c7;font:bold 14px Georgia,serif;box-shadow:0 1px 4px #000}
+.patron-power:disabled .illustrated-power img{filter:saturate(.6) brightness(.75)}
+.patron-power:not(:disabled):hover{border-color:#e6c98b;background:#483020}
+.player-band .patron-powers{width:165px;gap:4px}
+.patron-power{gap:5px;padding:3px 4px}
+.power-cost.illustrated-power{width:34px;height:34px}
+.illustrated-power img{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none;max-height:none;aspect-ratio:1;object-fit:cover}
+.player-band .band-right{padding-left:12px}
+@media(max-width:1399px){.player-band .patron-powers{width:132px}.power-cost.illustrated-power{width:29px;height:29px}.power-description strong{font-size:9px}.power-description small{font-size:8px}}
+@media(min-width:1400px){.player-band .patron-powers{width:185px}.player-band .band-right{padding-left:32px}.power-description{gap:2px}}
+
+/* Área total da Emanação duplicada, preservando a proporção da carta. */
+.game .board{--emanation-width:75px;--emanation-height:105px}
+.drag-preview{transition:transform 90ms linear!important;transform-origin:50% 50%}
+.drag-preview.near-emanation{box-shadow:0 0 16px #e5c48a,0 10px 20px #000b!important}
+/* Poderes compactos e Éter separado do coração/ataque das criaturas. */
+.player-band .patron-equipment{grid-column:3;grid-row:1;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:12px;width:185px;justify-self:start}
+.player-band .patron-equipment .patron-powers{grid-column:1;grid-row:1;display:grid;width:auto;gap:7px}
+.patron-power-wrap{width:42px;height:42px;outline-offset:3px;border-radius:50%}
+.patron-power-wrap:focus-visible{outline:2px solid #e6c98b}
+.patron-equipment .patron-power{width:42px;height:42px;min-height:0;padding:2px;display:grid;place-items:center;border-radius:50%;background:#281d17;border:1px solid #b89a68;overflow:visible}
+.patron-equipment .power-cost{width:34px;height:34px}
+.patron-ether{min-width:0;padding:7px 8px;border:1px solid #aa885866;border-radius:8px;background:linear-gradient(130deg,#3c2c20e8,#251b16ed)}
+.patron-ether>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#d6b986}
+.ether-count{font:700 17px 'EB Garamond',Georgia,serif;color:#fff0ca}
+.ether-points{display:grid;grid-template-columns:repeat(5,20px);gap:4px;min-height:44px;margin-top:5px}
+.ether-point{display:block;width:20px;height:20px;border-radius:50%;border:1px solid #8b734d;background:#231910}
+.ether-point img{display:block;width:100%;height:100%;object-fit:contain}
+.ether-point.available{border-color:#d3b475;box-shadow:0 0 5px #d0a44e55}
+.ether-point.spent{opacity:.25;filter:grayscale(1)}
+.patron-power-zoom{position:fixed;z-index:4600;display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;align-items:center;width:340px;max-width:calc(100vw - 16px);padding:20px;border:1px solid #cfad72;border-radius:14px;color:#f5e2bd;background:linear-gradient(135deg,#483122f7,#211714fc);box-shadow:0 12px 40px #000c,0 0 22px #c2994b33;pointer-events:none}
+.patron-power-zoom>.power-cost{width:72px;height:72px;font-size:30px}
+.patron-power-zoom .illustrated-power b{width:27px;height:27px;font-size:19px}
+.patron-power-zoom strong{font:700 17px Cinzel,Georgia,serif}
+.patron-power-zoom p{font:400 16px 'EB Garamond',Georgia,serif;line-height:1.4;margin:9px 0}
+.patron-power-zoom small{font-size:11px;color:#d0b98f}
+@media(max-width:1399px){.player-band .patron-equipment{width:165px;gap:8px}.ether-points{grid-template-columns:repeat(5,17px);gap:3px;min-height:37px}.ether-point{width:17px;height:17px}.patron-ether{padding:5px 6px}}
+@media(prefers-reduced-motion:reduce){.drag-preview{transition:none!important}}
+
+.patron-equipment .patron-power:disabled{pointer-events:none}
+.patron-ether .ether-points{grid-template-columns:repeat(5,minmax(0,1fr))}
+.patron-ether .ether-point{width:100%;height:auto;aspect-ratio:1;max-width:20px;max-height:20px}
+
+/* Forging choices, equipment attached to creatures and Patron extra life. */
+.forge-picker{max-width:960px;width:min(960px,94vw);padding:28px;background:#241a14;color:#eedaba;border:1px solid #ba9459;border-radius:15px}
+.forge-picker::backdrop{background:#090704da}.forge-step-label{color:#bca074;letter-spacing:.15em}.forge-picker h2{font:700 25px Cinzel,Georgia,serif}.forge-picker p{font-size:17px;line-height:1.4}
+.forge-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:22px}.forge-choice{display:flex;flex-direction:column;gap:12px;padding:18px;text-align:center;align-items:center;background:#34261e;border:1px solid #8f7149;border-radius:12px;color:#eedaba;transition:transform .15s,border-color .15s}.forge-choice:hover,.forge-choice:focus-visible{transform:translateY(-5px);border-color:#ecc981}.forge-choice img{width:112px;height:136px;object-fit:contain;background:#201812;border-radius:8px;border:2px solid #ba9459}.forge-choice strong{font-size:19px}.forge-choice span{font-size:17px;line-height:1.35}.forge-choice small{color:#d0b887}
+.weapons-row{display:flex;gap:6px;border-left:1px solid #be9758;padding-left:7px;align-items:center}.equipped-weapon{position:absolute;z-index:8;right:-21px;top:50%;width:36px;height:50px;transform:translateY(-50%);border:1px solid #d2af74;border-radius:6px;background:#201812;box-shadow:0 3px 8px #0009;cursor:pointer}.equipped-weapon img{width:100%;height:100%;object-fit:contain;border-radius:5px}.equipped-weapon b{position:absolute;bottom:-6px;right:-5px;min-width:20px;height:20px;border-radius:50%;background:#6d4920;border:1px solid #dbbb78;font:700 14px Georgia,serif;color:#fff1d1;text-align:center;line-height:18px}.weapon-breaking{opacity:0;transform:translateY(-50%) scale(.5);transition:opacity .25s,transform .25s}.patron-extra-life{position:absolute;z-index:10;right:-5px;bottom:36px;min-width:28px;height:30px;display:grid;place-items:center;clip-path:polygon(15% 0,85% 0,100% 20%,85% 80%,50% 100%,15% 80%,0 20%);background:linear-gradient(145deg,#e6d8b5,#75818b);color:#172028;font:700 19px Georgia,serif;filter:drop-shadow(0 2px 2px #0008)}.forge-progress{display:block;font-size:10px;color:#e7c080;margin-top:3px}
+@media(max-width:700px){.forge-options{gap:6px}.forge-choice{padding:8px}.forge-choice img{width:54px;height:54px}.forge-choice strong{font-size:14px}.forge-choice span{font-size:13px}}
+
+.forge-impact-layer{position:fixed;inset:0;z-index:15000;pointer-events:none;overflow:hidden}.forge-hammer{position:absolute;width:400px;height:440px;transform-origin:55% 78%;filter:drop-shadow(0 20px 13px #0009)}.forge-hammer svg{width:100%;height:100%}.forge-flash{position:absolute;width:140px;height:90px;border-radius:50%;background:radial-gradient(ellipse,#fff5cf 0%,#ffcf5d 25%,#ff762590 50%,transparent 73%);filter:blur(2px)}.forge-spark{position:absolute;width:17px;height:4px;border-radius:50%;background:#ffe9a4;box-shadow:0 0 6px 2px #ff9e34,0 0 16px #fc6328}.forge-shock-ring{position:absolute;width:95px;height:48px;border:3px solid #efb45bdc;border-radius:50%;box-shadow:0 0 14px #f99b34,0 0 25px #fc702655 inset}
+
+/* Equipment counters remain in the same corners as creature attack/life. */
+.equipped-weapon .weapon-durability{border-radius:0;min-width:22px;height:24px;line-height:22px;clip-path:polygon(15% 0,85% 0,100% 20%,85% 80%,50% 100%,15% 80%,0 20%);background:linear-gradient(145deg,#e6d8b5,#75818b);color:#172028;border:0}
+.equipped-weapon .weapon-bonus{right:auto;left:-8px;min-width:24px;font-size:12px}
+
+/* Impact effects share a viewport canvas; transient cards keep their original geometry. */
+.damage-fx-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:4600;pointer-events:none}
+.damage-remnant,.broken-weapon-fragment{position:fixed;z-index:76;pointer-events:none;margin:0}
+.damage-remnant>.card,.broken-weapon-fragment>*{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;transform:none!important;visibility:visible!important}
+.used-spell.own-used-spell{left:40%}.used-spell.rival-used-spell{left:75%}
+.forge-hammer{width:240px;height:300px;transform-origin:50% 83.333%;filter:drop-shadow(0 10px 8px #0009) drop-shadow(0 0 8px #ffbb3840)}
+.patron-power{perspective:500px}.patron-power .power-cost{position:relative;transform-style:preserve-3d;isolation:auto;background:transparent}
+.patron-power .power-cost>img{transform:translateZ(.5px);backface-visibility:hidden}.patron-power .power-cost>b{transform:translateZ(1px);backface-visibility:hidden}
+.power-back{position:absolute;inset:-1px;display:block;border:1px solid #94764b;border-radius:50%;background:#bc9250 url('card-back.png') center/cover no-repeat;box-shadow:inset 0 0 4px #0006;transform:rotateX(180deg) translateZ(.5px);backface-visibility:hidden}
+.used-power .power-cost{transform:rotateX(180deg)}
+/* The heart is 47px wide and extends 19px beyond the avatar: both centres coincide. */
+.patron-extra-life{right:auto;left:calc(100% - 4.5px);transform:translateX(-50%)}
+.equipped-weapon.weapon-worn .weapon-durability::after{content:'';position:absolute;inset:1px 6px;background:#26333e;opacity:.85;clip-path:polygon(55% 0,38% 27%,62% 44%,35% 63%,56% 81%,42% 100%,65% 82%,47% 64%,74% 44%,50% 27%,67% 0);pointer-events:none}
+
+/* Finished forge particles remain invisible instead of flashing back to their base style. */
+.forge-hammer,.forge-flash,.forge-spark,.forge-shock-ring{opacity:0}

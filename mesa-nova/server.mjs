@@ -1,26 +1,26 @@
 import http from 'node:http';
+import {createAccessSessions} from './access-session.mjs';
+import {waitRevision} from './wait-revision.mjs';
 import {registerGame,bindParticipant,assertUniqueAccount,verifyParticipant,persistMatch,normalizeWager} from '../accounts.mjs';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {createHash,randomBytes,timingSafeEqual} from 'node:crypto';
+import {createHash,timingSafeEqual} from 'node:crypto';
 import {act,code,easyBotAction,findPlayer,join,makeRoom,view} from './game.mjs';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
 const catalog=JSON.parse(await readFile(path.join(root,'cartas.json'),'utf8'));
 const rooms=new Map();
 registerGame('runamarca',rooms);
-const sessions=new Map();
+const accessSessions=createAccessSessions();
 const attempts=new Map();
 const accessHash='d1278d1e774f8b0c27c166302871dd40ccea755f31738a8210d70de8c44a9fe5';
-const sessionAge=30*24*60*60*1000;
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ogg':'audio/ogg','.wav':'audio/wav'};
 function scheduleBot(room){if(room.botTimer||!room.players.some(p=>p.bot))return;room.botTimer=setTimeout(()=>{room.botTimer=null;const bot=room.players.find(p=>p.bot),next=easyBotAction(room);if(!bot||!next)return;try{act(room,bot,next,catalog);void persistMatch(room,'runamarca');scheduleBot(room);}catch(error){room.log.push({message:`Bot fácil interrompido: ${error.message}`,round:room.round,turn:room.turn,phase:room.phase});room.log=room.log.slice(-10);room.revision++;}},700);}
 function json(res,status,value){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));}
 async function payload(req){let size=0;const parts=[];for await(const part of req){size+=part.length;if(size>32_000_000)throw Error('Arquivo acima do limite de 32 MB.');parts.push(part);}try{return JSON.parse(Buffer.concat(parts).toString('utf8'));}catch{throw Error('JSON inválido.');}}
 function auth(req,room){const p=findPlayer(room,req.headers['x-player-token']);if(!p)throw Object.assign(Error('Acesso inválido.'),{code:'SEAT_INVALID'});return p;}
-function hasAccess(req){const value=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('rm_access='))?.slice(10);const expiry=value&&sessions.get(value);if(!expiry)return false;if(expiry<Date.now()){sessions.delete(value);return false;}return true;}
-function grantAccess(req,res,base){const session=randomBytes(32).toString('hex');sessions.set(session,Date.now()+sessionAge);const secure=req.socket.encrypted||req.headers['x-forwarded-proto']==='https'?'; Secure':'';res.setHeader('Set-Cookie',`rm_access=${session}; HttpOnly; SameSite=Lax; Path=${base||'/'}; Max-Age=${sessionAge/1000}${secure}`);}
+export function createTestAccess(req={headers:{host:'localhost'}},base=''){if(process.env.NODE_ENV!=='test')throw Error('Apenas testes.');return accessSessions.issue(req,base);}
 export async function handleNewGame(req,res,url=new URL(req.url,'http://localhost'),base=''){
   try{
     if(base&&!url.pathname.startsWith(base+'/')&&url.pathname!==base)return false;
@@ -35,15 +35,15 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       if(record.count>=10)return json(res,429,{error:'Muitas tentativas. Aguarde 15 minutos.'});
       const data=await payload(req);const supplied=createHash('sha256').update(String(data.code||'')).digest();const expected=Buffer.from(accessHash,'hex');
       if(!timingSafeEqual(supplied,expected)){record.count++;attempts.set(ip,record);return json(res,403,{error:'Código incorreto.'});}
-      attempts.delete(ip);grantAccess(req,res,base);
+      attempts.delete(ip);accessSessions.grant(req,res,base);
       res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true}));return;
     }
     let invited=false;
-    if(!hasAccess(req)&&req.method==='GET'&&routePath==='/'&&url.searchParams.has('room')&&url.searchParams.has('invite')){
+    if(!accessSessions.has(req,base)&&req.method==='GET'&&routePath==='/'&&url.searchParams.has('room')&&url.searchParams.has('invite')){
       const room=rooms.get(url.searchParams.get('room').toUpperCase());const invite=url.searchParams.get('invite');
-      if(room&&typeof invite==='string'&&invite.length===room.inviteToken.length&&timingSafeEqual(Buffer.from(invite),Buffer.from(room.inviteToken))){grantAccess(req,res,base);invited=true;}
+      if(room&&typeof invite==='string'&&invite.length===room.inviteToken.length&&timingSafeEqual(Buffer.from(invite),Buffer.from(room.inviteToken))){accessSessions.grant(req,res,base);invited=true;}
     }
-    if(!hasAccess(req)&&!invited){
+    if(!accessSessions.has(req,base)&&!invited){
       if(req.method==='GET'&&!routePath.startsWith('/api/')){res.writeHead(302,{Location:`${base}/access`,'Cache-Control':'no-store'});res.end();return;}
       return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.',code:'ACCESS_REQUIRED'});
     }
@@ -55,6 +55,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       if(operation==='join'&&req.method==='POST'){const data=await payload(req);const role=data.role==='spectator'||(data.role==='auto'&&(room.phase!=='lobby'||room.players.length>=2))?'spectator':'player';const probe={};await bindParticipant(req,room,probe);assertUniqueAccount(room,probe);const p=join(room,probe.name||data.name,role);p.discordId=probe.discordId;return json(res,200,{code:room.code,token:p.token,state:view(room,p)});}
       const p=auth(req,room);await verifyParticipant(req,p);room.updatedAt=Date.now();
       if(operation==='state'&&req.method==='GET'){
+        if(url.searchParams.get('wait')==='1'&&url.searchParams.has('revision')){await waitRevision(room,Number(url.searchParams.get('revision')),res);if(res.destroyed)return;}
         if(url.searchParams.has('revision')&&Number(url.searchParams.get('revision'))===room.revision){res.writeHead(204,{'Cache-Control':'no-store'});return res.end();}
         return json(res,200,view(room,p));
       }

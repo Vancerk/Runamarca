@@ -6,3 +6,23 @@
 @media(max-width:700px){.account-bar~main.hub .game{min-height:280px}}
 @media(min-width:701px){.hub{min-height:calc(100dvh - var(--account-bar-height,51px))}}
 @media(min-width:701px){.hub{min-height:calc(100dvh - var(--account-bar-height,51px) - 2px)}}
+
+/* Quiet game marks, independent of the card-back illustration. */
+.game-list .game{isolation:isolate;border-radius:12px;border-color:#806544;background:#231a14;box-shadow:inset 0 0 0 4px #15100c66,0 12px 30px #0004}
+.game-list .runa{background:linear-gradient(130deg,#35251d,#211813 65%,#19130f)}
+.game-list .dice{background:linear-gradient(130deg,#302a22,#211c16 65%,#171410)}
+.game-list .game::before{content:"";position:absolute;inset:9px;border:1px solid #b28d5238;border-radius:5px;pointer-events:none}
+.game-list .emblem{display:block;width:clamp(160px,19vw,215px);height:auto;top:12%;right:9%;color:#c7a264;line-height:0;text-shadow:none;pointer-events:none;transition:opacity .25s ease}
+.game-list .emblem svg{display:block;width:100%;height:auto}
+.game-list .runa-emblem{opacity:.38}
+.game-list .dice-emblem{width:clamp(130px,15vw,165px);top:15%;right:12%;opacity:.66}
+.game-list .game h2,.game-list .game p,.game-list .enter,.game-list .index{position:relative;z-index:1}
+.game-list .index{position:absolute;top:25px;left:24px;font-size:10px;letter-spacing:.18em}
+.game-list .game h2{color:#f3dfb8;text-shadow:0 2px 8px #110d09}
+.game-list .game p{color:#c9bda7}
+.game-list .enter{background:#302419;border-color:#987746;color:#f1d6a0;box-shadow:inset 0 1px #e8c27818}
+.game-list .game:hover,.game-list .game:focus-visible{border-color:#d9b578;box-shadow:inset 0 0 0 4px #15100c66,0 18px 50px #0008}
+.game-list .game:hover .runa-emblem,.game-list .game:focus-visible .runa-emblem{opacity:.52}
+.game-list .game:hover .dice-emblem,.game-list .game:focus-visible .dice-emblem{opacity:.8}
+@media(max-width:700px){.game-list .game{padding:24px}.game-list .emblem{width:150px;top:35px;right:18px}.game-list .dice-emblem{width:105px;top:48px;right:22px;opacity:.4}.game-list .runa-emblem{opacity:.26}.game-list .game h2{font-size:32px}.game-list .index{top:22px;font-size:9px}}
+@media(prefers-reduced-motion:reduce){.game-list .game,.game-list .emblem{transition:none}}

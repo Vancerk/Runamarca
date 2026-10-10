@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import '../mesa-nova/criador/budget-model.js';
-const app=fs.readFileSync('mesa-nova/app.js','utf8');
+const app=fs.readFileSync('mesa-nova/app.js','utf8'),damagePresentation=fs.readFileSync('mesa-nova/damage-presentation.js','utf8');
 function section(source,start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);}
 test('Sem evento de compra, a carta da mão não fica aguardando uma animação inexistente',()=>{
  const ctx={pendingArrival:['removed']};vm.createContext(ctx);vm.runInContext(section(app,'function trackArrivals','async function command'),ctx);
@@ -19,8 +19,8 @@ test('Uma conexão temporária preserva a vaga; token inválido e sala inexisten
 });
 function visualContext(){
  const node={dataset:{uid:'card'},classList:{remove(){}},remove(){},style:{visibility:'hidden'}};
- const ctx={state:{code:'AUD123',you:'me',matchId:'new',eventId:12,eventsFrom:1,events:[{id:11,type:'coin'},{id:12,type:'opening'}]},visualMatchKey:'AUD123:me:lobby',visualBooted:true,lastVisualId:10,lastBattleStep:'',visualGeneration:0,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:['card'],movingCards:new Set(['card']),deadVisuals:new Map(),displayedAttack:new Map(),pendingAttack:new Map(),displayedHealth:new Map(),pendingHealth:new Map(),displayedPatronHealth:new Map(),spellTargetRects:new Map(),mulliganDepartures:new Map(),$:()=>({replaceChildren(){}}),document:{querySelectorAll:()=>[node]},setTimeout(){},serverClockOffset:0,played:[],Date,animateEvent:async e=>{ctx.played.push(e.type);}};
- vm.createContext(ctx);vm.runInContext(section(app,'function resetVisualSession()','function tickCombat()'),ctx);return {ctx,node};
+ const ctx={state:{code:'AUD123',you:'me',matchId:'new',eventId:12,eventsFrom:1,events:[{id:11,type:'coin'},{id:12,type:'opening'}]},visualMatchKey:'AUD123:me:lobby',visualBooted:true,lastVisualId:10,lastBattleStep:'',visualGeneration:0,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:['card'],movingCards:new Set(['card']),deadVisuals:new Map(),displayedAttack:new Map(),pendingAttack:new Map(),displayedHealth:new Map(),pendingHealth:new Map(),displayedPatronHealth:new Map(),pendingPatronHealth:new Map(),spellTargetRects:new Map(),mulliganDepartures:new Map(),$:()=>({replaceChildren(){}}),document:{querySelectorAll:()=>[node]},setTimeout(){},serverClockOffset:0,played:[],Date,animateEvent:async e=>{ctx.played.push(e.type);}};
+ vm.createContext(ctx);vm.runInContext(damagePresentation,ctx);vm.runInContext(section(app,'function resetVisualSession()','function tickCombat()'),ctx);return {ctx,node};
 }
 test('Abertura de uma partida nova cancela efeitos antigos e ainda reproduz a moeda e a mão inicial',async()=>{
  const {ctx}=visualContext();ctx.resetVisualSession();ctx.queueEvents();await ctx.visualQueue;
@@ -36,7 +36,7 @@ test('Animação que não finaliza possui prazo de recuperação e é cancelada'
 });
 test('Reiniciar durante a abertura interrompe as compras animadas restantes',async()=>{
  const draws=[],ctx={visualGeneration:0,noticeQueue:Promise.resolve(),warmSounds:async()=>{},state:{players:[{id:'me'}]},seat:()=>({id:'me',hand:[{uid:'one'},{uid:'two'}]}),$:()=>({}),visualMessage(){},animateDraw:async uid=>{draws.push(uid);ctx.visualGeneration++;}};
- vm.createContext(ctx);vm.runInContext(section(app,'async function animateEvent','function resetVisualSession'),ctx);
+ vm.createContext(ctx);vm.runInContext(damagePresentation,ctx);vm.runInContext(section(app,'async function animateEvent','function resetVisualSession'),ctx);
  await ctx.animateEvent({type:'opening',playerId:'me'});assert.deepEqual(draws,['one']);
 });
 test('Um Banquete pendente não altera a vida da partida seguinte',async()=>{
@@ -62,15 +62,15 @@ test('Alvos de ataque seguem o dono e a posição reais nos dois lados da mesa',
  }
 });
 test('Par de ataques conserva os IDs e donos mesmo sem metadados da prévia visual',async()=>{
- let entry;const ctx={visualGeneration:0,state:{combat:{visual:[]}},animateLaneClash:async value=>{entry=value;}};
- vm.createContext(ctx);vm.runInContext(section(app,'async function animateDirectedStrike','function animateCasualties'),ctx);
+ let entry;const ctx={applyRetaliationUpdates:()=>{},visualGeneration:0,state:{combat:{visual:[]}},animateLaneClash:async value=>{entry=value;}};
+ vm.createContext(ctx);vm.runInContext(damagePresentation,ctx);vm.runInContext(section(app,'async function animateDirectedStrike','function animateCasualties'),ctx);
  await ctx.animateDirectedStrike({sourceId:'first',owner:'a',targetId:'second',targetOwner:'b',amount:3,lane:0,healthUpdates:[],pair:{sourceId:'second',owner:'b',targetId:'first',targetOwner:'a',amount:2}});
  assert.deepEqual(Array.from(entry.cards,c=>[c.uid,c.owner,c.attack]),[['first','a',3],['second','b',2]]);
 });
 test('Ataque usa um portador com origem e dimensões fixas, separado da aparência da carta',()=>{
  const layer={getBoundingClientRect:()=>({left:20,top:30}),append(){}},face={classList:{remove(){},add(){}},removeAttribute(){}},source={dataset:{uid:'fighter'},style:{},getBoundingClientRect:()=>({left:420,top:230,width:132,height:120})};
- const ctx={movingCards:new Set(),cloneVisual:()=>face,$:()=>layer,document:{createElement:()=>({style:{},dataset:{},append(){}})}};vm.createContext(ctx);vm.runInContext(section(app,'function visualCard','async function animateTransfer'),ctx);
- const copy=ctx.visualCard(source);assert.equal(copy.style.left,'400px');assert.equal(copy.style.top,'200px');assert.equal(copy.style.width,'132px');assert.equal(copy.style.height,'120px');assert.equal(copy.dataset.uid,'fighter');assert.equal(source.style.visibility,'hidden');assert.ok(ctx.movingCards.has('fighter'));
+ const ctx={state:{phase:'resolving',combat:{id:'battle-1'}},movingCards:new Set(),cloneVisual:()=>face,$:()=>layer,document:{createElement:()=>({style:{},dataset:{},append(){}})}};vm.createContext(ctx);vm.runInContext(section(app,'function visualCard','async function animateTransfer'),ctx);
+ const copy=ctx.visualCard(source);assert.equal(copy.style.left,'400px');assert.equal(copy.style.top,'200px');assert.equal(copy.style.width,'132px');assert.equal(copy.style.height,'120px');assert.equal(copy.dataset.uid,'fighter');assert.equal(copy.dataset.combatId,'battle-1');assert.equal(source.style.visibility,'hidden');assert.ok(ctx.movingCards.has('fighter'));
 });
 test('Fonte de ataque recusa carta de outro dono com o mesmo identificador',()=>{
  const fake={dataset:{uid:'eye'},closest:()=>({dataset:{owner:'self'}})},real={dataset:{uid:'eye'},closest:()=>({dataset:{owner:'rival'}})},ctx={document:{querySelectorAll:()=>[fake,real]}};

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs test/review-regression.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs && node mesa-nova/test-oficina.mjs && node mesa-nova/test-forja-protocolos.mjs && node mesa-nova/test-ruptura.mjs && node mesa-nova/test-fluxo.mjs && node mesa-nova/test-presentation.mjs && node mesa-nova/test-ui.mjs && node test/audit-regression.mjs",
+    "test": "node --test test/server.test.js test/accounts.test.mjs test/budget.test.mjs test/review-regression.test.mjs && node mesa-nova/test-deck-fatigue.mjs && node mesa-nova/test-v2.mjs && node mesa-nova/test.mjs && node mesa-nova/test-oficina.mjs && node mesa-nova/test-patron-powers.mjs && node mesa-nova/test-forja-protocolos.mjs && node mesa-nova/test-ruptura.mjs && node mesa-nova/test-fluxo.mjs && node mesa-nova/test-presentation.mjs && node mesa-nova/test-ui.mjs && node test/audit-regression.mjs && node mesa-nova/test-patron-health.mjs && node mesa-nova/test-mesa-layout.mjs && node mesa-nova/test-equipment.mjs && node mesa-nova/test-forge-ui.mjs && node mesa-nova/test-damage-fx.mjs && node mesa-nova/test-visual-ghosts.mjs && node mesa-nova/test-forja-variant.mjs && node --test test/access-session.test.mjs && node mesa-nova/test-interactions-audit.mjs && node mesa-nova/test-mechanic-entry.mjs",
     "test:torre": "node --test test/torre.test.mjs torre/backend/*.test.mjs"
   },
   "engines": {

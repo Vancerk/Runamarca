@@ -431,3 +431,6 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 .card.target-card,.target-options>.patron-card.target-card{width:147px;height:205.8px;flex:0 0 147px;aspect-ratio:5/7}
 #target-picker{max-height:calc(100dvh - 40px);overflow-y:auto}
 #hover-preview .patron-large{width:min(330px,calc((100dvh - 110px)*.7142857));height:auto;aspect-ratio:5/7;flex:none}
+
+/* Creator available from the entrance, deck selection and table. */
+.creator-entry{display:inline-block;margin:0 0 16px;padding:10px 14px;border:1px solid #b28c50;border-radius:5px;color:#efd59d;background:#362719;text-decoration:none;font:600 13px Inter,Arial,sans-serif}.creator-entry:hover,.creator-entry:focus-visible{background:#513a22;outline:2px solid #dfbd75;outline-offset:3px}

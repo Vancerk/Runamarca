@@ -97,7 +97,7 @@
     if(!card.positionOnly&& !card.directOnly){add('damage',{timing:'direct',target:'area',count:8,amount:e.direct_amount??e.amount,duration:'instant',group:'choice'});add('damage',{timing:'trap',target:'area',count:3,duration:'instant',group:'choice'});}
     else add('damage',{target:'area',count:timing==='trap'?3:8,amount:timing==='trap'?e.amount:e.direct_amount??e.amount,duration:'instant'});continue;
    }
-   if(e.op==='area_attack_modifier'){if(!card.positionOnly&&!card.directOnly){add('weaken',{timing:'direct',target:'area',count:8,duration:'permanent',group:'choice'});add('weaken',{timing:'trap',target:'area',count:3,duration:'permanent',group:'choice'});}else add('weaken',{target:'area',count:timing==='trap'?3:8,duration:'permanent'});continue;}
+   if(e.op==='area_attack_modifier'){if(!card.positionOnly&&!card.directOnly){add('weaken',{timing:'direct',target:'area',count:e.random_count||e.count||8,duration:'permanent',group:'choice'});add('weaken',{timing:'trap',target:'area',count:3,duration:'permanent',group:'choice'});}else add('weaken',{target:'area',count:timing==='trap'?3:8,duration:'permanent'});continue;}
    if(e.op==='choose_one'){for(const option of e.options||[])add(option.op||'heal',{target:option.target==='own_patron'?'patron':'ally',amount:option.amount,duration:'instant',group:'choice'});continue;}
    unknown();
   }

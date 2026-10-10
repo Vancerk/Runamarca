@@ -31,7 +31,7 @@ assert.equal(creature.speech,'A caçada começa!');assert.equal(creature.narrati
 assert.equal(view(stories,reader).players.find(p=>p.id===author.id).hand,undefined,'O texto narrativo não revela a mão rival');
 act(stories,author,{type:'confirmMulligan'},catalog);act(stories,reader,{type:'confirmMulligan'},catalog);
 stories.turn=author.id;author.mana=10;author.hand=[creature];
-act(stories,author,{type:'play',cardId:creature.uid},catalog);
+act(stories,author,{type:'play',cardId:creature.uid,targetId:creature.uid},catalog);
 assert.equal(stories.events.findLast(event=>event.type==='creature').speech,'A caçada começa!');
 assert.equal(view(stories,reader).players.find(p=>p.id===author.id).reserve[0].narrative,'Uma lembrança entre as brumas.');
 console.log('OK: fala e narrativa importadas sem nova arte, balão compartilhado e mão rival protegida.');

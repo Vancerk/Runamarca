@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RunaMarca — abertura de pacotes</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pacotes-preview.css">
+</head>
+<body class="pack-gallery">
+  <header class="pack-header">
+    <div><span class="pack-eyebrow">ATELIÊ DE ANIMAÇÕES</span><h1>RunaMarca <span>· Abertura de pacotes</span></h1></div>
+    <nav aria-label="Galerias"><a href="efeitos.html">Efeitos da mesa</a><a href="./">Voltar à mesa</a></nav>
+  </header>
+  <main class="pack-workshop">
+    <aside class="pack-tools">
+      <span class="pack-eyebrow">SELO DE RUNAMARCA</span>
+      <h2>Um segredo<br>dentro do papel.</h2>
+      <p>O selo se rompe.<br>Quatro cartas despertam.</p>
+      <button id="open-pack" class="pack-primary" disabled>Abrir pacote <span>↗</span></button>
+      <button id="reveal-all" hidden>Revelar as quatro</button>
+      <button id="reset-pack" disabled>Repetir abertura</button>
+      <div class="pack-settings">
+        <label for="pack-speed">Ritmo da demonstração</label>
+        <select id="pack-speed"><option value="1">Normal</option><option value="0.55">Câmera lenta</option></select>
+        <button id="pack-sound" aria-pressed="true">Som ligado</button>
+        <label for="pack-volume">Volume</label><input id="pack-volume" type="range" min="0" max="100" value="40">
+      </div>
+      <p class="pack-demo-note">Prévia visual com quatro cartas fixas. Não há sorteio nem entrega à coleção.</p>
+    </aside>
+    <section class="pack-stage" id="pack-stage" aria-label="Demonstração de abertura">
+      <div class="stage-ornament" aria-hidden="true">◈</div>
+      <div class="pack-floor" aria-hidden="true"></div>
+      <canvas id="pack-fx" aria-hidden="true"></canvas>
+      <button id="pack-hit" disabled aria-label="Abrir o pacote de RunaMarca"></button>
+      <div id="pack-cards" class="pack-cards" hidden></div>
+      <div class="stage-caption"><span class="pack-eyebrow" id="pack-step">PREPARANDO A PRÉVIA</span><p id="pack-status" role="status" aria-live="polite">Carregando o pacote e as cartas…</p></div>
+    </section>
+  </main>
+  <dialog id="pack-zoom"><button id="close-zoom" aria-label="Fechar ampliação">×</button><canvas id="zoom-card" width="1350" height="1890"></canvas></dialog>
+  <script src="card-visual.js"></script>
+  <script src="pacotes-preview.js"></script>
+</body>
+</html>
