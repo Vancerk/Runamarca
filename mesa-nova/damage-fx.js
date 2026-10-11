@@ -1,6 +1,6 @@
 /* Original effects drawn at display resolution. One canvas/RAF for all active effects. */
 (function(root){
- const timing={shard:[180,540,480],fulgor:[650,650,650],forge:[640,620,420],axe:[180,520,350],ember:[100,500,420],kinetic:[0,350,350],cone:[0,400,300],brutal:[0,150,400],heavy:[0,0,700],hammer:[0,0,650]};
+ const timing={wind:[180,450,600],shard:[180,540,480],fulgor:[650,650,650],forge:[640,620,420],axe:[180,520,350],ember:[100,500,420],kinetic:[0,350,350],cone:[0,400,300],brutal:[0,150,400],heavy:[0,0,700],hammer:[0,0,650]};
  let canvas,ctx,frame=0,noiseBuffer,audioMaster,audioOwner;const active=new Set();
  const point=node=>{const r=node?.getBoundingClientRect?.();return r?{x:r.left+r.width/2,y:r.top+r.height/2}:{x:innerWidth/2,y:innerHeight/2};};
  const clamp=n=>Math.max(0,Math.min(1,n)),ease=n=>n*n*(3-2*n),fract=n=>n-Math.floor(n),noise=n=>fract(Math.sin(n*127.1+311.7)*43758.5453);
@@ -49,7 +49,16 @@
   }
   if(elapsed>=hitAt)burst(e,after);
  }
- function paint(e,elapsed){if(e.kind==='fulgor'){paintFulgor(e,elapsed);return;}const [charge,flight,tail]=timing[e.kind]||timing.shard,hitAt=charge+flight,after=clamp((elapsed-hitAt)/tail),phase=clamp((elapsed-charge)/Math.max(1,flight));if(elapsed<charge){const p=clamp(elapsed/charge),a=e.from;
+ function paintWind(e,elapsed){
+  const [charge,flight,tail]=timing.wind,dx=e.to.x-e.from.x,dy=e.to.y-e.from.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,nx=-uy,ny=ux,travel=ease(clamp((elapsed-charge)/flight)),hitAt=charge+flight;
+  if(elapsed<charge){const t=clamp(elapsed/charge);ring(e.from,42*(1-t)+8,'#a9ecef',t,.55);halo(e.from,35,'#7abbcd',t*.45);return;}
+  if(elapsed<hitAt){const p={x:e.from.x+dx*travel,y:e.from.y+dy*travel};
+   for(let k=0;k<5;k++){const bend=20+k*8,reach=14+k*5,points=[];for(let i=0;i<=12;i++){const t=i/12-.5;points.push({x:p.x+nx*t*bend*3-ux*(t*t*reach*5+k*10),y:p.y+ny*t*bend*3-uy*(t*t*reach*5+k*10)});}line(points,k%2?'#e3faf5':'#78c5d4',2.2,1-k*.14);}
+   halo(p,45,'#79bac8',.25);return;
+  }
+  const t=clamp((elapsed-hitAt)/tail);for(let k=0;k<3;k++)ring(e.to,15+(70+k*18)*t,'#b2e1e8',(1-t)*.65,.65);motes(e.to,t,e.seed,'#aaa58d',24,95,65);
+ }
+ function paint(e,elapsed){if(e.kind==='wind'){paintWind(e,elapsed);return;}if(e.kind==='fulgor'){paintFulgor(e,elapsed);return;}const [charge,flight,tail]=timing[e.kind]||timing.shard,hitAt=charge+flight,after=clamp((elapsed-hitAt)/tail),phase=clamp((elapsed-charge)/Math.max(1,flight));if(elapsed<charge){const p=clamp(elapsed/charge),a=e.from;
   if(e.kind==='forge'&&e.donor){const drain=clamp(elapsed/480);for(let k=0;k<4;k++){const t=clamp(drain-k*.08),x=e.donor.x+(a.x-e.donor.x)*t,y=e.donor.y+(a.y-e.donor.y)*t+Math.sin(t*Math.PI)*22*(k%2?1:-1);halo({x,y},16,'#ffd273',.6);line([e.donor,{x,y}], '#f4b656',2,(1-drain)*.4);}ring(e.donor,12+38*drain,'#f7c56e',1-drain);halo(a,15+24*p,'#ffca6c',p);}
   else{const color=e.kind==='fulgor'?'#a99aff':e.kind==='ember'?'#ff9e39':'#ff3557';halo(a,22+(e.kind==='fulgor'?95:30)*p,color,p*.6);for(let i=0;i<7;i++){const angle=i*2.4+elapsed*.005,r=45*(1-p)+12;halo({x:a.x+Math.cos(angle)*r,y:a.y+Math.sin(angle)*r},3+6*p,color,.8);}if(e.kind==='fulgor'){ring(a,30+25*p,'#d9d0ff',p*.7);for(let i=0;i<4;i++){const angle=i*Math.PI/2+elapsed*.002;bolt(a,{x:a.x+Math.cos(angle)*(55+25*p),y:a.y+Math.sin(angle)*(55+25*p)},Math.floor(elapsed/65)+i,'#aa94ff',p*.65);}}}
   return;
@@ -69,7 +78,8 @@
   const at=ac.currentTime,pan=ac.createStereoPanner();pan.pan.value=Math.max(-.7,Math.min(.7,(p.x/innerWidth-.5)*1.4));pan.connect(audioMaster);
   const tone=(type,f1,f2,seconds,volume,delay=0)=>{const o=ac.createOscillator(),g=ac.createGain(),t=at+delay;o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+seconds);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(volume,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+seconds);o.connect(g).connect(pan);o.start(t);o.stop(t+seconds+.03);o.onended=()=>{o.disconnect();g.disconnect();};};
   const hiss=(filter,f1,f2,seconds,volume,delay=0)=>{if(!noiseBuffer){noiseBuffer=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const b=noiseBuffer.getChannelData(0);let brown=0;for(let i=0;i<b.length;i++){const white=Math.random()*2-1;brown=(brown+white*.02)/1.02;b[i]=white*.45+brown*3;}}const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain(),t=at+delay;s.buffer=noiseBuffer;f.type=filter;f.frequency.setValueAtTime(f1,t);f.frequency.exponentialRampToValueAtTime(f2,t+seconds);f.Q.value=1.1;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(volume,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+seconds);s.connect(f).connect(g).connect(pan);s.start(t);s.stop(t+seconds);s.onended=()=>{s.disconnect();f.disconnect();g.disconnect();};};
-  if(stage==='cast'){if(kind==='fulgor'){tone('sine',75,220,.62,.14);tone('triangle',180,600,.6,.025);hiss('bandpass',300,1800,.6,.09);tone('sine',260,1100,.63,.045,.64);tone('triangle',520,780,.56,.022,.65);hiss('bandpass',1500,3600,.64,.12,.65);}else if(kind==='forge'){hiss('bandpass',1600,450,.45,.11);tone('sine',530,180,.43,.07);}else if(kind==='axe'){hiss('bandpass',500,3800,.35,.09,.12);}else if(kind==='shard'){for(let i=0;i<4;i++)tone('sawtooth',700+i*180,1800+i*250,.035,.035,i*.045);hiss('highpass',4000,900,.22,.06);}else if(kind==='ember'){hiss('lowpass',2200,500,.4,.08);} }
+  if(stage==='cast'){if(kind==='wind'){hiss('bandpass',350,3200,.55,.15);tone('sine',80,190,.22,.05);}else if(kind==='fulgor'){tone('sine',75,220,.62,.14);tone('triangle',180,600,.6,.025);hiss('bandpass',300,1800,.6,.09);tone('sine',260,1100,.63,.045,.64);tone('triangle',520,780,.56,.022,.65);hiss('bandpass',1500,3600,.64,.12,.65);}else if(kind==='forge'){hiss('bandpass',1600,450,.45,.11);tone('sine',530,180,.43,.07);}else if(kind==='axe'){hiss('bandpass',500,3800,.35,.09,.12);}else if(kind==='shard'){for(let i=0;i<4;i++)tone('sawtooth',700+i*180,1800+i*250,.035,.035,i*.045);hiss('highpass',4000,900,.22,.06);}else if(kind==='ember'){hiss('lowpass',2200,500,.4,.08);} }
+  else if(kind==='wind'){tone('sine',105,32,.25,.17);hiss('lowpass',1400,180,.38,.13);hiss('highpass',3200,850,.15,.05);}
   else if(kind==='shard'){for(let i=0;i<6;i++)tone('square',1600+i*510,900+i*210,.04,.026,i*.018);hiss('highpass',8000,2200,.23,.14);tone('sine',130,48,.18,.16);}
   else if(kind==='fulgor'){tone('sine',90,28,.55,.25);tone('triangle',300,70,.32,.08);hiss('lowpass',4200,180,.65,.2);for(let i=0;i<9;i++)hiss('highpass',4500,1300,.035,.035,.08+i*.05);}
   else if(kind==='ember'){hiss('bandpass',2300,300,.34,.13);tone('sine',140,65,.16,.1);for(let i=0;i<4;i++)hiss('highpass',4400,1700,.03,.03,i*.07);}

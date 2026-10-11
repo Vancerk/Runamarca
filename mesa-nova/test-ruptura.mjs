@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {act,makeRoom,join,resolveCombat,view} from './game.mjs';
+import {unrestrictedReturn} from './test-return-fixture.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url))),deck=catalog.decks.find(d=>d.id==='ruptura-grupo');
-const card=(id,p,extra={})=>({...structuredClone(deck.cards.find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,baseStats:{...deck.cards.find(c=>c.id===id)},attackMod:0,damage:0,...extra});
+const card=(id,p,extra={})=>({...structuredClone([...deck.cards,...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,baseStats:{...[...deck.cards,...(catalog.additionalCards||[])].find(c=>c.id===id)},attackMod:0,damage:0,...extra});
 function setup(phase='prep'){const room=makeRoom('RUPT','A'),a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{deckData:deck,patron:{hp:100,maxHp:100,affinity:'ruptura'},mana:10,manaMax:10,deck:Array.from({length:20},()=>({uid:crypto.randomUUID()})),taunts:{}});Object.assign(room,{phase,first:a.id,turn:a.id,collectPreview:true});return {room,a,b};}
 const place=(p,c,lane)=>{p.reserve.push(c);p.formation[lane]=c.uid;return c;};
 assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.length,13);for(const c of deck.cards){assert.ok(c.effects.length);assert.ok(fs.existsSync(new URL(c.image,import.meta.url)));}assert.ok(!deck.cards.find(c=>c.id==='RG05').text.includes('Sacrifique'));
@@ -10,10 +11,10 @@ assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.card
  const {room,a,b}=setup();const spell=card('RG07',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid,targetId:'patron:'+b.id},catalog);assert.equal(b.patron.hp,99);assert.equal(a.mana,9);const event=room.events.find(e=>e.type==='spell');assert.equal(event.card.uid,spell.uid);assert.equal(view(room,b).events.find(e=>e.id===event.id).card.uid,spell.uid);assert.equal(event.targetPatronId,b.id);assert.equal(event.healthUpdates[0].patronId,b.id);
 }
 {
- const {room,a,b}=setup(),ally=card('RG01',a);a.reserve=[ally];const spell=card('RG04',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid,targetId:ally.uid},catalog);assert.equal(a.reserve.length,0);assert.equal(b.patron.hp,100);assert.equal(a.mana,4);
+ const {room,a,b}=setup(),ally=card('RG01',a);a.reserve=[ally];const spell=card('RG04',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid,targetId:ally.uid},catalog);assert.equal(a.reserve.length,0);assert.equal(b.patron.hp,100);assert.equal(a.mana,5);
 }
 {
- const {room,a}=setup(),gnoll=card('RG08',a);a.reserve=[gnoll];let spell=card('RG06',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(a.reserve.filter(c=>c.token).length,2);assert.equal(gnoll.attackMod,0);spell=card('RG06',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(a.reserve.filter(c=>c.token).length,4,'segunda cópia também cria duas fichas');assert.equal(gnoll.attackMod,0);a.formation[0]=gnoll.uid;a.formation[1]=a.reserve.find(c=>c.token).uid;room.phase="resolving";resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,3,"um único bônus de +1 com aliado pequeno no combate");assert.equal(gnoll.attackMod,0);
+ const {room,a}=setup(),gnoll=card('RG08',a);a.reserve=[gnoll];let spell=card('RG06',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(a.reserve.filter(c=>c.token).length,1,'primeira cópia cria uma ficha');assert.equal(gnoll.attackMod,0);spell=card('RG06',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(a.reserve.filter(c=>c.token).length,3,'segunda cópia cria duas fichas; três ao todo');assert.equal(gnoll.attackMod,0);a.formation[0]=gnoll.uid;a.formation[1]=a.reserve.find(c=>c.token).uid;room.phase="resolving";resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,3,"um único bônus de +1 com aliado pequeno no combate");assert.equal(gnoll.attackMod,0);
 }
 {
  const {room,a,b}=setup('resolving');const geo=place(a,card('RG01',a),0);place(b,card('RG11',b,{attack:1}),0);resolveCombat(room);assert.ok(a.discard.some(c=>c.uid===geo.uid));assert.equal(a.reserve.filter(c=>c.token).length,1,'gera ficha mesmo morrendo no combate');assert.equal(a.reserve.find(c=>c.token).subtype,'Geometro');
@@ -37,7 +38,7 @@ assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.card
  const {room,a,b}=setup('resolving'),source=card('RG13',a);b.patron.retaliation=3;a.reserve=[source];a.emanation=[source.uid];place(a,card('RG11',a),0);place(b,card('RG11',b),0);resolveCombat(room);assert.equal(b.patron.hp,99);assert.equal(b.patron.retaliation,0);assert.equal(room.directedSteps[0].retaliationDamage,1);assert.equal(room.directedSteps[0].retaliationUpdates[0].count,4);
 }
 {
- const {room,a,b}=setup(),spell=card('RG09',a),fighter=card('RG02',a),unused=card('RG01',a);a.hand=[spell];a.reserve=[fighter,unused];act(room,a,{type:'play',cardId:spell.uid},catalog);a.formation[0]=fighter.uid;room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,3);assert.equal(b.patron.hp,97);assert.equal(fighter.attackMod,0);assert.equal(unused.attackMod,0);assert.equal(a.pendingCombatAttack,undefined);
+ const {room,a,b}=setup(),spell=card('RG09',a),fighter=card('RG02',a),unused=card('RG01',a);a.hand=[spell];a.reserve=[fighter,unused];act(room,a,{type:'play',cardId:spell.uid},catalog);a.formation[0]=fighter.uid;room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,2);assert.equal(b.patron.hp,98);assert.equal(fighter.attackMod,0);assert.equal(unused.attackMod,0);assert.equal(a.pendingCombatAttack,undefined);
 }
 {
  const {room,a,b}=setup('resolving');a.patron.hp=49;place(a,card('RG12',a),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,5);assert.equal(b.patron.hp,95);
@@ -76,6 +77,7 @@ for(const location of ['reserve','emanation','combat']){
  a.formation=[null,geo.uid,null];b.formation=[null,blocker.uid,null];room.phase='resolving';resolveCombat(room);
  assert.equal(a.reserve.filter(c=>c.token).length,1,'reposicionar e bloquear novamente não renova a ficha');
  const bounceModel=catalog.decks.flatMap(d=>d.cards).find(c=>c.id==='FV13'),bounce={...structuredClone(bounceModel),uid:crypto.randomUUID(),modelId:bounceModel.id,owner:b.id};
+ unrestrictedReturn(bounce);
  room.phase='prep';room.turn=b.id;b.mana=10;b.hand=[bounce];act(room,b,{type:'play',cardId:bounce.uid,targetId:geo.uid},catalog);
  const returned=a.hand.find(c=>c.modelId==='RG01');assert.ok(returned);assert.equal(returned.blockedSummonUsed,undefined);
  room.turn=a.id;a.mana=10;act(room,a,{type:'play',cardId:returned.uid},catalog);a.formation=[returned.uid,null,null];b.formation=[blocker.uid,null,null];room.phase='resolving';resolveCombat(room);
@@ -94,6 +96,14 @@ for(const targetKind of ['ally','enemy','own-patron','enemy-patron']){
 }
 {
  const creator=JSON.parse(fs.readFileSync(new URL('./criador/prototipo.json',import.meta.url))),creatorDeck=creator.decks.find(d=>d.id===deck.id);
- for(const id of ['RG01','RG05','RG06','RG07','RG08'])assert.deepEqual(creatorDeck.cards.find(c=>c.id===id),deck.cards.find(c=>c.id===id),'criador e mesa devem usar a mesma carta');
+ for(const id of ['RG01','RG05','RG06','RG07','RG08'])assert.deepEqual(creatorDeck.cards.find(c=>c.id===id),[...deck.cards,...(catalog.additionalCards||[])].find(c=>c.id===id),'criador e mesa devem usar a mesma carta');
 }
 console.log('Rebalanceamento aprovado: Gnoll exige aliado pequeno no combate; Geômetro só no primeiro bloqueio por entrada; Estilhaço causa 1 a qualquer alvo; Rastreadora preservada.');
+
+// Chamados anteriores aumentam apenas a quantidade, não os atributos das fichas.
+{
+ const {room,a,b}=setup();a.discard.push(card('RG01',a),{modelId:'RG06-token',type:'creature',uid:crypto.randomUUID()});b.discard.push(card('RG06',b));
+ for(const expected of [1,2,3]){a.mana=10;const spell=card('RG06',a);a.hand=[spell];const prior=a.reserve.length;act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(a.reserve.length-prior,expected);}
+ assert.equal(a.reserve.length,6);assert.ok(a.reserve.every(c=>c.attack===1&&c.health===1&&c.subtype==='Tribal'));
+ a.mana=10;a.reserve=a.reserve.slice(0,7);a.reserve.push(card('RG01',a));const spell=card('RG06',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(a.reserve.length,8,'quantidade escalada respeita o limite de oito');
+}

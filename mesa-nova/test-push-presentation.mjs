@@ -1,0 +1,13 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const app=fs.readFileSync(new URL('./app.js',import.meta.url),'utf8'),presentation=fs.readFileSync(new URL('./damage-presentation.js',import.meta.url),'utf8');
+const code=app.slice(app.indexOf('function combatPlacements('),app.indexOf('function boardSeals('));
+const state={phase:'resolving',players:[{id:'a',formation:['x',null,null]},{id:'b',formation:[]}],combat:{id:'battle',startedAt:0,timeline:[{kind:'reveal',duration:1200},{kind:'magic',duration:2500,spell:{op:'push_right',cardId:'s',push:{movements:[{uid:'x',owner:'a',lane:1}]}}}]}};
+let now=0;const c={state,presentedPushes:new Map(),serverClockOffset:0,Date:{now:()=>now}};vm.createContext(c);vm.runInContext(code,c);
+now=1200+1973;assert.equal(c.combatPlacements().get('x').lane,0);now++;assert.equal(c.combatPlacements().get('x').lane,1,'Reconnect after impact recovers the moved position');
+c.presentedPushes.set('battle:s',false);now=5000;assert.equal(c.combatPlacements().get('x').lane,0,'Active presentation holds position during delayed effect');c.presentedPushes.set('battle:s',true);now=1300;assert.equal(c.combatPlacements().get('x').lane,1,'Reduced motion advances only after actual movement');
+let finish,updates=0,renders=0,cleanup=0;const node={dataset:{uid:'x'}},ctx={state,visualGeneration:1,tableCard:()=>node,document:{querySelector:()=>node},center:()=>({x:10,y:20}),visualCard:()=>node,safeFlight:()=>new Promise(resolve=>{finish=()=>{cleanup++;resolve();};}),combatPresentationCurrent:()=>true,renderBoard:()=>renders++,applyDamageHit:()=>updates++,impact(){}};
+vm.createContext(ctx);vm.runInContext(presentation,ctx);ctx.applyDamageHit=()=>updates++;
+const spell={cardId:'s',push:{targetId:'x',owner:'a',lane:1,movements:[{uid:'x',owner:'a',lane:1}]},healthUpdates:[{uid:'x',hp:0}]};
+let task=ctx.animatePushCollision(spell);assert.equal(updates,0);finish();await task;assert.equal(cleanup,1);assert.equal(renders,1);assert.equal(updates,1,'Lethal HP changes after the moving copy is cleaned');
+task=ctx.animatePushCollision(spell);ctx.visualGeneration++;finish();await task;assert.equal(updates,1,'Canceled animation does not update a later combat');
+console.log('Empurrão visual: origem preservada durante voo, destino após movimento, reconexão, movimento reduzido, morte e cancelamento aprovados.');

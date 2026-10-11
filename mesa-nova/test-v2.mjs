@@ -37,7 +37,7 @@ assert.equal(room.phase,'mulligan');
 act(room,b,{type:'confirmMulligan'},catalog);
 assert.equal(room.phase,'prep');
 
-const model=id=>catalog.decks.flatMap(d=>d.cards).find(c=>c.id===id);
+const model=id=>[...catalog.decks.flatMap(d=>d.cards),...(catalog.additionalCards||[])].find(c=>c.id===id);
 const instance=(id,p)=>({...structuredClone(model(id)),uid:`${id}-${Math.random()}`,modelId:id,owner:p.id,damage:0,attackMod:0});
 const scout=instance('R02',a);a.hand.push(scout);a.mana=10;
 act(room,a,{type:'play',cardId:scout.uid},catalog);

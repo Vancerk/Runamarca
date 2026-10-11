@@ -1,7 +1,8 @@
 .git
 node_modules
+runtime/
 test
 README.md
 
-torre/runtime
-torre/backend/data
+torre/runtime/
+torre/backend/data/

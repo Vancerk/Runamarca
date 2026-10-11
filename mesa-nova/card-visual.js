@@ -35,7 +35,7 @@ function round(ctx, x, y, w, h, r, fill, stroke, line = 1) {
 function formatRulesText(text){
  return String(text||'').replace(/(?<![\p{L}\p{N}_])(Ao entrar|Entrada|Revelação|Emanação|Direta|Preparada|Escolha um|Âncoragem|Ancoragem)\s*:/giu,(_,label)=>({ 'ao entrar':'Entrada','âncoragem':'Ancoragem' }[label.toLowerCase()]||label)+' —');
 }
-const mechanicPattern=/((?<![\p{L}\p{N}_])(?:Entrada|Revelação|Emanação|Iniciativa|Transpassar|Provocar|Adormecer|Ancoragem|Barreira|Vida Extra|Equipamento)(?![\p{L}\p{N}_]))/giu;
+const mechanicPattern=/((?<![\p{L}\p{N}_])(?:Entrada|Revelação|Emanação|Iniciativa|Transpassar|Provocar|Adormecer|Ancoragem|Barreira|Vida Extra|Equipamento|Silêncio|Silencie|Corrupção|Último Suspiro)(?![\p{L}\p{N}_]))/giu;
 function richRuns(text, allItalic = false) {
   const runs = []; let italic = allItalic; let part = '';
   for (const character of formatRulesText(text)) {

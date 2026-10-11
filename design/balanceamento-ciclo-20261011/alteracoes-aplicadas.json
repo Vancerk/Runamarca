@@ -1,0 +1,76 @@
+{
+  "input": "design/balanceamento-ciclo-20261011/candidato26.json",
+  "changes": [
+    {
+      "deck": "fluxo-virelion",
+      "id": "FV02",
+      "name": "Âncora Etérea",
+      "field": "quantity",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "deck": "fluxo-virelion",
+      "id": "FV03",
+      "name": "Aprendiz de Virelion",
+      "field": "quantity",
+      "before": 4,
+      "after": 3
+    },
+    {
+      "deck": "fluxo-virelion",
+      "id": "FV07",
+      "name": "Olho Flutuante",
+      "field": "cost",
+      "before": 2,
+      "after": 3
+    },
+    {
+      "deck": "fluxo-virelion",
+      "id": "FV13",
+      "name": "Evasão Dimensional",
+      "field": "text",
+      "before": "Devolva uma criatura da reserva inimiga à mão de seu dono. Ela perde dano e bônus e volta com os atributos originais.",
+      "after": "Devolva uma criatura inimiga da reserva com 4 ou mais de ataque à mão do dono. Compre 2 cartas."
+    },
+    {
+      "deck": "fluxo-virelion",
+      "id": "FV13",
+      "name": "Evasão Dimensional",
+      "field": "effects",
+      "before": [
+        {
+          "op": "return_to_hand",
+          "reset": true
+        }
+      ],
+      "after": [
+        {
+          "op": "return_to_hand",
+          "reset": true,
+          "min_attack": 4
+        },
+        {
+          "op": "draw",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "deck": "ruptura-grupo",
+      "id": "RG06",
+      "name": "Chamado da Tradição",
+      "field": "cost",
+      "before": 3,
+      "after": 2
+    },
+    {
+      "deck": "ruptura-grupo",
+      "id": "RG09",
+      "name": "Cólera Trifecta",
+      "field": "cost",
+      "before": 3,
+      "after": 2
+    }
+  ]
+}

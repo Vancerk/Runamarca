@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "characters": {
+    "lyrik": {
+      "name": "Lyrik Koltar",
+      "affinity": "forja",
+      "image": "patrons/bigorna-desperta-nova.png"
+    },
+    "marika": {
+      "name": "Marika Venn",
+      "affinity": "fluxo",
+      "image": "patrons/olho-dos-pactos-novo.png"
+    },
+    "dom": {
+      "name": "Dom, O Maioral",
+      "affinity": "ruptura",
+      "image": "patrons/dom-maioral.png"
+    }
+  },
+  "matchups": [
+    {
+      "id": "lyrik-marika",
+      "first": "lyrik",
+      "second": "marika",
+      "lines": [
+        {
+          "speaker": "lyrik",
+          "text": "A teoria aguenta o calor da minha forja, Marika?",
+          "audio": "audio/intro/lyrik-marika-abertura.mp3",
+          "durationSeconds": 2.84734375
+        },
+        {
+          "speaker": "marika",
+          "text": "Ela me ensinou a construir sem precisar ferir.",
+          "audio": "audio/intro/marika-lyrik-resposta.mp3",
+          "durationSeconds": 3.2653020833333333
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Então mostre. Eu ainda tenho muito a aperfeiçoar.",
+          "audio": "audio/intro/lyrik-marika-fecho.mp3",
+          "durationSeconds": 4.806520833333333
+        }
+      ]
+    },
+    {
+      "id": "marika-lyrik",
+      "first": "marika",
+      "second": "lyrik",
+      "lines": [
+        {
+          "speaker": "marika",
+          "text": "Lyrik, suas criações também lhe ensinam?",
+          "audio": "audio/intro/marika-lyrik-abertura.mp3",
+          "durationSeconds": 3.3175416666666666
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Cada falha me custa uma lâmina.",
+          "audio": "audio/intro/lyrik-marika-resposta.mp3",
+          "durationSeconds": 2.0636666666666668
+        },
+        {
+          "speaker": "marika",
+          "text": "Desde que não lhe custe a vontade de aprender.",
+          "audio": "audio/intro/marika-lyrik-fecho.mp3",
+          "durationSeconds": 2.9779583333333335
+        }
+      ]
+    },
+    {
+      "id": "lyrik-dom",
+      "first": "lyrik",
+      "second": "dom",
+      "lines": [
+        {
+          "speaker": "lyrik",
+          "text": "Aço bem forjado não precisa dessa brutalidade, Dom.",
+          "audio": "audio/intro/lyrik-dom-abertura.mp3",
+          "durationSeconds": 3.50040625
+        },
+        {
+          "speaker": "dom",
+          "text": "Minha corrente funciona muito bem com ela.",
+          "audio": "audio/intro/dom-lyrik-resposta.mp3",
+          "durationSeconds": 2.298770833333333
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Funcionar é pouco. Até sucata faz barulho.",
+          "audio": "audio/intro/lyrik-dom-fecho.mp3",
+          "durationSeconds": 4.4408125
+        }
+      ]
+    },
+    {
+      "id": "dom-lyrik",
+      "first": "dom",
+      "second": "lyrik",
+      "lines": [
+        {
+          "speaker": "dom",
+          "text": "Anão, teu juramento aguenta uma pancada?",
+          "audio": "audio/intro/dom-lyrik-abertura.mp3",
+          "durationSeconds": 2.481625
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Aguenta, e eu quero ver se você aguenta a resposta.",
+          "audio": "audio/intro/lyrik-dom-resposta.mp3",
+          "durationSeconds": 4.15346875
+        },
+        {
+          "speaker": "dom",
+          "text": "Então faz teu pior! Eu não vim admirar tua forja.",
+          "audio": "audio/intro/dom-lyrik-fecho.mp3",
+          "durationSeconds": 3.44815625
+        }
+      ]
+    },
+    {
+      "id": "marika-dom",
+      "first": "marika",
+      "second": "dom",
+      "lines": [
+        {
+          "speaker": "marika",
+          "text": "Seu ódio não precisa decidir quem você será, Dom.",
+          "audio": "audio/intro/marika-dom-abertura.mp3",
+          "durationSeconds": 3.631010416666667
+        },
+        {
+          "speaker": "dom",
+          "text": "Guarda a lição. Magia é muleta dos fracos.",
+          "audio": "audio/intro/dom-marika-resposta.mp3",
+          "durationSeconds": 3.6832604166666667
+        },
+        {
+          "speaker": "marika",
+          "text": "Quando quiser aprender, minha porta estará aberta.",
+          "audio": "audio/intro/marika-dom-fecho.mp3",
+          "durationSeconds": 3.3175416666666666
+        }
+      ]
+    },
+    {
+      "id": "dom-marika",
+      "first": "dom",
+      "second": "marika",
+      "lines": [
+        {
+          "speaker": "dom",
+          "text": "Sem magia, o que sobra de você, professora?",
+          "audio": "audio/intro/dom-marika-abertura.mp3",
+          "durationSeconds": 3.3175416666666666
+        },
+        {
+          "speaker": "marika",
+          "text": "Tudo o que levei uma vida para aprender.",
+          "audio": "audio/intro/marika-dom-resposta.mp3",
+          "durationSeconds": 2.2465208333333333
+        },
+        {
+          "speaker": "dom",
+          "text": "Vamos ver quanto disso aguenta uma porrada.",
+          "audio": "audio/intro/dom-marika-fecho.mp3",
+          "durationSeconds": 2.429385416666667
+        }
+      ]
+    }
+  ]
+}

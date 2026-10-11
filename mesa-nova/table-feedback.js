@@ -46,10 +46,11 @@ async function highlightUsedSpell(card,owner,{effectMs=0,readingOnly=false}={}){
 }
 let forgingClickBusy=false;
 async function choosePatronPower(power){
+ if(typeof hidePatronPowerZoom==='function')hidePatronPowerZoom();
  const self=seat();if(!self||state.spectator||state.phase!=='prep'||state.turn!==self.id)return;const clickSession=[state.code,state.matchId,state.round,state.turn].join(':');
  if(forgingClickBusy||commandBusy)return;
  if(typeof hidePatronPowerZoom==='function')hidePatronPowerZoom();
- if(['forjar-armadura','forjar-arma'].includes(power.id)){forgingClickBusy=true;try{await playForgeHammer(self.id,power.id,{localClick:true});}finally{forgingClickBusy=false;}if(state?.phase!=='prep'||state.turn!==self.id||state.spectator||clickSession!==[state.code,state.matchId,state.round,state.turn].join(':'))return;}
+ if(['forjar-armadura','forjar-arma'].includes(power.id)){forgingClickBusy=true;try{await playForgeHammer(self.id,power.id,{localClick:true,onImpact:()=>{if(state?.phase!=='prep'||state.turn!==self.id||state.spectator||clickSession!==[state.code,state.matchId,state.round,state.turn].join(':'))return;if(power.id==='forjar-arma')showForgePicker('cost',null,power);else void command({type:'patronPower',powerId:power.id});}});}finally{forgingClickBusy=false;}return;}
  if(power.id==='forjar-arma'){showForgePicker('cost',null,power);return;}
  if(power.id==='forjar-armadura'){command({type:'patronPower',powerId:power.id});return;}
  showTargetPicker(power,self.reserve.filter(c=>c.damage<c.health).map(c=>c.uid),targetId=>{

@@ -1,0 +1,402 @@
+{
+  "scope": "Somente texto de regras; efeitos, atributos, composição, narrativas e falas preservados.",
+  "exceptions": {
+    "silence": "Sem frase sobre efeitos novos na apresentação.",
+    "fulgor": "Imunidade à anulação mantida para futuros counters.",
+    "coating": "Próximo efeito, sem repetir remoção de proteção."
+  },
+  "changes": [
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL08",
+      "name": "Monge Rúnico",
+      "before": "Revelação — escolha um: reduza em 2 o ataque da criatura inimiga na posição à frente; ou conceda +1/+1 ao aliado na posição imediatamente à direita. Ambos os efeitos duram apenas este combate.",
+      "after": "Revelação — escolha um: reduza em 2 o ataque do inimigo à frente; ou conceda +1/+1 ao aliado imediatamente à direita. Apenas neste combate."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL10",
+      "name": "Atualização",
+      "before": "Conceda +1/+1 a uma criatura aliada permanentemente.",
+      "after": "Conceda +1/+1 permanentemente a uma criatura aliada."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL11",
+      "name": "v.3.r.0.n.1.c.a",
+      "before": "Na formação, escolha um modo para este combate. Assalto — tem +2 de ataque; aliados nas posições adjacentes têm +1 de ataque. Escolta — tem +2 de vida; aliados nas posições adjacentes têm +1 de vida.",
+      "after": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL14",
+      "name": "Geada Implacável",
+      "before": "Escolha um — reduza permanentemente em 1 o ataque e a vida de até 3 criaturas inimigas aleatórias na reserva do oponente; ou prepare em uma posição inimiga para reduzir permanentemente em 1 o ataque e a vida de todas as criaturas inimigas nas posições de combate.",
+      "after": "Escolha um — reduza permanentemente em 1 o ataque e a vida de até 3 criaturas aleatórias da reserva inimiga; ou prepare em uma posição inimiga para aplicar essa redução a todas as criaturas inimigas em combate."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL15",
+      "name": "Bomba Cinética",
+      "before": "A criatura alvo que você controla causa dano igual ao seu ataque à criatura alvo do oponente.",
+      "after": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV01",
+      "name": "Fogo Fátuo",
+      "before": "Entrada — escolha uma criatura e a silencie. Silêncio remove o texto de jogo, encantamentos e habilidades atuais do alvo.",
+      "after": "Entrada — silencie uma criatura à sua escolha."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV03",
+      "name": "Aprendiz de Virelion",
+      "before": "Entrada — escolha uma criatura inimiga. Na próxima magia que você jogar com o alvo em campo, cause 1 de dano a ele. Este efeito acontece apenas uma vez enquanto esta Aprendiz estiver em campo.",
+      "after": "Entrada — marque uma criatura inimiga. Ao jogar sua próxima magia, cause 1 de dano à criatura marcada. Se ela sair de campo antes do disparo, escolha outra. Uma vez enquanto esta Aprendiz estiver em campo."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV16",
+      "name": "Drenar Essência",
+      "before": "Prepare em uma posição inimiga. Ao ativar, empurre a criatura revelada para a posição à direita. Se estiver ocupada, a criatura permanece onde está e ambas recebem 1 de dano. Se estiver vazia, a criatura se move e recebe 1 de dano. Na última posição, ela permanece e recebe 1 de dano.",
+      "after": "Prepare em uma posição inimiga. Ao ativar, empurre a criatura revelada uma posição à direita e cause 1 de dano a ela. Se o destino estiver ocupado, ela não se move; cause também 1 de dano ao ocupante. Na última posição, ela não se move."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV05",
+      "name": "Banquete dos Heróis",
+      "before": "Conceda permanentemente +1/+1 a todas as criaturas aliadas em campo para cada 2 magias que já estiverem no seu Nartvanyr (metade, arredondada para baixo).",
+      "after": "Conceda +1/+1 permanentemente a todas as criaturas aliadas em campo para cada 2 magias no seu Nartvanyr."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV06",
+      "name": "Bruxa da Floresta Negra",
+      "before": "O primeiro inimigo que atacar esta criatura recebe Corrupção: após esse ataque e cada ataque futuro, perde 1 de ataque permanentemente, mesmo após a Bruxa sair de campo.",
+      "after": "A primeira criatura inimiga que atacar esta criatura recebe Corrupção após o ataque."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV07",
+      "name": "Olho Flutuante",
+      "before": "Revelação — Este Olho e o inimigo na posição oposta não atacam neste combate e ficam presos nessas posições até o combate seguinte, quando atacam normalmente. A trava não se repete nesse segundo combate.",
+      "after": "Revelação — esta criatura e o inimigo à frente não atacam neste combate e permanecem nessas posições até o combate seguinte. Nesse combate, atacam normalmente e este efeito não se repete."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV15",
+      "name": "Ithalion, Mestre dos Selos",
+      "before": "Revelação — Crie um selo em uma posição aliada e outro em uma posição inimiga, à sua escolha. Enquanto Ithalion viver, criaturas inimigas reveladas no selo trocam de lado com a criatura no outro selo e executam suas ações pelo lado de chegada. Após o combate, voltam ao dono.",
+      "after": "Revelação — escolha uma posição de cada lado e vincule-as com selos enquanto Ithalion estiver vivo. A criatura inimiga revelada no selo troca de lado com o ocupante do outro selo, se houver. As criaturas agem pelo lado de chegada neste combate e depois retornam aos donos."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "RG02",
+      "name": "Incursora Furiosa",
+      "before": "Revelação  — Causa 1 de dano ao bloqueador.",
+      "after": "Revelação — cause 1 de dano à criatura inimiga à frente."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "RG03",
+      "name": "Crias Incandescentes",
+      "before": "*Último Suspiro* — Cause 1 de dano ao Patrono alvo.",
+      "after": "Último Suspiro — cause 1 de dano ao Patrono inimigo."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "RG04",
+      "name": "Fulgor Final",
+      "before": "Esta magia causa 6 de dano a qualquer alvo e não pode ser anulada.",
+      "after": "Cause 6 de dano a qualquer alvo. Não pode ser anulada."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "RG05",
+      "name": "Rastreadora da Mata Sussurrante",
+      "before": "Os outros Tribais que você controla recebem +1/+1.",
+      "after": "Os outros Tribais aliados têm +1/+1."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "RG08",
+      "name": "Comandante Gnoll",
+      "before": "Revelação — se outra criatura aliada numa posição de combate tiver ataque igual ou menor que 1, Comandante Gnoll recebe +1 de ataque neste combate. Este efeito acontece uma única vez por combate.",
+      "after": "Revelação — se outra criatura aliada em combate tiver 1 ou menos de ataque, receba +1 de ataque neste combate."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "RG12",
+      "name": "Debulhador da Linha de Frente",
+      "before": "Caso seu Patrono esteja com menos da metade da vida, Debulhador da Linha de Frente recebe +1 em Ataque.",
+      "after": "Enquanto seu Patrono tiver menos da metade da vida máxima, esta criatura tem +1 de ataque."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "RG13",
+      "name": "Bruxo da Retaliaçãozinha",
+      "before": "Emanação — quando uma criatura sua com ataque igual ou menor que 2 atacar, acumule 1 Retaliação. A cada 4 acúmulos, consuma-os e cause 1 de dano ao Patrono inimigo.",
+      "after": "Emanação — sempre que uma criatura aliada com 2 ou menos de ataque atacar, acumule 1 Retaliação. A cada 4 acúmulos, consuma-os e cause 1 de dano ao Patrono inimigo."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL10",
+      "name": "Atualização",
+      "before": "Conceda +1/+1 a uma criatura aliada permanentemente.",
+      "after": "Conceda +1/+1 permanentemente a uma criatura aliada."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL15",
+      "name": "Bomba Cinética",
+      "before": "A criatura alvo que você controla causa dano igual ao seu ataque à criatura alvo do oponente.",
+      "after": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FL11",
+      "name": "v.3.r.0.n.1.c.a",
+      "before": "Na formação, escolha um modo para este combate. Assalto — tem +2 de ataque; aliados nas posições adjacentes têm +1 de ataque. Escolta — tem +2 de vida; aliados nas posições adjacentes têm +1 de vida.",
+      "after": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FEX03",
+      "name": "Engrenauta Defeituoso",
+      "before": "O primeiro dano que essa criatura receber será dobrado.",
+      "after": "O primeiro dano recebido por esta criatura é dobrado."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FEX04",
+      "name": "Inversor",
+      "before": "Troque permanentemente o ataque atual e a vida atual da criatura alvo. A vida máxima passa a ser o novo valor de vida.",
+      "after": "Troque permanentemente o ataque e a vida atuais de uma criatura à sua escolha. Sua vida máxima se torna o novo valor de vida."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FEX05",
+      "name": "Esteira de Testes",
+      "before": "Conceda Iniciativa à criatura aliada alvo.",
+      "after": "Conceda Iniciativa a uma criatura aliada à sua escolha."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FEX06",
+      "name": "Engrenauta Persistente",
+      "before": "Uma vez por partida, quando uma magia inimiga devolver esta criatura à sua mão, ela conserva seus bônus permanentes de ataque e vida.",
+      "after": "Na primeira vez nesta partida que uma magia inimiga devolver esta criatura à sua mão, conserve seus bônus permanentes de ataque e vida."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FEX07",
+      "name": "Revestimento Rúnico",
+      "before": "Conceda +1 de vida permanentemente a uma criatura aliada. A primeira magia inimiga que tentaria adormecê-la, ancorá-la ou devolvê-la à mão tem esse efeito impedido. Depois, remova esta proteção.",
+      "after": "Conceda +1 de vida permanentemente a uma criatura aliada. Impeça o próximo efeito de uma magia inimiga que tentaria adormecê-la, ancorá-la ou devolvê-la à mão."
+    },
+    {
+      "file": "mesa-nova/cartas.json",
+      "id": "FV04",
+      "name": "Auramora",
+      "before": "Emanação — Escolha uma posição de combate aliada. A criatura nessa posição recebe +1 de vida enquanto esta Emanação estiver ativa.",
+      "after": "Emanação — escolha uma posição de combate aliada. A criatura nessa posição tem +1 de vida enquanto esta Emanação estiver ativa."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL08",
+      "name": "Monge Rúnico",
+      "before": "Revelação — escolha um: reduza em 2 o ataque da criatura inimiga na posição à frente; ou conceda +1/+1 ao aliado na posição imediatamente à direita. Ambos os efeitos duram apenas este combate.",
+      "after": "Revelação — escolha um: reduza em 2 o ataque do inimigo à frente; ou conceda +1/+1 ao aliado imediatamente à direita. Apenas neste combate."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL10",
+      "name": "Atualização",
+      "before": "Conceda +1/+1 a uma criatura aliada permanentemente.",
+      "after": "Conceda +1/+1 permanentemente a uma criatura aliada."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL11",
+      "name": "v.3.r.0.n.1.c.a",
+      "before": "Na formação, escolha um modo para este combate. Assalto — tem +2 de ataque; aliados nas posições adjacentes têm +1 de ataque. Escolta — tem +2 de vida; aliados nas posições adjacentes têm +1 de vida.",
+      "after": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL14",
+      "name": "Geada Implacável",
+      "before": "Escolha um — reduza permanentemente em 1 o ataque e a vida de até 3 criaturas inimigas aleatórias na reserva do oponente; ou prepare em uma posição inimiga para reduzir permanentemente em 1 o ataque e a vida de todas as criaturas inimigas nas posições de combate.",
+      "after": "Escolha um — reduza permanentemente em 1 o ataque e a vida de até 3 criaturas aleatórias da reserva inimiga; ou prepare em uma posição inimiga para aplicar essa redução a todas as criaturas inimigas em combate."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL15",
+      "name": "Bomba Cinética",
+      "before": "A criatura alvo que você controla causa dano igual ao seu ataque à criatura alvo do oponente.",
+      "after": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV01",
+      "name": "Fogo Fátuo",
+      "before": "Entrada — escolha uma criatura e a silencie. Silêncio remove o texto de jogo, encantamentos e habilidades atuais do alvo.",
+      "after": "Entrada — silencie uma criatura à sua escolha."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV03",
+      "name": "Aprendiz de Virelion",
+      "before": "Entrada — escolha uma criatura inimiga. Na próxima magia que você jogar com o alvo em campo, cause 1 de dano a ele. Este efeito acontece apenas uma vez enquanto esta Aprendiz estiver em campo.",
+      "after": "Entrada — marque uma criatura inimiga. Ao jogar sua próxima magia, cause 1 de dano à criatura marcada. Se ela sair de campo antes do disparo, escolha outra. Uma vez enquanto esta Aprendiz estiver em campo."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV16",
+      "name": "Drenar Essência",
+      "before": "Prepare em uma posição inimiga. Ao ativar, empurre a criatura revelada para a posição à direita. Se estiver ocupada, a criatura permanece onde está e ambas recebem 1 de dano. Se estiver vazia, a criatura se move e recebe 1 de dano. Na última posição, ela permanece e recebe 1 de dano.",
+      "after": "Prepare em uma posição inimiga. Ao ativar, empurre a criatura revelada uma posição à direita e cause 1 de dano a ela. Se o destino estiver ocupado, ela não se move; cause também 1 de dano ao ocupante. Na última posição, ela não se move."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV05",
+      "name": "Banquete dos Heróis",
+      "before": "Conceda permanentemente +1/+1 a todas as criaturas aliadas em campo para cada 2 magias que já estiverem no seu Nartvanyr (metade, arredondada para baixo).",
+      "after": "Conceda +1/+1 permanentemente a todas as criaturas aliadas em campo para cada 2 magias no seu Nartvanyr."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV06",
+      "name": "Bruxa da Floresta Negra",
+      "before": "O primeiro inimigo que atacar esta criatura recebe Corrupção: após esse ataque e cada ataque futuro, perde 1 de ataque permanentemente, mesmo após a Bruxa sair de campo.",
+      "after": "A primeira criatura inimiga que atacar esta criatura recebe Corrupção após o ataque."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV07",
+      "name": "Olho Flutuante",
+      "before": "Revelação — Este Olho e o inimigo na posição oposta não atacam neste combate e ficam presos nessas posições até o combate seguinte, quando atacam normalmente. A trava não se repete nesse segundo combate.",
+      "after": "Revelação — esta criatura e o inimigo à frente não atacam neste combate e permanecem nessas posições até o combate seguinte. Nesse combate, atacam normalmente e este efeito não se repete."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV15",
+      "name": "Ithalion, Mestre dos Selos",
+      "before": "Revelação — Crie um selo em uma posição aliada e outro em uma posição inimiga, à sua escolha. Enquanto Ithalion viver, criaturas inimigas reveladas no selo trocam de lado com a criatura no outro selo e executam suas ações pelo lado de chegada. Após o combate, voltam ao dono.",
+      "after": "Revelação — escolha uma posição de cada lado e vincule-as com selos enquanto Ithalion estiver vivo. A criatura inimiga revelada no selo troca de lado com o ocupante do outro selo, se houver. As criaturas agem pelo lado de chegada neste combate e depois retornam aos donos."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "RG02",
+      "name": "Incursora Furiosa",
+      "before": "Revelação  — Causa 1 de dano ao bloqueador.",
+      "after": "Revelação — cause 1 de dano à criatura inimiga à frente."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "RG03",
+      "name": "Crias Incandescentes",
+      "before": "*Último Suspiro* — Cause 1 de dano ao Patrono alvo.",
+      "after": "Último Suspiro — cause 1 de dano ao Patrono inimigo."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "RG04",
+      "name": "Fulgor Final",
+      "before": "Esta magia causa 6 de dano a qualquer alvo e não pode ser anulada.",
+      "after": "Cause 6 de dano a qualquer alvo. Não pode ser anulada."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "RG05",
+      "name": "Rastreadora da Mata Sussurrante",
+      "before": "Os outros Tribais que você controla recebem +1/+1.",
+      "after": "Os outros Tribais aliados têm +1/+1."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "RG08",
+      "name": "Comandante Gnoll",
+      "before": "Revelação — se outra criatura aliada numa posição de combate tiver ataque igual ou menor que 1, Comandante Gnoll recebe +1 de ataque neste combate. Este efeito acontece uma única vez por combate.",
+      "after": "Revelação — se outra criatura aliada em combate tiver 1 ou menos de ataque, receba +1 de ataque neste combate."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "RG12",
+      "name": "Debulhador da Linha de Frente",
+      "before": "Caso seu Patrono esteja com menos da metade da vida, Debulhador da Linha de Frente recebe +1 em Ataque.",
+      "after": "Enquanto seu Patrono tiver menos da metade da vida máxima, esta criatura tem +1 de ataque."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "RG13",
+      "name": "Bruxo da Retaliaçãozinha",
+      "before": "Emanação — quando uma criatura sua com ataque igual ou menor que 2 atacar, acumule 1 Retaliação. A cada 4 acúmulos, consuma-os e cause 1 de dano ao Patrono inimigo.",
+      "after": "Emanação — sempre que uma criatura aliada com 2 ou menos de ataque atacar, acumule 1 Retaliação. A cada 4 acúmulos, consuma-os e cause 1 de dano ao Patrono inimigo."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL10",
+      "name": "Atualização",
+      "before": "Conceda +1/+1 a uma criatura aliada permanentemente.",
+      "after": "Conceda +1/+1 permanentemente a uma criatura aliada."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL15",
+      "name": "Bomba Cinética",
+      "before": "A criatura alvo que você controla causa dano igual ao seu ataque à criatura alvo do oponente.",
+      "after": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FL11",
+      "name": "v.3.r.0.n.1.c.a",
+      "before": "Na formação, escolha um modo para este combate. Assalto — tem +2 de ataque; aliados nas posições adjacentes têm +1 de ataque. Escolta — tem +2 de vida; aliados nas posições adjacentes têm +1 de vida.",
+      "after": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FEX03",
+      "name": "Engrenauta Defeituoso",
+      "before": "O primeiro dano que essa criatura receber será dobrado.",
+      "after": "O primeiro dano recebido por esta criatura é dobrado."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FEX04",
+      "name": "Inversor",
+      "before": "Troque permanentemente o ataque atual e a vida atual da criatura alvo. A vida máxima passa a ser o novo valor de vida.",
+      "after": "Troque permanentemente o ataque e a vida atuais de uma criatura à sua escolha. Sua vida máxima se torna o novo valor de vida."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FEX05",
+      "name": "Esteira de Testes",
+      "before": "Conceda Iniciativa à criatura aliada alvo.",
+      "after": "Conceda Iniciativa a uma criatura aliada à sua escolha."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FEX06",
+      "name": "Engrenauta Persistente",
+      "before": "Uma vez por partida, quando uma magia inimiga devolver esta criatura à sua mão, ela conserva seus bônus permanentes de ataque e vida.",
+      "after": "Na primeira vez nesta partida que uma magia inimiga devolver esta criatura à sua mão, conserve seus bônus permanentes de ataque e vida."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FEX07",
+      "name": "Revestimento Rúnico",
+      "before": "Conceda +1 de vida permanentemente a uma criatura aliada. A primeira magia inimiga que tentaria adormecê-la, ancorá-la ou devolvê-la à mão tem esse efeito impedido. Depois, remova esta proteção.",
+      "after": "Conceda +1 de vida permanentemente a uma criatura aliada. Impeça o próximo efeito de uma magia inimiga que tentaria adormecê-la, ancorá-la ou devolvê-la à mão."
+    },
+    {
+      "file": "mesa-nova/criador/prototipo.json",
+      "id": "FV04",
+      "name": "Auramora",
+      "before": "Emanação — Escolha uma posição de combate aliada. A criatura nessa posição recebe +1 de vida enquanto esta Emanação estiver ativa.",
+      "after": "Emanação — escolha uma posição de combate aliada. A criatura nessa posição tem +1 de vida enquanto esta Emanação estiver ativa."
+    }
+  ]
+}

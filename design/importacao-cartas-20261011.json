@@ -1,0 +1,56 @@
+[
+  {
+    "id": "FL13",
+    "name": "Toque Gélido",
+    "image": "art/forja-personalizada/toque-gelido.jpg",
+    "bytes": 30369,
+    "sha256": "4197fc999bcb35d259b09ebf551b3d9318e35d1619e9ab82c6f69b9c44e0c02b",
+    "entries": [
+      {
+        "deck": "forja-oficina-lyrik",
+        "copies": 2,
+        "previousText": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida permanentemente.",
+        "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida."
+      },
+      {
+        "deck": "forja-oficina-experimental",
+        "copies": 1,
+        "previousText": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida permanentemente.",
+        "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida."
+      },
+      {
+        "deck": "forja-oficina-lyrik",
+        "copies": 2,
+        "previousText": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida permanentemente.",
+        "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida."
+      },
+      {
+        "deck": "forja-oficina-experimental",
+        "copies": 1,
+        "previousText": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida permanentemente.",
+        "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida."
+      }
+    ]
+  },
+  {
+    "id": "FL19",
+    "name": "Voltando para o fundamental",
+    "image": "art/forja-personalizada/voltando-para-o-fundamental.jpg",
+    "bytes": 108593,
+    "sha256": "9da5866903e95c55173aba45ed1a57c9382ac850cb836045803dd5b02e543d20",
+    "entries": [
+      {
+        "deck": "forja-oficina-lyrik",
+        "copies": 1,
+        "previousText": "Altere permanentemente a vida máxima e atual de uma criatura inimiga para 1.",
+        "text": "Altera a vida de uma criatura inimiga para 1."
+      },
+      {
+        "deck": "forja-oficina-lyrik",
+        "copies": 1,
+        "previousText": "Altere permanentemente a vida máxima e atual de uma criatura inimiga para 1.",
+        "text": "Altera a vida de uma criatura inimiga para 1."
+      }
+    ]
+  }
+]

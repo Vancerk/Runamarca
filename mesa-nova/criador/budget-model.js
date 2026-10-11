@@ -90,6 +90,7 @@
     if(e.draw_on_kill){unknown();continue;}add(e.op,{duration:'instant'});
     if(e.allow_patron){rows.at(-1).group='choice';add('heal',{target:'patron',duration:'instant',group:'choice'});}continue;
    }
+   if(e.healthAmount&&['attack_modifier','area_attack_modifier'].includes(e.op)){unknown();continue;}
    if(e.op==='attack_modifier'){add(e.amount<0?'weaken':'attack');continue;}
    if(['stat_buff','area_stat_buff'].includes(e.op)){const area=e.op==='area_stat_buff'?{target:'area',count:10}:{};add('attack',{amount:e.attack,duration:'permanent',...area});add('health',{amount:e.health,duration:'permanent',...area});continue;}
    if(['lane_attack_aura','lane_health_aura'].includes(e.op)){add(e.op==='lane_health_aura'?'health':'attack',{timing:'emanation',target:'fixedAlly',duration:'round',name:'Emanação: +'+e.amount+' de '+(e.op==='lane_health_aura'?'vida':'ataque')+' na posição '+(e.lane+1)});continue;}

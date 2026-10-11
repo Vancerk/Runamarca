@@ -223,19 +223,19 @@
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
         },
         {
-          "id": "FL03",
-          "name": "Anão Taverneiro",
+          "id": "FL21",
+          "name": "Rúnico Eficiente",
           "type": "creature",
           "affinity": "forja",
           "cost": 2,
           "quantity": 2,
           "rarity": "lacaio",
-          "subtype": "anão",
+          "subtype": "Rúnico",
           "attack": 1,
-          "health": 2,
-          "text": "Entrada — compre 1 carta.",
-          "speech": "Pedido saindo!",
-          "narrative": "Não tente arrumar briga no bar dele, ele tem um machado embaixo do balcão!",
+          "health": 1,
+          "text": "Entrada — compre 1 carta. Aumentos de ataque e vida concedidos a esta criatura são dobrados.",
+          "speech": "Cada melhoria rende mais.",
+          "narrative": "",
           "image": "art/oficina-lyrik/anao-taverneiro.jpg",
           "artZoom": 179,
           "artX": 57,
@@ -248,6 +248,9 @@
               "op": "draw",
               "amount": 1,
               "timing": "on_enter"
+            },
+            {
+              "op": "double_stat_gains"
             }
           ],
           "budgetEffects": [
@@ -264,11 +267,27 @@
               "group": "sum",
               "reason": "",
               "effect": "draw"
+            },
+            {
+              "sourceIndex": 1,
+              "name": "double_stat_gains",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"double_stat_gains\"}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente.",
+          "artPending": true
         },
         {
           "id": "FL04",
@@ -325,7 +344,7 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 5,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "padrao",
           "subtype": "Engrenauta",
           "attack": 5,
@@ -372,10 +391,10 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 3,
-          "quantity": 1,
+          "quantity": 2,
           "rarity": "padrao",
           "subtype": "anão",
-          "attack": 1,
+          "attack": 2,
           "health": 2,
           "text": "Entrada — compre 1 carta. Emanação — a criatura aliada na primeira posição tem +1 de vida.",
           "speech": "Cuidado com a fumaça, pequenino!",
@@ -440,12 +459,12 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 5,
-          "quantity": 1,
+          "quantity": 2,
           "rarity": "padrao",
           "subtype": "axiom",
           "attack": 3,
           "health": 4,
-          "text": "Revelação — reduza em 2 o ataque da criatura inimiga na mesma posição neste combate.",
+          "text": "Revelação — escolha um: reduza em 2 o ataque do inimigo à frente; ou conceda +1/+1 ao aliado imediatamente à direita. Apenas neste combate.",
           "speech": "Um combate? que desperdicio!",
           "narrative": "6 mãos? ele claramente só quer se exibir!",
           "image": "art/oficina-lyrik/monge-runico.jpg",
@@ -457,26 +476,41 @@
           "fontRules": 46,
           "effects": [
             {
-              "op": "attack_modifier",
-              "amount": -2,
+              "op": "monk_choice",
               "timing": "revelation",
-              "target": "enemy_same_lane"
+              "duration": "combat",
+              "options": [
+                {
+                  "id": "weaken",
+                  "op": "attack_modifier",
+                  "amount": -2,
+                  "target": "enemy_same_lane"
+                },
+                {
+                  "id": "buff",
+                  "op": "stat_buff",
+                  "attack": 1,
+                  "health": 1,
+                  "target": "ally_right"
+                }
+              ]
             }
           ],
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "attack_modifier",
+              "name": "monk_choice",
               "timing": "reveal",
-              "target": "lane",
+              "target": "enemy",
               "duration": "round",
               "condition": "none",
-              "amount": 2,
+              "amount": 0,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "",
-              "effect": "weaken"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"monk_choice\",\"timing\":\"revelation\",\"duration\":\"combat\",\"options\":[{\"id\":\"weaken\",\"op\":\"attack_modifier\",\"amount\":-2,\"target\":\"enemy_same_lane\"},{\"id\":\"buff\",\"op\":\"stat_buff\",\"attack\":1,\"health\":1,\"target\":\"ally_right\"}]}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
@@ -489,7 +523,7 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 8,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "elite",
           "subtype": "Engrenauta",
           "attack": 5,
@@ -537,10 +571,10 @@
           "type": "direct_spell",
           "affinity": "forja",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Conceda +1/+1 a uma criatura aliada permanentemente.",
+          "text": "Conceda +1/+1 permanentemente a uma criatura aliada.",
           "speech": "",
           "narrative": "",
           "image": "art/oficina-lyrik/reforco-divino.jpg",
@@ -603,7 +637,7 @@
           "subtype": "axiom",
           "attack": 4,
           "health": 5,
-          "text": "Na formação, escolha um modo para este combate. Assalto — tem +2 de ataque; aliados nas posições adjacentes têm +1 de ataque. Escolta — tem +2 de vida; aliados nas posições adjacentes têm +1 de vida.",
+          "text": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes.",
           "speech": "Protocolo: Exterminar!",
           "narrative": "Dizem ser uma das criações secretas de Lyrik, e que para ele, é uma obra prima, e para seus inimigos, um problema!",
           "image": "art/oficina-lyrik/v-3-r-0-n-1-c-a.jpg",
@@ -698,10 +732,10 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque permanentemente.",
+          "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida.",
           "speech": "",
           "narrative": "",
-          "image": "art/oficina-lyrik/toque-gelido.jpg",
+          "image": "art/forja-personalizada/toque-gelido.jpg",
           "artZoom": 150,
           "artX": 50,
           "artY": 50,
@@ -712,7 +746,8 @@
             {
               "op": "attack_modifier",
               "amount": -1,
-              "permanent": true
+              "permanent": true,
+              "healthAmount": -1
             }
           ],
           "positionOnly": true,
@@ -729,13 +764,16 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "",
-              "effect": "weaken"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"attack_modifier\",\"amount\":-1,\"permanent\":true,\"healthAmount\":-1}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono."
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
+          "imageKind": "illustration",
+          "artStatus": "own"
         },
         {
           "id": "FL14",
@@ -743,10 +781,10 @@
           "type": "direct_spell",
           "affinity": "forja",
           "cost": 4,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "elite",
           "subtype": "",
-          "text": "Escolha um — reduza permanentemente em 1 o ataque de até 3 criaturas inimigas aleatórias na reserva do oponente; ou prepare em uma posição inimiga para reduzir permanentemente em 1 o ataque de todas as criaturas inimigas nas posições de combate.",
+          "text": "Escolha um — reduza permanentemente em 1 o ataque e a vida de até 3 criaturas aleatórias da reserva inimiga; ou prepare em uma posição inimiga para aplicar essa redução a todas as criaturas inimigas em combate.",
           "speech": "",
           "narrative": "",
           "image": "art/oficina-lyrik/geada-implacavel.png",
@@ -762,7 +800,8 @@
               "amount": -1,
               "permanent": true,
               "random_count": 3,
-              "reserve_only": true
+              "reserve_only": true,
+              "healthAmount": -1
             }
           ],
           "enemyOnly": true,
@@ -771,29 +810,16 @@
               "sourceIndex": 0,
               "name": "area_attack_modifier",
               "timing": "direct",
-              "target": "area",
+              "target": "enemy",
               "duration": "permanent",
               "condition": "none",
               "amount": 1,
-              "count": 3,
+              "count": 1,
               "activationCost": 0,
-              "group": "choice",
-              "reason": "",
-              "effect": "weaken"
-            },
-            {
-              "sourceIndex": 0,
-              "name": "area_attack_modifier",
-              "timing": "trap",
-              "target": "area",
-              "duration": "permanent",
-              "condition": "none",
-              "amount": 1,
-              "count": 3,
-              "activationCost": 0,
-              "group": "choice",
-              "reason": "",
-              "effect": "weaken"
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"area_attack_modifier\",\"amount\":-1,\"permanent\":true,\"random_count\":3,\"reserve_only\":true,\"healthAmount\":-1}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
@@ -805,11 +831,11 @@
           "name": "Bomba Cinética",
           "type": "direct_spell",
           "affinity": "forja",
-          "cost": 3,
+          "cost": 2,
           "quantity": 2,
           "rarity": "lacaio",
           "subtype": "",
-          "text": "A criatura alvo que você controla causa dano igual ao seu ataque à criatura alvo do oponente.",
+          "text": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/bomba-cinetica.png",
@@ -853,10 +879,10 @@
           "type": "creature",
           "rarity": "lacaio",
           "affinity": "forja",
-          "cost": 0,
+          "cost": 1,
           "attack": 0,
-          "health": 1,
-          "quantity": 1,
+          "health": 3,
+          "quantity": 2,
           "text": "Provocar.",
           "effects": [
             {
@@ -966,11 +992,11 @@
           "name": "Voltando para o fundamental",
           "type": "direct_spell",
           "affinity": "forja",
-          "cost": 4,
-          "quantity": 2,
+          "cost": 2,
+          "quantity": 1,
           "rarity": "elite",
           "subtype": "",
-          "text": "Altere permanentemente a vida máxima e atual de uma criatura inimiga para 1.",
+          "text": "Altera a vida de uma criatura inimiga para 1.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/voltando-para-o-fundamental.jpg",
@@ -1016,7 +1042,7 @@
           "name": "Miragem Provocadora",
           "type": "prepared_spell",
           "affinity": "forja",
-          "cost": 2,
+          "cost": 1,
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
@@ -1086,7 +1112,7 @@
       "cards": [
         {
           "id": "FV01",
-          "name": "A luz enganosa",
+          "name": "Fogo Fátuo",
           "type": "creature",
           "affinity": "fluxo",
           "cost": 2,
@@ -1095,7 +1121,7 @@
           "subtype": "Fogo Fátuo",
           "attack": 3,
           "health": 2,
-          "text": "Sem habilidades.",
+          "text": "Entrada — silencie uma criatura à sua escolha.",
           "speech": "",
           "narrative": "Uma luz pálida dançando entre as árvores, convidando o passo errado, no pântano, no penhasco, na beira do poço.",
           "image": "art/virelion/FV01.jpg",
@@ -1105,9 +1131,31 @@
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 35,
-          "effects": [],
+          "effects": [
+            {
+              "op": "silence",
+              "timing": "on_enter",
+              "target": "any_creature"
+            }
+          ],
           "positionOnly": false,
-          "budgetEffects": [],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "silence",
+              "timing": "enter",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"silence\",\"timing\":\"on_enter\",\"target\":\"any_creature\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
@@ -1117,8 +1165,8 @@
           "name": "Âncora Etérea",
           "type": "prepared_spell",
           "affinity": "fluxo",
-          "cost": 2,
-          "quantity": 1,
+          "cost": 1,
+          "quantity": 2,
           "rarity": "elite",
           "subtype": "",
           "text": "Prepare em uma posição. Ancoragem — prenda a criatura revelada nessa posição durante este combate e o seguinte.",
@@ -1161,16 +1209,16 @@
         },
         {
           "id": "FV03",
-          "name": "Aprendiz vireliana",
+          "name": "Aprendiz de Virelion",
           "type": "creature",
           "affinity": "fluxo",
           "cost": 1,
-          "quantity": 4,
+          "quantity": 3,
           "rarity": "lacaio",
           "subtype": "humana",
           "attack": 1,
           "health": 1,
-          "text": "Revelação — se outra criatura aliada tiver um benefício ativo de magia, ganha +1 de ataque neste combate.",
+          "text": "Entrada — marque uma criatura inimiga. Ao jogar sua próxima magia, cause 1 de dano à criatura marcada. Se ela sair de campo antes do disparo, escolha outra. Uma vez enquanto esta Aprendiz estiver em campo.",
           "speech": "O éter é a minha arma",
           "narrative": "O Segundo Grau da Escola de Magia de Virelion, especializado em magias de combate e parte da Casta de Dravorn",
           "image": "art/virelion/FV03.jpg",
@@ -1182,27 +1230,27 @@
           "fontRules": 38,
           "effects": [
             {
-              "op": "attack_modifier",
+              "op": "bound_spell_damage",
               "amount": 1,
-              "timing": "revelation",
-              "target": "self",
-              "condition": "allied_spell_buff"
+              "target": "chosen_enemy_creature",
+              "timing": "owner_plays_spell",
+              "once_per_field": true
             }
           ],
           "positionOnly": false,
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "attack_modifier",
-              "timing": "reveal",
-              "target": "self",
+              "name": "bound_spell_damage",
+              "timing": "turn",
+              "target": "enemy",
               "duration": "round",
               "condition": "none",
               "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"attack_modifier\",\"amount\":1,\"timing\":\"revelation\",\"target\":\"self\",\"condition\":\"allied_spell_buff\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"bound_spell_damage\",\"amount\":1,\"target\":\"chosen_enemy_creature\",\"timing\":\"owner_plays_spell\",\"once_per_field\":true}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1212,66 +1260,64 @@
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
         {
-          "id": "FV04",
-          "name": "Auramora",
-          "type": "creature",
+          "id": "FV16",
+          "name": "Drenar Essência",
+          "type": "prepared_spell",
           "affinity": "fluxo",
-          "cost": 1,
+          "cost": 2,
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "attack": 1,
-          "health": 1,
-          "text": "Emanação — escolha uma criatura aliada ferida. Ao encerrar a preparação, pague 1 mana para curar 1 de vida dela.",
-          "speech": "O éter é a minha arma",
+          "text": "Prepare em uma posição inimiga. Ao ativar, empurre a criatura revelada uma posição à direita e cause 1 de dano a ela. Se o destino estiver ocupado, ela não se move; cause também 1 de dano ao ocupante. Na última posição, ela não se move.",
+          "speech": "",
           "narrative": "",
-          "image": "art/virelion/FV04.jpg",
+          "image": "art/virelion/FV02.jpg",
           "artZoom": 100,
-          "artX": 35,
-          "artY": 100,
+          "artX": 8,
+          "artY": 56,
           "fontName": 43,
           "fontSubtype": 21,
-          "fontRules": 38,
+          "fontRules": 40,
           "effects": [
             {
-              "op": "heal",
-              "amount": 1,
-              "mana_cost": 1,
-              "timing": "emanation",
-              "target": "chosen_allied_creature"
+              "op": "push_right",
+              "amount": 1
             }
           ],
-          "positionOnly": false,
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "heal",
-              "timing": "emanation",
-              "target": "ally",
-              "duration": "instant",
+              "name": "push_right",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "round",
               "condition": "none",
               "amount": 1,
               "count": 1,
-              "activationCost": 1,
+              "activationCost": 0,
               "group": "sum",
-              "reason": "",
-              "effect": "heal"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"push_right\",\"amount\":1}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
+          "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente.",
+          "artPending": true,
+          "positionOnly": true,
+          "enemyOnly": true
         },
         {
           "id": "FV05",
           "name": "Banquete dos Heróis",
           "type": "direct_spell",
           "affinity": "fluxo",
-          "cost": 6,
+          "cost": 8,
           "quantity": 1,
           "rarity": "soberano",
           "subtype": "",
-          "text": "Conceda +2/+2 permanentemente a todas as suas criaturas em campo, incluindo Emanação.",
+          "text": "Conceda +1/+1 permanentemente a todas as criaturas aliadas em campo para cada 2 magias no seu Nartvanyr.",
           "speech": "",
           "narrative": "",
           "image": "art/virelion/FV05.jpg",
@@ -1283,45 +1329,34 @@
           "fontRules": 42,
           "effects": [
             {
-              "op": "area_stat_buff",
-              "attack": 2,
-              "health": 2
+              "op": "graveyard_stat_buff",
+              "attack": 1,
+              "health": 1,
+              "divisor": 2,
+              "rounding": "floor"
             }
           ],
           "positionOnly": false,
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "area_stat_buff",
+              "name": "graveyard_stat_buff",
               "timing": "direct",
-              "target": "area",
-              "duration": "permanent",
+              "target": "enemy",
+              "duration": "round",
               "condition": "none",
-              "amount": 2,
-              "count": 10,
+              "amount": 0,
+              "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "",
-              "effect": "attack"
-            },
-            {
-              "sourceIndex": 0,
-              "name": "area_stat_buff",
-              "timing": "direct",
-              "target": "area",
-              "duration": "permanent",
-              "condition": "none",
-              "amount": 2,
-              "count": 10,
-              "activationCost": 0,
-              "group": "sum",
-              "reason": "",
-              "effect": "health"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"graveyard_stat_buff\",\"attack\":1,\"health\":1,\"divisor\":2,\"rounding\":\"floor\"}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
+          "budgetReview": "Alteração aprovada em 10/10/2026: Cólera +1; Banquete custo 8 e metade das magias anteriores, arredondada para baixo; Chamado 1 + cópias anteriores no próprio Nartvanyr. Orçamento não recalculado automaticamente."
         },
         {
           "id": "FV06",
@@ -1332,9 +1367,9 @@
           "quantity": 3,
           "rarity": "lacaio",
           "subtype": "Aberração",
-          "attack": 1,
-          "health": 4,
-          "text": "Revelação — criaturas que lhe causarem dano neste combate perdem 1 de ataque permanentemente. Cada criatura só é afetada uma vez por esta Bruxa.",
+          "attack": 0,
+          "health": 6,
+          "text": "A primeira criatura inimiga que atacar esta criatura recebe Corrupção após o ataque.",
           "speech": "Que tal um pouco de música?",
           "narrative": "*\"Encapuzada, magra, com dedos longos demais para serem confortáveis de olhar. Fala baixo, como se estivesse sempre no meio de uma negociação com algo que não está no ambiente\"*",
           "image": "art/virelion/FV06.jpg",
@@ -1347,8 +1382,8 @@
           "effects": [
             {
               "op": "damage_curse",
-              "amount": 1,
-              "timing": "revelation"
+              "timing": "combat",
+              "first_attacker_only": true
             }
           ],
           "positionOnly": false,
@@ -1356,15 +1391,15 @@
             {
               "sourceIndex": 0,
               "name": "damage_curse",
-              "timing": "reveal",
+              "timing": "turn",
               "target": "enemy",
               "duration": "round",
               "condition": "none",
-              "amount": 1,
+              "amount": 0,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"damage_curse\",\"amount\":1,\"timing\":\"revelation\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"damage_curse\",\"timing\":\"combat\",\"first_attacker_only\":true}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1378,13 +1413,13 @@
           "name": "Olho Flutuante",
           "type": "creature",
           "affinity": "fluxo",
-          "cost": 2,
+          "cost": 3,
           "quantity": 4,
           "rarity": "lacaio",
           "subtype": "Aberração",
           "attack": 2,
           "health": 2,
-          "text": "Sem habilidades.",
+          "text": "Revelação — esta criatura e o inimigo à frente não atacam neste combate e permanecem nessas posições até o combate seguinte. Nesse combate, atacam normalmente e este efeito não se repete.",
           "speech": "O éter é a minha arma",
           "narrative": "*\"Sim, é um olho!\"*",
           "image": "art/virelion/FV07.jpg",
@@ -1394,9 +1429,30 @@
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 40,
-          "effects": [],
+          "effects": [
+            {
+              "op": "duel_stasis",
+              "timing": "revelation"
+            }
+          ],
           "positionOnly": false,
-          "budgetEffects": [],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "duel_stasis",
+              "timing": "reveal",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"duel_stasis\",\"timing\":\"revelation\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
@@ -1410,7 +1466,7 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Compre 1 carta.",
+          "text": "Compre 2 cartas.",
           "speech": "",
           "narrative": "",
           "image": "art/virelion/FV08.jpg",
@@ -1423,7 +1479,7 @@
           "effects": [
             {
               "op": "draw",
-              "amount": 1
+              "amount": 2
             }
           ],
           "positionOnly": false,
@@ -1435,7 +1491,7 @@
               "target": "owner",
               "duration": "instant",
               "condition": "none",
-              "amount": 1,
+              "amount": 2,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
@@ -1448,8 +1504,8 @@
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
         },
         {
-          "id": "FV10",
-          "name": "Vaelgor Dareth, O Diretor",
+          "id": "FV15",
+          "name": "Ithalion, Mestre dos Selos",
           "type": "creature",
           "affinity": "fluxo",
           "cost": 6,
@@ -1457,21 +1513,20 @@
           "rarity": "soberano",
           "subtype": "Humano",
           "attack": 4,
-          "health": 3,
-          "text": "Revelação — as criaturas aliadas nas posições adjacentes têm +3 de ataque neste combate.",
+          "health": 2,
+          "text": "Revelação — escolha uma posição de cada lado e vincule-as com selos enquanto Ithalion estiver vivo. A criatura inimiga revelada no selo troca de lado com o ocupante do outro selo, se houver. As criaturas agem pelo lado de chegada neste combate e depois retornam aos donos.",
           "speech": "Como treinaram.",
           "narrative": "",
-          "image": "art/virelion/FV10.jpg",
+          "image": "art/virelion/ithalion-mestre-dos-selos.png",
           "artZoom": 100,
-          "artX": 28,
-          "artY": 18,
+          "artX": 50,
+          "artY": 22,
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 41,
           "effects": [
             {
-              "op": "adjacent_attack_buff",
-              "amount": 3,
+              "op": "paired_seals",
               "timing": "revelation"
             }
           ],
@@ -1479,16 +1534,16 @@
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "adjacent_attack_buff",
+              "name": "paired_seals",
               "timing": "reveal",
               "target": "enemy",
               "duration": "round",
               "condition": "none",
-              "amount": 3,
+              "amount": 0,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"adjacent_attack_buff\",\"amount\":3,\"timing\":\"revelation\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"paired_seals\",\"timing\":\"revelation\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1506,7 +1561,7 @@
           "quantity": 2,
           "rarity": "elite",
           "subtype": "",
-          "text": "Prepare em uma posição aliada. Durante dois combates, o ocupante recebe +2 de vida temporária em cada combate.",
+          "text": "Prepare em uma posição aliada. Por 2 combates, reduza à metade o dano dos ataques inimigos à criatura nessa posição, arredondando para cima.",
           "speech": "O éter é a minha arma",
           "narrative": "",
           "image": "art/virelion/FV11.jpg",
@@ -1519,9 +1574,8 @@
           "effects": [
             {
               "op": "barrier",
-              "health": 2,
-              "combats": 2,
-              "target": "chosen_allied_creature"
+              "target": "chosen_allied_creature",
+              "duration_combats": 2
             }
           ],
           "positionOnly": true,
@@ -1537,7 +1591,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"barrier\",\"health\":2,\"combats\":2,\"target\":\"chosen_allied_creature\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"barrier\",\"target\":\"chosen_allied_creature\",\"duration_combats\":2}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1551,11 +1605,11 @@
           "name": "Evasão Dimensional",
           "type": "direct_spell",
           "affinity": "fluxo",
-          "cost": 2,
+          "cost": 3,
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Devolva uma criatura da reserva inimiga à mão de seu dono. Ela perde dano e bônus e volta com os atributos originais.",
+          "text": "Devolva uma criatura inimiga da reserva com 4 ou mais de ataque à mão do dono. Compre 2 cartas.",
           "speech": "",
           "narrative": "",
           "image": "art/virelion/evasao-dimensional.jpg",
@@ -1577,9 +1631,23 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"return_to_hand\",\"reset\":true}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"return_to_hand\",\"reset\":true,\"min_attack\":4}",
               "effect": "custom",
               "customPoints": 0
+            },
+            {
+              "sourceIndex": 1,
+              "name": "draw",
+              "timing": "direct",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "draw"
             }
           ],
           "budgetVersion": 3,
@@ -1587,7 +1655,12 @@
           "effects": [
             {
               "op": "return_to_hand",
-              "reset": true
+              "reset": true,
+              "min_attack": 4
+            },
+            {
+              "op": "draw",
+              "amount": 2
             }
           ],
           "reserveOnly": true,
@@ -1599,7 +1672,7 @@
           "name": "Sono Profundo",
           "type": "prepared_spell",
           "affinity": "fluxo",
-          "cost": 3,
+          "cost": 2,
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
@@ -1711,7 +1784,7 @@
           "subtype": "Tribal",
           "attack": 1,
           "health": 1,
-          "text": "Revelação  — Causa 1 de dano ao bloqueador.",
+          "text": "Revelação — cause 1 de dano à criatura inimiga à frente.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG02.jpg",
@@ -1755,12 +1828,12 @@
           "type": "creature",
           "affinity": "ruptura",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "rarity": "padrao",
           "subtype": "Umbro",
           "attack": 2,
           "health": 2,
-          "text": "*Último Suspiro* — Cause 1 de dano ao Patrono alvo.",
+          "text": "Último Suspiro — cause 1 de dano ao Patrono inimigo.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG03.jpg",
@@ -1802,11 +1875,11 @@
           "name": "Fulgor Final",
           "type": "direct_spell",
           "affinity": "ruptura",
-          "cost": 6,
+          "cost": 5,
           "quantity": 1,
           "rarity": "soberano",
           "subtype": "",
-          "text": "Esta magia causa 6 de dano a qualquer alvo e não pode ser anulada.",
+          "text": "Cause 6 de dano a qualquer alvo. Não pode ser anulada.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG04.jpg",
@@ -1857,7 +1930,7 @@
           "subtype": "Tribal Druida",
           "attack": 3,
           "health": 4,
-          "text": "Os outros Tribais que você controla recebem +1/+1.",
+          "text": "Os outros Tribais aliados têm +1/+1.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG05.jpg",
@@ -1900,11 +1973,11 @@
           "name": "Chamado da Tradição",
           "type": "direct_spell",
           "affinity": "ruptura",
-          "cost": 3,
+          "cost": 2,
           "quantity": 3,
           "rarity": "lacaio",
           "subtype": "",
-          "text": "Crie duas fichas Tribais 1/1 na sua reserva.",
+          "text": "Crie uma ficha Tribal 1/1 na sua reserva, mais uma para cada cópia de Chamado da Tradição que já estiver no seu Nartvanyr.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG06.jpg",
@@ -1922,11 +1995,11 @@
               "target": "enemy",
               "duration": "round",
               "condition": "none",
-              "amount": 2,
+              "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"tradition_summon\",\"amount\":2,\"name\":\"Ficha Tribal\",\"subtype\":\"Tribal\",\"attack\":1,\"health\":1,\"scaling\":\"none\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"tradition_summon\",\"amount\":1,\"name\":\"Ficha Tribal\",\"subtype\":\"Tribal\",\"attack\":1,\"health\":1,\"scaling\":\"same_card_graveyard\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1935,16 +2008,16 @@
           "effects": [
             {
               "op": "tradition_summon",
-              "amount": 2,
+              "amount": 1,
               "name": "Ficha Tribal",
               "subtype": "Tribal",
               "attack": 1,
               "health": 1,
-              "scaling": "none"
+              "scaling": "same_card_graveyard"
             }
           ],
           "budgetVersion": 3,
-          "budgetReview": "Rebalanceamento aprovado em 07/10/2026: Gnoll +1 com aliado no combate, Chamado fixo, Geometro uma vez em campo e Estilhaço 1 de dano a qualquer alvo.",
+          "budgetReview": "Alteração aprovada em 10/10/2026: Cólera +1; Banquete custo 8 e metade das magias anteriores, arredondada para baixo; Chamado 1 + cópias anteriores no próprio Nartvanyr. Orçamento não recalculado automaticamente.",
           "directOnly": true
         },
         {
@@ -2006,7 +2079,7 @@
           "subtype": "Gnoll Guerreiro",
           "attack": 2,
           "health": 3,
-          "text": "Revelação — se outra criatura aliada numa posição de combate tiver ataque igual ou menor que 1, Comandante Gnoll recebe +1 de ataque neste combate. Este efeito acontece uma única vez por combate.",
+          "text": "Revelação — se outra criatura aliada em combate tiver 1 ou menos de ataque, receba +1 de ataque neste combate.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG08.jpg",
@@ -2051,11 +2124,11 @@
           "name": "Cólera Trifecta",
           "type": "direct_spell",
           "affinity": "ruptura",
-          "cost": 3,
+          "cost": 2,
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Suas criaturas nas posições de combate recebem +2 de ataque no combate desta rodada.",
+          "text": "Suas criaturas nas posições de combate recebem +1 de ataque no combate desta rodada.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG09.jpg",
@@ -2073,11 +2146,11 @@
               "target": "enemy",
               "duration": "round",
               "condition": "none",
-              "amount": 2,
+              "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"combat_area_attack\",\"amount\":2}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"combat_area_attack\",\"amount\":1}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -2086,11 +2159,11 @@
           "effects": [
             {
               "op": "combat_area_attack",
-              "amount": 2
+              "amount": 1
             }
           ],
           "budgetVersion": 3,
-          "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos.",
+          "budgetReview": "Alteração aprovada em 10/10/2026: Cólera +1; Banquete custo 8 e metade das magias anteriores, arredondada para baixo; Chamado 1 + cópias anteriores no próprio Nartvanyr. Orçamento não recalculado automaticamente.",
           "directOnly": true
         },
         {
@@ -2146,7 +2219,7 @@
           "type": "creature",
           "affinity": "ruptura",
           "cost": 3,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "lacaio",
           "subtype": "Veículo",
           "attack": 0,
@@ -2202,7 +2275,7 @@
           "subtype": "Baluarte",
           "attack": 4,
           "health": 4,
-          "text": "Caso seu Patrono esteja com menos da metade da vida, Debulhador da Linha de Frente recebe +1 em Ataque.",
+          "text": "Enquanto seu Patrono tiver menos da metade da vida máxima, esta criatura tem +1 de ataque.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG12.jpg",
@@ -2250,7 +2323,7 @@
           "subtype": "Goblin Xamã",
           "attack": 0,
           "health": 2,
-          "text": "Emanação — quando uma criatura sua com ataque igual ou menor que 2 atacar, acumule 1 Retaliação. A cada 4 acúmulos, consuma-os e cause 1 de dano ao Patrono inimigo.",
+          "text": "Emanação — sempre que uma criatura aliada com 2 ou menos de ataque atacar, acumule 1 Retaliação. A cada 4 acúmulos, consuma-os e cause 1 de dano ao Patrono inimigo.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG13.jpg",
@@ -2294,8 +2367,8 @@
       "plan": "Ruptura criado pelo grupo: pressão rápida, criaturas pequenas e ataques coordenados.",
       "patron": {
         "id": "RGP",
-        "name": "A Garra Vigilante",
-        "image": "patrons/garra-vigilante.png",
+        "name": "Dom, O Maioral",
+        "image": "patrons/dom-maioral.png",
         "hp": 20
       }
     },
@@ -2469,10 +2542,10 @@
           "type": "creature",
           "rarity": "lacaio",
           "affinity": "forja",
-          "cost": 0,
+          "cost": 1,
           "attack": 0,
-          "health": 1,
-          "quantity": 4,
+          "health": 3,
+          "quantity": 2,
           "text": "Provocar.",
           "effects": [
             {
@@ -2505,19 +2578,19 @@
           "budgetVersion": 3
         },
         {
-          "id": "FL03",
-          "name": "Anão Taverneiro",
+          "id": "FL21",
+          "name": "Rúnico Eficiente",
           "type": "creature",
           "affinity": "forja",
           "cost": 2,
           "quantity": 4,
           "rarity": "lacaio",
-          "subtype": "anão",
+          "subtype": "Rúnico",
           "attack": 1,
-          "health": 2,
-          "text": "Entrada — compre 1 carta.",
-          "speech": "Pedido saindo!",
-          "narrative": "Não tente arrumar briga no bar dele, ele tem um machado embaixo do balcão!",
+          "health": 1,
+          "text": "Entrada — compre 1 carta. Aumentos de ataque e vida concedidos a esta criatura são dobrados.",
+          "speech": "Cada melhoria rende mais.",
+          "narrative": "",
           "image": "art/oficina-lyrik/anao-taverneiro.jpg",
           "artZoom": 179,
           "artX": 57,
@@ -2530,6 +2603,9 @@
               "op": "draw",
               "amount": 1,
               "timing": "on_enter"
+            },
+            {
+              "op": "double_stat_gains"
             }
           ],
           "budgetEffects": [
@@ -2546,11 +2622,27 @@
               "group": "sum",
               "reason": "",
               "effect": "draw"
+            },
+            {
+              "sourceIndex": 1,
+              "name": "double_stat_gains",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"double_stat_gains\"}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente.",
+          "artPending": true
         },
         {
           "id": "FL10",
@@ -2561,7 +2653,7 @@
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Conceda +1/+1 a uma criatura aliada permanentemente.",
+          "text": "Conceda +1/+1 permanentemente a uma criatura aliada.",
           "speech": "",
           "narrative": "",
           "image": "art/oficina-lyrik/reforco-divino.jpg",
@@ -2623,10 +2715,10 @@
           "quantity": 1,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque permanentemente.",
+          "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida.",
           "speech": "",
           "narrative": "",
-          "image": "art/oficina-lyrik/toque-gelido.jpg",
+          "image": "art/forja-personalizada/toque-gelido.jpg",
           "artZoom": 150,
           "artX": 50,
           "artY": 50,
@@ -2637,7 +2729,8 @@
             {
               "op": "attack_modifier",
               "amount": -1,
-              "permanent": true
+              "permanent": true,
+              "healthAmount": -1
             }
           ],
           "positionOnly": true,
@@ -2654,24 +2747,27 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "",
-              "effect": "weaken"
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"attack_modifier\",\"amount\":-1,\"permanent\":true,\"healthAmount\":-1}",
+              "effect": "custom",
+              "customPoints": 0
             }
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono."
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
+          "imageKind": "illustration",
+          "artStatus": "own"
         },
         {
           "id": "FL15",
           "name": "Bomba Cinética",
           "type": "direct_spell",
           "affinity": "forja",
-          "cost": 3,
+          "cost": 2,
           "quantity": 3,
           "rarity": "lacaio",
           "subtype": "",
-          "text": "A criatura alvo que você controla causa dano igual ao seu ataque à criatura alvo do oponente.",
+          "text": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/bomba-cinetica.png",
@@ -2720,7 +2816,7 @@
           "subtype": "axiom",
           "attack": 4,
           "health": 5,
-          "text": "Na formação, escolha um modo para este combate. Assalto — tem +2 de ataque; aliados nas posições adjacentes têm +1 de ataque. Escolta — tem +2 de vida; aliados nas posições adjacentes têm +1 de vida.",
+          "text": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes.",
           "speech": "Protocolo: Exterminar!",
           "narrative": "Dizem ser uma das criações secretas de Lyrik, e que para ele, é uma obra prima, e para seus inimigos, um problema!",
           "image": "art/oficina-lyrik/v-3-r-0-n-1-c-a.jpg",
@@ -2775,7 +2871,7 @@
             }
           ],
           "attack": 2,
-          "health": 1,
+          "health": 2,
           "subtype": "humano",
           "image": "art/forja-personalizada/engenheira-do-s-e-p.jpg",
           "imageKind": "illustration",
@@ -2807,59 +2903,14 @@
           ]
         },
         {
-          "id": "FEX02",
-          "name": "Projeto Volátil",
-          "type": "direct_spell",
-          "affinity": "forja",
-          "cost": 2,
-          "quantity": 1,
-          "rarity": "padrao",
-          "text": "O próximo dano que a criatura aliada alvo receber é dobrado. Depois, se sobreviver, ganha +1/+1 permanentemente.",
-          "effects": [
-            {
-              "op": "volatile_project",
-              "target": "chosen_allied_creature"
-            }
-          ],
-          "image": "art/forja-personalizada/projeto-volatil.jpg",
-          "imageKind": "illustration",
-          "fontRules": 38,
-          "directOnly": true,
-          "artStatus": "own",
-          "artZoom": 100,
-          "artX": 27,
-          "artY": 46,
-          "fontName": 43,
-          "fontSubtype": 21,
-          "speech": "",
-          "narrative": "",
-          "budgetEffects": [
-            {
-              "sourceIndex": 0,
-              "name": "volatile_project",
-              "timing": "direct",
-              "target": "ally",
-              "duration": "round",
-              "condition": "none",
-              "amount": 0,
-              "count": 1,
-              "activationCost": 0,
-              "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"volatile_project\",\"target\":\"chosen_allied_creature\"}",
-              "effect": "custom",
-              "customPoints": 0
-            }
-          ]
-        },
-        {
           "id": "FEX03",
           "name": "Engrenauta Defeituoso",
           "type": "creature",
           "affinity": "forja",
           "cost": 3,
-          "quantity": 4,
+          "quantity": 3,
           "rarity": "lacaio",
-          "text": "O primeiro dano que essa criatura receber será dobrado.",
+          "text": "O primeiro dano recebido por esta criatura é dobrado.",
           "effects": [
             {
               "op": "first_damage_double"
@@ -2905,7 +2956,7 @@
           "cost": 1,
           "quantity": 2,
           "rarity": "padrao",
-          "text": "Troque permanentemente o ataque atual e a vida atual da criatura alvo. A vida máxima passa a ser o novo valor de vida.",
+          "text": "Troque permanentemente o ataque e a vida atuais de uma criatura à sua escolha. Sua vida máxima se torna o novo valor de vida.",
           "effects": [
             {
               "op": "invert_stats",
@@ -2947,10 +2998,10 @@
           "name": "Esteira de Testes",
           "type": "direct_spell",
           "affinity": "forja",
-          "cost": 2,
+          "cost": 1,
           "quantity": 1,
           "rarity": "padrao",
-          "text": "Conceda Iniciativa à criatura aliada alvo.",
+          "text": "Conceda Iniciativa a uma criatura aliada à sua escolha.",
           "effects": [
             {
               "op": "grant_keyword",
@@ -2987,6 +3038,333 @@
               "customPoints": 0
             }
           ]
+        },
+        {
+          "id": "FEX06",
+          "name": "Engrenauta Persistente",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 3,
+          "attack": 2,
+          "health": 3,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "engrenauta",
+          "text": "Na primeira vez nesta partida que uma magia inimiga devolver esta criatura à sua mão, conserve seus bônus permanentes de ataque e vida.",
+          "effects": [
+            {
+              "op": "retain_buffs_on_return"
+            }
+          ],
+          "image": "art/forja-personalizada/engrenauta-defeituoso.jpg",
+          "imageKind": "illustration",
+          "artStatus": "pending",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 0,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "retain_buffs_on_return",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"retain_buffs_on_return\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FEX07",
+          "name": "Revestimento Rúnico",
+          "type": "direct_spell",
+          "affinity": "forja",
+          "cost": 3,
+          "quantity": 1,
+          "rarity": "padrao",
+          "text": "Conceda +1 de vida permanentemente a uma criatura aliada. Impeça o próximo efeito de uma magia inimiga que tentaria adormecê-la, ancorá-la ou devolvê-la à mão.",
+          "effects": [
+            {
+              "op": "rune_coating",
+              "health": 1,
+              "target": "chosen_allied_creature"
+            }
+          ],
+          "directOnly": true,
+          "image": "art/oficina-lyrik/reforco-divino.jpg",
+          "imageKind": "illustration",
+          "artStatus": "pending",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 0,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "rune_coating",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"rune_coating\",\"health\":1,\"target\":\"chosen_allied_creature\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FL01",
+          "name": "Mecânico Proativo",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 2,
+          "quantity": 1,
+          "rarity": "lacaio",
+          "subtype": "humano",
+          "attack": 2,
+          "health": 2,
+          "text": "Entrada — conceda Iniciativa a um aliado à sua escolha.",
+          "speech": "Direto da oficina para o combate!",
+          "narrative": "Ele diz que é proativo, os colegas o chamam de ansioso!",
+          "image": "art/oficina-lyrik/mecanico-proativo.jpg",
+          "artZoom": 142,
+          "artX": 62,
+          "artY": 21,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 52,
+          "effects": [
+            {
+              "op": "grant_keyword",
+              "keyword": "initiative",
+              "timing": "on_enter",
+              "target": "chosen_allied_creature"
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "grant_keyword",
+              "timing": "enter",
+              "target": "ally",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"grant_keyword\",\"keyword\":\"initiative\",\"timing\":\"on_enter\",\"target\":\"chosen_allied_creature\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+        }
+      ]
+    }
+  ],
+  "additionalCards": [
+    {
+      "id": "FV10",
+      "name": "Vaelgor Dareth, O Diretor",
+      "type": "creature",
+      "affinity": "fluxo",
+      "cost": 6,
+      "quantity": 1,
+      "rarity": "soberano",
+      "subtype": "Humano",
+      "attack": 4,
+      "health": 3,
+      "text": "Revelação — as criaturas aliadas nas posições adjacentes têm +3 de ataque neste combate.",
+      "speech": "Como treinaram.",
+      "narrative": "",
+      "image": "art/virelion/FV10.jpg",
+      "artZoom": 100,
+      "artX": 28,
+      "artY": 18,
+      "fontName": 43,
+      "fontSubtype": 21,
+      "fontRules": 41,
+      "effects": [
+        {
+          "op": "adjacent_attack_buff",
+          "amount": 3,
+          "timing": "revelation"
+        }
+      ],
+      "positionOnly": false,
+      "budgetEffects": [
+        {
+          "sourceIndex": 0,
+          "name": "adjacent_attack_buff",
+          "timing": "reveal",
+          "target": "enemy",
+          "duration": "round",
+          "condition": "none",
+          "amount": 3,
+          "count": 1,
+          "activationCost": 0,
+          "group": "sum",
+          "reason": "Mecânica sem preço calibrado: {\"op\":\"adjacent_attack_buff\",\"amount\":3,\"timing\":\"revelation\"}",
+          "effect": "custom",
+          "customPoints": 0
+        }
+      ],
+      "budgetVersion": 3,
+      "authoredBy": "Grupo Elysium",
+      "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
+    },
+    {
+      "id": "FV04",
+      "name": "Auramora",
+      "type": "creature",
+      "affinity": "fluxo",
+      "cost": 1,
+      "quantity": 3,
+      "rarity": "padrao",
+      "subtype": "",
+      "attack": 1,
+      "health": 1,
+      "text": "Emanação — escolha uma posição de combate aliada. A criatura nessa posição tem +1 de vida enquanto esta Emanação estiver ativa.",
+      "speech": "O éter é a minha arma",
+      "narrative": "",
+      "image": "art/virelion/FV04.jpg",
+      "artZoom": 100,
+      "artX": 35,
+      "artY": 100,
+      "fontName": 43,
+      "fontSubtype": 21,
+      "fontRules": 38,
+      "effects": [
+        {
+          "op": "lane_health_aura",
+          "timing": "emanation",
+          "amount": 1,
+          "choose_lane": true
+        }
+      ],
+      "positionOnly": false,
+      "budgetEffects": [
+        {
+          "sourceIndex": 0,
+          "name": "Emanação: +1 de vida na posição NaN",
+          "timing": "emanation",
+          "target": "fixedAlly",
+          "duration": "round",
+          "condition": "none",
+          "amount": 1,
+          "count": 1,
+          "activationCost": 0,
+          "group": "sum",
+          "reason": "",
+          "effect": "health"
+        }
+      ],
+      "budgetVersion": 3,
+      "authoredBy": "Grupo Elysium",
+      "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
+    },
+    {
+      "id": "FL03",
+      "name": "Anão Taverneiro",
+      "type": "creature",
+      "affinity": "forja",
+      "cost": 2,
+      "quantity": 2,
+      "rarity": "lacaio",
+      "subtype": "anão",
+      "attack": 1,
+      "health": 2,
+      "text": "Entrada — compre 1 carta.",
+      "speech": "Pedido saindo!",
+      "narrative": "Não tente arrumar briga no bar dele, ele tem um machado embaixo do balcão!",
+      "image": "art/oficina-lyrik/anao-taverneiro.jpg",
+      "artZoom": 179,
+      "artX": 57,
+      "artY": 17,
+      "fontName": 43,
+      "fontSubtype": 21,
+      "fontRules": 52,
+      "effects": [
+        {
+          "op": "draw",
+          "amount": 1,
+          "timing": "on_enter"
+        }
+      ],
+      "budgetEffects": [
+        {
+          "sourceIndex": 0,
+          "name": "draw",
+          "timing": "enter",
+          "target": "owner",
+          "duration": "instant",
+          "condition": "none",
+          "amount": 1,
+          "count": 1,
+          "activationCost": 0,
+          "group": "sum",
+          "reason": "",
+          "effect": "draw"
+        }
+      ],
+      "budgetVersion": 3,
+      "authoredBy": "Grupo Elysium",
+      "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+    },
+    {
+      "id": "FEX02",
+      "name": "Projeto Volátil",
+      "type": "direct_spell",
+      "affinity": "forja",
+      "cost": 2,
+      "quantity": 1,
+      "rarity": "padrao",
+      "text": "O próximo dano que a criatura aliada alvo receber é dobrado. Depois, se sobreviver, ganha +1/+1 permanentemente.",
+      "effects": [
+        {
+          "op": "volatile_project",
+          "target": "chosen_allied_creature"
+        }
+      ],
+      "image": "art/forja-personalizada/projeto-volatil.jpg",
+      "imageKind": "illustration",
+      "fontRules": 38,
+      "directOnly": true,
+      "artStatus": "own",
+      "artZoom": 100,
+      "artX": 27,
+      "artY": 46,
+      "fontName": 43,
+      "fontSubtype": 21,
+      "speech": "",
+      "narrative": "",
+      "budgetEffects": [
+        {
+          "sourceIndex": 0,
+          "name": "volatile_project",
+          "timing": "direct",
+          "target": "ally",
+          "duration": "round",
+          "condition": "none",
+          "amount": 0,
+          "count": 1,
+          "activationCost": 0,
+          "group": "sum",
+          "reason": "Mecânica sem preço calibrado: {\"op\":\"volatile_project\",\"target\":\"chosen_allied_creature\"}",
+          "effect": "custom",
+          "customPoints": 0
         }
       ]
     }

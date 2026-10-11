@@ -8,11 +8,11 @@ const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url
 const variant=catalog.decks.find(d=>d.id==='forja-oficina-experimental');
 assert.equal(variant.cards.reduce((n,c)=>n+c.quantity,0),30);
 assert.equal(variant.cards.find(c=>c.id==='FEX04').cost,1);
-assert.equal(variant.cards.find(c=>c.id==='FEX05').cost,2);
+assert.equal(variant.cards.find(c=>c.id==='FEX05').cost,1);
 for(const deck of catalog.decks){assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);for(const c of deck.cards)assert.ok(c.quantity<=({lacaio:4,padrao:3,elite:2,soberano:1})[c.rarity],c.name+' respeita limite de raridade');}
-assert.equal(variant.cards.find(c=>c.id==='FL10').quantity,3);assert.equal(variant.cards.find(c=>c.id==='FL16').quantity,4);assert.equal(variant.cards.find(c=>c.id==='FEX02').quantity,1);assert.equal(variant.cards.find(c=>c.id==='FEX05').quantity,1);assert.equal(variant.cards.find(c=>c.id==='FEX01').cost,2);
+assert.equal(variant.cards.find(c=>c.id==='FL10').quantity,3);assert.equal(variant.cards.find(c=>c.id==='FL16').quantity,2);assert.equal(variant.cards.some(c=>c.id==='FEX02'),false);assert.equal(variant.cards.find(c=>c.id==='FEX05').quantity,1);assert.equal(variant.cards.find(c=>c.id==='FEX01').cost,2);
 function setup(){const room=makeRoom('TEST01','A'),a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{patron:{hp:100,maxHp:100},mana:10,manaMax:10,deck:Array.from({length:12},()=>({uid:randomUUID()}))});Object.assign(room,{first:a.id,turn:a.id,phase:'prep',collectPreview:true});return {room,a,b};}
-function card(id,p,extra={}){return {...structuredClone(catalog.decks.flatMap(d=>d.cards).find(c=>c.id===id)),uid:randomUUID(),owner:p.id,modelId:id,damage:0,attackMod:0,...extra};}
+function card(id,p,extra={}){return {...structuredClone([...catalog.decks.flatMap(d=>d.cards),...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:randomUUID(),owner:p.id,modelId:id,damage:0,attackMod:0,...extra};}
 function cast(room,p,id,targetId){const c=card(id,p);p.hand.push(c);act(room,p,{type:'play',cardId:c.uid,mode:'direct',targetId},catalog);}
 {
  const {room,a,b}=setup(),targets=Array.from({length:5},()=>card('FL09',b)),combat=card('FL09',b),emana=card('FL09',b);
@@ -69,6 +69,3 @@ console.log('Forja variante: catálogo, Geada, volatilidade, inversão, primeiro
 {
  const {room,a,b}=setup(),target=card('FEX03',a),enemy=card('FL03',b);a.reserve=[target];b.reserve=[enemy];a.formation[0]=target.uid;b.formation[0]=enemy.uid;room.phase='resolving';resolveCombat(room);assert.equal(target.damage,2,'primeiro ataque dobra');a.formation[0]=target.uid;b.formation[0]=enemy.uid;room.phase='resolving';resolveCombat(room);assert.equal(target.damage,3,'ataque seguinte não dobra');
 }
-
-
-

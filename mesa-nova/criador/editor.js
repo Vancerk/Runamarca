@@ -539,7 +539,7 @@ async function importProject(file){
 }
 let starterDecks=[];
 fetch('prototipo.json?v=20261004-falas-alvos').then(response=>{if(!response.ok)throw Error('Falha ao ler os decks.');return response.json();}).then(data=>{
-  starterDecks=data.decks;
+  starterDecks=[...data.decks,...[...new Set((data.additionalCards||[]).map(c=>c.affinity))].map(affinity=>({id:affinity+'-estoque',name:(affinity==='fluxo'?'Fluxo':affinity)+' — estoque adicional',affinity,includePatron:false,cards:data.additionalCards.filter(c=>c.affinity===affinity)}))];
   starterDecks.forEach(deck=>{const option=document.createElement('option');option.value=deck.id;option.textContent=deck.name;$('starter-deck').append(option);});
 }).catch(error=>status(error.message,true));
 $('load-starter').addEventListener('click',async()=>{
@@ -552,7 +552,7 @@ $('load-starter').addEventListener('click',async()=>{
   await Promise.all(cards.map(async card=>{if(!card.art)return;try{const response=await fetch(card.art);if(!response.ok)throw Error('Arte indisponível');const blob=await response.blob();card.art=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});}catch{card.art='';}}));
 
   if(project.length+cards.length>120)return status('Limite de 120 modelos.',true);
-  try{if(db)await transact('readwrite',store=>cards.forEach(card=>store.put(card)));project.push(...cards);populate(cards[0]);await projectList();status(deck.cards.reduce((n,c)=>n+c.quantity,0)+' cartas e Patrono adicionados. Edite os campos ou substitua as ilustrações.');}catch(error){status(error.message,true);}
+  try{if(db)await transact('readwrite',store=>cards.forEach(card=>store.put(card)));project.push(...cards);populate(cards[0]);await projectList();status(deck.cards.reduce((n,c)=>n+c.quantity,0)+(deck.includePatron===false?' cartas adicionais':' cartas e Patrono')+' adicionados. Edite os campos ou substitua as ilustrações.');}catch(error){status(error.message,true);}
 });
 
 $('card-form').addEventListener('submit',saveCard);

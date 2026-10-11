@@ -434,3 +434,9 @@ input,select,textarea{background:#211a17;border-color:#87684a;color:#f4e9d1}
 
 /* Creator available from the entrance, deck selection and table. */
 .creator-entry{display:inline-block;margin:0 0 16px;padding:10px 14px;border:1px solid #b28c50;border-radius:5px;color:#efd59d;background:#362719;text-decoration:none;font:600 13px Inter,Arial,sans-serif}.creator-entry:hover,.creator-entry:focus-visible{background:#513a22;outline:2px solid #dfbd75;outline-offset:3px}
+/* Fluxo: paired seals remain readable underneath combat cards. */
+.seal-options{display:flex;gap:8px;margin:8px 0 18px}.sealed-space{position:relative}.seal-space-mark{position:absolute;left:50%;top:50%;width:105px;height:105px;transform:translate(-50%,-50%);border:2px solid #ae904b;border-radius:50%;display:grid;place-items:center;color:#cfb879;font-size:72px;opacity:.5;pointer-events:none;box-shadow:inset 0 0 24px #3d838b66,0 0 12px #b89b5366;z-index:0}.sealed-space .card{position:relative;z-index:1}.duel-stasis{box-shadow:0 0 14px #80bdca!important}.portal-traveler{filter:drop-shadow(0 0 18px #80c9cf)}
+
+.apprentice-mark-badge{position:absolute;right:5%;top:30%;z-index:5;display:grid;place-items:center;width:1.6em;height:1.6em;border:1px solid #b6e4e6;border-radius:50%;background:#15363ded;color:#d5ffff;box-shadow:0 0 8px #6cbfc570;pointer-events:none;}
+
+.silenced-badge{position:absolute;left:50%;top:64%;transform:translateX(-50%);padding:2px 6px;border:1px solid #bcb8a2;background:#302e28e8;color:#e3ddc9;border-radius:4px;font-size:10px;pointer-events:none;z-index:5}

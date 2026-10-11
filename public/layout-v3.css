@@ -147,5 +147,49 @@ body.invitation #room-code{color:#e8cf9a;letter-spacing:.18em;cursor:default}
 .opponent-hand-back:first-child{margin-left:0}
 @media(max-width:750px){.field-main{grid-template-columns:minmax(0,1fr) 72px 60px;gap:3px}.self-side .field-main,.opponent-side .field-main{grid-template-rows:minmax(70px,1fr) 30px 30px}.opponent-side .field-main{grid-template-rows:30px 30px minmax(70px,1fr)}.field-main .relic-zone .card{width:32px;height:44px}.field-main .grave-zone .card,.field-main .exile-zone .card{width:22px;height:31px}.grave-zone .zone-heading,.exile-zone .zone-heading,.relic-zone .zone-heading{font-size:6px}.opponent-hand-back{width:17px;height:24px;margin-left:-6px}.hand-hint{font-size:8px}.hand-content .deck-display{min-width:57px}.hand-content .deck-display span{display:none}.hand-content .deck-visual{width:33px;height:45px}.hand-life span{display:none}}
 @media(max-height:750px) and (min-width:751px){.self-side .field-main{grid-template-rows:minmax(60px,1fr) 27px 27px}.opponent-side .field-main{grid-template-rows:27px 27px minmax(60px,1fr)}.zoned-board .patron-slot .card{width:min(100%,75px)!important}}
+
+/* Criaturas usam 80% da largura anterior; Essências, metade. O espaço liberado recebe os permanentes. */
+.field-main{grid-template-columns:minmax(0,1.65fr) minmax(0,1fr) minmax(0,1.45fr) minmax(0,.9fr);gap:5px}
+.self-side .field-main{grid-template-areas:'creature creature grave spell' 'rune relic grave exile';grid-template-rows:minmax(85px,1fr) minmax(55px,.65fr)}
+.opponent-side .field-main{grid-template-areas:'rune relic grave spell' 'creature creature grave exile';grid-template-rows:minmax(55px,.65fr) minmax(85px,1fr)}
+.field-main .creature-zone{padding:7px 4px 3px}
+.field-main .rune-zone{min-height:0;padding:4px}
+.field-main .relic-zone,.field-main .grave-zone,.field-main .spell-zone,.field-main .exile-zone{padding:4px;min-height:0}
+.field-main .relic-zone .zone-cards,.field-main .grave-zone .zone-cards,.field-main .exile-zone .zone-cards{height:100%;max-height:100%;min-height:0;align-items:center;overflow:auto;gap:4px}
+.field-main .relic-zone .zone-cards,.field-main .grave-zone .zone-cards,.field-main .exile-zone .zone-cards,.field-main .spell-zone .zone-cards{flex-direction:row;flex-wrap:wrap;justify-content:safe center;align-content:center}
+.field-main .rune-zone .zone-cards{height:100%;min-height:0;max-height:100%;align-items:center}
+.field-main .creature-zone .zone-cards{min-height:0}
+.field-main .creature-zone .card{width:clamp(54px,6vw,83px);height:clamp(74px,8.2vw,114px)}
+.field-main .rune-zone .card{width:39px;height:54px}
+.field-main .relic-zone .card{width:43px;height:60px}
+.field-main .grave-zone .card,.field-main .exile-zone .card{width:35px;height:48px}
+.field-main .spell-zone .card{width:40px;height:55px}
+.field-main .relic-zone .zone-heading,.field-main .grave-zone .zone-heading,.field-main .exile-zone .zone-heading{display:none}
+.field-main .spell-zone .zone-cards{height:100%;padding:0;overflow:auto;gap:3px}
+@media(max-width:750px){.field-main{grid-template-columns:minmax(0,1.65fr) minmax(0,1fr) minmax(0,1.45fr) minmax(0,.9fr);gap:3px}.self-side .field-main{grid-template-rows:minmax(80px,1fr) minmax(54px,.65fr)}.opponent-side .field-main{grid-template-rows:minmax(54px,.65fr) minmax(80px,1fr)}.field-main .creature-zone .card{width:48px;height:66px}.field-main .rune-zone .card{width:31px;height:43px}.field-main .relic-zone .card{width:32px;height:44px}.field-main .grave-zone .card,.field-main .exile-zone .card{width:27px;height:37px}.field-main .spell-zone .card{width:30px;height:42px}}
+@media(max-height:750px) and (min-width:751px){.self-side .field-main{grid-template-rows:minmax(76px,1fr) minmax(44px,.65fr)}.opponent-side .field-main{grid-template-rows:minmax(44px,.65fr) minmax(76px,1fr)}.field-main .creature-zone .card{width:58px;height:80px}.field-main .rune-zone .card{width:30px;height:42px}.field-main .relic-zone .card{width:35px;height:48px}}
 .creature-badge{min-width:74px;height:27px}
 @media(max-width:750px){.creature-unit{width:62px}.creature-badge{min-width:62px;height:24px}.stat-emblem{width:29px}.stat-emblem .stat-icon{font-size:26px}.stat-emblem.heart .stat-icon{font-size:22px}}
+
+/* Ajuste as cartas à altura real das janelas, sem ocultar bases e controles. */
+.zoned-board .field-main .creature-zone .creature-unit{width:52px;gap:0}
+.zoned-board .field-main .creature-zone .card{width:46px;height:64px;aspect-ratio:1463/2048}
+.zoned-board .field-main .creature-zone .creature-badge{min-width:52px;height:18px;margin-top:-17px;z-index:3}
+.zoned-board .field-main .creature-zone .stat-emblem{width:25px;height:18px}
+.zoned-board .field-main .creature-zone .stat-emblem .stat-icon{font-size:23px}
+.zoned-board .field-main .creature-zone .stat-emblem.heart .stat-icon{font-size:20px}
+.zoned-board .field-main .creature-zone .stat-emblem b{font-size:10px}
+.zoned-board .field-main .creature-zone .placement-slot{height:64px;width:22px}
+.zoned-board .field-main .rune-zone .zone-cards.compact .card,
+.zoned-board .field-main .relic-zone .zone-cards.compact .card{width:27px;height:38px}
+.zoned-board .field-main .rune-zone .placement-slot{height:38px;width:20px}
+.zoned-board .field-main .spell-zone .zone-cards.compact .card{width:39px;height:54px}
+.zoned-board .field-main .grave-zone .zone-cards.compact .card{width:35px;height:48px}
+.zoned-board .field-main .exile-zone .zone-cards.compact .card{width:27px;height:37px}
+@media(max-width:750px){
+  .zoned-board .field-main .creature-zone .creature-unit{width:47px}
+  .zoned-board .field-main .creature-zone .card{width:42px;height:58px}
+  .zoned-board .field-main .creature-zone .creature-badge{min-width:47px;height:16px;margin-top:-15px}
+  .zoned-board .field-main .rune-zone .zone-cards.compact .card,
+  .zoned-board .field-main .relic-zone .zone-cards.compact .card{width:27px;height:37px}
+}

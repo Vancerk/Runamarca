@@ -11,7 +11,7 @@ act(room,a,{type:'deck',deckId:'ruptura-cacada',art:{R01:{image:'data:image/png;
 assert.equal(room.phase,'mulligan');assert.equal(a.hand.length,5);assert.equal(b.hand.length,5);act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);assert.equal(a.hand.length,6);assert.equal(a.manaMax,1);
 assert.equal(a.patron.maxHp,20);assert.equal(b.patron.hp,20);
 assert.equal(room.players.find(p=>p.deckId==='ruptura-cacada').hand.concat(room.players.find(p=>p.deckId==='ruptura-cacada').deck).find(c=>c.modelId==='R01').imageKind,'card','arte completa mantém seu modo de exibição');
-const model=id=>catalog.decks.flatMap(d=>d.cards).find(c=>c.id===id);
+const model=id=>[...catalog.decks.flatMap(d=>d.cards),...(catalog.additionalCards||[])].find(c=>c.id===id);
 const instance=(id,owner)=>({...structuredClone(model(id)),uid:`${id}-${Math.random()}`,modelId:id,owner:owner.id,damage:0,attackMod:0});
 const emanA=instance('R05',a),emanB=instance('R05',a);a.hand.push(emanA,emanB);a.mana=10;
 act(room,a,{type:'play',cardId:emanA.uid,mode:'emanate'},catalog);act(room,a,{type:'play',cardId:emanB.uid,mode:'emanate'},catalog);

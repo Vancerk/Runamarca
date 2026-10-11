@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {act,join,makeRoom,resolveCombat,view} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url))),deck=catalog.decks.find(d=>d.id==='forja-oficina-lyrik');
-const card=(id,p,extra={})=>({...structuredClone(deck.cards.find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...extra});
+const card=(id,p,extra={})=>({...structuredClone([...deck.cards,...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...extra});
 const setup=()=>{const room=makeRoom('PROTO','A'),a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{patron:{hp:100,maxHp:100},mana:10,manaMax:10,deckData:deck,deck:[],taunts:{}});Object.assign(room,{first:a.id,turn:a.id,phase:'formation',collectPreview:true});return {room,a,b};};
 const place=(p,c,l)=>{p.reserve.push(c);p.formation[l]=c.uid;return c;};
 assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.find(c=>c.id==='FL14').cost,4);
@@ -36,7 +36,7 @@ assert.ok(fs.existsSync(new URL(deck.patron.image,import.meta.url)));
 }
 {
  const {room,a,b}=setup();room.phase='prep';const target=card('FL09',b,{damage:5,health:12,attack:7,baseStats:{attack:5,health:10,cost:8}});b.reserve.push(target);const spell=card('FL19',a);a.hand.push(spell);act(room,a,{type:'play',cardId:spell.uid,targetId:target.uid},catalog);
- assert.equal(target.health,1);assert.equal(target.damage,0);assert.equal(target.attack,7);assert.equal(target.baseStats.health,10);assert.equal(a.mana,6);assert.equal(room.events.find(e=>e.type==='spell').healthUpdates[0].hp,1);
+ assert.equal(target.health,1);assert.equal(target.damage,0);assert.equal(target.attack,7);assert.equal(target.baseStats.health,10);assert.equal(a.mana,8);assert.equal(room.events.find(e=>e.type==='spell').healthUpdates[0].hp,1);
 }
 for(const occupied of [false,true]){
  const {room,a,b}=setup();room.phase='prep';const attacker=place(b,card('FL03',b,{attack:4,health:5}),0);if(occupied)place(a,card('FL02',a,{attack:0,health:8}),0);const spell=card('FL20',a);a.hand.push(spell);

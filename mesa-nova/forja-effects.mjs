@@ -1,9 +1,10 @@
+import {statGain} from './forja-variant.mjs';
 export const tauntLanes=value=>Array.isArray(value)?value:Number.isInteger(value)?[value]:[];
 
 export function applyProtocol(room,{p,lane,card},helpers){
  const assault=card.protocolMode==='assault';
  const affected=[{card,amount:2},...[lane-1,lane+1].filter(i=>i>=0&&i<3).map(i=>({card:helpers.laneCard(room,p.id,i),amount:1})).filter(x=>x.card)];
- for(const entry of affected){
+ for(const entry of affected){entry.amount=statGain(entry.card,entry.amount);
   if(assault)entry.card.attackMod=(entry.card.attackMod||0)+entry.amount;
   else{
    entry.card.protocolHealth=(entry.card.protocolHealth||0)+entry.amount;
