@@ -26,7 +26,7 @@ export async function handleTorre(req,res,url){
   if(url.pathname==='/torre'){res.writeHead(308,{Location:'/torre/','Cache-Control':'no-store'});res.end();return true;}
   if(['POST','PUT','PATCH','DELETE'].includes(req.method)&&req.headers.origin!==publicOrigin()){json(res,403,'Origem inválida.');return true;}
   req.torreVisitorId=user?'user:'+user.discord_id:visitorIdentity(req,res);
-  const tower=await getRuntime();req.torreAdminId=isAdmin?user.discord_id:undefined;
+  const tower=await getRuntime();req.torreAdminId=isAdmin?user.discord_id:undefined;req.torreUserId=user?.discord_id;
   const run=async()=>{const original=req.url;req.url=url.pathname.slice('/torre'.length)+url.search;
    const headers=new Map(),parts=[];let status=200;
    const buffered={setHeader:(key,value)=>headers.set(key,value),writeHead(code,values={}){status=code;for(const [key,value]of Object.entries(values))headers.set(key,value);},end(value){if(value!==undefined)parts.push(Buffer.isBuffer(value)?value:Buffer.from(String(value)));}};

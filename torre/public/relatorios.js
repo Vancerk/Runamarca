@@ -6,6 +6,7 @@ void import('./indicadores.mjs').then(module=>{indicatorRules=module;markers();i
 const receiptKey='legion.recibos.v1',serverReports=new Map();
 let receipts={};try{receipts=JSON.parse(localStorage.getItem(receiptKey)||'{}');}catch{}
 const correctionKey='legion.corrections.v1';let corrections={};try{corrections=JSON.parse(localStorage.getItem(correctionKey)||'{}');}catch{}
+const authorNoticeLink=location.hash.match(/^#notice=([a-f0-9-]{36})$/);
 const correctionLink=location.hash.match(/^#correction=([a-f0-9-]{36})\.([a-f0-9]{48})$/);
 if(correctionLink){corrections[correctionLink[1]]=correctionLink[2];localStorage.setItem(correctionKey,JSON.stringify(corrections));window.history.replaceState(null,'',location.pathname+location.search);}
 const labels={pending_local:'Rascunho local',pending:'Aguardando mestre',approved:'Verificado pelo mestre',correction_requested:'Correção solicitada',rejected:'Rejeitado',delivery_failed:'Envio recusado',delivery_unknown:'Envio não confirmado'};
@@ -81,7 +82,19 @@ form.addEventListener('submit',async e=>{e.preventDefault();if(busy||!selected||
  }catch(error){feedback.textContent=error.message;}finally{busy=false;button.disabled=false;button.textContent=revision?'Reenviar ao mestre':'Enviar ao mestre pelo Discord';}return;}
  if(window.ReportAttachments?.hasFiles()){feedback.textContent='Os arquivos precisam do servidor para serem salvos. Seu formulário foi mantido; tente novamente quando o site estiver disponível.';return;}record.documentLinks=window.ReportAttachments?.links()||[];
  const next=[...reports,record];try{localStorage.setItem(key,JSON.stringify(next));}catch{feedback.textContent='Não foi possível salvar neste navegador. Copie o relato antes de sair.';return;}reports=next;form.reset();feedback.textContent='Rascunho salvo neste navegador. Abra o mapa pelo servidor de relatórios para enviar ao Discord.';markers();showHistory();});
-fetch('zonas.json').then(r=>r.json()).then(async data=>{zones=data;for(const zone of zones){const polygon=svg('polygon',{points:zone.points.map(p=>p.join(',')).join(' '),'data-hex':zone.id});polygons.set(zone.id,polygon);}markers();document.querySelector('header p').textContent='Clique: registrar missão · Scroll: zoom · Arraste: mover';if(correctionLink){await refresh();const report=serverReports.get(correctionLink[1]),zone=zones.find(z=>z.id===report?.hex);if(zone){select(zone);feedback.textContent=report.canEdit?'Abra “Editar e reenviar” no relatório para aplicar as correções.':'Este link não permite mais editar o relatório.';}else{status.textContent='O pedido de correção não está disponível. Confira se o servidor correto está ligado.';}}}).catch(()=>{status.textContent='Falha ao carregar as zonas. Atualize a página.';});
+async function openAuthorNotice(id){
+ try{
+  const report=await request('/torre/api/reports/'+id+'/author-decision');
+  receipts[id]=report.receipt;localStorage.setItem(receiptKey,JSON.stringify(receipts));
+  if(report.correctionReceipt){corrections[id]=report.correctionReceipt;localStorage.setItem(correctionKey,JSON.stringify(corrections));}
+  await refresh();serverReports.set(id,report);const zone=zones.find(z=>z.id===report.hex);
+  if(zone){select(zone);feedback.textContent=report.canEdit?'Veja o motivo no histórico e use “Editar e reenviar”.':'O mestre encerrou este relatório. Veja o motivo no histórico.';}
+ }catch(error){
+  status.textContent=error.message;
+  if(error.status===401){const box=document.createElement('p');box.setAttribute('role','status');box.textContent='A atualização é reservada ao autor. ';const login=document.createElement('a');login.href='/auth/discord?return='+encodeURIComponent(location.pathname+'#notice='+id);login.textContent='Entrar com o Discord do autor';login.style.color='#e6bc70';box.append(login);document.querySelector('header').append(box);}
+ }
+}
+fetch('zonas.json').then(r=>r.json()).then(async data=>{zones=data;for(const zone of zones){const polygon=svg('polygon',{points:zone.points.map(p=>p.join(',')).join(' '),'data-hex':zone.id});polygons.set(zone.id,polygon);}markers();document.querySelector('header p').textContent='Clique: registrar missão · Scroll: zoom · Arraste: mover';if(authorNoticeLink){await openAuthorNotice(authorNoticeLink[1]);}else if(correctionLink){await refresh();const report=serverReports.get(correctionLink[1]),zone=zones.find(z=>z.id===report?.hex);if(zone){select(zone);feedback.textContent=report.canEdit?'Abra “Editar e reenviar” no relatório para aplicar as correções.':'Este link não permite mais editar o relatório.';}else{status.textContent='O pedido de correção não está disponível. Confira se o servidor correto está ligado.';}}}).catch(()=>{status.textContent='Falha ao carregar as zonas. Atualize a página.';});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh();});
 void refresh();setInterval(refresh,10000);
 
