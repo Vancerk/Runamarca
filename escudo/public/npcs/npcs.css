@@ -284,8 +284,3 @@
   .panel.collapsed .ptitle .tool { display: none; }
   .secbar { display: flex; gap: 6px; justify-content: flex-end; padding: 6px 24px 0; background: var(--panel-2); }
   @media (max-width: 680px) { .secbar { padding-inline: 14px; } }
-
-  /* Navegação do site (fora do #appRoot, então não entra no HTML exportado) */
-  .escudo-voltar { max-width: 940px; margin: 0 auto; padding: 12px 16px 0; display: flex; gap: 16px; font-size: 12px; letter-spacing: .5px; }
-  .escudo-voltar a { color: var(--gold); text-decoration: none; }
-  .escudo-voltar a:hover { color: var(--gold-light); text-decoration: underline; }

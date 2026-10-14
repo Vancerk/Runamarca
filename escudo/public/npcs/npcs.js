@@ -96,81 +96,105 @@
     };
   }
 
-  const KIRAN_FULL = {"habs": [{"tipo": "Passiva", "origem": "Classe", "fase": "Graça Divina", "nome": "Trama", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Uma vez por rodada, ao usar uma habilidade num aliado, Kiran recupera 1d6 de Éter."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Fervor Guiado", "pa": "3", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nHabilidades do aliado que custam 3 🔶 ou mais custam 1 🔶 a menos."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Passos Firmes", "pa": "2", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nIgnora terreno difícil, não provoca ataque de oportunidade e não pode ser Derrubado."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Instinto Desperto", "pa": "3", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nReflexos defensivos do aliado ganham um nível a mais."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Carne Fiel", "pa": "4", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nToda restauração recebida pelo aliado aumenta 25%."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Oferenda de Sangue", "pa": "3", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nAo causar dano com habilidade instantânea, o aliado restaura 1d6 PV por alvo atingido."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Selo do Vigor", "pa": "5", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nSe o aliado gastar 6 🔶 ou mais num turno, começa o seguinte com 1 🔶 a mais."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Verbo Inquebrável", "pa": "3", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nAs habilidades do aliado não podem ser interrompidas e não pedem teste de Concentração."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Espelho da Graça", "pa": "4", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nAo sofrer dois ou mais efeitos negativos de uma vez, o aliado remove um deles."}, {"tipo": "Ativa", "origem": "Bênção", "fase": "Bênção", "nome": "Elo Sagrado", "pa": "4", "energia": "", "ps": "", "alvo": "1", "alcance": "9m", "duracao": "2r", "desc": "Bênção: 1 aliado a até 9 m, sem teste, dura até 2 rodadas; cada aliado mantém uma por vez. 3 usos por Descanso Curto.\nUma vez, como Reflexo, o aliado é levado para o lado de Kiran e evita o efeito que o atingiria."}, {"tipo": "Passiva", "origem": "Virtude", "fase": "Passiva", "nome": "Campo Consagrado", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "No início do combate, cria uma zona de 2 m de raio a até 6 m de Kiran. Aliados se movem dentro dela sem gastar PA. Por 2 🔶, a zona se move em linha até Kiran; aliado que ela atravessar ganha +2 m no próximo movimento."}, {"tipo": "Ativa", "origem": "Virtude", "fase": "Fase I", "nome": "Benção de Combate", "pa": "3", "energia": "4", "ps": "-1", "alvo": "1", "alcance": "6m", "duracao": "", "desc": "O aliado causa +1d8 de dano e +1 na CD das habilidades durante o turno dele."}, {"tipo": "Ativa", "origem": "Virtude", "fase": "Fase I", "nome": "Estigma", "pa": "3", "energia": "x", "ps": "-1", "alvo": "1", "alcance": "12m", "duracao": "", "desc": "Transfere quanto Éter quiser ao aliado, que pode usá-lo na hora. Uma vez por aliado por rodada."}, {"tipo": "Reflexo", "origem": "Virtude", "fase": "Fase I", "nome": "Ressonância do Domínio", "pa": "2", "energia": "2", "ps": "-1", "alvo": "", "alcance": "4m", "duracao": "", "desc": "A habilidade em área de um aliado ganha +2 m de alcance."}, {"tipo": "Ativa", "origem": "Virtude", "fase": "Fase II", "nome": "Harmonia do Campo", "pa": "3", "energia": "4", "ps": "-1", "alvo": "", "alcance": "4m", "duracao": "", "desc": "Cada aliado na área causa +1d6 no próximo ataque; +1d8 se houver 3 ou mais aliados."}, {"tipo": "Ativa", "origem": "Virtude", "fase": "Fase II", "nome": "Troca Sagrada", "pa": "2", "energia": "4", "ps": "-1", "alvo": "1", "alcance": "6m", "duracao": "", "desc": "Kiran e o aliado trocam de lugar, sem ataque de oportunidade. O aliado causa +1d6 no próximo ataque da rodada."}, {"tipo": "Ativa", "origem": "Virtude", "fase": "Fase II", "nome": "Reforço Divino", "pa": "4", "energia": "4", "ps": "-1", "alvo": "1", "alcance": "", "duracao": "2r", "desc": "O aliado ganha +1 na Defesa e +1 em todas as resistências."}, {"tipo": "Reflexo", "origem": "Virtude", "fase": "Fase III", "nome": "Coroa do Triunfo", "pa": "5", "energia": "6", "ps": "-1", "alvo": "1", "alcance": "8m", "duracao": "", "desc": "Antes da rolagem de ataque de um aliado: ele rola com Vantagem. Se for crítico, Kiran recupera 2d4 🔵. Uma vez por aliado a cada 2 rodadas."}, {"tipo": "Reflexo", "origem": "Virtude", "fase": "Fase III", "nome": "Retribuição Sagrada", "pa": "4", "energia": "8", "ps": "-1", "alvo": "", "alcance": "8m", "duracao": "", "desc": "Quando um aliado causa dano, o inimigo sofre +2d8 de dano verdadeiro."}, {"tipo": "Ativa", "origem": "Virtude", "fase": "Fase IV", "nome": "Consagração Efêmera", "pa": "x", "energia": "8", "ps": "-1", "alvo": "1", "alcance": "6m", "duracao": "", "desc": "⌛ 2 por Descanso Curto. O aliado entra em Exaltação e age no turno de Kiran, somando metade dos PA de Kiran aos dele. Kiran ainda pode usar habilidades."}, {"tipo": "Reflexo", "origem": "Virtude", "fase": "Fase IV", "nome": "Aceleração Divina", "pa": "5", "energia": "8", "ps": "-1", "alvo": "1", "alcance": "6m", "duracao": "", "desc": "⌛ 2 por Descanso Longo. Quando um aliado termina o turno com PA sobrando, faz uma ação de qualquer custo gastando só o que restou."}, {"tipo": "Passiva", "origem": "Árvore", "fase": "Série 1 · R3", "nome": "Litania da Calmaria", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Durante um descanso, conversa com os aliados: eles recuperam 2d6 e reduzem um nível de Exaustão."}, {"tipo": "Passiva", "origem": "Árvore", "fase": "Série 1 · R3", "nome": "Presença Reconfortante", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Aliados a até 3 m têm a CD dos efeitos negativos que sofrem reduzida em 1."}, {"tipo": "Passiva", "origem": "Árvore", "fase": "Série 1 · R3", "nome": "Cântico Sagrado", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Uma vez por combate, por 2 rodadas: aliados num raio de 6 m causam +1d4 de dano."}, {"tipo": "Passiva", "origem": "Árvore", "fase": "Série 2 · R2", "nome": "Devoção Renovada", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Aliados adjacentes a Kiran na iniciativa recebem Proteção Divina na primeira rodada."}, {"tipo": "Passiva", "origem": "Árvore", "fase": "Série 2 · R2", "nome": "Súplica do Desespero", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Uma vez por Descanso Curto, quando um aliado bonificado por Kiran for atacado, o ataque tem Desvantagem."}, {"tipo": "Passiva", "origem": "Árvore", "fase": "Série 2 · R2", "nome": "Transbordamento Espiritual", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Todo aliado bonificado por Kiran ganha uma aura que causa 1d8 de dano de luz em quem o atacar."}, {"tipo": "Inato", "origem": "Especialização", "fase": "Monarca", "nome": "Espectros (Lacaios)", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "5 Lacaios permanentes (2 + Nível/5), com estatísticas de Ossada de Baluarte, Brutamonte ou Incursor (muda num Descanso Curto). Cada Lacaio gasta 2 🔶 de Kiran para se mover e atacar. Voltam após Descanso Curto. Testes usam o modificador principal; sem perícias. Novo Lacaio: teste de Intelecto contra a CD da criatura.\nBaluarte (Ossada): 60 PV, RD 1d8, 5d6 físico, provoca em 2 m. Brutamonte (Ossada): 40 PV, 6d8 físico, +1 no ataque. Incursor (Ossada): 15 PV, 6d8 físico a 6 m; ao acertar, 1d4: Lentidão, Sangramento, −1 ataque ou −1 defesa por 2 turnos."}, {"tipo": "Inato", "origem": "Especialização", "fase": "Monarca", "nome": "Reanimação de Cadáveres", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Quando um inimigo cai, pode reanimá-lo (máximo de 2 Reanimados). 1d2: com 2, traz uma habilidade do original (gasta o Éter de Kiran); com 1, só ataques básicos. Agem no fim da iniciativa com 5 🔶 por rodada; só Kiran os cura. Destruído: Kiran recupera 1d10 🔵. Por 2 🔶, vê e ouve através de um Reanimado por 1 rodada."}, {"tipo": "Ativa", "origem": "Especialização", "fase": "Monarca", "nome": "Marca do Monarca", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Um servo ativo vira General até o fim do combate ou até ser destruído: 3 PA próprios, +15 PV máximos e uma habilidade do arquétipo. Baluarte: aura de 3 m com 1d6 de RD física. Brutamonte: margem de crítico −1; ao eliminar, ataca o mais próximo por 1 🔶. Incursor: 2 efeitos por ataque e +3 m de alcance."}, {"tipo": "Passiva", "origem": "Especialização", "fase": "Passiva", "nome": "Corrente da Vida", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Quando um Lacaio ou Reanimado é destruído, Kiran recupera 1d4 🔵. Se ele durou 2 rodadas em combate, recupera também 1 PA."}, {"tipo": "Ativa", "origem": "Especialização", "fase": "Módulo I", "nome": "Erga-se", "pa": "3", "energia": "5", "ps": "-2", "alvo": "1", "alcance": "2m", "duracao": "In", "desc": "Custa também 5 PV. Evoca um espectro ou reanima um cadáver próximo, mesmo em combate. Reanimar exige teste de Intelecto contra a CD da criatura."}, {"tipo": "Ativa", "origem": "Especialização", "fase": "Módulo II", "nome": "Vislumbre do Fim", "pa": "4", "energia": "14", "ps": "-2", "alvo": "", "alcance": "Cone 3m", "duracao": "In", "desc": "Criaturas vivas fazem Acuidade contra a CD ou sofrem 3d8 de dano verdadeiro e Necrose por 6 turnos. Reanimados no cone são curados em 2d8. Metade do dano vira cura para Kiran."}, {"tipo": "Ativa", "origem": "Especialização", "fase": "Módulo III", "nome": "Toque da Vida", "pa": "3", "energia": "12", "ps": "-2", "alvo": "1", "alcance": "3m", "duracao": "In", "desc": "3d10 de dano verdadeiro, ou 5d10 se o alvo já tiver efeito negativo (que ganha +2 turnos). Degradação por 6 turnos: 2d6 corrosivo a cada 3 turnos, que cura Kiran. Reanimados que atacarem o alvo causam +1d8."}, {"tipo": "Magia", "origem": "Domínio", "fase": "Grau Nulo", "nome": "Toque Restaurador", "pa": "3", "energia": "2", "ps": "", "alvo": "1", "alcance": "Toque", "duracao": "In", "desc": "T · Restaura 1d6 PV; +1d4 se o alvo estiver abaixo da metade."}, {"tipo": "Magia", "origem": "Domínio", "fase": "Grau Nulo", "nome": "Marca da Vitalidade", "pa": "1", "energia": "2", "ps": "", "alvo": "1", "alcance": "3m", "duracao": "2r", "desc": "V T · 5 de Vida Extra enquanto durar."}, {"tipo": "Reflexo", "origem": "Domínio", "fase": "Grau Nulo", "nome": "Negar Dor", "pa": "1", "energia": "2", "ps": "", "alvo": "1", "alcance": "Per", "duracao": "In", "desc": "V T · Quando um aliado sofre dano: reduz em 1d8 +10 (Mod. Secundário). Kiran sofre metade do reduzido como dano verdadeiro."}, {"tipo": "Magia", "origem": "Domínio", "fase": "Grau Nulo", "nome": "Drenar Essência", "pa": "3", "energia": "2", "ps": "", "alvo": "1", "alcance": "Ao", "duracao": "In", "desc": "F · Acuidade: se falhar, +1d6 mágico; Kiran cura metade do dano."}, {"tipo": "Magia", "origem": "Domínio", "fase": "1º Grau", "nome": "Grilhões d’Alma", "pa": "2", "energia": "4", "ps": "", "alvo": "1", "alcance": "Ao", "duracao": "In", "desc": "F · Tenacidade: se falhar, Lentidão até o fim do próximo turno do alvo e 1d6 mágico a cada 2 turnos enquanto durar."}, {"tipo": "Reflexo", "origem": "Domínio", "fase": "1º Grau", "nome": "Barreira Espectral", "pa": "2", "energia": "4", "ps": "", "alvo": "1", "alcance": "Per", "duracao": "In", "desc": "F V · Quando uma criatura no alcance sofre dano: 10 de Vida Extra contra o ataque, ou 15 se o dano for mágico."}, {"tipo": "Magia", "origem": "Domínio", "fase": "1º Grau", "nome": "Maldição do Feiticeiro", "pa": "3", "energia": "4", "ps": "", "alvo": "1", "alcance": "8m", "duracao": "2r", "desc": "V T · +1d6 mágico; cada acerto de Kiran ou aliados no alvo cura 1d4 o atacante."}, {"tipo": "Magia", "origem": "Domínio", "fase": "1º Grau", "nome": "Raios de Luz Sagrada", "pa": "3", "energia": "4", "ps": "", "alvo": "1", "alcance": "6m", "duracao": "In", "desc": "V F · +1d8 mágico, dobrado contra mortos-vivos e entidades do plano sombrio; o alvo não pode ficar Furtivo ou Invisível por 2 rodadas."}, {"tipo": "Magia", "origem": "Domínio", "fase": "2º Grau", "nome": "Manto de Alma", "pa": "2", "energia": "6", "ps": "", "alvo": "", "alcance": "3m", "duracao": "2r", "desc": "V T · Véu ao redor de Kiran: hostis que entram ou começam o turno nele sofrem 2d6 mágico verdadeiro; atravessar custa +1 🔶."}, {"tipo": "Magia", "origem": "Domínio", "fase": "2º Grau", "nome": "Arma Fantasma", "pa": "2", "energia": "6", "ps": "", "alvo": "1", "alcance": "Toque", "duracao": "1r", "desc": "T · A arma causa +2d6 mágico e ignora Vida Extra e barreiras mágicas."}, {"tipo": "Magia", "origem": "Domínio", "fase": "2º Grau", "nome": "Vórtice Espectral", "pa": "4", "energia": "6", "ps": "", "alvo": "1", "alcance": "Ao", "duracao": "In", "desc": "F T · Acuidade: se falhar, +2d6 mágico e Deterioração até o fim do próximo turno do alvo; Kiran cura metade."}, {"tipo": "Magia", "origem": "Domínio", "fase": "3º Grau", "nome": "Espírito Vingador", "pa": "4", "energia": "12", "ps": "", "alvo": "2", "alcance": "6m", "duracao": "3r", "desc": "V T F · Invoca um guerreiro caído (30 PV, 2 PA, 2d8 mágico por ataque) que persegue um alvo."}, {"tipo": "Magia", "origem": "Domínio", "fase": "3º Grau", "nome": "Maré de Almas", "pa": "4", "energia": "12", "ps": "", "alvo": "", "alcance": "6m", "duracao": "In", "desc": "V F · +3d6 mágico em área; Acuidade: se falhar, Perda Energética por 4 turnos (1 natural: também Supressão I)."}, {"tipo": "Magia", "origem": "Domínio", "fase": "3º Grau", "nome": "Ruína de Carne", "pa": "3", "energia": "12", "ps": "", "alvo": "1", "alcance": "Ao", "duracao": "In", "desc": "F T · Sustentar: se falhar, 3d8 mágico corrosivo e Danação por 4 turnos (+1d6 sempre que sofrer dano)."}, {"tipo": "Magia", "origem": "Domínio", "fase": "4º Grau", "nome": "Comunhão Espiritual", "pa": "4", "energia": "20", "ps": "", "alvo": "", "alcance": "", "duracao": "10min", "desc": "V T · Sobre restos, objeto ou lugar ligado ao morto: até 3 perguntas a um eco dele. Respostas simples e honestas, mas ele pode omitir."}, {"tipo": "Magia", "origem": "Domínio", "fase": "4º Grau", "nome": "Vigília do Guardião", "pa": "3", "energia": "20", "ps": "", "alvo": "1", "alcance": "", "duracao": "Descanso", "desc": "V · Durante o descanso, o espírito vela: detecta criaturas a 30 m e acorda na hora; Vantagem e +2 para achar Furtivos e Invisíveis."}, {"tipo": "Magia", "origem": "Domínio", "fase": "4º Grau", "nome": "Benção do Viajante", "pa": "4", "energia": "20", "ps": "", "alvo": "", "alcance": "6m", "duracao": "8h", "desc": "V T · Aliados não se cansam andando, comida rende o dobro e +3 em Campismo."}, {"tipo": "Magia", "origem": "Domínio", "fase": "5º Grau", "nome": "Invasão das Sombras", "pa": "4", "energia": "30", "ps": "", "alvo": "", "alcance": "Per", "duracao": "2r", "desc": "F · O campo vira plano de sombra: luz mundana se apaga, inimigos sem visão mágica no escuro ficam Cegos, Kiran se teleporta entre sombras sem PA."}, {"tipo": "Magia", "origem": "Domínio", "fase": "5º Grau · Psique", "nome": "Sono Profundo", "pa": "4", "energia": "30", "ps": "", "alvo": "1", "alcance": "Ao", "duracao": "2r", "desc": "V F · Fibra: se falhar, cai em Sono Profundo (Inconsciente). Contato físico pede nova Fibra; dano direto acorda. Ao acordar, Torpor até o fim do próximo turno."}, {"tipo": "Magia", "origem": "Domínio", "fase": "5º Grau", "nome": "Percepção do Oculto", "pa": "5", "energia": "30", "ps": "", "alvo": "", "alcance": "20m", "duracao": "2r", "desc": "V T · Revela ilusões, passagens ocultas e entidades etéreas; Vantagem em Acuidade contra efeitos espirituais."}, {"tipo": "Passiva", "origem": "Arte de Batalha", "fase": "Fluxo do Éter", "nome": "Canalização Arcana", "pa": "", "energia": "", "ps": "", "alvo": "", "alcance": "", "duracao": "", "desc": "Pode ignorar o custo de Éter de uma magia de Domínio somando 3 🔶 ao custo de ação."}, {"tipo": "Ativa", "origem": "Arte de Batalha", "fase": "Fluxo do Éter", "nome": "Rajada Etérea", "pa": "3", "energia": "", "ps": "", "alvo": "1", "alcance": "Ao", "duracao": "In", "desc": "⌛ 2 por Descanso Longo. +1d8 mágico; Acuidade ou Desvantagem na próxima defesa."}, {"tipo": "Ativa", "origem": "Arte de Batalha", "fase": "Fluxo do Éter", "nome": "Pulso Arcano", "pa": "3", "energia": "", "ps": "", "alvo": "", "alcance": "5m", "duracao": "In", "desc": "⌛ 1 por Descanso Médio. Onda ao redor: +3d8 mágico e empurra 2 m."}], "tracos": [{"tipo": "Traço", "nome": "Visão Noturna (Elfo)", "pontos": "", "texto": "Enxerga no escuro."}, {"tipo": "Traço", "nome": "Mente Treinada (Elfo)", "pontos": "", "texto": "Vantagem em testes de resistência contra Controle Mental e Sono."}, {"tipo": "Traço", "nome": "Linhagem Sagrada (Elfo Imaculado)", "pontos": "", "texto": "Uma vez por Descanso Curto, ao lançar uma habilidade mágica, o custo de Éter cai 25%."}, {"tipo": "Traço", "nome": "Convicção (Devoto)", "pontos": "", "texto": "Uma vez por dia, ao chegar a 0 PV, faz um teste de Sorte. Com 14 ou mais, estabiliza com 1 PV."}], "contadores": [{"nome": "Bênçãos", "atual": 3, "max": 3}, {"nome": "Lacaios", "atual": 5, "max": 5}, {"nome": "Reanimados", "atual": 0, "max": 2}]};
-  const KIRAN_OLD = ['Grilhões d’Alma','Toque da Vida','Vislumbre do Fim','Erga-se','Negar Dor','Barreira Espectral'];
-
-  const KIRAN_CMB = {
-    'Trama': { aplica:'buff', uso:'', efeito:'Kiran recupera 1d6 de Éter ao usar a habilidade no aliado (1× por rodada)', recupera:'1d6' },
-    'Campo Consagrado': { aplica:'buff', uso:'início do combate', efeito:'Zona de 2 m: aliados se movem dentro dela sem gastar PA' },
-    'Cântico Sagrado': { aplica:'buff', uso:'1× por combate', efeito:'Aliados a até 6 m causam +1d4 de dano por 2 rodadas' },
-    'Presença Reconfortante': { aplica:'buff', efeito:'Aliados a até 3 m: CD dos efeitos negativos que sofrem −1' },
-    'Devoção Renovada': { aplica:'buff', uso:'só na 1ª rodada', efeito:'Aliados adjacentes a Kiran na iniciativa recebem Proteção Divina' },
-    'Súplica do Desespero': { aplica:'buff', uso:'1× por Descanso Curto', efeito:'Ataque contra o aliado bonificado tem Desvantagem' },
-    'Transbordamento Espiritual': { aplica:'buff', efeito:'Aliado bonificado ganha aura: 1d8 de dano de luz em quem o atacar' },
-    'Canalização Arcana': { aplica:'magia', especial:'canalizacao', efeito:'Paga o Éter de uma magia de Domínio com +3 🔶' },
-    'Linhagem Sagrada': { aplica:'magia', uso:'1× por Descanso Curto', especial:'desconto25', efeito:'O custo de Éter de uma habilidade mágica cai 25%' }
+  // ── exemplo aleatório ──
+  // Gera um NPC de exemplo diferente a cada vez: povo, nome, nível, selo e um de quatro
+  // arquétipos (habilidades, perícias e combos coerentes entre si). Serve só de ponto de partida.
+  const EX_NOMES = {
+    'Humano': { m: ['Cedric','Marcus','Sevrin','Garron','Dorian','Halden','Osric','Reyner'], f: ['Helene','Branwen','Maela','Aveline','Isolde','Liora','Petra','Sabine'], s: ['Dorn','Draholt','Feldran','Voss','Ashworth','Blackwood','Lockhart','Fenwick'] },
+    'Elfo Original': { m: ['Aelindor','Thalorien','Vaelor','Calenmir','Ithrandir'], f: ['Mirael','Sylvara','Elowen','Calantha','Ithrenna'], s: ['Moonwhisper','Nightweave','Thornveil','Silverleaf','Dawnsinger'] },
+    'Vaelita': { m: ['Kael','Zephyrion','Solareth','Lyrond','Ethrion'], f: ['Astraea','Zephyra','Solenne','Lyranna','Solmira'], s: ['Starforged','Etherbloom','Fluxweaver','Aetherfall','Novaspire'] },
+    'Sylvanis': { m: ['Bracken','Rowan','Fernal','Aspen','Cedar'], f: ['Briar','Ivywen','Willowen','Sagewen','Larkspur'], s: ['Mossbind','Willowmere','Bramblewood','Greenhollow','Rootwhisper'] },
+    'Jaghut': { m: ['Karnok','Vorthak','Ozrund','Drommek','Molgrund'], f: ['Urlaith','Kethara','Malgrid','Vhalka','Kharune'], s: ['Punho-de-Pedra','Olho-Fundo','Barbarrocha','Veia-Negra','Osso-Antigo'] },
+    'Faelen': { m: ['Pip','Milo','Bramwell','Wick','Fennick'], f: ['Nettle','Tilly','Poppy','Wisp','Marigold'], s: ['Cogwhistle','Bramblefoot','Quickspanner','Tinkerroot','Lampwick'] },
+    'Lupino': { m: ['Wolfram','Ulfric','Haldor','Kolvar','Vaskan'], f: ['Ylva','Astrid','Freyda','Runa','Ingrith'], s: ['Moonhowl','Silverfang','Ironjaw','Duskrunner','Redclaw'] },
+    'Vampiro': { m: ['Draven','Alaric','Cassius','Malachor'], f: ['Vespera','Seraphina','Morwenna','Ravenna'], s: ['Duskmantle','Ravenscar','Bloodmere','Grimhallow'] }
   };
-  const KIRAN_USOS = {
-    'Consagração Efêmera': { max:2, recarga:'curto' }, 'Aceleração Divina': { max:2, recarga:'longo' },
-    'Cântico Sagrado': { max:1, recarga:'combate' }, 'Súplica do Desespero': { max:1, recarga:'curto' },
-    'Linhagem Sagrada': { max:1, recarga:'curto' }, 'Rajada Etérea': { max:2, recarga:'longo' }, 'Pulso Arcano': { max:1, recarga:'medio' },
-    'Trama': { max:1, recarga:'rodada' }, 'Campo Consagrado': { max:1, recarga:'combate' }, 'Devoção Renovada': { max:1, recarga:'combate' }
-  };
-  function applyKiranCmb(n) {
-    let changed = false;
-    n.habs.forEach(h => {
-      if (!h.uso) h.uso = blankUso();
-      if (h.uso.max || h.uso.pool) return;
-      if (h.origem === 'Bênção') { h.uso.pool = 'Bênçãos'; changed = true; }
-      else if (KIRAN_USOS[h.nome]) { Object.assign(h.uso, KIRAN_USOS[h.nome], { atual: KIRAN_USOS[h.nome].max }); changed = true; }
-    });
-    const bc = n.contadores.find(k => k.nome === 'Bênçãos'); if (bc && !bc.recarga) { bc.recarga = 'curto'; changed = true; }
-    const lc = n.contadores.find(k => k.nome === 'Lacaios'); if (lc && !lc.recarga) { lc.recarga = 'curto'; changed = true; }
-    if (!n.habs.some(h => h.nome === 'Linhagem Sagrada')) {
-      n.habs.push({ id: uid(), tipo:'Passiva', origem:'Linhagem', fase:'Elfo Imaculado', nome:'Linhagem Sagrada', pa:'', energia:'', ps:'', alvo:'', alcance:'', duracao:'', desc:'Uma vez por Descanso Curto, ao lançar uma habilidade mágica, o custo de Éter cai 25%.', cmb: blankCmb(), uso: { max:1, atual:1, recarga:'curto', pool:'' } });
-      changed = true;
-    }
-    n.habs.forEach(h => {
-      const cfg = KIRAN_CMB[h.nome];
-      if (!h.cmb) h.cmb = blankCmb();
-      if (cfg && h.cmb.aplica === 'nunca' && !h.cmb.efeito) { Object.assign(h.cmb, cfg); changed = true; }
-    });
-    return changed;
-  }
-
-  function exampleKiran() {
+  const EX_PERSONALIDADE = ['Fala alto e gesticula muito ao contar histórias.','Cumprimenta estranhos como se já os conhecesse.','Nunca olha diretamente nos olhos de quem conversa.','Observa tudo em silêncio antes de dizer qualquer coisa.','É brutalmente honesto(a), mesmo quando não deveria.','Trata qualquer desconhecido com desconfiança imediata.','Ri em momentos inapropriados quando está nervoso(a).','Nunca termina uma frase sem um provérbio.'];
+  const H = (tipo, origem, fase, nome, pa, energia, alcance, duracao, desc, cmb, uso) => ({ tipo, origem, fase, nome, pa: String(pa), energia: String(energia), ps: '', alvo: '', alcance, duracao, desc, cmb: Object.assign(blankCmb(), cmb || {}), uso: Object.assign(blankUso(), uso || {}) });
+  const EX_ARQUETIPOS = [
+    { papel: 'Mercenário de aluguel', classe: 'Guerreiro', recurso: 'Estamina', dado: 8, rd: 2, desloc: 10, ordem: ['fis','vig','des'], cd: 'fis', atk: 'fis', def: 'fis',
+      arma: { nome: 'Espada Longa', dados: '1d10', attr: 'fis', tipo: 'físico' },
+      pericias: [['Atletismo','fis'],['Intimidação','car'],['Iniciativa','ins']],
+      equip: 'Espada Longa (1d10 + Físico) · Cota de malha (RD 2) · bolsa com moedas de três contratos diferentes',
+      tatica: 'Abre com Investida para chegar ao alvo mais frágil. Guarda 2 🔶 para Aparar Firme quando estiver cercado.',
+      habs: () => [
+        H('Ativa','Classe','Fase I','Golpe Pesado',3,3,'corpo a corpo','', 'Ataque corpo a corpo com +1d6 de dano adicional. Se acertar, o alvo faz Tenacidade contra a CD ou fica Derrubado.'),
+        H('Ativa','Classe','Fase I','Investida',2,2,'6m','', 'Avança até 6 m em linha reta e ataca; ignora terreno difícil nesse movimento.'),
+        H('Reflexo','Classe','Fase I','Aparar Firme',2,2,'','', 'Ao ser atacado corpo a corpo, soma +2 na Defesa contra esse ataque.'),
+        H('Passiva','Classe','Passiva','Fôlego de Batalha','','','','', 'Uma vez por combate, ao cair abaixo da metade dos PV, recupera 1d8 de Estamina.', { aplica:'nunca' }, { max:1, atual:1, recarga:'combate' })
+      ],
+      combos: [['Abrir caminho','Use quando o alvo estiver a até 6 m.',['Investida','Golpe Pesado']], ['Pressão','Dois golpes da arma e um Golpe Pesado no mesmo turno.',['__arma','Golpe Pesado']]] },
+    { papel: 'Etermante de rua', classe: 'Arcanista', recurso: 'Éter', dado: 6, rd: 0, desloc: 10, ordem: ['con','int','ins'], cd: 'int', atk: 'con', def: 'des',
+      arma: { nome: 'Cajado curto', dados: '1d6', attr: 'con', tipo: 'mágico' },
+      pericias: [['Étermancia','con'],['Pesquisa','int'],['Blefe','car']],
+      equip: 'Cajado curto (1d6 + Controle, mágico) · casaco com bolsos cheios de anotações · frasco de tinta luminosa',
+      tatica: 'Fica atrás da linha de frente. Prende o alvo com Correntes de Fluxo e termina com Dardos Etéreos. Guarda Éter para o Escudo Arcano.',
+      habs: () => [
+        H('Magia','Classe','Fase I','Dardo Etéreo',2,3,'12m','', 'Projétil mágico com teste de ataque: 2d6 de dano mágico.'),
+        H('Magia','Classe','Fase I','Correntes de Fluxo',3,4,'9m','1r', 'O alvo faz Acuidade contra a CD; se falhar, fica com Lentidão até o fim do próximo turno e sofre 1d8 de dano mágico.'),
+        H('Reflexo','Classe','Fase I','Escudo Arcano',2,3,'','', 'Ao ser atacado, ganha 8 de Vida Extra contra esse ataque.'),
+        H('Passiva','Classe','Passiva','Fonte Instável','','','','', 'Ao gastar 6 de Éter ou mais num turno, o próximo Dardo Etéreo custa 1 de Éter a menos.')
+      ],
+      combos: [['Prender e queimar','Correntes primeiro: se o alvo falhar na Acuidade, os dardos acertam um alvo lento.',['Correntes de Fluxo','Dardo Etéreo','Dardo Etéreo']]] },
+    { papel: 'Batedor da fronteira', classe: 'Caçador', recurso: 'Estamina', dado: 8, rd: 1, desloc: 12, ordem: ['des','ins','vig'], cd: 'ins', atk: 'des', def: 'des',
+      arma: { nome: 'Arco curto', dados: '1d8', attr: 'des', tipo: 'físico' },
+      pericias: [['Identificação','ins'],['Furtividade','des'],['Natureza','int'],['Campismo','des']],
+      equip: 'Arco curto (1d8 + Destreza) · aljava com 20 flechas · capa de couro manchada de lama',
+      tatica: 'Marca o alvo mais perigoso logo no início e atira de longe. Se alguém chegar perto, usa Recuo Tático.',
+      habs: () => [
+        H('Ativa','Classe','Fase I','Marcar Presa',1,1,'18m','3r', 'Marca um alvo visível: os ataques do batedor contra ele causam +1d4 de dano.'),
+        H('Ativa','Classe','Fase I','Tiro Certeiro',3,3,'24m','', 'Ataque à distância com +1d8 de dano adicional; ignora cobertura leve.'),
+        H('Reflexo','Classe','Fase I','Recuo Tático',2,2,'','', 'Ao ser alvo de ataque corpo a corpo, recua 3 m sem provocar ataque de oportunidade.'),
+        H('Passiva','Classe','Passiva','Olhos de Falcão','','','','', '+2 em Identificação para notar emboscadas, rastros e armadilhas.')
+      ],
+      combos: [['Caçada','Marque primeiro: o +1d4 vale para o Tiro Certeiro e para o disparo seguinte.',['Marcar Presa','Tiro Certeiro','__arma']]] },
+    { papel: 'Capitão da guarda', classe: 'Cavaleiro', recurso: 'Estamina', dado: 8, rd: 3, desloc: 10, ordem: ['fis','car','vig'], cd: 'car', atk: 'fis', def: 'fis',
+      arma: { nome: 'Lança e escudo', dados: '1d8', attr: 'fis', tipo: 'físico' },
+      pericias: [['Liderança','car'],['Intimidação','car'],['Atletismo','fis']],
+      equip: 'Lança (1d8 + Físico) · escudo com o brasão da cidade · armadura média (RD 3) · apito de comando',
+      tatica: 'Nunca luta sozinho: posiciona os guardas em formação e usa Ordem de Ataque no aliado com melhor posição.',
+      habs: () => [
+        H('Ativa','Classe','Fase I','Golpe de Escudo',2,2,'corpo a corpo','', 'Empurra o alvo 2 m; ele faz Tenacidade contra a CD ou fica Atordoado até o fim do próximo turno.'),
+        H('Ativa','Classe','Fase I','Ordem de Ataque',2,2,'9m','', 'Um aliado a até 9 m faz um ataque básico imediatamente.'),
+        H('Ativa','Classe','Fase II','Formação de Escudos',3,4,'3m','2r', 'Aliados adjacentes ganham +1 na Defesa por 2 rodadas.'),
+        H('Passiva','Classe','Passiva','Voz de Comando','','','','', 'Aliados que o veem têm +1 em resistências contra Amedrontado.')
+      ],
+      combos: [['Quebrar a linha','Atordoa quem segura a frente e manda um aliado aproveitar a abertura.',['Golpe de Escudo','Ordem de Ataque']]] }
+  ];
+  const ex = lista => lista[Math.floor(Math.random() * lista.length)];
+  function exemploAleatorio() {
+    const arq = ex(EX_ARQUETIPOS);
+    const raca = ex(Object.keys(EX_NOMES));
+    const fem = Math.random() < 0.5;
+    const nomes = EX_NOMES[raca];
+    const nivel = 3 + Math.floor(Math.random() * 10);
+    const sorteioSelo = Math.random();
+    const selo = sorteioSelo < 0.45 ? 'none' : sorteioSelo < 0.75 ? 'elite' : sorteioSelo < 0.95 ? 'chefe' : 'soberano';
+    const t = teto(nivel);
+    const attrs = { fis:0, vig:0, con:0, des:0, ins:0, int:0, car:0 };
+    Object.keys(attrs).forEach(k => { attrs[k] = Math.floor(Math.random() * 2); });
+    attrs[arq.ordem[0]] = t; attrs[arq.ordem[1]] = Math.max(1, t - 2); attrs[arq.ordem[2]] = Math.max(1, Math.floor(t / 2));
     const n = blankNpc();
     Object.assign(n, {
-      nome: 'Kiran Veyr', raca: 'Elfo Imaculado', classe: 'Clérigo', virtude: 'Teurgo', especializacao: 'Necromante',
-      papel: 'Exemplo · Guardião do Fim', nivel: 16, selo: 'none', racaPV: 10, dado: 6, dadoModo: 'cheio', desloc: 12, rd: 2,
-      attrs: { fis:0, vig:6, con:10, des:4, ins:3, int:10, car:2 },
-      cdAttr: 'int', atkAttr: 'con', defAttr: 'con',
-      arma: { nome: 'Cajado', dados: '1d8', attr: 'con', tipo: 'mágico' },
-      pericias: [
-        { nome:'Religião', attr:'int', treinada:true, extra:0 },
-        { nome:'Medicina', attr:'int', treinada:true, extra:0 },
-        { nome:'História', attr:'int', treinada:true, extra:0 },
-        { nome:'Intuição', attr:'int', treinada:true, extra:0 },
-        { nome:'Étermancia', attr:'con', treinada:true, extra:0 }
-      ],
-      tracos: KIRAN_FULL.tracos.map(t => ({ ...t })),
-      habs: KIRAN_FULL.habs.map(h => ({ ...h, id: uid() })),
-      contadores: KIRAN_FULL.contadores.map(c => ({ ...c })),
-      equip: 'Cajado (1d8 + Controle, mágico) · Armadura Leve (RD 2) · bastão gravado com os nomes dos mortos',
-      tatica: 'Abre com Vislumbre do Fim contra grupos. Contra um alvo forte: Grilhões → Toque da Vida. Guarda PA para Negar Dor e Barreira Espectral nos aliados.',
-      historia: 'Elfo de 107 anos a serviço do Templo de Kaeryon. Ficha de exemplo: edite à vontade ou crie um NPC novo.'
+      nome: (fem ? ex(nomes.f) : ex(nomes.m)) + ' ' + ex(nomes.s), raca, classe: arq.classe, papel: 'Exemplo · ' + arq.papel,
+      nivel, selo, racaPV: 10, dado: arq.dado, dadoModo: 'cheio', desloc: arq.desloc, rd: arq.rd, recurso: arq.recurso,
+      attrs, cdAttr: arq.cd, atkAttr: arq.atk, defAttr: arq.def, arma: { ...arq.arma },
+      pericias: arq.pericias.map(([nome, attr]) => ({ nome, attr, treinada: true, extra: 0 })),
+      habs: arq.habs().map(h => ({ ...h, id: uid() })),
+      equip: arq.equip, tatica: arq.tatica,
+      historia: `Personalidade: ${ex(EX_PERSONALIDADE)}\nFicha de exemplo gerada aleatoriamente: edite à vontade, exclua ou gere outra em Importar → “Adicionar exemplo aleatório”.`
     });
-    n.habs.forEach(h => { h.cmb = blankCmb(); h.uso = blankUso(); });
-    n.contadores.forEach(k => k.recarga = '');
-    applyKiranCmb(n);
-    n.combos = presetCombos(n);
+    const id = nome => (n.habs.find(h => h.nome === nome) || {}).id || '';
+    n.combos = arq.combos.map(([nome, nota, passos]) => ({ id: uid(), nome, nota, passos: passos.map(p => stepFromHab(n, p === '__arma' ? ARMA : id(p))) }));
     return n;
   }
+  // Fichas antigas trazem o exemplo fixo do Kiran Veyr; se for a única ficha, troca por um exemplo aleatório.
+  const ehKiranExemplo = n => n && n.nome === 'Kiran Veyr' && String(n.papel || '').startsWith('Exemplo');
 
   // ── estado e armazenamento ──
   let db = { npcs: [], current: null };
   let canStore = true;
-  let upgraded = false, upgradedCombos = false;
+  let trocouExemplo = false;
   const filters = {};
   const editing = new Set();
 
@@ -188,21 +212,8 @@
     }
     if (!fromStore && SEED && Array.isArray(SEED.npcs) && SEED.npcs.length) db = { npcs: JSON.parse(JSON.stringify(SEED.npcs)), current: SEED.current || null };
     db.npcs = db.npcs.map(normalize);
-    if (!db.npcs.length) { const k = exampleKiran(); db.npcs.push(k); db.current = k.id; }
-    db.npcs.forEach(n => {
-      const names = n.habs.map(h => h.nome);
-      if (n.nome === 'Kiran Veyr' && String(n.papel).startsWith('Exemplo') && names.length === KIRAN_OLD.length && KIRAN_OLD.every(x => names.includes(x))) {
-        n.habs = KIRAN_FULL.habs.map(h => ({ ...h, id: uid() }));
-        if (n.tracos.length <= 1) n.tracos = KIRAN_FULL.tracos.map(t => ({ ...t }));
-        if (!n.contadores.length) n.contadores = KIRAN_FULL.contadores.map(c => ({ ...c }));
-        upgraded = true;
-      }
-      if (n.nome === 'Kiran Veyr' && String(n.papel).startsWith('Exemplo') && !n.combos.length && n.habs.length > 20) { n.combos = presetCombos(n); upgradedCombos = true; }
-      if (n.nome === 'Kiran Veyr' && String(n.papel).startsWith('Exemplo') && n.habs.length > 20) {
-        if (applyKiranCmb(n)) upgradedCombos = true;
-        if (n.combos.length && !n.combos.some(cb => cb.nome === 'Escudo do Rebanho')) { const extra = presetCombos(n).find(cb => cb.nome === 'Escudo do Rebanho'); if (extra) { n.combos.push(extra); upgradedCombos = true; } }
-      }
-    });
+    if (db.npcs.length === 1 && ehKiranExemplo(db.npcs[0])) { db.npcs = []; trocouExemplo = true; }
+    if (!db.npcs.length) { const k = exemploAleatorio(); db.npcs.push(k); db.current = k.id; }
     if (!db.npcs.find(n => n.id === db.current)) db.current = db.npcs[0].id;
   }
   let saveTimer = null;
@@ -587,7 +598,7 @@
           <summary>Regras usadas nos cálculos</summary>
           <ul>
             <li><b>PV</b> = PV da raça + (Dado de Classe × Nível) + (Mod. de Vigor ÷ 2 × Nível, arredondado para baixo), multiplicado pelo Selo. Guia de Criação de Criaturas, cap. 17.</li>
-            <li><b>Dado de Classe</b>: o guia não diz se é o valor cheio ou a metade garantida. “Valor cheio” dá 154 PV ao Kiran; “metade” dá 106.</li>
+            <li><b>Dado de Classe</b>: o guia não diz se é o valor cheio ou a metade garantida. Escolha “valor cheio” ou “metade” no campo do dado.</li>
             <li><b>Selo de Ameaça</b>: Sem selo ×1 · Elite ×2 e +1 · Chefe ×3 e +2 · Soberano ×4 e +3 em ataque, defesa e CD. Nunca muda dano, atributos ou equipamento. 10 🔶 renovados a cada rodada.</li>
             <li><b>Energia</b>: coluna da Tabela de Progressão (Manual 8.1), ×1 sem selo e Elite, ×1,5 Chefe, ×2 Soberano. Acima do nível 20 a tabela para em 120; use o campo manual.</li>
             <li><b>CD</b> = 10 + atributo escolhido + Nível ÷ 4 (mín. 1) + Selo. <b>Ataque</b> = atributo da arma + Selo. <b>Aparar</b> = modificador da arma; <b>Esquiva</b> = Destreza.</li>
@@ -963,7 +974,7 @@
     $('#importDrawer').hidden = true; $('#importText').value = '';
     render(); save(); setStatus(`${added.length} ficha${added.length > 1 ? 's' : ''} importada${added.length > 1 ? 's' : ''}.`);
   }
-  $('#btnAddKiran').addEventListener('click', () => { const k = exampleKiran(); db.npcs.push(k); db.current = k.id; $('#importDrawer').hidden = true; render(); save(); setStatus('Exemplo do Kiran adicionado.'); });
+  $('#btnAddExemplo').addEventListener('click', () => { const k = exemploAleatorio(); db.npcs.push(k); db.current = k.id; $('#importDrawer').hidden = true; render(); save(); setStatus(`Exemplo aleatório adicionado: ${k.nome}.`); });
   $('#btnDoImport').addEventListener('click', () => doImport($('#importText').value));
   $('#importFile').addEventListener('change', e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
@@ -1009,49 +1020,6 @@
     const dice = (d.match(/\d+d\d+/) || [''])[0];
     const dano = aliado ? '' : adicional ? `${armaDano(n)}${dice ? ' + ' + dice : ''}` : dice;
     return { habId, nome: h.nome, pa: num(h.pa), energia: num(h.energia), rolagem, res: res || 'Acuidade', dano, depois: '', efeito: '', efeitoTipo: aliado ? 'Buff' : '' };
-  }
-
-  function presetCombos(n) {
-    const id = name => (n.habs.find(h => h.nome === name) || {}).id || '';
-    const S = (name, o) => Object.assign(stepFromHab(n, name === ARMA ? ARMA : id(name)), o || {});
-    const mk = (nome, nota, passos) => ({ id: uid(), nome, nota, passos });
-    return [
-      mk('Execução', 'Tudo no mesmo turno: a Deterioração do Vórtice acaba no fim do próximo turno do alvo. Se o alvo passar na Acuidade, troque o Cajado por Grilhões antes do Toque.', [
-        S('Vórtice Espectral', { rolagem:'ambos', res:'Acuidade', dano:'1d8+10 + 2d6', efeito:'Deterioração até o fim do próximo turno do alvo (só se falhar); Kiran cura metade do dano', efeitoTipo:'Debuff' }),
-        S('Toque da Vida', { rolagem:'nenhum', dano:'5d10', depois:'2×2d6', efeito:'Degradação 6 turnos; Deterioração +2 turnos', efeitoTipo:'Debuff' }),
-        S(ARMA, { dano:'1d8+10' })
-      ]),
-      mk('Sentença', 'O combo básico contra um alvo forte. Sobram 5 🔶 para Vórtice ou Cajado.', [
-        S('Grilhões d’Alma', { rolagem:'resistencia', res:'Tenacidade', dano:'', efeito:'Lentidão até o fim do próximo turno do alvo e 1d6 mágico a cada 2 turnos', efeitoTipo:'Debuff' }),
-        S('Toque da Vida', { rolagem:'nenhum', dano:'5d10', depois:'2×2d6', efeito:'Degradação 6 turnos; Lentidão +2 turnos', efeitoTipo:'Debuff' })
-      ]),
-      mk('Condenação', 'Danação pelo Manual: 2d6 corrosivo a cada 2 turnos, subindo 2d6 → 2d8 → 4d6. Não use depois do Vislumbre: sob Necrose, a Danação cura o alvo.', [
-        S('Ruína de Carne', { rolagem:'resistencia', res:'Sustentar', dano:'3d8', depois:'2d6 + 2d8 + 4d6', efeito:'Danação 4 turnos (6 com o Toque); +1d6 mágico sempre que sofrer dano', efeitoTipo:'Debuff' }),
-        S('Toque da Vida', { rolagem:'nenhum', dano:'5d10 + 1d6', depois:'2×2d6', efeito:'Degradação 6 turnos; Danação +2 turnos', efeitoTipo:'Debuff' })
-      ]),
-      mk('Contra grupo', 'Dano por alvo. Quem estiver sob Necrose sofre dano com qualquer cura.', [
-        S('Vislumbre do Fim', { rolagem:'resistencia', res:'Acuidade', dano:'3d8', efeito:'Necrose 6 turnos; Reanimados no cone curam 2d8; Kiran cura metade', efeitoTipo:'Debuff' }),
-        S('Maré de Almas', { rolagem:'ambos', res:'Acuidade', dano:'1d8+10 + 3d6', efeito:'Perda Energética 4 turnos (1 natural: Supressão I)', efeitoTipo:'Debuff' })
-      ]),
-      mk('Coroa e Punição', 'Prepare no turno de Kiran e use a Coroa como reflexo no golpe decisivo do aliado.', [
-        S('Fervor Guiado', { rolagem:'nenhum', efeito:'Habilidades de 3+ 🔶 do aliado custam 1 a menos, 2 rodadas', efeitoTipo:'Buff' }),
-        S('Coroa do Triunfo', { rolagem:'nenhum', efeito:'Aliado ataca com Vantagem; crítico devolve 2d4 Éter a Kiran', efeitoTipo:'Buff' })
-      ]),
-      mk('Escudo do Rebanho', 'Protege um aliado na linha de frente. Com as passivas do Ramo 2, quem bater nele leva 1d8 de luz e ataca com Desvantagem.', [
-        S('Reforço Divino', { rolagem:'nenhum', efeito:'+1 na Defesa e +1 em todas as resistências, 2 rodadas', efeitoTipo:'Buff' }),
-        S('Marca da Vitalidade', { rolagem:'nenhum', dano:'', efeito:'5 de Vida Extra por 2 rodadas', efeitoTipo:'Buff' }),
-        S('Barreira Espectral', { rolagem:'nenhum', dano:'', efeito:'Reflexo: 10 de Vida Extra contra o ataque (15 se mágico)', efeitoTipo:'Buff' })
-      ]),
-      mk('Lâmina espectral', 'Arma Fantasma é buff de 1 rodada: soma nos dois golpes.', [
-        S('Arma Fantasma', { rolagem:'nenhum', dano:'', efeito:'+2d6 mágico por golpe, ignora Vida Extra e barreiras', efeitoTipo:'Buff' }),
-        S(ARMA, { dano:'1d8+10 + 2d6' }),
-        S(ARMA, { dano:'1d8+10 + 2d6' })
-      ]),
-      mk('Controle', 'Não ataque o alvo dormindo: dano direto o acorda.', [
-        S('Invasão das Sombras', { rolagem:'resistencia', res:'Lucidez', efeito:'Cegos quem não tem visão mágica no escuro, 2 rodadas', efeitoTipo:'Debuff' }),
-        S('Sono Profundo', { rolagem:'resistencia', res:'Fibra', efeito:'Inconsciente até 2 rodadas; Torpor ao acordar', efeitoTipo:'Debuff' })
-      ])
-    ];
   }
 
   function rollHTML(n, c, s, ps) {
@@ -1315,7 +1283,7 @@
     render();
     if (SERVIDOR && versao === 0) save();   // primeira vez: grava o exemplo inicial na conta
     else if (SERVIDOR) setStatus('Salvo na sua conta.');
-    if (upgraded || upgradedCombos) { save(); setStatus(upgraded ? 'O exemplo do Kiran foi atualizado com o kit completo de habilidades e os combos.' : 'O exemplo do Kiran foi atualizado: usos por descanso e passivas ligadas aos combos.'); }
+    if (trocouExemplo) { save(); setStatus('O exemplo antigo (Kiran Veyr) foi trocado por um exemplo aleatório.'); }
     if (!canStore && !SERVIDOR) setStatus('Este navegador não deixou salvar. Use Exportar para guardar as fichas.', true);
   })();
 })();

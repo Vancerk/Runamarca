@@ -668,11 +668,3 @@
   @media (prefers-reduced-motion: reduce){
     *, *::before, *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
   }
-
-  /* Atalho para a página de Fichas de NPC, no mesmo estilo das abas */
-  nav.tabs a.tab-link{
-    font-family:'Cinzel',serif; font-size:.82rem; letter-spacing:.05em; text-decoration:none;
-    background: var(--panel); color: var(--gold-bright);
-    border: 1px solid var(--border); border-radius: 4px; padding: .55rem 1rem;
-  }
-  nav.tabs a.tab-link:hover{ border-color: var(--gold-bright); }
