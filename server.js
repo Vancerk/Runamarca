@@ -8,6 +8,7 @@ import { handleNewGame } from './mesa-nova/server.mjs';
 import { handleAccounts, validMutationOrigin } from './accounts.mjs';
 import {handleFlowResult} from './torre/fluxo-solicitado.mjs';
 import { handleTorre, startFlowTest } from './torre/integracao.mjs';
+import { handleEscudo } from './escudo/integracao.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'catalog.json'), 'utf8'));
@@ -629,6 +630,7 @@ export const server = http.createServer(async (req, res) => {
     if (!validMutationOrigin(req)) { send(res, 403, { error: 'Origem inválida.' }); return; }
     if (await handleFlowResult(req, res, url)) return;
     if (await handleTorre(req, res, url)) return;
+    if (await handleEscudo(req, res, url)) return;
     if (await handleAccounts(req, res, url)) return;
     if (req.method === 'GET' && url.pathname === '/health') { send(res, 200, { ok: true }); return; }
     if (req.method === 'GET' && url.pathname === '/runamarca') { res.writeHead(308, { location: `/runamarca/${url.search}`, 'cache-control': 'no-store' }); res.end(); return; }
