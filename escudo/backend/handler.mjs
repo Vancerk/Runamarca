@@ -127,16 +127,19 @@ export function createMesaStore(db) {
 
 // ---------- quem é mestre ----------
 // Administrador do site + mestres cadastrados na Torre (torre/backend/mestres.json, os mesmos
-// que recebem relatórios) + IDs extras opcionais em ESCUDO_MESTRES (separados por vírgula).
-export function readMasterIds({adminId = process.env.DISCORD_ADMIN_ID, extra = process.env.ESCUDO_MESTRES, file = resolve(here, '../../torre/backend/mestres.json')} = {}) {
+// que recebem relatórios) + lista própria do Escudo (escudo/mestres.json, para quem usa o Escudo
+// sem receber relatórios) + IDs extras opcionais em ESCUDO_MESTRES (separados por vírgula).
+export function readMasterIds({adminId = process.env.DISCORD_ADMIN_ID, extra = process.env.ESCUDO_MESTRES, file = resolve(here, '../../torre/backend/mestres.json'), escudoFile = resolve(here, '../mestres.json')} = {}) {
   const ids = new Set();
   if (adminId) ids.add(String(adminId));
   for (const id of String(extra || '').split(',').map(s => s.trim())) if (/^\d{15,22}$/.test(id)) ids.add(id);
-  try {
-    const list = JSON.parse(readFileSync(file, 'utf8'));
-    for (const master of Array.isArray(list) ? list : []) if (master && /^\d{15,22}$/.test(String(master.id))) ids.add(String(master.id));
-  } catch (error) {
-    if (error.code !== 'ENOENT') console.error('Escudo: não foi possível ler a lista de mestres da Torre.');
+  for (const path of [file, escudoFile]) {
+    try {
+      const list = JSON.parse(readFileSync(path, 'utf8'));
+      for (const master of Array.isArray(list) ? list : []) if (master && /^\d{15,22}$/.test(String(master.id))) ids.add(String(master.id));
+    } catch (error) {
+      if (error.code !== 'ENOENT') console.error('Escudo: não foi possível ler a lista de mestres em ' + path + '.');
+    }
   }
   return ids;
 }
