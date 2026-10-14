@@ -8,6 +8,8 @@ import {fileURLToPath} from 'node:url';
 const here = fileURLToPath(new URL('.', import.meta.url));
 const PUBLIC_DIR = resolve(here, '../public');
 const MAX_BODY = 32 * 1024;
+const MAX_NPC_BODY = 3 * 1024 * 1024;   // fichas de NPC (o exemplo do Kiran sozinho tem ~40 KB)
+const MAX_NPCS = 300;
 const MAX_FICHAS = 12;
 
 // Somente estes arquivos são servidos (sem montar caminhos a partir da URL).
@@ -18,8 +20,12 @@ const STATIC = {
   '/escudo/recolher.js': ['recolher.js', 'text/javascript; charset=utf-8'],
   '/escudo/mapas.js': ['mapas.js', 'text/javascript; charset=utf-8'],
   '/escudo/fichas.js': ['fichas.js', 'text/javascript; charset=utf-8'],
-  '/escudo/npc.js': ['npc.js', 'text/javascript; charset=utf-8']
+  '/escudo/npc.js': ['npc.js', 'text/javascript; charset=utf-8'],
+  '/escudo/npcs/': ['npcs/index.html', 'text/html; charset=utf-8'],
+  '/escudo/npcs/npcs.css': ['npcs/npcs.css', 'text/css; charset=utf-8'],
+  '/escudo/npcs/npcs.js': ['npcs/npcs.js', 'text/javascript; charset=utf-8']
 };
+const PAGES = new Set(['index.html', 'npcs/index.html']);
 const ASSET = /^\/escudo\/assets\/([a-z0-9-]{1,60})\.webp$/;
 
 // A página lê a planilha (gviz/JSONP) direto do Google; retratos vêm da Torre (/torre/assets/...).
@@ -125,6 +131,59 @@ export function createMesaStore(db) {
   };
 }
 
+// ---------- fichas de NPC ----------
+// Um documento por mestre: { npcs: [...], current }. O formato interno de cada ficha é o da
+// página de fichas (npcs.js), que normaliza tudo ao carregar; aqui só se garante o envelope,
+// identificadores e tamanho.
+export function normalizeNpcDoc(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new EscudoError('Fichas inválidas.');
+  if (!Array.isArray(data.npcs)) throw new EscudoError('Fichas inválidas.');
+  if (data.npcs.length > MAX_NPCS) throw new EscudoError(`Limite de ${MAX_NPCS} fichas de NPC.`);
+  const ids = new Set();
+  for (const npc of data.npcs) {
+    if (!npc || typeof npc !== 'object' || Array.isArray(npc)) throw new EscudoError('Ficha de NPC inválida.');
+    if (typeof npc.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(npc.id)) throw new EscudoError('Ficha de NPC sem identificador válido.');
+    if (ids.has(npc.id)) throw new EscudoError('Ficha de NPC repetida.');
+    ids.add(npc.id);
+  }
+  const current = data.current == null ? null : String(data.current);
+  return {npcs: data.npcs, current: current && ids.has(current) ? current : (data.npcs[0]?.id || null)};
+}
+export function createNpcStore(db) {
+  let ready = null;
+  const init = () => { if (!ready) ready = db.query(`CREATE TABLE IF NOT EXISTS elysium_escudo_npcs(
+    master_id TEXT PRIMARY KEY,
+    data JSONB NOT NULL,
+    version INTEGER NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`).catch(error => { ready = null; throw error; }); return ready; };
+  return {
+    async get(masterId) {
+      await init();
+      const {rows} = await db.query('SELECT data, version, updated_at FROM elysium_escudo_npcs WHERE master_id=$1', [masterId]);
+      if (!rows.length) return {version: 0, data: null, updatedAt: null};
+      const data = typeof rows[0].data === 'string' ? JSON.parse(rows[0].data) : rows[0].data;
+      return {version: Number(rows[0].version), data, updatedAt: new Date(rows[0].updated_at).toISOString()};
+    },
+    // Mesmo controle otimista da Mesa: só grava se a versão enviada for a atual.
+    async put(masterId, expectedVersion, data) {
+      await init();
+      const body = JSON.stringify(data);
+      let result;
+      if (expectedVersion === 0) {
+        const existing = await db.query('SELECT 1 FROM elysium_escudo_npcs WHERE master_id=$1', [masterId]);
+        if (existing.rows.length) return null;
+        result = await db.query('INSERT INTO elysium_escudo_npcs(master_id, data, version) VALUES($1, $2::jsonb, 1) ON CONFLICT (master_id) DO NOTHING RETURNING version', [masterId, body]);
+      } else {
+        result = await db.query('UPDATE elysium_escudo_npcs SET data=$2::jsonb, version=version+1, updated_at=NOW() WHERE master_id=$1 AND version=$3 RETURNING version, updated_at', [masterId, body, expectedVersion]);
+      }
+      if (!result.rows.length) return null;
+      // Não devolve o documento inteiro (pode ter alguns MB): a página já o tem.
+      return {version: Number(result.rows[0].version), updatedAt: new Date(result.rows[0].updated_at || Date.now()).toISOString()};
+    }
+  };
+}
+
 // ---------- quem é mestre ----------
 // Administrador do site + mestres cadastrados na Torre (torre/backend/mestres.json, os mesmos
 // que recebem relatórios) + IDs extras opcionais em ESCUDO_MESTRES (separados por vírgula).
@@ -151,19 +210,22 @@ function sendPage(res, status, title, message, link) {
   res.writeHead(status, {'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'"});
   res.end(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0807;color:#eadfca;font-family:Georgia,serif}main{max-width:32rem;padding:2rem;border:1px solid #624824;border-radius:8px;background:#17110c;text-align:center}h1{color:#d9b46a;font-size:1.4rem}a{color:#d9b46a}</style></head><body><main><h1>${esc(title)}</h1><p>${esc(message)}</p>${link ? `<p><a href="${esc(link.href)}">${esc(link.text)}</a></p>` : ''}</main></body></html>`);
 }
-async function readBody(req) {
+async function readBody(req, limit = MAX_BODY) {
+  // Recusa pelo cabeçalho antes de ler; o resto do corpo é descartado para a resposta 413 chegar ao navegador.
+  if (Number(req.headers['content-length']) > limit) { req.resume(); throw new EscudoError('As fichas passaram do tamanho máximo permitido.', 413); }
   let size = 0; const chunks = [];
-  for await (const chunk of req) { size += chunk.length; if (size > MAX_BODY) throw new EscudoError('Pedido muito grande.', 413); chunks.push(chunk); }
+  for await (const chunk of req) { size += chunk.length; if (size > limit) throw new EscudoError('Pedido muito grande.', 413); chunks.push(chunk); }
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { throw new EscudoError('JSON inválido.'); }
 }
 
 // `store` (com get/put iguais aos de createMesaStore) é opcional: o modo de demonstração local usa um arquivo.
-export function createEscudo({identify, configured, database, store: customStore, origin, masterIds, publicDir = PUBLIC_DIR}) {
+export function createEscudo({identify, configured, database, store: customStore, npcStore: customNpcStore, origin, masterIds, publicDir = PUBLIC_DIR}) {
   const store = customStore || createMesaStore(database);
+  const npcStore = customNpcStore || createNpcStore(database);
   const writes = new Map();
-  const throttled = id => {
+  const throttled = (id, limit = 60) => {
     const now = Date.now(); const recent = (writes.get(id) || []).filter(t => now - t < 60000);
-    if (recent.length >= 60) return true;
+    if (recent.length >= limit) return true;
     recent.push(now); writes.set(id, recent);
     if (writes.size > 500) for (const [key, times] of writes) if (!times.length || times.at(-1) < now - 60000) writes.delete(key);
     return false;
@@ -173,6 +235,7 @@ export function createEscudo({identify, configured, database, store: customStore
     if (url.pathname !== '/escudo' && !url.pathname.startsWith('/escudo/')) return false;
     try {
       if (url.pathname === '/escudo') { res.writeHead(308, {Location: '/escudo/' + url.search, 'Cache-Control': 'no-store'}); res.end(); return true; }
+      if (url.pathname === '/escudo/npcs') { res.writeHead(308, {Location: '/escudo/npcs/' + url.search, 'Cache-Control': 'no-store'}); res.end(); return true; }
       const isApi = url.pathname.startsWith('/escudo/api/');
       if (!configured()) {
         if (isApi) sendJson(res, 503, {error: 'Login Discord ainda não configurado no servidor.'});
@@ -215,6 +278,24 @@ export function createEscudo({identify, configured, database, store: customStore
           }
           throw new EscudoError('Método inválido.', 405);
         }
+        if (url.pathname === '/escudo/api/npcs') {
+          if (req.method === 'GET') { sendJson(res, 200, await npcStore.get(String(user.discord_id))); return true; }
+          if (req.method === 'PUT') {
+            if (req.headers.origin !== origin()) throw new EscudoError('Origem inválida.', 403);
+            if (!String(req.headers['content-type'] || '').startsWith('application/json')) throw new EscudoError('Envie JSON.', 415);
+            // A página salva sozinha enquanto se edita (com espera de ~1,5 s entre gravações).
+            if (throttled('npcs:' + user.discord_id, 120)) throw new EscudoError('Muitas alterações seguidas. Aguarde um minuto.', 429);
+            const body = await readBody(req, MAX_NPC_BODY);
+            const version = Number(body.version);
+            if (!Number.isSafeInteger(version) || version < 0) throw new EscudoError('Versão inválida.');
+            const data = normalizeNpcDoc(body.data);
+            const saved = await npcStore.put(String(user.discord_id), version, data);
+            if (!saved) { sendJson(res, 409, {error: 'As fichas foram alteradas em outro lugar.', ...(await npcStore.get(String(user.discord_id)))}); return true; }
+            sendJson(res, 200, saved);
+            return true;
+          }
+          throw new EscudoError('Método inválido.', 405);
+        }
         throw new EscudoError('Não encontrado.', 404);
       }
 
@@ -231,7 +312,7 @@ export function createEscudo({identify, configured, database, store: customStore
         'Cache-Control': asset ? 'private, max-age=86400' : 'private, no-cache',
         'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'same-origin',
-        ...(file === 'index.html' ? {'Content-Security-Policy': CSP, 'X-Frame-Options': 'DENY'} : {})
+        ...(PAGES.has(file) ? {'Content-Security-Policy': CSP, 'X-Frame-Options': 'DENY'} : {})
       });
       res.end(req.method === 'HEAD' ? undefined : bytes);
       return true;

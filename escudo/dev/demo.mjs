@@ -21,6 +21,7 @@ const ORIGIN = `http://${HOST}:${PORT}`;
 const ELYSIUM = String(process.env.ELYSIUM_ORIGIN || 'https://elysiumjogos.onrender.com').replace(/\/+$/, '');
 const DATA_DIR = resolve(here, '.dados');
 const MESA_FILE = resolve(DATA_DIR, 'mesa-demo.json');
+const NPCS_FILE = resolve(DATA_DIR, 'npcs-demo.json');
 const DEMO_USER = {discord_id: '000000000000000000', display_name: 'Mestre (demonstração)'};
 
 // ---------- Mesa em arquivo, com o mesmo contrato de get/put do banco ----------
@@ -41,10 +42,29 @@ const fileStore = {
   }
 };
 
+// Fichas de NPC em arquivo, mesmo contrato de createNpcStore.
+function readNpcs() {
+  try { return JSON.parse(readFileSync(NPCS_FILE, 'utf8')); }
+  catch (error) { if (error.code === 'ENOENT') return {version: 0, data: null, updatedAt: null}; throw error; }
+}
+const npcFileStore = {
+  async get() { return readNpcs(); },
+  async put(_masterId, expectedVersion, data) {
+    const current = readNpcs();
+    if (current.version !== expectedVersion) return null;
+    const next = {version: current.version + 1, data, updatedAt: new Date().toISOString()};
+    mkdirSync(DATA_DIR, {recursive: true});
+    writeFileSync(NPCS_FILE + '.tmp', JSON.stringify(next));
+    renameSync(NPCS_FILE + '.tmp', NPCS_FILE);
+    return {version: next.version, updatedAt: next.updatedAt};
+  }
+};
+
 const handleEscudo = createEscudo({
   identify: async () => DEMO_USER,
   configured: () => true,
   store: fileStore,
+  npcStore: npcFileStore,
   origin: () => ORIGIN,
   masterIds: () => new Set([DEMO_USER.discord_id])
 });
@@ -104,6 +124,7 @@ server.listen(PORT, HOST, () => {
   console.log('  Abra: ' + ORIGIN + '/escudo/');
   console.log('  Personagens da Torre vindos de: ' + ELYSIUM);
   console.log('  Mesa salva em: ' + MESA_FILE);
+  console.log('  Fichas de NPC: ' + ORIGIN + '/escudo/npcs/ (salvas em ' + NPCS_FILE + ')');
   console.log('  Para encerrar: Ctrl+C');
   console.log('');
 });

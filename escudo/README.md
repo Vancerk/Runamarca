@@ -1,5 +1,7 @@
 # Escudo do Mestre
 
+Também inclui as **Fichas de NPC** em **/escudo/npcs/**: criação de NPCs com selos de ameaça, habilidades, usos por descanso e combos. No portal, os dois têm atalhos na **Área do Mestre**, visível só para mestres.
+
 Painel de consulta do mestre (regras, condições, perícias, biomas, preços, mapas, gerador de NPC) e **Mesa Atual** com as fichas dos jogadores ao vivo. Servido em **/escudo/** pelo mesmo `server.js`, com o login Discord e o PostgreSQL já existentes.
 
 ## Executar e testar
@@ -49,6 +51,18 @@ Sem login, a página manda para `/auth/discord?return=/escudo/`. Uma conta que n
 
 Mudanças fora desta pasta: `server.js` (1 import + 1 linha de rota, logo após a Torre), `Dockerfile` (`COPY escudo ./escudo`) e `package.json` (script `test:escudo`).
 
+## Fichas de NPC
+
+A página é a ficha de NPC Elysium (selos Sem selo, Elite, Chefe e Soberano; atributos, vitais, perícias, resistências, traços, habilidades e combos), com o código em `public/npcs/`.
+
+- **No site:** as fichas ficam na conta do mestre, no servidor (`/escudo/api/npcs`). Gravam sozinhas cerca de 1,5 s depois de cada alteração. Se outra aba ou outro computador gravou antes, a página mostra a versão salva em vez de sobrescrever.
+- **Exportar:** gera JSON (para importar de novo) ou um HTML completo e independente. Esse HTML guarda as alterações no navegador de quem o abrir, como a versão original da ficha.
+- **Importar:** aceita os JSON exportados, inclusive os da versão anterior da ficha, que salvava só no navegador.
+
+## Portal
+
+`public/mestre-atalhos.js` (carregado pelo `hub.html`) consulta `GET /escudo/api/me`. Só quando a resposta é 200 aparece a seção **Área do Mestre**, com os atalhos para o Escudo e para as Fichas de NPC. Para jogadores e visitantes nada muda.
+
 ## API
 
 Todas exigem sessão de mestre. Respostas JSON, `Cache-Control: no-store`.
@@ -66,6 +80,14 @@ Cada entrada de `fichas` (máximo 12):
 
 Exatamente um entre `characterId` e `link`. O link é normalizado no servidor. `imagem` só aceita https. Campos desconhecidos são descartados.
 
+- `GET /escudo/api/npcs` → `{ version, data, updatedAt }`, com `data = { npcs, current }`. Antes da primeira gravação, `data` é `null`.
+- `PUT /escudo/api/npcs` com `{ version, data }` → `{ version, updatedAt }`, sem reenviar o documento. Versão desatualizada recebe **409** com a versão salva. Limites:
+  - até 300 fichas;
+  - até 3 MB por gravação;
+  - `id` de cada ficha com até 64 caracteres (letras, números, `_` ou `-`), sem repetir.
+
+  O formato interno de cada ficha é o da página: ela normaliza ao carregar.
+
 ## Tabela
 
 ```sql
@@ -77,7 +99,7 @@ CREATE TABLE IF NOT EXISTS elysium_escudo_mesas(
 );
 ```
 
-Uma linha por mestre. Não há migração destrutiva; remover o módulo deixa a tabela intacta.
+Uma linha por mestre. As fichas de NPC usam `elysium_escudo_npcs(master_id, data JSONB, version, updated_at)`, também uma linha por mestre. Não há migração destrutiva: remover o módulo deixa as tabelas intactas.
 
 ## Arquivos
 
@@ -90,6 +112,7 @@ escudo/
   public/escudo.css       estilos (página própria; não afeta os jogos)
   public/abas.js, recolher.js, mapas.js, npc.js   comportamento das abas, mapas e gerador
   public/fichas.js        cartas dos jogadores e Mesa (API + biblioteca da Torre)
+  public/npcs/            Fichas de NPC (index.html, npcs.css, npcs.js)
   public/assets/*.webp    mapas (antes embutidos em base64 no HTML)
   dev/demo.mjs            demonstração local (fora do site)
   dev/Abrir-Escudo-Demo.bat  atalho da demonstração no Windows
@@ -104,6 +127,6 @@ Só os arquivos listados em `STATIC` (e `assets/*.webp`) são servidos; nenhum c
 
 ## Fora deste módulo (decisões em aberto)
 
-- **Ficha de NPC:** ainda não definida.
+- **NPC na Mesa:** os NPCs ainda não entram como cartas na Mesa Atual.
 - **Permissão por campanha:** hoje é por lista de mestres. Cada mestre tem a própria Mesa.
-- **Atalho no portal (`hub.html`):** não adicionado, porque o portal é público e o Escudo é só para mestres.
+- **Atalhos no portal:** só aparecem para mestres (ver "Portal").

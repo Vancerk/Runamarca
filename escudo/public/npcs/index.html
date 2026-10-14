@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fichas de NPC · Elysium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="npcs.css">
+</head>
+<body>
+<nav class="escudo-voltar" aria-label="Navegação do mestre"><a href="/escudo/">← Escudo do Mestre</a><a href="/">Jogos Elysium</a></nav>
+<div class="wrap" id="appRoot">
+  <div class="roster">
+    <h1>Fichas de NPC</h1>
+    <select id="npcSelect" aria-label="Escolher NPC"></select>
+    <button class="btn primary" id="btnNew">+ Novo NPC</button>
+    <button class="btn" id="btnDup">Duplicar</button>
+    <button class="btn danger" id="btnDel">Excluir</button>
+    <button class="btn" id="btnExport">Exportar</button>
+    <button class="btn" id="btnImport">Importar</button>
+    <div class="status" id="status">Salvo automaticamente.</div>
+  </div>
+
+  <div class="drawer" id="exportDrawer" hidden>
+    <h3>Exportar fichas</h3>
+    <p>Baixe um arquivo .json para guardar ou passar a outro mestre. Se o download não estiver disponível aqui, copie o texto abaixo.</p>
+    <div class="row">
+      <button class="btn primary" id="btnSaveOne">Baixar este NPC</button>
+      <button class="btn" id="btnSaveAll">Baixar todos</button>
+      <button class="btn" id="btnCopyJson">Copiar texto</button>
+      <button class="btn" id="btnCloseExport">Fechar</button>
+    </div>
+    <h3>Exportar como página HTML</h3>
+    <p>Gera um arquivo .html completo, com o gerador e as fichas dentro. Quem receber abre no navegador, edita, cria os próprios NPCs e pode exportar de novo. Cada arquivo guarda as próprias alterações naquele navegador.</p>
+    <div class="row">
+      <button class="btn primary" id="btnHtmlAll">HTML com todas as fichas</button>
+      <button class="btn" id="btnHtmlOne">HTML só com este NPC</button>
+      <button class="btn" id="btnHtmlBlank">HTML em branco</button>
+    </div>
+    <textarea id="exportText" readonly aria-label="Conteúdo exportado"></textarea>
+  </div>
+
+  <div class="drawer" id="importDrawer" hidden>
+    <h3>Importar fichas</h3>
+    <p>Escolha um arquivo .json exportado daqui, ou cole o texto. As fichas importadas entram na lista sem apagar as que já existem.</p>
+    <div class="row">
+      <input type="file" id="importFile" accept=".json,application/json">
+    </div>
+    <textarea id="importText" placeholder="Cole aqui o JSON de uma ou várias fichas" aria-label="JSON para importar"></textarea>
+    <div class="row">
+      <button class="btn primary" id="btnDoImport">Importar texto</button>
+      <button class="btn" id="btnAddKiran">Adicionar exemplo: Kiran Veyr</button>
+      <button class="btn" id="btnCloseImport">Fechar</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs" role="group" aria-label="Seções"></div>
+  <div class="sheet" id="sheet"></div>
+  <div class="combos" id="combos" hidden></div>
+</div>
+
+<script type="application/json" id="seedData">null</script>
+<script src="npcs.js"></script>
+</body>
+</html>
