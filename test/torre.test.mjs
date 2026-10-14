@@ -30,6 +30,18 @@ test('Torre shares the games server and OAuth; allows public visitors while prot
   assert.equal((await call('/torre/api/config')).status,200);assert.equal((await call('/torre/',player)).status,200);assert.equal((await call('/torre/assets/detalhado-sem-codigos.webp',player)).status,200);
   const page=await call('/torre/',admin);assert.equal(page.status,200);assert.match(await page.text(),/\/account.js/);
   const config=await (await call('/torre/api/config',admin)).json();assert.equal(config.admin,true);assert.equal(config.managedAccount,true);assert.equal(config.ready,false);assert.equal(config.botConfigured,false);assert.equal(config.botState,'unconfigured');assert.match(config.botError,/DISCORD_BOT_TOKEN/);assert.ok(config.masters.some(m=>m.name==='Kagami'));
+  const previousExtra=process.env.TORRE_ADMIN_IDS;
+  try{
+   process.env.TORRE_ADMIN_IDS='222222222222222222';
+   assert.equal((await (await call('/torre/api/config',player)).json()).admin,true);
+   assert.equal((await call('/torre/api/admin/reports',player)).status,200);
+   assert.equal((await call('/torre/api/admin/reports',admin)).status,200);
+   assert.equal((await call('/torre/api/admin/reports',visitor)).status,403);
+   assert.equal((await call('/torre/api/admin/bot/test-report',player,{submissionKey:'b'.repeat(36)},'https://attacker.invalid')).status,403);
+   delete process.env.TORRE_ADMIN_IDS;
+   assert.equal((await (await call('/torre/api/config',player)).json()).admin,false);
+   assert.equal((await call('/torre/api/admin/reports',player)).status,403);
+  }finally{if(previousExtra===undefined)delete process.env.TORRE_ADMIN_IDS;else process.env.TORRE_ADMIN_IDS=previousExtra;}
   const unavailable=await call('/torre/api/admin/bot/test-report',admin,{submissionKey:'a'.repeat(36)});assert.equal(unavailable.status,503);assert.match((await unavailable.json()).error,/DISCORD_BOT_TOKEN/);assert.equal((await call('/torre/api/admin/bot/test-report',player,{submissionKey:'a'.repeat(36)})).status,403);
   const image=await call('/torre/assets/detalhado-sem-codigos.webp',admin);assert.equal(image.status,200);assert.ok((await image.arrayBuffer()).byteLength>2000000);
   assert.equal((await call('/torre/api/connect',admin,{token:'not-a-real-token'})).status,403);
