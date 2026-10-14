@@ -196,3 +196,73 @@ test('lista de mestres: admin, mestres da Torre e ESCUDO_MESTRES', () => {
   const semArquivo = readMasterIds({adminId: '555555555555555555', extra: '', file: join(dir, 'nao-existe.json')});
   assert.deepEqual([...semArquivo], ['555555555555555555']);
 });
+
+test('fichas de NPC: página servida só para mestres, com CSP', async () => {
+  const t = await setup();
+  try {
+    const bare = await t.call('/escudo/npcs', {user: 'mestre'});
+    assert.equal(bare.status, 308);
+    assert.equal(bare.headers.get('location'), '/escudo/npcs/');
+    const page = await t.call('/escudo/npcs/', {user: 'mestre'});
+    assert.equal(page.status, 200);
+    assert.match(page.headers.get('content-security-policy'), /default-src 'self'/);
+    assert.match(await page.text(), /Fichas de NPC/);
+    assert.equal((await t.call('/escudo/npcs/npcs.js', {user: 'mestre'})).status, 200);
+    assert.equal((await t.call('/escudo/npcs/', {user: 'jogador'})).status, 403);
+    assert.equal((await t.call('/escudo/npcs/npcs.js')).status, 401);
+    assert.equal((await t.call('/escudo/npcs/../server.js', {user: 'mestre'})).status, 404);
+  } finally { await t.close(); }
+});
+
+test('fichas de NPC: salva, lê, separa por mestre e recusa versão desatualizada', async () => {
+  const t = await setup();
+  try {
+    assert.equal((await t.call('/escudo/api/npcs')).status, 401);
+    assert.equal((await t.call('/escudo/api/npcs', {user: 'jogador'})).status, 403);
+    assert.deepEqual(await (await t.call('/escudo/api/npcs', {user: 'mestre'})).json(), {version: 0, data: null, updatedAt: null});
+
+    const data = {npcs: [{id: 'abc123', nome: 'Kiran Veyr', selo: 'chefe', habs: [{id: 'h1', nome: 'Trama'}]}], current: 'abc123'};
+    const r1 = await t.call('/escudo/api/npcs', {user: 'mestre', method: 'PUT', body: {version: 0, data}});
+    assert.equal(r1.status, 200);
+    const s1 = await r1.json();
+    assert.equal(s1.version, 1);
+    assert.equal(s1.data, undefined, 'a resposta não reenvia o documento');
+
+    const lido = await (await t.call('/escudo/api/npcs', {user: 'mestre'})).json();
+    assert.equal(lido.version, 1);
+    assert.deepEqual(lido.data, data);
+    assert.equal((await (await t.call('/escudo/api/npcs', {user: 'outro'})).json()).version, 0);
+
+    const velho = await t.call('/escudo/api/npcs', {user: 'mestre', method: 'PUT', body: {version: 0, data: {npcs: [], current: null}}});
+    assert.equal(velho.status, 409);
+    assert.deepEqual((await velho.json()).data, data);
+
+    const r2 = await t.call('/escudo/api/npcs', {user: 'mestre', method: 'PUT', body: {version: 1, data: {npcs: [...data.npcs, {id: 'x2'}], current: 'nao-existe'}}});
+    assert.equal(r2.status, 200);
+    const final = await (await t.call('/escudo/api/npcs', {user: 'mestre'})).json();
+    assert.equal(final.version, 2);
+    assert.equal(final.data.current, 'abc123', 'current inválido volta para a primeira ficha');
+  } finally { await t.close(); }
+});
+
+test('fichas de NPC: rejeita documentos inválidos e grandes demais', async () => {
+  const t = await setup();
+  try {
+    const casos = [
+      {version: 0, data: null},
+      {version: 0, data: []},
+      {version: 0, data: {npcs: 'x'}},
+      {version: 0, data: {npcs: [{nome: 'sem id'}]}},
+      {version: 0, data: {npcs: [{id: '<script>'}]}},
+      {version: 0, data: {npcs: [{id: 'a'}, {id: 'a'}]}},
+      {version: 0, data: {npcs: Array.from({length: 301}, (_, i) => ({id: 'n' + i}))}},
+      {version: 'x', data: {npcs: []}}
+    ];
+    for (const body of casos) assert.equal((await t.call('/escudo/api/npcs', {user: 'mestre', method: 'PUT', body})).status, 400, JSON.stringify(body).slice(0, 80));
+    const enorme = {version: 0, data: {npcs: [{id: 'a', historia: 'x'.repeat(3.2 * 1024 * 1024)}]}};
+    assert.equal((await t.call('/escudo/api/npcs', {user: 'mestre', method: 'PUT', body: enorme})).status, 413);
+    const semOrigem = await t.call('/escudo/api/npcs', {user: 'mestre', method: 'PUT', body: {version: 0, data: {npcs: []}}, headers: {origin: 'https://outro.site'}});
+    assert.equal(semOrigem.status, 403);
+    assert.equal((await (await t.call('/escudo/api/npcs', {user: 'mestre'})).json()).version, 0, 'nada foi gravado');
+  } finally { await t.close(); }
+});
