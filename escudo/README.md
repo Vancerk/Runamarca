@@ -32,7 +32,8 @@ Só mestres autenticados. A lista é montada no servidor e relida a cada minuto:
 
 1. `DISCORD_ADMIN_ID` (administrador do site);
 2. os mestres de `torre/backend/mestres.json` (os mesmos que recebem relatórios na Torre);
-3. opcional: `ESCUDO_MESTRES` no Render, IDs Discord separados por vírgula, para quem mestra mas não recebe relatórios.
+3. a lista própria do Escudo, `escudo/mestres.json` (mesmo formato `{ "id", "name" }`), para quem usa o Escudo mas não recebe relatórios;
+4. opcional: `ESCUDO_MESTRES` no Render, IDs Discord separados por vírgula.
 
 Sem login, a página manda para `/auth/discord?return=/escudo/`. Uma conta que não é mestre recebe 403 na página, nos arquivos e na API. Todo o conteúdo do Escudo (inclusive CSS, JS e mapas) fica atrás dessa checagem.
 
