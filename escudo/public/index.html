@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escudo do Mestre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="escudo.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1>Escudo do Mestre</h1>
+    <div class="stars">✦ ✦ ✦</div>
+    <div class="subtitle">Crônicas de Elyndar</div>
+  </div>
+  <nav class="tabs">
+    <button class="active" data-page="1">Combate</button>
+    <button data-page="2">Condições</button>
+    <button data-page="3">Perícias &amp; Viagens</button>
+    <button data-page="4">Biomas</button>
+    <button data-page="5">Serviços &amp; Preços</button>
+    <button data-page="6">Fichas dos Jogadores</button>
+    <button data-page="8">Gerador de NPC</button>
+    <button data-page="7">Mapas</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ================= PÁGINA 1 — COMBATE ================= -->
+  <section class="page active" id="page-1">
+    <div class="page-title"><h2>Combate</h2></div>
+    <div class="grid3">
+
+      <!-- Coluna esquerda -->
+      <div class="col">
+        <div class="panel">
+          <h3>Crítico: Sucesso e Falha</h3>
+
+          <h4 class="sub">Sucesso Crítico — Defesa</h4>
+          <p class="rule"><span class="kw">Defesa vence sem crítico</span> — se o defensor tiver resultado maior, mas não crítico, o atacante acerta, porém o dano não é dobrado.</p>
+          <p class="rule"><span class="kw">Ataque de Oportunidade</span> — o defensor pode desferir um Ataque de Oportunidade contra o agressor.</p>
+
+          <h4 class="sub">Crítico vs Crítico (Ataque x Defesa)</h4>
+          <p class="rule"><span class="kw">Defesa maior</span> — o atacante não causa dano; o defensor não recebe o bônus do crítico na rolagem de defesa usada.</p>
+          <p class="rule"><span class="kw">Ataque maior</span> — o atacante acerta o alvo, mas o dano não é multiplicado.</p>
+
+          <h4 class="sub">Falha Crítica (1 natural)</h4>
+          <p class="rule"><span class="kw">Ataque</span> — o jogador sofre um Ataque de Oportunidade.</p>
+          <p class="rule"><span class="kw">Defesa: Aparar</span> — a arma é desestabilizada; ônus de -2 em ataque e defesa com ela por 1 rodada.</p>
+          <p class="rule"><span class="kw">Defesa: Esquivar</span> — o inimigo ganha um Ataque Extra imediato; nenhum lado sofre penalidade extra pela falha crítica.</p>
+          <p class="rule tight"><span class="kw">Falha vs Falha</span> — vence o menor resultado da perícia; nenhum recebe consequências narrativas desconfortáveis ou ofensivas aos dois lados, conforme o contexto.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Cobertura</h3>
+          <table class="std compact">
+            <thead><tr><th>Objetos</th><th class="num">HP</th></tr></thead>
+            <tbody>
+              <tr><td>Barril Comum</td><td class="num">5</td></tr>
+              <tr><td>Mesa</td><td class="num">8</td></tr>
+              <tr><td>Barricada de Madeira</td><td class="num">12</td></tr>
+              <tr><td>Carroça</td><td class="num">15</td></tr>
+              <tr><td>Árvore</td><td class="num">20</td></tr>
+              <tr><td>Coluna de Pedra</td><td class="num">35</td></tr>
+            </tbody>
+          </table>
+          <table class="std compact">
+            <thead><tr><th>Tipo</th><th>Efeito</th></tr></thead>
+            <tbody>
+              <tr><td>Leve</td><td>Pelo menos metade do corpo atrás de obstáculo (barril, mureta, mesa virada) → +1 em defesa</td></tr>
+              <tr><td>Média</td><td>Só partes menores expostas, atrás de colunas, árvores, carroças, muros altos → +2 em defesa</td></tr>
+              <tr><td>Total</td><td>Corpo completamente oculto (parede, rocha, porta fechada) → não pode ser alvo de ataques à distância; se sofrer ataque em área, +2 em defesa</td></tr>
+            </tbody>
+          </table>
+          <p class="note">Ao chegar a 0 de vida a cobertura é destruída</p>
+        </div>
+
+        <div class="panel">
+          <h3>Flanqueamento</h3>
+          <p class="rule tight">Coordenar um ataque simultâneo de ângulos opostos, forçando o alvo a dividir sua atenção defensiva. Exige posicionamento real e coordenação entre aliados, não apenas narrativa.</p>
+          <h4 class="sub">Requisitos (todos obrigatórios)</h4>
+          <p class="rule tight"><span class="kw">Posição</span> — dois personagens em lados opostos do alvo, em alcance Corpo-a-Corpo.</p>
+          <p class="rule tight"><span class="kw">Pressão ativa</span> — ambos devem ter atacado o alvo no turno anterior ou no atual.</p>
+          <p class="rule tight"><span class="kw">Sem Cobertura Total</span> — o alvo não pode estar em Cobertura Total.</p>
+          <p class="rule tight"><span class="kw">Só corpo-a-corpo</span> — não é possível flanquear com ataques à distância.</p>
+          <h4 class="sub">Efeito</h4>
+          <p class="rule">Ambos os flanqueadores ganham <b>+1</b> no Teste de Ataque contra o alvo. O alvo pode fazer um teste de <b>Intuição</b> contra a maior CD de Classe entre os flanqueadores — se passar, ninguém recebe o bônus.</p>
+        </div>
+      </div>
+
+      <!-- Coluna central -->
+      <div class="col">
+        <div class="panel">
+          <h3>Ações</h3>
+          <ul class="actions">
+            <li><span class="label">Mover</span><span class="cost">1 🔶</span></li>
+            <li><span class="label">Atacar</span><span class="cost">3 🔶</span></li>
+            <li><span class="label">Desengajar</span><span class="cost">1 🔶</span></li>
+            <li><span class="label">Teste de Perícia</span><span class="cost">1 🔶</span></li>
+            <li><span class="label">Arremesso</span><span class="cost">2 🔶</span></li>
+            <li><span class="label">Trocar Item <small>(Espaço de Equipamento)</small></span><span class="cost">1 🔶</span></li>
+            <li><span class="label">(Des)Equipar <small>(Acessório Pequeno)</small></span><span class="cost">1 🔶</span></li>
+            <li><span class="label">(Des)Equipar <small>(Acessório Grande)</small></span><span class="cost">2 🔶</span></li>
+            <li><span class="label">Trocar Item <small>(Inventário Passivo — P/M/G)</small></span><span class="cost">2/3/4 🔶</span></li>
+            <li><span class="label">Tomar Cobertura</span><span class="cost">1 🔶</span></li>
+            <li><span class="label">Usar consumível em si mesmo</span><span class="cost">1 🔶</span></li>
+            <li><span class="label">Entregar consumível a um aliado</span><span class="cost">2 🔶</span></li>
+            <li><span class="label">Utilizar consumível em aliado</span><span class="cost">3 🔶</span></li>
+          </ul>
+        </div>
+
+        <div class="panel ordem-dano">
+          <h3>Ordem de Dano</h3>
+          <div class="step">🪖 Barreira 🪖</div>
+          <div class="arrow">↓</div>
+          <div class="step">🛡 Vida Extra 🛡</div>
+          <div class="arrow">↓</div>
+          <div class="step">❤️‍🩹 PV Temporário ❤️‍🩹</div>
+          <div class="arrow">↓</div>
+          <div class="step">💚 Pontos de Vida 💚</div>
+          <p class="note">Ordem de dano fala sobre como o cálculo será realizado: barreira absorve um dano específico, enquanto os outros são "barras" de vida que ficam na frente da vida base.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Concentração</h3>
+          <p class="rule tight">Certos Domínios e Disciplinas exigem foco contínuo do conjurador para permanecerem ativos — qualquer interrupção pode desfazê-los na hora.</p>
+          <p class="rule"><span class="kw">Teste</span> — ao sofrer dano com uma habilidade de duração em Concentração ativa, o conjurador testa o atributo secundário da própria classe contra a CD da classe <b>−4</b>.</p>
+          <p class="rule tight"><span class="kw">Falha</span> — encerra a habilidade imediatamente, sem efeitos residuais.</p>
+          <p class="rule tight"><span class="kw">Uma por vez</span> — só uma magia em Concentração por personagem; iniciar outra encerra a anterior automaticamente.</p>
+        </div>
+      </div>
+
+      <!-- Coluna direita -->
+      <div class="col">
+        <div class="panel">
+          <h3>Dano de Queda</h3>
+          <table class="std compact">
+            <thead><tr><th>Altura</th><th>Dano / Metro</th></tr></thead>
+            <tbody>
+              <tr><td>1m – 5m</td><td>1d4</td></tr>
+              <tr><td>6m – 10m</td><td>1d6</td></tr>
+              <tr><td>11m+</td><td>1d8</td></tr>
+            </tbody>
+          </table>
+          <p class="note">Redutível por RD Mágica e Física</p>
+        </div>
+
+        <div class="panel">
+          <h3>Dano de Esmagamento</h3>
+          <p class="note" style="margin-top:-.2rem;">Calculado pelo dano de queda + mod. do porte</p>
+          <table class="std compact">
+            <thead><tr><th>Porte</th><th>Referência</th><th>Mod.</th></tr></thead>
+            <tbody>
+              <tr><td>Leve</td><td>Menor que uma criatura pequena (ex: carro de brinquedo)</td><td>Normal</td></tr>
+              <tr><td>Médio</td><td>Tamanho humano (ex: bicicleta)</td><td>+50% (A.P.B)</td></tr>
+              <tr><td>Massivo</td><td>Grande ou maior (ex: carro ou ônibus)</td><td>Dano Dobrado</td></tr>
+            </tbody>
+          </table>
+          <p class="note">Redutível apenas por RD Física</p>
+        </div>
+
+        <div class="panel">
+          <h3>Tabela de DeathSave</h3>
+          <div class="ds-item ds-1"><b>1–2</b> → Morte. O mestre pode permitir que se torne um desmaio caso as circunstâncias tornem a morte improvável.</div>
+          <div class="ds-item ds-2"><b>3–5</b> → Retorna com 10% da Vida Máx. -2 em todos os testes por 2 rodadas, +2 níveis de exaustão. Qualquer esforço físico exige Teste de Vig para evitar morte imediata (Mestre define CD).</div>
+          <div class="ds-item ds-3"><b>6–11</b> → Retorna com 10% da Vida Máx. -2 em todos os testes e +1 nível de Exaustão.</div>
+          <div class="ds-item ds-4"><b>12–17</b> → Retorna com 20% da Vida Máx. -1 em todos os testes por 2 rodadas.</div>
+          <div class="ds-item ds-5"><b>18–19</b> → Retorna com 30% da Vida Máx.</div>
+          <div class="ds-item ds-6"><b>20 (Natural)</b> → Retorna com 40% da Vida Máx, +1 em rolagens de Ataque e Defesa por 2 rodadas, recebe Resiliência. Caso caia novamente, pode realizar novo DS, porém com +2 na CD de Morte.</div>
+        </div>
+
+        <div class="panel">
+          <h3>PV Negativa e DS</h3>
+          <div class="pv-wrap">
+            <div class="pv-bar"></div>
+            <div class="pv-labels">
+              <div>25% — Sem Modificador</div>
+              <div>26% a 50% — CD +1</div>
+              <div>51% a 75% — CD +2</div>
+              <div>76%+ — Desvantagem</div>
+            </div>
+          </div>
+          <p class="note">Dobro da Vida Máxima = 💀</p>
+        </div>
+
+        <div class="panel">
+          <h3>Exaustão 🫩</h3>
+          <ul class="exaustao-list">
+            <li><b>N1:</b> PA Máximos = -2. Remove em Descanso Curto</li>
+            <li class="down">↓</li>
+            <li><b>N2:</b> Regen. de PA/Rodada -2. Remove em Descanso Curto</li>
+            <li class="down">↓</li>
+            <li><b>N3:</b> -1 em todo teste e Desloc./2. Remove em Descanso Médio</li>
+            <li class="down">↓</li>
+            <li><b>N4:</b> PA Máximos/2. Remove em Descanso Longo</li>
+            <li class="down">↓</li>
+            <li><b>N5:</b> Desmaio. Remove em Descanso Longo</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Dano Máximo de Armas</h3>
+          <p class="note" style="margin-top:-.2rem;">Ao causar o dano máximo possível com a arma, aplica-se o efeito do tipo:</p>
+          <table class="std compact">
+            <thead><tr><th>Tipo</th><th>Efeito</th></tr></thead>
+            <tbody>
+              <tr><td>Cortante</td><td>Sangramento por 2 turnos</td></tr>
+              <tr><td>Perfurante</td><td>Metade do dano base vira Dano Verdadeiro</td></tr>
+              <tr><td>Contundente</td><td>Aplica Fragilizado por 2 turnos</td></tr>
+              <tr><td>Mágico</td><td>Recupera 1d4 de Éter</td></tr>
+              <tr><td>Rompedor</td><td>Resistências do alvo −1d4 por 3 turnos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel wide">
+        <h3>Tabela de Dificuldade de Testes</h3>
+        <table class="std">
+          <thead><tr><th class="num">CD</th><th>Dificuldade</th><th>O que representa</th><th>Exemplos</th></tr></thead>
+          <tbody>
+            <tr><td class="num">5</td><td>Trivial</td><td>Só falha com azar extremo ou distração. Não deveria nem pedir rolagem na maioria das vezes.</td><td>Pular uma poça, lembrar o nome de um NPC recorrente, notar que uma porta está trancada.</td></tr>
+            <tr><td class="num">10</td><td>Fácil</td><td>Qualquer um com um mínimo de aptidão passa quase sempre; só complica para quem tem o atributo Fraco naquilo.</td><td>Convencer um guarda desatento a deixar você passar, escalar uma parede baixa e rachada, negociar um desconto pequeno com um mercador de bom humor.</td></tr>
+            <tr><td class="num">15</td><td>Médio</td><td>Exige alguma competência real; um personagem sem treino tem chance de errar.</td><td>Convencer um nobre cético de uma mentira plausível, saltar um abismo de uns 3m com impulso, decifrar uma inscrição arcana comum, acalmar uma multidão levemente hostil.</td></tr>
+            <tr><td class="num">20</td><td>Difícil</td><td>Precisa de treino, especialização ou ajuda de item/magia. Um leigo praticamente não passa.</td><td>Convencer um nobre desconfiado e já com motivo de rancor, saltar um abismo largo sob chuva, escalar uma muralha lisa sem corda, negociar um tratado entre facções rivais.</td></tr>
+            <tr><td class="num">25</td><td>Muito Difícil</td><td>Mesmo treinado, o sucesso não é garantido.</td><td>Enganar um espião veterano da Ordo Umbra, atravessar um abismo instável durante um terremoto, seduzir/persuadir um Líder de região a mudar de posição pública, decifrar um grimório em língua morta.</td></tr>
+            <tr><td class="num">30</td><td>Quase Impossível</td><td>Só passa com vantagem, bônus de item, ou talvez um 20 natural.</td><td>Convencer um Lorde Poderoso e Maligno a hesitar por um segundo, saltar um abismo colapsando enquanto carrega um aliado ferido, convencer aliados a lutar uma batalha praticamente perdida.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PÁGINA 2 — CONDIÇÕES ================= -->
+  <section class="page" id="page-2">
+    <div class="page-title"><h2>Condições</h2></div>
+    <div class="grid3">
+
+      <!-- Coluna esquerda: Físicos -->
+      <div class="panel">
+        <h3>Efeitos Negativos — Físicos</h3>
+        <ul class="cond-list">
+          <li><b>Atordoamento Físico</b> => <span class="stat">Tenacidade</span>; incapaz de agir.</li>
+          <li><b>Colapso Físico</b> => <span class="stat">Coordenação</span>; sem ações coordenadas (ataque, defesa, desloc., itens).</li>
+          <li><b>Combustão</b> => <span class="stat">Sustentar</span>; 2d4 corrosivo a cada 2 turnos, RD geral diminuída em 2d6.</li>
+          <li><b>Congelamento</b> => <span class="stat">Tenacidade</span>; travado pela duração ou até sofrer dano; ao sair, -2 atk./def. por 2 turnos.</li>
+          <li><b>Contração</b> => <span class="stat">Coordenação</span>; Mestre joga 1d6, em 1–2 a ação é interrompida.</li>
+          <li><b>Derrubado</b> => <span class="stat">Coord./Tenacidade</span>; em caído, -2 em def., apenas atk. dist., precisa gastar 1🔶 e Deslocamento/2 para levantar.</li>
+          <li><b>Desarmado</b> => <span class="stat">Coordenação</span>; só ataques desarmados no turno, recuperar arma gasta 1🔶/2🔶/3🔶 (peq./méd./grande).</li>
+          <li><b>Desequilíbrio</b> => 1d4: perde 2🔶 / -1 def. 2t / desv. def. 2t / cai (Derrubado).</li>
+          <li><b>Dor</b> => <span class="stat">Sustentar</span>; -2 em todos os testes.</li>
+          <li><b>Enfraquecido</b> => <span class="stat">Sustentar</span>; dano causado -25%.</li>
+          <li><b>Enraizamento</b> => <span class="stat">Tenacidade</span>; deslocamento 0, sem esquiva.</li>
+          <li><b>Envenenamento</b> => <span class="stat">Sustentar</span>; 2d6 corrosivo/2 turnos até antídoto.</li>
+          <li><b>Ferida Aberta</b> => <span class="stat">Sustentar</span>; +2d6 verdadeiro se atingido na área, até curar.</li>
+          <li><b>Fragilizado</b> => <span class="stat">Sustentar</span>; Redução de Dano reduzida pela metade.</li>
+          <li><b>Lentidão</b> => <span class="stat">Tenacidade</span>; Deslocamento reduzido pela metade.</li>
+          <li><b>Nocauteado</b> => <span class="stat">Tenacidade</span>; inconsciente + Desarmado + Derrubado, +25% dano recebido.</li>
+          <li><b>Paralisia</b> => <span class="stat">Sustentar</span>; a cada ação física, teste de Coordenação — falha dá desvantagem + metade do desloc. para aquela ação.</li>
+          <li><b>Restringido</b> => <span class="stat">Tenacidade</span> (CD = Atletismo do aplicante); ambos com desvantagem em defesa, só atacam um ao outro.</li>
+          <li><b>Sangramento</b> => 2d4 corrosivo/2 turnos, escala a cada aplicação (2d4→2d6→2d8→2d10); 12 turnos seguidos causa Sangue Perdido.</li>
+          <li><b>Sobrecarga</b> => Peso acima do limite; aplica Lentidão.</li>
+          <li><b>Tremor</b> => <span class="stat">Coordenação</span>; desvantagem em ataques de precisão; falha automática em Furto/Artimanha/Armadilha.</li>
+        </ul>
+      </div>
+
+      <!-- Coluna central: Positivos + Obstrução -->
+      <div class="col">
+        <div class="panel">
+          <h3>Efeitos Positivos</h3>
+          <h4 class="sub">Físicos</h4>
+          <ul class="cond-list">
+            <li><b>Adrenalina</b> => +1🔶 (Nv.I) ou +2🔶 (Nv.II).</li>
+            <li><b>Ambiente Favorável</b> => +1 em rolagens (vantagem de terreno).</li>
+            <li><b>Imparável</b> => Imune a Derrubado, Enraizamento, Paralisia, Estático e Atord. Físico.</li>
+          </ul>
+          <h4 class="sub">Mentais</h4>
+          <ul class="cond-list">
+            <li><b>Determinação</b> => Imune a Amedrontado, Atração, Provocado e Intimidação.</li>
+            <li><b>Heroísmo</b> => +1d4 de Inspiração na próxima rolagem.</li>
+            <li><b>Instruído</b> => Bônus = Proficiência do instrutor ÷ 3.</li>
+            <li><b>Prestígio</b> => +2 em Diplomacia e Liderança.</li>
+            <li><b>Motivação</b> => +1 em ações relacionadas àquilo que te motivou.</li>
+            <li><b>Vontade Inabalável</b> => +2 em 1 rolagem + Vantagem (ao chegar a 20% da vida, 1x/descanso médio).</li>
+          </ul>
+          <h4 class="sub">Sensoriais</h4>
+          <ul class="cond-list">
+            <li><b>Alerta</b> => +2 em Identificação vs. ações furtivas, até o fim do combate.</li>
+            <li><b>Camuflado</b> => +2 em testes de Furtividade.</li>
+          </ul>
+          <h4 class="sub">Espirituais</h4>
+          <ul class="cond-list">
+            <li><b>Benção Curativa</b> => +2d6 de PV por rodada.</li>
+            <li><b>Fortaleza Espiritual</b> => +2 em Audácia e Acuidade.</li>
+            <li><b>Proteção Divina</b> => +1 em rolagens e 10 de Vida Extra.</li>
+            <li><b>Resiliência</b> => Após 2 falhas seguidas no mesmo teste de resistência: +2 e CD -2 (cumulativo) até ter sucesso.</li>
+            <li><b>Último Suspiro</b> => Ao cair e falhar Sobrevivência: 1 Ato Final com sucesso garantido antes de cair de vez.</li>
+            <li><b>Vampirismo</b> => Recupera vida pelo dano causado — Menor 10% / 15% / Maior 20% (excedente vira Vida Extra; não acumula, usa o maior).</li>
+            <li><b>Égide</b> => Crítico em resistência concede proteção (Física/Sensorial/Mental/Espiritual) que anula até 2 efeitos daquele tipo; perde 1 uso por ativação.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Níveis de Obstrução</h3>
+          <table class="std compact">
+            <thead><tr><th>Nível</th><th>Visual</th><th>Audição</th><th>Arcano</th></tr></thead>
+            <tbody>
+              <tr><td>I (Interferido)</td><td>-2 Percep. em Visão</td><td>-2 Percep. em Audição</td><td>-2 Percep. em Étermancia</td></tr>
+              <tr><td>II (Comprometido)</td><td>Desv. em Visão e Atk.</td><td>Desv. em Audição e Perca de Direção Sonora</td><td>Desv. em Étermancia</td></tr>
+              <tr><td>III (Perdido)</td><td>Cegueira</td><td>Surdez</td><td>Não pode mais detectar magia</td></tr>
+            </tbody>
+          </table>
+          <p class="note">Faz parte dos três canais sensoriais, e depende do que afetou o personagem — pode ser algo simples, como uma venda, ou barulhos da cidade, até algo realmente permanente, como perder os olhos ou uma magia que afete o éter.</p>
+        </div>
+      </div>
+
+      <!-- Coluna direita: Mentais / Sensoriais / Espirituais -->
+      <div class="col">
+        <div class="panel">
+          <h3>Efeitos Negativos — Mentais</h3>
+          <ul class="cond-list">
+            <li><b>Amedrontado</b> => <span class="stat">Audácia</span>; desvantagem na defesa contra a fonte do medo, não avança contra ela (CD +1 a cada falha).</li>
+            <li><b>Assombrado</b> => <span class="stat">Audácia</span>; recua 3m (gera oportunidade).</li>
+            <li><b>Atordoamento Mental</b> => <span class="stat">Audácia</span>; incapaz de agir.</li>
+            <li><b>Compelido</b> => Fibra vs. Intimidação/Persuasão; executa 1 ação simples imposta.</li>
+            <li><b>Embriaguez</b> => <span class="stat">Sustentar</span>; fica com Tontura e Desequilíbrio até Descanso Curto.</li>
+            <li><b>Encantado</b> => Trata o aplicante como aliado; não pode atacá-lo.</li>
+            <li><b>Hostil</b> => Ataca alvo aleatório (1dn); acalmar = Audácia (n = pessoas no combate).</li>
+            <li><b>Intimidado</b> => Audácia vs. Intimidação; Abalado (-2) / Recuando / Rendido.</li>
+            <li><b>Perturbado</b> => <span class="stat">Fibra</span>; -2 em Liderança, Persuasão e Intimidação; aliados próx. (4m) que veem têm -1 num teste (critério do Mestre).</li>
+            <li><b>Provocado</b> => Foca só no aplicante; Audácia (CD = Provocar).</li>
+            <li><b>Surpreendido</b> => Perde o 1º turno após a rolagem de Iniciativa.</li>
+            <li><b>Torpor</b> => <span class="stat">Audácia</span>; a cada ação física, teste de Coordenação ou paga +1🔶 e -2 no teste.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Efeitos Negativos — Sensoriais</h3>
+          <ul class="cond-list">
+            <li><b>Atordoamento Sensorial</b> => <span class="stat">Lucidez</span>; incapaz de agir.</li>
+            <li><b>Cegueira</b> => <span class="stat">Lucidez</span>; antes de atacar/defender, teste de Identificação com desvantagem — se falhar, ataque/defesa também com desvantagem.</li>
+            <li><b>Confusão</b> => <span class="stat">Lucidez</span>; -2 em ataque e defesa + desvantagem em Concentração por 3 turnos.</li>
+            <li><b>Desatenção</b> => -2 em testes de Instinto.</li>
+            <li><b>Desestabilizado</b> => <span class="stat">Lucidez</span>; falha: 1d4 → -1 em todos os testes (3t) / desv. atk-def (2t) / 1d8 verdadeiro ao atacar ou defender (1 rodada) / Atord. Sensorial (1t).</li>
+            <li><b>Fascinado</b> => <span class="stat">Lucidez</span>; desvantagem em Iniciativa, Identificação e Defesa; qualquer dano encerra o efeito.</li>
+            <li><b>Tontura</b> => <span class="stat">Lucidez</span>; desvantagem em ataque e defesa.</li>
+            <li><b>Surdez</b> => <span class="stat">Lucidez</span>; sem Identificação auditiva, sem direção/distância de sons, não entende comunicação sonora.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Efeitos Negativos — Espirituais</h3>
+          <ul class="cond-list">
+            <li><b>Atordoamento Espiritual</b> => <span class="stat">Acuidade</span>; incapaz de agir.</li>
+            <li><b>Deterioração</b> => <span class="stat">Acuidade</span>; incapaz de regenerar vida por qualquer meio.</li>
+            <li><b>Ferida da Alma</b> => <span class="stat">Acuidade</span>; parte da Vida Máxima fica selada (sem cura/regeneração) pela duração.</li>
+            <li><b>Fraqueza Espiritual</b> => <span class="stat">Acuidade</span>; -2 em Acuidade e Audácia.</li>
+            <li><b>Maldição Degenerativa</b> => <span class="stat">Acuidade</span>; -5% da vida máx./rodada até 40%; cessa com oferenda.</li>
+            <li><b>Perda Energética</b> => <span class="stat">Acuidade</span>; -1d6 Éter/Estamina a cada 4 turnos.</li>
+            <li><b>Supressão</b> => <span class="stat">Acuidade</span>; Nv.I bloqueia Ativas, Nv.II Reflexo, Nv.III todo o Éter.</li>
+            <li><b>Danação</b> => <span class="stat">Acuidade</span>; 2d6 corrosivo/2t, escala até 6d6.</li>
+            <li><b>Débito Vital</b> => <span class="stat">Acuidade</span>; cura recebida cortada pela metade até o débito zerar.</li>
+            <li><b>Necrose</b> => <span class="stat">Acuidade</span>; cura vira dano verdadeiro (ignora tudo); veneno passa a curar.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PÁGINA 3 — DISTRITOS & VIAGENS ================= -->
+  <section class="page" id="page-3">
+    <div class="page-title"><h2>Perícias &amp; Viagens</h2></div>
+    <div class="grid3">
+
+      <!-- Coluna esquerda -->
+      <div class="col">
+        <div class="panel">
+          <h3>Descanso</h3>
+          <ul class="sono-list">
+            <li><b>Ótima</b>+2 em testes de Instinto e 1d8 de Pontos de Vida extras</li>
+            <li><b>Boa</b>Nenhum efeito adicional</li>
+            <li><b>Ruim</b>-2 em Movimento e Identificação Passiva</li>
+            <li><b>Péssima</b>Todos os efeitos de Ruim e -2 em rolagens de Instinto</li>
+          </ul>
+          <table class="std compact">
+            <thead><tr><th>Descanso</th><th>Tempo</th><th>Recupera</th></tr></thead>
+            <tbody>
+              <tr><td>Curto</td><td>2h</td><td>25% de vida, éter e estamina</td></tr>
+              <tr><td>Médio</td><td>4h</td><td>50% de vida, éter e estamina</td></tr>
+              <tr><td>Longo</td><td>8h</td><td>Todos os pontos de vida, éter e estamina</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h3>Deslocamento</h3>
+          <table class="std compact">
+            <thead><tr><th>Meio de Transporte</th><th>Tempo no Mundo</th><th>Tempo IRL</th></tr></thead>
+            <tbody>
+              <tr><td>A Pé</td><td>14 Dias</td><td>2 Dias</td></tr>
+              <tr><td>Cavalo</td><td>7 Dias</td><td>1 Dia</td></tr>
+              <tr><td>Trem</td><td>16 horas</td><td>6 horas</td></tr>
+              <tr><td>Zeppelin</td><td>12 horas</td><td>4 horas</td></tr>
+              <tr><td>Teleporte</td><td>Inst.</td><td>Inst.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Coluna central -->
+      <div class="col">
+        <div class="panel">
+          <h3>Perícias Sociais <span style="font-size:.7rem; color:var(--text-dim); font-family:'EB Garamond',serif;">(Carisma)</span></h3>
+          <table class="std compact">
+            <thead><tr><th>Perícia</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td>Atuação</td><td>Imitar vozes, disfarçar-se; música, dança, dramaturgia ou oratória</td></tr>
+              <tr><td>Blefe</td><td>Manipular verdades, enganar ou omitir informações</td></tr>
+              <tr><td>Diplomacia</td><td>Apaziguar conflitos e negociar acordos</td></tr>
+              <tr><td>Intimidação</td><td>Impor medo ou respeito por presença ou ameaças</td></tr>
+              <tr><td>Liderança</td><td>Inspirar e comandar grupos, elevando moral/eficiência</td></tr>
+              <tr><td>Persuasão</td><td>Influenciar, convencer e negociar acordos vantajosos</td></tr>
+              <tr><td>Provocar</td><td>Tirar a paciência do alvo, induzindo impulsividade</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h3>Perícias Práticas</h3>
+          <table class="std compact">
+            <thead><tr><th>Perícia</th><th>Atrib.</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td>Armadilha</td><td>Destreza</td><td>Criar e calibrar a eficiência de uma armadilha</td></tr>
+              <tr><td>Artimanha</td><td>Destreza</td><td>Truques manuais: trapacear, abrir fechaduras, desarmar armadilhas</td></tr>
+              <tr><td>Campismo</td><td>Destreza</td><td>Sobreviver ao ar livre: abrigos, itens primitivos, riscos naturais</td></tr>
+              <tr><td>Identificação</td><td>Instinto</td><td>Reconhecer rastros, objetos, criaturas e padrões no ambiente</td></tr>
+              <tr><td>Iniciativa</td><td>Instinto</td><td>Agir rápido em combate, garantindo vantagem</td></tr>
+              <tr><td>Natureza</td><td>Intelecto</td><td>Reconhecer plantas, animais e perigos naturais</td></tr>
+              <tr><td>Sorte</td><td>Bônus de Proficiência</td><td>Às vezes as coisas simplesmente dão certo</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Coluna direita -->
+      <div class="col">
+        <div class="panel">
+          <h3>Perícias Intelectuais</h3>
+          <table class="std compact">
+            <thead><tr><th>Perícia</th><th>Atrib.</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td>Acalmar Animais</td><td>Intelecto</td><td>Tranquilizar ira/medo de animais com voz e postura</td></tr>
+              <tr><td>Decifrar</td><td>Intelecto</td><td>Interpretar códigos ou mensagens complexas</td></tr>
+              <tr><td>Dedução</td><td>Intelecto</td><td>Analisar situações, achar pontos táticos, ligar pistas pela lógica</td></tr>
+              <tr><td>Étermancia</td><td>Controle</td><td>Sentir energia etérea: rastros arcanos, itens mágicos, irregularidades</td></tr>
+              <tr><td>História</td><td>Intelecto</td><td>Eventos passados, lendas, folclore e rituais antigos</td></tr>
+              <tr><td>Idiomas</td><td>Intelecto</td><td>Aprender e entender línguas faladas ou escritas</td></tr>
+              <tr><td>Intuição</td><td>Intelecto</td><td>Pressentir perigo, mentiras ou intenções por gestos</td></tr>
+              <tr><td>Medicina</td><td>Intelecto</td><td>Entender organismos vivos e tratar ferimentos</td></tr>
+              <tr><td>Pesquisa</td><td>Intelecto</td><td>Achar e compreender informações em livros/registros</td></tr>
+              <tr><td>Religião</td><td>Intelecto</td><td>Símbolos místicos, dogmas e sinais divinos</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h3>Perícias Físicas</h3>
+          <table class="std compact">
+            <thead><tr><th>Perícia</th><th>Atrib.</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td>Acrobacia</td><td>Destreza</td><td>Rolamentos, corridas e saltos para superar obstáculos</td></tr>
+              <tr><td>Atletismo</td><td>Físico</td><td>Força bruta: carregar peso, escalar, empurrar</td></tr>
+              <tr><td>Fuga</td><td>Destreza</td><td>Escapar de combates ou despistar inimigos</td></tr>
+              <tr><td>Furtividade</td><td>Destreza</td><td>Ocultar-se ou passar despercebido</td></tr>
+              <tr><td>Furto</td><td>Destreza</td><td>Pegar objetos de outros sem que percebam</td></tr>
+              <tr><td>Natação</td><td>Vigor</td><td>Nadar e resistir ao fluxo da água</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h3>Resistências</h3>
+          <p class="note" style="margin-top:-.2rem;">O que o personagem suporta, não o que ele faz. Escolhidas por classe na criação, à parte das perícias ativas.</p>
+          <table class="std compact">
+            <thead><tr><th>Resistência</th><th>Atrib.</th><th>Domínio</th></tr></thead>
+            <tbody>
+              <tr><td>Acuidade</td><td>Controle</td><td>Efeitos sobre o fluxo etéreo e o espírito</td></tr>
+              <tr><td>Audácia</td><td>Intelecto</td><td>Ilusões, atordoamento mental, domínio da consciência</td></tr>
+              <tr><td>Coordenação</td><td>Destreza</td><td>Controle motor e precisão dos movimentos</td></tr>
+              <tr><td>Fibra</td><td>Carisma</td><td>Encantamentos, compulsões, abalo à vontade e ao ego</td></tr>
+              <tr><td>Lucidez</td><td>Instinto</td><td>Efeitos que perturbam sentidos e percepção</td></tr>
+              <tr><td>Sustentar</td><td>Vigor</td><td>Doenças, venenos e efeitos que minam a saúde</td></tr>
+              <tr><td>Tenacidade</td><td>Físico</td><td>Restrições físicas de movimento e atordoamento</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PÁGINA 4 — BIOMAS ================= -->
+  <section class="page" id="page-4">
+    <div class="page-title"><h2>Biomas</h2></div>
+    <div class="grid-biomas">
+
+      <!-- Ermos -->
+      <div class="bioma-group">
+        <h3>♣ Ermos ♣</h3>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Árido</span><span class="cd">CD 18</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>A regeneração de PV tem eficácia reduzida em 50% [A.P.B.]. Personagens sem acesso a água ou abrigo adequado a cada pelo menos 4 horas sofrem 1d4 de dano a cada 2 turnos.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Profundo, areia movediça e solo instável reduzem o deslocamento, Desvantagem em Atletismo e Acrobacia.</div>
+          </div>
+        </div>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Tundra</span><span class="cd">CD 20</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>Personagens sofrem 1d6 de dano por conta do frio extremo a cada 2 turnos sem proteção adequada por pelo menos 1 hora. Deslocamento reduzido em 4 metros.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Profundo, neve profunda e gelo tornam cada passo lento e exaustivo.</div>
+          </div>
+        </div>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Florestal</span><span class="cd">CD 14</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>Armas Grandes e Médias sofrem Desvantagem ao serem usadas.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Denso, vegetação fechada reduz a visibilidade e impede movimentos amplos.</div>
+          </div>
+        </div>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Altiplano</span><span class="cd">CD 18</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>Testes de Sustentar para resistir a condições negativas têm CD aumentada em +4.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Instável, ventos fortes e terreno irregular exigem Teste de Coordenação para manter posição ao realizar ações físicas intensas.</div>
+          </div>
+        </div>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Vulcânico</span><span class="cd">CD 20</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>Ao passar pelo menos 1 hora nesse ambiente, criaturas passam a sofrer 1d8 de dano a cada 2 turnos pela proximidade com lava e vapores.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Instável, superfícies irregulares e rachadas.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aquático + Subterrâneo -->
+      <div class="col">
+        <div class="bioma-group">
+          <h3>🌊 Aquático 🌊</h3>
+
+          <div class="bioma">
+            <div class="bioma-head"><span>Mar Aberto</span><span class="cd">CD 14</span></div>
+            <div class="bioma-body">
+              <div><span class="lbl">Efeito de Terreno</span>Todos os ataques realizados na embarcação sofrem -2 devido ao balanço constante. A cada 2 rodadas, o Mestre rola 1d100 — em resultados de 60-100, uma corrente forte desloca levemente as embarcações, alterando sua posição em até 6 metros.</div>
+              <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Instável devido ao balanço constante do mar.</div>
+            </div>
+          </div>
+
+          <div class="bioma">
+            <div class="bioma-head"><span>Alagado</span><span class="cd">CD 16</span></div>
+            <div class="bioma-body">
+              <div><span class="lbl">Efeito de Terreno</span>Deslocamento reduzido em 4 metros. Testes de Coordenação têm Desvantagem.</div>
+              <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Deslocamento reduzido em 4 metros. Testes de Coordenação têm Desvantagem.</div>
+            </div>
+          </div>
+
+          <div class="bioma">
+            <div class="bioma-head"><span>Mar Revolto</span><span class="cd">CD 18</span></div>
+            <div class="bioma-body">
+              <div><span class="lbl">Efeito de Terreno</span>Ataques têm -2, correr/movimentos bruscos exigem Acrobacia CD 22 (falha aplica Derrubado). Próximo às laterais, Teste de Sorte CD 15 para não cair ao mar. A cada 3 rodadas, rola 1d100: 80–99, todos fazem Atletismo CD 26 ou são derrubados e empurrados 3m em direção aleatória; 100 natural, quem falhar é jogado ao mar.</div>
+              <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>O balanço violento impõe Desvantagem em qualquer ação física.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bioma-group">
+          <h3>🪨 Subterrâneo 🪨</h3>
+
+          <div class="bioma">
+            <div class="bioma-head"><span>Caverna</span><span class="cd">CD 14</span></div>
+            <div class="bioma-body">
+              <div><span class="lbl">Efeito de Terreno</span>Alcance de visão reduzido a 3 metros sem fonte de luz. Aplica obstrução Visual de Nível II. O eco intenso impõe -2 em Testes de Identificação auditiva.</div>
+              <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Instável, rochas úmidas e irregulares exigem Teste de Coordenação ao correr ou realizar movimentos bruscos.</div>
+            </div>
+          </div>
+
+          <div class="bioma">
+            <div class="bioma-head"><span>Minas Abandonadas</span><span class="cd">CD 18</span></div>
+            <div class="bioma-body">
+              <div><span class="lbl">Efeito de Terreno</span>O ar viciado impõe 1 nível de Exaustão após 10 rodadas sem proteção adequada. A cada 3 rodadas, rola 1d100: 80–99, uma estrutura cede causando 4d8 de dano de Esmagamento em área de 3m; 100 natural, o colapso afeta 6m e o dobro do dano.</div>
+              <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Instável, terreno irregular e estruturas comprometidas exigem Teste de Coordenação ao realizar movimentos bruscos.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Urbano -->
+      <div class="bioma-group">
+        <h3>🏙 Urbano 🏙</h3>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Cidade</span><span class="cd">CD 14</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>Civis e estruturas densas: -1 em ataques à distância (dano colateral).</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Denso, ruas movimentadas, barracas e obstáculos urbanos reduzem o deslocamento e complicam manobras amplas.</div>
+          </div>
+        </div>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Ruínas Antigas</span><span class="cd">CD 16</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>Energias residuais perturbam o éter local, impondo -2 em testes de Acuidade e Étermancia. A cada 2 rodadas, Teste de Instinto CD 18 para detectar armadilhas ou estruturas comprometidas.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Instável, pedras soltas, buracos e estruturas comprometidas tornam o terreno traiçoeiro.</div>
+          </div>
+        </div>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Cidade Abandonada</span><span class="cd">CD 16</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>A cada 3 rodadas em movimento, Teste de Instinto CD 16 para detectar estruturas comprometidas. Falha pode causar 3d8 de dano de Esmagamento por desabamento parcial. Visibilidade reduzida por vegetação densa e escombros aplica -2 em testes de Identificação.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Instável, escombros, buracos no chão e estruturas precárias exigem Teste de Destreza ao correr ou realizar movimentos bruscos.</div>
+          </div>
+        </div>
+
+        <div class="bioma">
+          <div class="bioma-head"><span>Esgotos</span><span class="cd">CD 18</span></div>
+          <div class="bioma-body">
+            <div><span class="lbl">Efeito de Terreno</span>O ar contaminado exige Teste de Sustentar CD 18 a cada 3 rodadas — falha aplica 1 nível de Exaustão e a condição Envenenamento. Visibilidade reduzida a 2 metros sem fonte de luz. O nível da água varia a critério do Mestre.</div>
+            <div class="terreno-dificil"><span class="lbl">Terreno Difícil</span>Profundo, lama, água e detritos tornam o movimento lento e exaustivo, impondo Desvantagem em testes de Atletismo e Acrobacia.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PÁGINA 5 — SERVIÇOS E PREÇOS ================= -->
+  <section class="page" id="page-5">
+    <div class="page-title"><h2>Serviços e Preços</h2></div>
+    <div class="grid3" style="grid-template-columns: 1fr 1.1fr;">
+
+      <!-- Preço de Serviços -->
+      <div class="panel">
+        <h3>Preço de Serviços</h3>
+        <table class="std price-table">
+          <thead><tr><th>Serviço</th><th class="num">Preço</th></tr></thead>
+          <tbody>
+            <tr class="group-row"><td colspan="2">Sustento</td></tr>
+            <tr><td>Refeição simples</td><td class="price">5 Br</td></tr>
+            <tr><td>Refeição farta, com bebida</td><td class="price">20 Br</td></tr>
+            <tr><td>Pernoite em estábulo ou salão comum</td><td class="price">10 Br</td></tr>
+            <tr><td>Quarto privado em estalagem</td><td class="price">40 Br</td></tr>
+            <tr><td>Quarto de luxo, com banho e criadagem</td><td class="price">2 Pr</td></tr>
+
+            <tr class="group-row"><td colspan="2">Trabalho e Transporte</td></tr>
+            <tr><td>Diária de trabalhador braçal</td><td class="price">25 Br</td></tr>
+            <tr><td>Diária de artesão qualificado</td><td class="price">1 Pr</td></tr>
+            <tr><td>Passagem em carroça, por dia de viagem</td><td class="price">30 Br</td></tr>
+            <tr><td>Mensageiro entre distritos</td><td class="price">2 Pr</td></tr>
+            <tr><td>Mula de carga</td><td class="price">15 Pr</td></tr>
+            <tr><td>Cavalo de sela</td><td class="price">40 Pr</td></tr>
+
+            <tr class="group-row"><td colspan="2">Ofício e Fé</td></tr>
+            <tr><td>Identificação de item por estudioso</td><td class="price">5 Pr</td></tr>
+            <tr><td>Bênção de templo (remove doença comum)</td><td class="price">10 Pr</td></tr>
+            <tr><td>Purificação de Maldição Degenerativa</td><td class="price">25 Pr</td></tr>
+            <tr><td>Guia local p/ expedição, por semana</td><td class="price">8 Pr</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Comércio -->
+      <div class="col">
+        <div class="panel">
+          <h3>Comércio por Local</h3>
+          <table class="std compact">
+            <thead><tr><th>Assentamento</th><th>Disponível</th><th>Preço</th></tr></thead>
+            <tbody>
+              <tr><td>Posto de Estrada</td><td>Consumíveis, munição comum, itens de expedição</td><td>+20%</td></tr>
+              <tr><td>Vilarejo</td><td>Acima, mais armas mundanas e Armadura Leve</td><td>+10%</td></tr>
+              <tr><td>Distrito</td><td>Todo catálogo Comum, exceto armas etéreas</td><td>Referência</td></tr>
+              <tr><td>Capital</td><td>Catálogo Comum + itens Raros sob encomenda</td><td>Referência</td></tr>
+              <tr><td>Mercado Negro</td><td>Qualquer item, sem restrição de raridade</td><td>+50%</td></tr>
+            </tbody>
+          </table>
+          <p class="note" style="text-align:left; font-style:normal;"><b style="color:var(--orange)">Encomenda:</b> item acima do porte do assentamento pode ser encomendado, se houver rota comercial até uma praça que o produza. Custa +50% sobre o preço final; chega em 1d4 dias (1d4 semanas se Raro). Encomenda paga e não retirada continua guardada — nenhum comerciante devolve o sinal.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Pechincha e Abordagem</h3>
+          <table class="std compact">
+            <thead><tr><th>Abordagem</th><th>Sucesso</th><th>Falha</th></tr></thead>
+            <tbody>
+              <tr><td>Persuasão</td><td>-10% no total</td><td>+10% no total; sem nova pechincha até o próximo Descanso Longo</td></tr>
+              <tr><td>Intimidação</td><td>-20% no total</td><td>Comerciante encerra a negociação (recusa vender até a relação ter um reparo narrativo)</td></tr>
+            </tbody>
+          </table>
+          <p class="note">CD do Estabelecimento: Ambulante 15 · Loja de Distrito 18 · Casa Comercial 22 · Contrabandista 28</p>
+        </div>
+
+        <div class="panel">
+          <h3>Raridade <span style="font-size:.7rem; color:var(--text-dim); font-family:'EB Garamond',serif;">(multiplica o preço base)</span></h3>
+          <table class="std compact">
+            <thead><tr><th>Raridade</th><th>Preço</th><th>Durab. Extra</th><th>Encantamento</th></tr></thead>
+            <tbody>
+              <tr><td>Comum</td><td>Base</td><td>+0</td><td>1</td></tr>
+              <tr><td>Raro</td><td>× Multiplicador</td><td>+100</td><td>2</td></tr>
+              <tr><td>Épico</td><td>× Multiplicador</td><td>+200</td><td>3</td></tr>
+              <tr><td>Lendário</td><td>Sem preço, só narrativa</td><td>+400</td><td>3</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h3>Recompensas por Missão</h3>
+          <table class="std compact">
+            <thead><tr><th>Nível de Missão</th><th class="num">Elo por Jogador</th><th class="num">XP Concedido</th></tr></thead>
+            <tbody>
+              <tr><td>Trivial</td><td class="num">1 Pr</td><td class="num">50 XP</td></tr>
+              <tr><td>Simples</td><td class="num">5 Pr</td><td class="num">150 XP</td></tr>
+              <tr><td>Comum</td><td class="num">15 Pr</td><td class="num">300 XP</td></tr>
+              <tr><td>Média</td><td class="num">30 Pr</td><td class="num">450 XP</td></tr>
+              <tr><td>Perigosa</td><td class="num">100 Pr</td><td class="num">550 XP</td></tr>
+              <tr><td>Elite</td><td class="num">200 Pr</td><td class="num">750 XP</td></tr>
+              <tr><td>Épica</td><td class="num">500 Pr</td><td class="num">950 XP</td></tr>
+              <tr><td>Lendária</td><td class="num">2.000 Pr</td><td class="num">1.500 XP</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PÁGINA 6 — FICHAS DOS JOGADORES ================= -->
+  <section class="page" id="page-6">
+    <div class="page-title"><h2>Fichas dos Jogadores</h2></div>
+    <div class="grid3" style="grid-template-columns: 1fr;">
+      <div class="panel">
+        <h3>Mesa Atual</h3>
+        <div class="fichas-grid" id="fichas-grid"></div>
+
+        <div class="ficha-add-form">
+          <select id="novo-personagem" aria-label="Personagem da Torre"><option value="">Carregando personagens da Torre…</option></select>
+          <button type="button" id="novo-personagem-btn">+ Adicionar à Mesa</button>
+        </div>
+        <div class="ficha-add-form">
+          <input type="text" id="novo-link" placeholder="…ou cole o link de uma ficha (Google Sheets) que ainda não está na Torre">
+          <button type="button" id="novo-add-btn">+ Adicionar pelo link</button>
+        </div>
+        <p class="mesa-status" id="mesa-status" role="status" aria-live="polite"></p>
+
+        <div class="ficha-auto-row">
+          <label><input type="checkbox" id="ficha-auto-toggle" checked> Atualização automática (a cada 5s)</label>
+          <button type="button" id="ficha-refresh-all-btn">Atualizar tudo agora</button>
+        </div>
+
+        <div class="fichas-help">
+          <b style="color:var(--gold-bright)">Como funciona:</b> escolha um personagem da biblioteca da Torre de Comando (ou cole o link de uma ficha que ainda não foi cadastrada lá) e clique em adicionar &mdash; o retrato vem da Torre e o nome, os recursos e o resto vêm ao vivo da planilha. A mesa fica salva no servidor, na sua conta Discord: abre igual em qualquer computador.
+          Cada ficha é uma carta: os orbes mostram <b style="color:var(--green-bright)">Vida</b>, <b style="color:var(--blue)">Éter</b> e <b style="color:var(--red-bright)">Estamina</b> (atual/máximo) e esvaziam conforme o valor cai &mdash; quando muda, aparece o quanto subiu/desceu; o losango é o <b style="color:var(--orange)">PA</b> e o escudo é a <b style="color:var(--cyan)">Vida Extra</b>. Nos botões ao lado da imagem: <b>⚔️</b> armas (Arsenal e Arte de Batalha), <b>🎭</b> arquétipo e <b>📜</b> defeitos e qualidades. Recursos sem máximo definido na ficha não aparecem. O botão <b style="color:var(--gold-bright)">⟳</b> força a atualização imediata de uma ficha, <b>🖼</b> permite colar o link de outra imagem (substitui o retrato da Torre), e <b>🗑</b> remove o jogador da mesa.
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Consulta Rápida de Ficha</h3>
+        <div class="ficha-lookup">
+          <input type="text" id="ficha-quick-input" placeholder="Cole aqui o link da planilha (Google Sheets)…">
+          <button type="button" id="ficha-quick-btn">Buscar Ficha</button>
+        </div>
+        <div class="quick-result" id="ficha-quick-result"></div>
+        <p class="note" style="margin-top:.6rem;">Funciona com qualquer planilha compartilhada como "Qualquer pessoa com o link pode visualizar" &mdash; mostra a carta do personagem sem adicioná-lo à mesa.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PÁGINA 8 — GERADOR DE NPC ================= -->
+  <section class="page" id="page-8">
+    <div class="page-title"><h2>Gerador de NPC</h2></div>
+
+    <div class="panel">
+      <h3>Dados do NPC</h3>
+      <p class="note" style="margin-top:-.2rem;">Preencha só o que você já sabe sobre o NPC — o resto é sorteado ao clicar em Gerar, sem apagar o que já estiver escrito.</p>
+      <div class="npc-grid">
+        <div class="npc-field"><label for="npc-nome">Nome e Sobrenome</label><input type="text" id="npc-nome" placeholder="Sorteado ao gerar"></div>
+        <div class="npc-field"><label for="npc-raca">Raça</label><input type="text" id="npc-raca" placeholder="Sorteado ao gerar"></div>
+        <div class="npc-field"><label for="npc-sexo">Sexo</label><input type="text" id="npc-sexo" placeholder="Sorteado ao gerar"></div>
+        <div class="npc-field"><label for="npc-personalidade">Personalidade</label><input type="text" id="npc-personalidade" placeholder="Sorteado ao gerar"></div>
+      </div>
+      <div class="npc-btn-row">
+        <button type="button" id="npc-gerar-btn">🎲 Gerar</button>
+        <button type="button" id="npc-limpar-btn">Limpar campos</button>
+      </div>
+    </div>
+
+    <div class="panel" id="npc-resultado-panel" style="display:none;">
+      <h3>NPC Gerado</h3>
+      <div id="npc-resultado"></div>
+    </div>
+  </section>
+
+  <!-- ================= PÁGINA 7 — MAPAS ================= -->
+  <section class="page" id="page-7">
+    <div class="page-title"><h2>Mapas</h2></div>
+    <div class="grid3" style="grid-template-columns: 1fr;">
+
+      <div class="panel map-panel">
+        <h3>Mapa-Múndi</h3>
+        <figure style="margin:0;">
+          <img src="assets/mapa-mundi.webp" alt="Mapa-múndi: Confederação de Sideria e Império de Astradon à esquerda; Deserto de Kairim e Reinado Divino de Tharion à direita">
+          <figcaption>Confederação de Sideria &amp; Império de Astradon (oeste) — Deserto de Kairim &amp; Reinado Divino de Tharion (leste)</figcaption>
+        </figure>
+      </div>
+
+      <div class="panel map-panel">
+        <h3>Confederação de Sideria &mdash; Distritos</h3>
+        <figure style="margin:0;">
+          <div class="sideria-layout" id="sideria-layout">
+          <div class="map-hotspot-wrap" id="sideria-map-wrap">
+          <img src="assets/sideria-distritos.webp" alt="Mapa dos sete distritos da Confederação de Sideria com população por distrito">
+          </div>
+          <div class="map-info-panel" id="sideria-info-panel">
+            <p class="map-info-placeholder">Clique em uma área do mapa para ver os detalhes do distrito.</p>
+          </div>
+          </div>
+
+          <div class="district-detail-view" id="district-detail-view">
+            <button type="button" class="district-back-btn" id="district-back-btn">&larr; Voltar para o mapa de Sideria</button>
+            <h4 id="district-detail-title"></h4>
+            <p class="map-info-pop" id="district-detail-pop"></p>
+            <p class="district-detail-desc" id="district-detail-desc"></p>
+            <div class="district-frame" id="district-frame">
+              <div class="district-img-wrap" id="district-img-wrap">
+                <img id="district-detail-img" src="" alt="" />
+              </div>
+            </div>
+            <p class="district-frame-hint">Clique no mapa para ampliar &middot; clique nos marcadores dourados para ver detalhes de uma cidade</p>
+          </div>
+
+          <div class="city-modal-overlay" id="city-modal-overlay">
+            <div class="city-modal">
+              <button type="button" class="city-modal-close" id="city-modal-close" title="Fechar">&times;</button>
+              <div class="city-modal-scroll">
+                <img id="city-modal-img" class="city-modal-img" src="" alt="" />
+                <h3 id="city-modal-title"></h3>
+                <div id="city-modal-text" class="city-modal-text"></div>
+              </div>
+            </div>
+          </div>
+          <figcaption>População total: 150.000.000 habitantes &mdash; Gravemir, Caelithum, Viridhal, Aldrivane, Thamerys, Raven's Fall, Pentacordia e a capital Roan</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </section>
+
+<script src="mapas.js"></script>
+
+</main>
+
+<footer>Escudo do Mestre &middot; Crônicas de Elyndar</footer>
+
+<script src="abas.js"></script>
+
+<script src="recolher.js"></script>
+
+<script src="fichas.js"></script>
+
+<script src="npc.js"></script>
+
+</body>
+</html>
