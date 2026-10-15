@@ -188,13 +188,10 @@
     n.combos = arq.combos.map(([nome, nota, passos]) => ({ id: uid(), nome, nota, passos: passos.map(p => stepFromHab(n, p === '__arma' ? ARMA : id(p))) }));
     return n;
   }
-  // Fichas antigas trazem o exemplo fixo do Kiran Veyr; se for a única ficha, troca por um exemplo aleatório.
-  const ehKiranExemplo = n => n && n.nome === 'Kiran Veyr' && String(n.papel || '').startsWith('Exemplo');
 
   // ── estado e armazenamento ──
   let db = { npcs: [], current: null };
   let canStore = true;
-  let trocouExemplo = false;
   const filters = {};
   const editing = new Set();
 
@@ -212,7 +209,6 @@
     }
     if (!fromStore && SEED && Array.isArray(SEED.npcs) && SEED.npcs.length) db = { npcs: JSON.parse(JSON.stringify(SEED.npcs)), current: SEED.current || null };
     db.npcs = db.npcs.map(normalize);
-    if (db.npcs.length === 1 && ehKiranExemplo(db.npcs[0])) { db.npcs = []; trocouExemplo = true; }
     if (!db.npcs.length) { const k = exemploAleatorio(); db.npcs.push(k); db.current = k.id; }
     if (!db.npcs.find(n => n.id === db.current)) db.current = db.npcs[0].id;
   }
@@ -1283,7 +1279,6 @@
     render();
     if (SERVIDOR && versao === 0) save();   // primeira vez: grava o exemplo inicial na conta
     else if (SERVIDOR) setStatus('Salvo na sua conta.');
-    if (trocouExemplo) { save(); setStatus('O exemplo antigo (Kiran Veyr) foi trocado por um exemplo aleatório.'); }
     if (!canStore && !SERVIDOR) setStatus('Este navegador não deixou salvar. Use Exportar para guardar as fichas.', true);
   })();
 })();

@@ -63,7 +63,7 @@ A página é a ficha de NPC Elysium (selos Sem selo, Elite, Chefe e Soberano; at
 
 `public/account.js` (a barra do topo, presente no portal, nos jogos, na Torre, no Escudo e nas Fichas de NPC) consulta `GET /escudo/api/me`. Quando a resposta é 200, acrescenta os botões **Escudo do Mestre** e **Fichas de NPC** ao lado da Torre de Comando, com o botão da página atual destacado. Para jogadores e visitantes nada muda.
 
-O exemplo inicial das Fichas de NPC é gerado aleatoriamente: povo, nome, nível, selo e um de quatro arquétipos (mercenário, etermante, batedor e capitão da guarda), já com habilidades e combos. Contas que só tinham o antigo exemplo fixo (Kiran Veyr) recebem um exemplo aleatório no lugar dele.
+O exemplo inicial das Fichas de NPC é gerado aleatoriamente: povo, nome, nível, selo e um de quatro arquétipos (mercenário, etermante, batedor e capitão da guarda), já com habilidades e combos. Fichas existentes são preservadas, inclusive o antigo exemplo Kiran Veyr e suas edições. Novos exemplos podem ser adicionados pelo botão “Adicionar exemplo aleatório”.
 
 ## API
 
