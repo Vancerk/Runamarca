@@ -187,13 +187,15 @@ test('normalizeMesa descarta campos desconhecidos', () => {
   assert.deepEqual(entry, {id: 'a', characterId: 'abc-1'});
 });
 
-test('lista de mestres: admin, mestres da Torre e ESCUDO_MESTRES', () => {
+test('lista de mestres: admin, mestres da Torre, lista do Escudo e ESCUDO_MESTRES', () => {
   const dir = mkdtempSync(join(tmpdir(), 'escudo-mestres-'));
   const file = join(dir, 'mestres.json');
+  const escudoFile = join(dir, 'mestres-escudo.json');
   writeFileSync(file, JSON.stringify([{name: 'A', id: '444444444444444444'}, {name: 'inválido', id: 'abc'}]));
-  const ids = readMasterIds({adminId: '555555555555555555', extra: '666666666666666666, lixo', file});
-  assert.deepEqual([...ids].sort(), ['444444444444444444', '555555555555555555', '666666666666666666']);
-  const semArquivo = readMasterIds({adminId: '555555555555555555', extra: '', file: join(dir, 'nao-existe.json')});
+  writeFileSync(escudoFile, JSON.stringify([{name: 'B', id: '777777777777777777'}]));
+  const ids = readMasterIds({adminId: '555555555555555555', extra: '666666666666666666, lixo', file, escudoFile});
+  assert.deepEqual([...ids].sort(), ['444444444444444444', '555555555555555555', '666666666666666666', '777777777777777777']);
+  const semArquivo = readMasterIds({adminId: '555555555555555555', extra: '', file: join(dir, 'nao-existe.json'), escudoFile: join(dir, 'nao-existe-2.json')});
   assert.deepEqual([...semArquivo], ['555555555555555555']);
 });
 
