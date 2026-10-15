@@ -60,9 +60,11 @@ A página é a ficha de NPC Elysium (selos Sem selo, Elite, Chefe e Soberano; at
 - **Exportar:** gera JSON (para importar de novo) ou um HTML completo e independente. Esse HTML guarda as alterações no navegador de quem o abrir, como a versão original da ficha.
 - **Importar:** aceita os JSON exportados, inclusive os da versão anterior da ficha, que salvava só no navegador.
 
-## Portal
+## Barra de conta
 
-`public/mestre-atalhos.js` (carregado pelo `hub.html`) consulta `GET /escudo/api/me`. Só quando a resposta é 200 aparece a seção **Área do Mestre**, com os atalhos para o Escudo e para as Fichas de NPC. Para jogadores e visitantes nada muda.
+`public/account.js` (a barra do topo, presente no portal, nos jogos, na Torre, no Escudo e nas Fichas de NPC) consulta `GET /escudo/api/me`. Quando a resposta é 200, acrescenta os botões **Escudo do Mestre** e **Fichas de NPC** ao lado da Torre de Comando, com o botão da página atual destacado. Para jogadores e visitantes nada muda.
+
+O exemplo inicial das Fichas de NPC é gerado aleatoriamente: povo, nome, nível, selo e um de quatro arquétipos (mercenário, etermante, batedor e capitão da guarda), já com habilidades e combos. Fichas existentes são preservadas, inclusive o antigo exemplo Kiran Veyr e suas edições. Novos exemplos podem ser adicionados pelo botão “Adicionar exemplo aleatório”.
 
 ## API
 
@@ -130,4 +132,4 @@ Só os arquivos listados em `STATIC` (e `assets/*.webp`) são servidos; nenhum c
 
 - **NPC na Mesa:** os NPCs ainda não entram como cartas na Mesa Atual.
 - **Permissão por campanha:** hoje é por lista de mestres. Cada mestre tem a própria Mesa.
-- **Atalhos no portal:** só aparecem para mestres (ver "Portal").
+- **Atalhos:** ficam na barra de conta e só aparecem para mestres (ver "Barra de conta").
