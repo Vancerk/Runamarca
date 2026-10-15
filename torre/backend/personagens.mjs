@@ -21,7 +21,7 @@ export function createCharacters({folder,root,python,extractor,dataFolder}){
  function installSample(){if(cards.length)return;const source=resolve(folder,'../fichas/oberon/personagem.json');try{const sample=JSON.parse(readFileSync(source,'utf8'));validate(sample);sample.portrait=portrait(readFileSync(resolve(folder,'../fichas/oberon',sample.portrait)),extname(sample.portrait));cards.push({id:randomUUID(),sheetId:'1RMUQDSyEurI6WZFFgkiEHGggAwfLNrEbOBNXnWPbHJE',sourceUrl:'https://docs.google.com/spreadsheets/d/1RMUQDSyEurI6WZFFgkiEHGggAwfLNrEbOBNXnWPbHJE/edit',name:sample.name,player:sample.player,level:sample.level,division:sample.division,class:sample.class,virtue:sample.virtue,portrait:sample.portrait,updatedAt:new Date().toISOString()});save();}catch(e){if(e.code!=='ENOENT')throw e;}}
  installSample();
  return {
-  list:()=>cards.map(c=>({...c})),
+  list(userId,admin=false){const internal=arguments.length===0;return cards.map(c=>{if(internal||admin||userId&&c.discordId===userId)return {...c};const {discordId,discordVerified,discordUsername,sourceUrl,sheetId,...view}=c;return view;});},
   ensureVisualTestAuthor(){
    const id='torre-visual-test-author',existing=cards.find(c=>c.id===id);if(existing)return {...existing};
    const card={id,name:'Personagem de teste visual',player:'van_renascido (teste)',level:1,division:division(1),class:'Teste',virtue:'Teste',portrait:null,discordId:'1080332488070672484',discordVerified:false,testFixture:true,updatedAt:new Date().toISOString()};cards.push(card);save();return {...card};
@@ -31,8 +31,8 @@ export function createCharacters({folder,root,python,extractor,dataFolder}){
   startPairing(id){cardById(id);for(const [code,p]of pairings)if(p.expires<Date.now())pairings.delete(code);if(pairings.size>=100)throw new ReportError('Muitos cadastros em andamento. Tente mais tarde.',429);const code=randomBytes(8).toString('hex').toUpperCase();pairings.set(code,{id,expires:Date.now()+600000});return {code,command:'/vincular codigo:'+code,expiresIn:600};},
   completePairing(code,user){const p=pairings.get(String(code||'').trim().toUpperCase());if(!p||p.expires<Date.now())throw new ReportError('Código expirado ou inválido. Gere outro no site.');const card=discordBinding(p.id,user.id,true,user.username);pairings.delete(String(code).trim().toUpperCase());return card;},
   snapshots(ids){if(!Array.isArray(ids)||ids.length<1||ids.length>50||new Set(ids).size!==ids.length)throw new ReportError('Selecione entre 1 e 50 personagens, sem repetições.');return ids.map(id=>{const card=cards.find(c=>c.id===id);if(!card)throw new ReportError('Personagem não encontrado. Atualize a biblioteca.');return {...card};});},
-  async preview(link){
-   const id=sheetId(link),existing=cards.find(c=>c.sheetId===id);
+  async preview(link,actor){
+   const id=sheetId(link),existing=cards.find(c=>c.sheetId===id);if(actor&&existing?.discordId&&existing.discordId!==actor.userId&&!actor.admin)throw new ReportError('Somente o dono da carta ou o administrador pode atualizar esta ficha.',403);
    for(const [key,p]of previews)if(p.expires<Date.now())previews.delete(key);
    if(previews.size>=50)throw new ReportError('Muitas fichas em conferência. Tente mais tarde.',429);
    const response=await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`,{signal:AbortSignal.timeout(20000)});
@@ -42,9 +42,9 @@ export function createCharacters({folder,root,python,extractor,dataFolder}){
    try{const source=join(temporary,'ficha.xlsx'),out=join(temporary,'out');await writeFile(source,bytes);try{await exec(python,[extractor,source,out],{timeout:15000,maxBuffer:10000,windowsHide:true});}catch{throw new ReportError('Esta ficha não corresponde ao modelo Elysium esperado.');}
     const extracted=JSON.parse(await readFile(join(out,'personagem.json'),'utf8'));validate(extracted);
     const card={id:existing?.id||randomUUID(),sheetId:id,sourceUrl:`https://docs.google.com/spreadsheets/d/${id}/edit`,name:extracted.name,player:extracted.player,level:extracted.level,division:extracted.division,class:extracted.class,virtue:extracted.virtue,portrait:extracted.portrait?portrait(await readFile(join(out,extracted.portrait)),extname(extracted.portrait)):null};
-    const previewId=randomUUID();previews.set(previewId,{card,expires:Date.now()+600000});return {previewId,card,existing:Boolean(existing),warnings:extracted.portrait?[]:['Retrato não encontrado na posição esperada. A carta usará as iniciais.']};
+    const previewId=randomUUID();previews.set(previewId,{card,userId:actor?.userId,expires:Date.now()+600000});return {previewId,card,existing:Boolean(existing),warnings:extracted.portrait?[]:['Retrato não encontrado na posição esperada. A carta usará as iniciais.']};
    }finally{await rm(temporary,{recursive:true,force:true});}
   },
-  confirm(previewId){const preview=previews.get(previewId);if(!preview||preview.expires<Date.now())throw new ReportError('A prévia expirou. Leia a ficha novamente.');const {card}=preview;card.updatedAt=new Date().toISOString();const index=cards.findIndex(c=>c.sheetId===card.sheetId);if(index>=0){const previous=cards[index];card.id=previous.id;for(const key of ['discordId','discordVerified','discordUsername'])if(previous[key]!==undefined)card[key]=previous[key];cards[index]=card;}else cards.push(card);save();previews.delete(previewId);return {...card};}
+  confirm(previewId,actor){const preview=previews.get(previewId);if(!preview||preview.expires<Date.now())throw new ReportError('A prévia expirou. Leia a ficha novamente.');if(actor&&preview.userId!==actor.userId&&!actor.admin)throw new ReportError('Esta conferência pertence a outra conta.',403);const {card}=preview;const current=cards.find(c=>c.sheetId===card.sheetId);if(actor&&current?.discordId&&current.discordId!==actor.userId&&!actor.admin)throw new ReportError('Atualização reservada ao dono da carta.',403);card.updatedAt=new Date().toISOString();const index=cards.findIndex(c=>c.sheetId===card.sheetId);if(index>=0){const previous=cards[index];card.id=previous.id;for(const key of ['discordId','discordVerified','discordUsername'])if(previous[key]!==undefined)card[key]=previous[key];cards[index]=card;}else cards.push(card);save();previews.delete(previewId);return {...card};}
  };
 }

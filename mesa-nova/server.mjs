@@ -1,7 +1,7 @@
 import http from 'node:http';
 import {createAccessSessions} from './access-session.mjs';
 import {waitRevision} from './wait-revision.mjs';
-import {registerGame,bindParticipant,assertUniqueAccount,verifyParticipant,persistMatch,normalizeWager} from '../accounts.mjs';
+import {allowRoomCreate,roomRole,roomPolicy,registerGame,bindParticipant,assertUniqueAccount,verifyParticipant,persistMatch,normalizeWager} from '../accounts.mjs';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
@@ -48,18 +48,18 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.',code:'ACCESS_REQUIRED'});
     }
     if(routePath==='/api/create'&&req.method==='POST'){
-      const data=await payload(req);let id;do{id=code();}while(rooms.has(id));const room=makeRoom(id,data.name,data.role==='spectator'?'spectator':'player');room.stake=normalizeWager(data.stake);room.onChange=()=>{scheduleBot(room);void persistMatch(room,'runamarca');};const p=room.players[0]||room.spectators[0];await bindParticipant(req,room,p);rooms.set(id,room);return json(res,200,{code:id,token:p.token,state:view(room,p)});
+      const creator=await allowRoomCreate(req);const data=await payload(req);let id;do{id=code();}while(rooms.has(id));const room=makeRoom(id,data.name,data.role==='spectator'?'spectator':'player');room.stake=normalizeWager(data.stake);room.onChange=()=>{scheduleBot(room);void persistMatch(room,'runamarca');};const p=room.players[0]||room.spectators[0];await bindParticipant(req,room,p);room.creatorDiscordId=creator;roomPolicy.touch(room);roomPolicy.store(rooms,id,room);return json(res,200,{code:id,token:p.token,state:view(room,p)});
     }
     const route=routePath.match(/^\/api\/rooms\/([A-F0-9]{6})\/(join|state|act)$/);
     if(route){const room=rooms.get(route[1]);if(!room)throw Object.assign(Error('Sala não encontrada.'),{code:'ROOM_NOT_FOUND'});const operation=route[2];
-      if(operation==='join'&&req.method==='POST'){const data=await payload(req);const role=data.role==='spectator'||(data.role==='auto'&&(room.phase!=='lobby'||room.players.length>=2))?'spectator':'player';const probe={};await bindParticipant(req,room,probe);assertUniqueAccount(room,probe);const p=join(room,probe.name||data.name,role);p.discordId=probe.discordId;return json(res,200,{code:room.code,token:p.token,state:view(room,p)});}
-      const p=auth(req,room);await verifyParticipant(req,p);room.updatedAt=Date.now();
+      if(operation==='join'&&req.method==='POST'){const data=await payload(req);const requestedRole=await roomRole(req,data.role);const role=requestedRole==='spectator'||(data.role==='auto'&&(room.phase!=='lobby'||room.players.length>=2))?'spectator':'player';roomPolicy.touch(room);if(role==='spectator'&&room.spectators.length>=50)throw Object.assign(Error('Limite de espectadores atingido.'),{status:429});const probe={};await bindParticipant(req,room,probe);assertUniqueAccount(room,probe);const p=join(room,probe.name||data.name,role);p.discordId=probe.discordId;return json(res,200,{code:room.code,token:p.token,state:view(room,p)});}
+      const p=auth(req,room);await verifyParticipant(req,p);roomPolicy.touch(room);room.updatedAt=Date.now();
       if(operation==='state'&&req.method==='GET'){
         if(url.searchParams.get('wait')==='1'&&url.searchParams.has('revision')){await waitRevision(room,Number(url.searchParams.get('revision')),res);if(res.destroyed)return;}
         if(url.searchParams.has('revision')&&Number(url.searchParams.get('revision'))===room.revision){res.writeHead(204,{'Cache-Control':'no-store'});return res.end();}
         return json(res,200,view(room,p));
       }
-      if(operation==='act'&&req.method==='POST'){const data=await payload(req);await persistMatch(room,'runamarca');act(room,p,data,catalog);await persistMatch(room,'runamarca');scheduleBot(room);if(data.type==='leave'){if(!room.spectators.length&&room.players.every(x=>x.bot)){clearTimeout(room.botTimer);rooms.delete(room.code);}return json(res,200,{left:true});}return json(res,200,view(room,p));}
+      if(operation==='act'&&req.method==='POST'){const data=await payload(req);if(data.type==='takeSeat'&&await roomRole(req,'player')==='spectator')throw Object.assign(Error('Entre com Discord para ocupar uma vaga.'),{status:401});await persistMatch(room,'runamarca');act(room,p,data,catalog);await persistMatch(room,'runamarca');scheduleBot(room);if(data.type==='leave'){if(!room.spectators.length&&room.players.every(x=>x.bot)){clearTimeout(room.botTimer);rooms.delete(room.code);}return json(res,200,{left:true});}return json(res,200,view(room,p));}
       return json(res,405,{error:'Método inválido.'});
     }
     if(req.method!=='GET')return json(res,405,{error:'Método inválido.'});
@@ -68,7 +68,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
     const rel=decodeURIComponent(assetPath).replace(/^\/+/, '')||'index.html';const file=path.resolve(root,rel);
     if(!file.startsWith(root+path.sep)||!types[path.extname(file)])return json(res,404,{error:'Não encontrado.'});
     try{const content=await readFile(file);res.writeHead(200,{'Content-Type':types[path.extname(file)],'Cache-Control':'no-cache','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(content);}catch{return json(res,404,{error:'Não encontrado.'});}
-  }catch(error){json(res,400,{error:error.message||'Erro na mesa.',code:error.code||'INVALID_ACTION'});}
+  }catch(error){json(res,error.status||400,{error:error.message||'Erro na mesa.',code:error.code||'INVALID_ACTION',retryAfter:error.retryAfter});}
 }
 if(process.argv[1]&&fileURLToPath(import.meta.url)===path.resolve(process.argv[1])){
   http.createServer((req,res)=>handleNewGame(req,res)).listen(Number(process.env.PORT)||3042,process.env.PORT?'0.0.0.0':'127.0.0.1',()=>console.log(`RunaMarca novo: porta ${Number(process.env.PORT)||3042}`));

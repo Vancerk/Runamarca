@@ -1,3 +1,5 @@
+import {createRoomPolicy} from './room-policy.mjs';
+import {readMasterIds} from './escudo/backend/handler.mjs';
 import {createReadCache} from './read-cache.mjs';
 import {randomBytes, randomUUID, createHash, timingSafeEqual} from 'node:crypto';
 import {Pool} from 'pg';
@@ -6,7 +8,7 @@ const DAY=86400000;
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const cookie=(req,name)=>String(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith(name+'='))?.slice(name.length+1);
 const sources=new Map();
-export function registerGame(name,rooms){sources.set(name,rooms);}
+export function registerGame(name,rooms){sources.set(name,rooms);roomPolicy.register(name,rooms);}
 export const accountsConfigured=()=>Boolean(process.env.DISCORD_CLIENT_ID&&process.env.DISCORD_CLIENT_SECRET&&process.env.DISCORD_REDIRECT_URI&&process.env.DATABASE_URL);
 export function publicOrigin(){return new URL(process.env.DISCORD_REDIRECT_URI||'http://localhost:3000/auth/discord/callback').origin;}
 function json(res,status,value){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));}
@@ -39,6 +41,11 @@ let store;
 const sessionReads=createReadCache({ttl:10000}),inventoryReads=createReadCache({ttl:5000});
 export function useTestStore(value){if(process.env.NODE_ENV!=='test')throw Error('Apenas para testes.');store=value;sessionReads.clear();inventoryReads.clear();}
 function database(){if(!store){const pool=new Pool({connectionString:process.env.DATABASE_URL,max:4,connectionTimeoutMillis:10000,idleTimeoutMillis:30000});pool.on('error',()=>console.error('Conexão do banco Elysium interrompida.'));store=new AccountStore(pool);}return store;}
+export const roomPolicy=createRoomPolicy({query:(...args)=>database().query(...args),transaction:async job=>{const db=database();await db.init();const client=await db.pool.connect();try{await client.query('BEGIN');const result=await job((...args)=>client.query(...args));await client.query('COMMIT');return result;}catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}}});
+const roomCleanup=setInterval(()=>roomPolicy.sweep(),60000);roomCleanup.unref();
+export async function allowRoomCreate(req){const u=await identify(req);if(!accountsConfigured()){if(process.env.RENDER==='true'||process.env.NODE_ENV==='production')throw Object.assign(Error('O login precisa estar configurado para criar salas.'),{status:503});return null;}return roomPolicy.check(u?.discord_id);}
+export async function roomRole(req,role){const u=await identify(req);return accountsConfigured()&&!u?'spectator':role;}
+export function accountRole(u){return !u?'guest':u.discord_id===process.env.DISCORD_ADMIN_ID?'admin':readMasterIds().has(u.discord_id)?'master':'player';}
 const rates=new Map();
 function throttle(req,identity){const profile=req.method==='GET'&&req.url.split('?')[0]==='/api/account';const key=(profile?'profile:':'action:')+(identity?'user:'+identity.discord_id:'ip:'+(req.socket.remoteAddress||'local'));const limit=profile?240:30;const now=Date.now();let r=rates.get(key);if(!r||now-r.at>60000){r={at:now,count:0};rates.set(key,r);}if(++r.count>limit)return false;if(rates.size>5000)for(const [key,r] of rates)if(now-r.at>60000)rates.delete(key);return true;}
 const pendingStates=new Map();
@@ -72,12 +79,14 @@ export async function handleAccounts(req,res,url){if(!url.pathname.startsWith('/
     const response=await fetch('https://discord.com/api/oauth2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:process.env.DISCORD_CLIENT_ID,client_secret:process.env.DISCORD_CLIENT_SECRET,redirect_uri:process.env.DISCORD_REDIRECT_URI,code:url.searchParams.get('code')}),signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('Discord indisponível');const {access_token}=await response.json();const userResponse=await fetch('https://discord.com/api/users/@me',{headers:{Authorization:`Bearer ${access_token}`},signal:AbortSignal.timeout(15000)});if(!userResponse.ok)throw Error('Discord indisponível');const u=await userResponse.json();if(!/^\d{15,22}$/.test(u.id)||!u.username)throw Error('Perfil inválido');const db=database();await db.upsert(u);const value=await db.createSession(u.id);setCookie(res,'elysium_session',value,30*86400);res.appendHeader('Set-Cookie','elysium_oauth=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');redirect(res,flow.returnTo);return true;
   }
   const u=await identify(req);
-  if(url.pathname==='/api/account'&&req.method==='GET'){json(res,200,{user:u?{id:u.discord_id,username:u.username,name:u.display_name,admin:u.discord_id===process.env.DISCORD_ADMIN_ID}:null,configured:true});return true;}
+  if(url.pathname==='/api/account'&&req.method==='GET'){json(res,200,{user:u?{id:u.discord_id,username:u.username,name:u.display_name,role:accountRole(u),admin:u.discord_id===process.env.DISCORD_ADMIN_ID}:null,configured:true});return true;}
   if(!u){json(res,401,{error:'Entre com Discord para acessar seu perfil.'});return true;}
   if(url.pathname==='/auth/logout'&&req.method==='POST'){const value=cookie(req,'elysium_session');if(value)sessionReads.delete(value);if(value)await database().query('DELETE FROM elysium_sessions WHERE token_hash=$1',[digest(value)]);setCookie(res,'elysium_session','',0);json(res,200,{ok:true});return true;}
   if(url.pathname==='/api/account/profile'&&req.method==='GET'){json(res,200,await database().profile(u.discord_id));return true;}
   if(url.pathname.startsWith('/api/admin')){
     if(u.discord_id!==process.env.DISCORD_ADMIN_ID){json(res,403,{error:'Apenas o administrador pode acessar este painel.'});return true;}
+    if(url.pathname==='/api/admin/room-limits'&&req.method==='GET'){json(res,200,{limits:await roomPolicy.list()});return true;}
+    if(url.pathname==='/api/admin/room-limits/unblock'&&req.method==='POST'){const data=await body(req);if(!/^\d{15,22}$/.test(data.id||''))throw Error('ID inválido.');await roomPolicy.unblock(data.id,u.discord_id);json(res,200,{ok:true});return true;}
     if(url.pathname==='/api/admin/rooms'&&req.method==='GET'){json(res,200,{rooms:roomsList()});return true;}
     if(url.pathname==='/api/admin/players'&&req.method==='GET'){const term=(url.searchParams.get('search')||'').trim().slice(0,80);const {rows}=await database().query('SELECT discord_id AS id,username,display_name AS name FROM elysium_users WHERE discord_id=$1 OR LOWER(username)=LOWER($1) OR LOWER(display_name)=LOWER($1) ORDER BY display_name LIMIT 30',[term]);json(res,200,{players:rows});return true;}
     if(url.pathname==='/api/admin/inventory'&&req.method==='GET'){const id=url.searchParams.get('id');json(res,200,{inventory:await database().inventory(id),catalog:[...insignias].sort()});return true;}
