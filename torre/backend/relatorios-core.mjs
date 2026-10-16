@@ -14,6 +14,8 @@ export function createStore({file,masters,zones,send,ready=()=>true,requireAutho
   let revision=0;
   const save=()=>{mkdirSync(dirname(file),{recursive:true});writeFileSync(file+'.tmp',JSON.stringify(records,null,2));renameSync(file+'.tmp',file);revision++;};
   const safe=r=>{const {receipt,editReceipt,submissionKey,masterId,authorDiscordId,channelId,messageId,versions,notificationDelivery,...view}=r;return structuredClone(view);};
+  const publicCard=card=>Object.fromEntries(['id','name','player','level','division','class','virtue','portrait'].filter(key=>card[key]!==undefined).map(key=>[key,card[key]]));
+  const publicReport=r=>{const {audit,notificationError,archiveError,archiveStatus,...view}=safe(r);if(view.authorCard)view.authorCard=publicCard(view.authorCard);if(view.participantCards)view.participantCards=view.participantCards.map(publicCard);return view;};
   const matches=(provided,secret)=>{if(!secret)return false;const a=Buffer.from(String(provided||'')),b=Buffer.from(secret);return a.length===b.length&&timingSafeEqual(a,b);};
   function get(id,receipt){const r=records.find(r=>r.id===id);if(!r||r.archived)throw new ReportError('Relato não encontrado.',404);if(!matches(receipt,r.receipt)&&!matches(receipt,r.editReceipt))throw new ReportError('Acesso não autorizado.',403);return r;}
   function decisionRecord({id,version,userId,messageId}){const r=records.find(r=>r.id===id);if(!r||r.archived||r.masterId!==userId||r.messageId!==messageId)throw new ReportError('Somente o mestre designado pode decidir sobre este relato.',403);if(r.version!==version||r.status!=='pending')throw new ReportError('Essa versão já foi decidida ou substituída.',409);return r;}
@@ -54,9 +56,9 @@ export function createStore({file,masters,zones,send,ready=()=>true,requireAutho
     publishApproved,
     async publishQueued(){for(const r of records.filter(r=>!r.archived&&r.status==='approved'))await publishApproved(r.id);},
     zoneCounts:()=>{const counts={};for(const r of records.filter(r=>!r.archived&&['pending','sending'].includes(r.status)))counts[r.hex]=(counts[r.hex]||0)+1;return counts;},
-    list:()=>records.filter(r=>!r.archived&&r.status==='approved').map(r=>{const {audit,notificationError,archiveError,archiveStatus,...publicView}=safe(r);return publicView;}),
+    list:()=>records.filter(r=>!r.archived&&r.status==='approved').map(publicReport),
     index:()=>records.filter(r=>!r.archived&&r.status==='approved').map(r=>({...Object.fromEntries(['id','hex','title','date','master','status','version','createdAt','decisionAt','adminEditedAt'].map(k=>[k,r[k]])),...(r.authorCard?{authorCard:{name:r.authorCard.name,player:r.authorCard.player}}:{}),...(r.discordArchive?{discordArchive:structuredClone(r.discordArchive)}:{})})),
-    detail(id,receipt,actorId){const r=records.find(r=>r.id===id&&!r.archived);if(!r)throw new ReportError('Relato não encontrado.',404);if(receipt)return this.own(id,receipt,actorId);if(r.status!=='approved')throw new ReportError('Acesso não autorizado.',403);const {audit,notificationError,archiveError,archiveStatus,...publicView}=safe(r);return publicView;},
+    detail(id,receipt,actorId){const r=records.find(r=>r.id===id&&!r.archived);if(!r)throw new ReportError('Relato não encontrado.',404);if(receipt)return this.own(id,receipt,actorId);if(r.status!=='approved')throw new ReportError('Acesso não autorizado.',403);return publicReport(r);},
     adminList:()=>records.map(r=>({...safe(r),audit:r.audit,versions:structuredClone(r.versions||[])})),
     archive(id,by,archived=true){const r=records.find(r=>r.id===id);if(!r)throw new ReportError('Relato não encontrado.',404);r.archived=archived;r.editReceipt=undefined;r.audit.push({action:archived?'archived':'restored',by,at:new Date().toISOString(),version:r.version});save();return safe(r);},
     attachment(id,attachmentId,receipt,admin=false){const r=records.find(r=>r.id===id);if(!r||r.archived&&!admin)throw new ReportError('Relato não encontrado.',404);if(!admin&&r.status!=='approved')get(id,receipt);const meta=r.attachments?.find(a=>a.id===attachmentId);if(!meta)throw new ReportError('Anexo não encontrado.',404);return meta;},

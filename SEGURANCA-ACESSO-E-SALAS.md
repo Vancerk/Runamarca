@@ -39,3 +39,15 @@ Testes locais cobrem cota compartilhada, concorrência, pausa que expira, bloque
 Segredos do Render, Neon e bot permanecem em variáveis privadas. A visibilidade pública do repositório permite leitura/cópia do código; não concede escrita ou publicação no repositório original.
 
 A inicialização conecta o bot, mas não dispara novamente campanhas antigas de teste. Testes manuais de relatório permanecem destinados a van_renascido; os resultados históricos continuam disponíveis nos endpoints existentes.
+
+## Complemento da auditoria adversarial — 15/10/2026
+
+O exame da versão pública `43f1ccb` reproduziu 11 ocorrências em 38 verificações locais. O PR `4745749` bloqueou oito; três pontos remanescentes foram corrigidos no trabalho local seguinte:
+
+- Respostas públicas de relatórios aprovados usam uma lista explícita de campos das cartas. Mantêm nome, jogador, nível, divisão, classe, virtude, retrato e identificador, mas retiram o ID Discord, vínculo, origem da ficha e metadados futuros. As informações internas permanecem disponíveis nas operações reservadas existentes.
+- O resumo de apostas cria propriedades próprias para nomes de itens, incluindo nomes reservados do JavaScript. Isso impede modificar objetos herdados ao acumular contagens.
+- DOCX passa por validação de diretório ZIP, limites de entradas e tamanho descompactado, CRC, membros necessários, tipo principal e rejeição de macros/ActiveX e caminhos inadequados. A validação não extrai arquivos para disco, não é antivírus e não garante segurança de todo conteúdo aberto pelo usuário. PDF e imagens continuam sujeitos aos limites e verificações anteriores.
+
+Os 26 testes dos componentes alterados passaram. A repetição da bateria adversarial passou pelas 38 verificações, sem reproduzir as 11 ocorrências anteriores. Isso não constitui certificação de ausência de outras falhas. Em 16/10/2026, foi retomado o teste no Chrome local que antes estava bloqueado pela revisão automática: os quatro cenários de renderização passaram na versão pública e na corrigida, sem execução do conteúdo fictício ou navegação externa. A suíte completa dos jogos também passou. Não houve alteração de produção durante a auditoria.
+
+Regressões adicionais: `npm run test:security-adversarial`. O relatório completo, resultados e reproduções locais ficam fora do repositório público, na pasta de homologação.
