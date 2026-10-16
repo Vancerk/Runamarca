@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto';
 import { randomBytes, randomUUID, randomInt } from 'node:crypto';
-import {registerGame,registerInsignias,bindParticipant,assertUniqueAccount,verifyParticipant,validateInsignias,ownedInsignias,beginMatch,persistMatch,normalizeWager} from './accounts.mjs';
+import {allowRoomCreate,roomRole,roomPolicy,registerGame,registerInsignias,bindParticipant,assertUniqueAccount,verifyParticipant,validateInsignias,ownedInsignias,beginMatch,persistMatch,normalizeWager} from './accounts.mjs';
 
 const rooms = new Map();
 registerGame('seis-ossos',rooms);
@@ -262,32 +262,32 @@ export async function handleDice(req,res,url) {
   if (!url.pathname.startsWith('/api/dice')) return false;
   try {
     if (req.method==='POST' && url.pathname==='/api/dice/rooms') {
-      const data=await body(req), name=String(data.name||'Jogador').trim().slice(0,30)||'Jogador';
-      const role=String(data.role||'player');if(!['player','spectator'].includes(role))fail('Escolha jogador ou espectador.');
+      const creator=await allowRoomCreate(req);const data=await body(req), name=String(data.name||'Jogador').trim().slice(0,30)||'Jogador';
+      const role=await roomRole(req,String(data.role||'player'));if(!['player','spectator'].includes(role))fail('Escolha jogador ou espectador.');
       const target=Math.max(1000,Math.min(50000,Math.trunc(Number(data.target)||5000)));
       let roomCode; do { roomCode=code(); } while (rooms.has(roomCode));
       normalizeWager(data.stake);const p=participant(name);await bindParticipant(req,{players:[],spectators:[]},p);
       const room={code:roomCode,target,stake:String(data.stake||'').trim().slice(0,80),phase:'lobby',players:role==='player'?[p]:[],spectators:role==='spectator'?[p]:[],turn:null,winner:null,round:1,roll:[],rollId:null,rollChangedIndices:null,rolledAt:0,lastScoreEvent:null,available:6,turnPoints:0,lastKeep:0,bust:false,proposal:null,log:[],clients:new Set(),rollMultiplier:1,prophetFace:0,pendingProphet:0,pendingCoin:null,extraTurn:false,hourglassArmed:null,diaboRisk:null,eclipseTarget:null,eclipseOwner:null,shackleTarget:null,shackled:false,noSingles:false,lastBust:null};
-      await bindParticipant(req,room,p);rooms.set(roomCode,room); response(res,200,{code:roomCode,token:p.token}); return true;
+      await bindParticipant(req,room,p);room.creatorDiscordId=creator;roomPolicy.touch(room);roomPolicy.store(rooms,roomCode,room); response(res,200,{code:roomCode,token:p.token}); return true;
     }
     const match=url.pathname.match(/^\/api\/dice\/rooms\/([A-Za-z0-9]+)\/(join|state|events|action)$/);
     if (!match) { response(res,404,{error:'Não encontrado.'}); return true; }
     const room=rooms.get(match[1].toUpperCase()), op=match[2]; if (!room) fail('Sala não encontrada.');
     if (op==='join' && req.method==='POST') {
-      const data=await body(req),role=String(data.role||'player');if(!['player','spectator'].includes(role))fail('Escolha jogador ou espectador.');
-      if(role==='player'&&(room.phase!=='lobby'||room.players.length>=2))fail('As vagas de jogador estão ocupadas. Entre na arquibancada.');
+      const data=await body(req),role=await roomRole(req,String(data.role||'player'));if(!['player','spectator'].includes(role))fail('Escolha jogador ou espectador.');
+      roomPolicy.touch(room);if(role==='spectator'&&room.spectators.length>=50)throw Object.assign(Error('Limite de espectadores atingido.'),{status:429});if(role==='player'&&(room.phase!=='lobby'||room.players.length>=2))fail('As vagas de jogador estão ocupadas. Entre na arquibancada.');
       const p=participant(String(data.name||'Jogador').trim().slice(0,30)||'Jogador');
       await bindParticipant(req,room,p);assertUniqueAccount(room,p);if(role==='spectator'){room.spectators.push(p);log(room,`${p.name} entrou na arquibancada.`);}else{room.players.push(p);log(room,`${p.name} ocupou uma vaga de jogador.`);startMatch(room);}
       response(res,200,{code:room.code,token:p.token}); emit(room); return true;
     }
-    const p=player(room,req);await verifyParticipant(req,p);room.updatedAt=Date.now();p.ownedInsignias=await ownedInsignias(p,{fresh:req.method!=='GET'});
+    const p=player(room,req);await verifyParticipant(req,p);roomPolicy.touch(room);room.updatedAt=Date.now();p.ownedInsignias=await ownedInsignias(p,{fresh:req.method!=='GET'});
     if (op==='state' && req.method==='GET') { const bytes=JSON.stringify(view(room,p)),etag='"'+createHash('sha256').update(bytes).digest('hex')+'"';res.setHeader('ETag',etag);res.setHeader('Cache-Control','private, no-cache');if(req.headers['if-none-match']===etag){res.writeHead(304);res.end();return true;}res.writeHead(200,{'content-type':'application/json; charset=utf-8'});res.end(bytes);return true; }
     if (op==='events' && req.method==='GET') {
       res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'keep-alive'});
       const c={res,player:p}; room.clients.add(c); res.write(`data: ${JSON.stringify(view(room,p))}\n\n`);
-      const heartbeat=setInterval(()=>res.write(': ping\n\n'),20000); req.on('close',()=>{clearInterval(heartbeat);room.clients.delete(c);}); return true;
+      const heartbeat=setInterval(()=>res.write(': ping\n\n'),20000); req.on('close',()=>{clearInterval(heartbeat);room.clients.delete(c);roomPolicy.touch(room);}); return true;
     }
-    if (op==='action' && req.method==='POST') {const data=await body(req);await persistMatch(room,'seis-ossos');await validateInsignias(req,room,p,data);if(data.type==='takeSeat'&&room.players.some(q=>q.discordId&&q.discordId===p.discordId))fail('Sua conta já ocupa uma vaga.');act(room,p,data);await persistMatch(room,'seis-ossos');response(res,200,{ok:true});emit(room);if(data.type==='leave'&&!room.players.length&&!room.spectators.length)rooms.delete(room.code);return true; }
+    if (op==='action' && req.method==='POST') {const data=await body(req);if(data.type==='takeSeat'&&await roomRole(req,'player')==='spectator')throw Object.assign(Error('Entre com Discord para ocupar uma vaga.'),{status:401});await persistMatch(room,'seis-ossos');await validateInsignias(req,room,p,data);if(data.type==='takeSeat'&&room.players.some(q=>q.discordId&&q.discordId===p.discordId))fail('Sua conta já ocupa uma vaga.');act(room,p,data);await persistMatch(room,'seis-ossos');response(res,200,{ok:true});emit(room);if(data.type==='leave'&&!room.players.length&&!room.spectators.length)rooms.delete(room.code);return true; }
     response(res,405,{error:'Método inválido.'}); return true;
-  } catch(error) { response(res,400,{error:error.message||'Erro inesperado.'}); return true; }
+  } catch(error) { response(res,error.status||400,{error:error.message||'Erro inesperado.',code:error.code,retryAfter:error.retryAfter}); return true; }
 }

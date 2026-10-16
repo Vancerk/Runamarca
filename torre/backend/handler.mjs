@@ -24,7 +24,7 @@ const attachments=createAttachments(resolve(dataFolder,'anexos'));
 discordOptions.readAttachment=file=>attachments.read(file);
 let mapEpoch;try{mapEpoch=readFileSync(resolve(dataFolder,'map-epoch.txt'),'utf8').trim();}catch{mapEpoch='initial';}
 const deliveredMessages=new Map();
-store=createStore({file:resolve(dataFolder,'relatorios.json'),masters,zones,send:async r=>{const message=await discord.send(r);if(deliveredMessages.size>1024)deliveredMessages.clear();deliveredMessages.set(r.id,message.id);return message;},ready:()=>discord.ready(),characters,attachments,publish:(r,id)=>discord.publish(r,id),archiveChannel,durable});
+store=createStore({requireAuthorIdentity:true,file:resolve(dataFolder,'relatorios.json'),masters,zones,send:async r=>{const message=await discord.send(r);if(deliveredMessages.size>1024)deliveredMessages.clear();deliveredMessages.set(r.id,message.id);return message;},ready:()=>discord.ready(),characters,attachments,publish:(r,id)=>discord.publish(r,id),archiveChannel,durable});
 const flowMessages=new Map();
 const flowStore=createStore({file:resolve(dataFolder,'flow-relatorios.json'),masters,zones:new Set(['1720']),ready:()=>discord.ready(),durable,send:async report=>{const message=await discord.send(report,{test:true});flowMessages.set(report.id,message.id);return message;}});
 const flowSubmit=(body,onStart)=>serial(async()=>{onStart();const report=await flowStore.submit(body);return {...report,messageId:flowMessages.get(report.id)||null};});
@@ -38,7 +38,7 @@ async function handler(req,res){
     if(req.headers.host!==new URL(origin).host)throw new ReportError('Host inválido.',403);
     if(url.pathname.startsWith('/api/')){
       if(req.method==='GET'){
-        if(url.pathname==='/api/config')return json(res,200,{masters,mapEpoch,ready:discord.ready(),admin:Boolean(admin.user(req)),managedAccount:true,...(admin.user(req)?{botConfigured:discord.configured(),botState:discord.state(),botError:!discord.configured()?'Configure DISCORD_BOT_TOKEN nas variáveis privadas do Render.':discord.error()}:{} )});
+        if(url.pathname==='/api/config')return json(res,200,{masters,mapEpoch,ready:discord.ready(),admin:Boolean(admin.user(req)),managedAccount:true,account:req.torreAccount||null,role:req.torreAccount?.role||'guest',...(admin.user(req)?{botConfigured:discord.configured(),botState:discord.state(),botError:!discord.configured()?'Configure DISCORD_BOT_TOKEN nas variáveis privadas do Render.':discord.error()}:{} )});
         if(url.pathname==='/api/admin/bot/flow-result'){admin.require(req);return json(res,200,await flowStatus());}
         if(url.pathname==='/api/admin/reports'){admin.require(req);return json(res,200,store.adminList());}
         const authorDecision=url.pathname.match(/^\/api\/reports\/([a-f0-9-]+)\/author-decision$/);if(authorDecision){if(!req.torreUserId)throw new ReportError('Entre com o Discord do autor para ver esta atualização.',401);return json(res,200,store.authorDecision(authorDecision[1],req.torreUserId));}
@@ -47,11 +47,12 @@ async function handler(req,res){
         if(url.pathname==='/api/zones/counts')return conditional(req,res,()=>store.zoneCounts());
         if(url.pathname==='/api/reports/index')return conditional(req,res,()=>store.index());
         if(url.pathname==='/api/reports')return json(res,200,store.list());
-        if(url.pathname==='/api/characters')return json(res,200,characters.list());
-        const match=url.pathname.match(/^\/api\/reports\/([a-f0-9-]+)$/);if(match)return conditional(req,res,store.detail(match[1],req.headers['x-report-receipt']));
+        if(url.pathname==='/api/characters')return json(res,200,characters.list(req.torreUserId,Boolean(admin.user(req))||req.torreAccount?.role==='master'));
+        const match=url.pathname.match(/^\/api\/reports\/([a-f0-9-]+)$/);if(match)return conditional(req,res,store.detail(match[1],req.headers['x-report-receipt'],req.torreUserId));
       }
       if(req.method==='POST'){
         if(req.headers.origin!==origin||!req.headers['content-type']?.startsWith('application/json'))throw new ReportError('Origem inválida.',403);
+        if(!req.torreUserId)throw new ReportError('Entre com Discord para criar ou alterar informações.',401);
         const ip=req.torreVisitorId||req.torreAdminId||req.socket?.remoteAddress||'local',now=Date.now(),recent=(limits.get(ip)||[]).filter(t=>now-t<60000);if(recent.length>=20)throw new ReportError('Aguarde um minuto antes de enviar novamente.',429);recent.push(now);limits.set(ip,recent);if(limits.size>1000)for(const [key,times]of limits)if(times.at(-1)<now-60000)limits.delete(key);
         let chunks=[],length=0;for await(const chunk of req){length+=chunk.length;if(length>7100000)throw new ReportError('Relatório muito grande.',413);chunks.push(chunk);}const text=Buffer.concat(chunks).toString('utf8');
         let body;try{body=JSON.parse(text);}catch{throw new ReportError('Dados inválidos.');}
@@ -61,12 +62,12 @@ async function handler(req,res){
         if(url.pathname==='/api/admin/bot/test-report'){admin.require(req);return json(res,200,await sendBotTest(body.submissionKey));}
         if(url.pathname==='/api/reports'||/^\/api\/reports\/[a-f0-9-]+\/revise$/.test(url.pathname)){try{await discord.waitReady();}catch(e){throw new ReportError(!discord.configured()?'Configure DISCORD_BOT_TOKEN nas variáveis privadas do Render. Seu formulário foi mantido.':e.publicMessage,503);}}
         if(url.pathname==='/api/connect')throw new ReportError('Configure o bot nas variáveis do servidor.',403);
-        if(url.pathname==='/api/reports')return json(res,201,await store.submit(body));
-        if(url.pathname==='/api/characters/preview')return json(res,200,await characters.preview(body.url));
-        if(url.pathname==='/api/characters/confirm')return json(res,201,characters.confirm(body.previewId));
-        if(url.pathname==='/api/characters/discord')return json(res,200,characters.bindDiscord(body.id,body.discordId));
-        if(url.pathname==='/api/characters/pair'){if(!discord.ready())throw new ReportError('A vinculação está indisponível no momento. Use o ID ou tente mais tarde.',503);return json(res,200,characters.startPairing(body.id));}
-        const match=url.pathname.match(/^\/api\/reports\/([a-f0-9-]+)\/revise$/);if(match)return json(res,200,await store.revise(match[1],req.headers['x-report-receipt'],body));
+        if(url.pathname==='/api/reports')return json(res,201,await store.submit(body,req.torreUserId));
+        if(url.pathname==='/api/characters/preview')return json(res,200,await characters.preview(body.url,{userId:req.torreUserId,admin:Boolean(admin.user(req))}));
+        if(url.pathname==='/api/characters/confirm')return json(res,201,characters.confirm(body.previewId,{userId:req.torreUserId,admin:Boolean(admin.user(req))}));
+        if(url.pathname==='/api/characters/discord'){admin.require(req);return json(res,200,characters.adminDiscord(body.id,body.discordId));}
+        if(url.pathname==='/api/characters/pair'){admin.require(req);if(!discord.ready())throw new ReportError('A vinculação está indisponível no momento. Use o ID ou tente mais tarde.',503);return json(res,200,characters.startPairing(body.id));}
+        const match=url.pathname.match(/^\/api\/reports\/([a-f0-9-]+)\/revise$/);if(match)return json(res,200,await store.revise(match[1],req.headers['x-report-receipt'],body,req.torreUserId));
       }
       throw new ReportError('Endpoint não encontrado.',404);
     }
@@ -77,7 +78,7 @@ async function handler(req,res){
     res.writeHead(200,{'Content-Type':types[extname(path)]||'application/octet-stream','Cache-Control':url.pathname.startsWith('/assets/')?'private, max-age=86400':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:data);
   }catch(e){json(res,e.status|| (e.code==='ENOENT'?404:500),{error:e.status?e.message:'Não foi possível concluir a operação.'});}
 }
-const visualSubmit=(body,onStart)=>serial(async()=>{onStart();const report=await store.submit(body);return {...report,messageId:deliveredMessages.get(report.id)||null};});
+const visualSubmit=(body,onStart)=>serial(async()=>{onStart();const report=await store.submit(body,body.authorDiscordId);return {...report,messageId:deliveredMessages.get(report.id)||null};});
 const visualAuthor=()=>serial(async()=>{const card=characters.ensureVisualTestAuthor();await durable();return card;});
 return {handler,close:()=>discord.close(),flowSubmit,visualSubmit,visualAuthor,visualZones:()=>[...zones],waitReady:timeout=>discord.waitReady(timeout),metrics:discord.metrics};
 }

@@ -5,16 +5,16 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { handleDice } from './dice-game.js';
 import { handleNewGame } from './mesa-nova/server.mjs';
-import { handleAccounts, validMutationOrigin } from './accounts.mjs';
+import { handleAccounts, validMutationOrigin, allowRoomCreate, roomRole, roomPolicy, registerGame, bindParticipant, verifyParticipant } from './accounts.mjs';
 import {handleFlowResult} from './torre/fluxo-solicitado.mjs';
-import { handleTorre, startFlowTest } from './torre/integracao.mjs';
+import { handleTorre, startTorre } from './torre/integracao.mjs';
 import { handleEscudo } from './escudo/integracao.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'catalog.json'), 'utf8'));
 const presetEffects = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'effects.json'), 'utf8'));
 const energyCatalog = JSON.parse(await readFile(path.join(here, 'public', 'energies.json'), 'utf8'));
-const rooms = new Map();
+const rooms = new Map();registerGame("runamarca-legado",rooms);
 const MAX_BODY = 25 * 1024 * 1024;
 const MAX_CARDS = 120;
 const code = () => randomBytes(3).toString('hex').toUpperCase();
@@ -669,13 +669,13 @@ export const server = http.createServer(async (req, res) => {
       return;
     }
     if (req.method === 'POST' && url.pathname === '/api/rooms') {
-      const data = await body(req);
+      const creator=await allowRoomCreate(req);const data = await body(req);
       const name = String(data.name || 'Mercenário').trim().slice(0, 30);
-      const role = data.role === 'spectator' ? 'spectator' : 'player';
+      const role = await roomRole(req,data.role === 'spectator' ? 'spectator' : 'player');
       let roomCode; do { roomCode = code(); } while (rooms.has(roomCode));
       const player = freshPlayer(name);
       const room = { code: roomCode, players: role === 'player' ? [player] : [], spectators: role === 'spectator' ? [player] : [], board: [], phase: 'lobby', turn: null, firstPlayer: null, coinWinner: null, winner: null, round: 1, turnNumber: 0, log: [], clients: new Set() };
-      rooms.set(roomCode, room);
+      await bindParticipant(req,room,player);room.creatorDiscordId=creator;roomPolicy.touch(room);roomPolicy.store(rooms,roomCode,room);
       send(res, 200, { code: roomCode, token: player.token });
       return;
     }
@@ -685,18 +685,18 @@ export const server = http.createServer(async (req, res) => {
     if (operation === 'join' && req.method === 'POST') {
       const room = rooms.get(roomCode.toUpperCase());
       if (!room) { send(res, 400, { error: 'Sala inexistente.' }); return; }
-      const data = await body(req);
-      if (data.role === 'spectator' || room.players.length >= 2 || room.phase !== 'lobby') {
+      const data = await body(req);roomPolicy.touch(room);if((room.spectators?.length||0)>=50)throw Object.assign(Error('Limite de espectadores atingido.'),{status:429});
+      if (await roomRole(req,data.role)==='spectator' || room.players.length >= 2 || room.phase !== 'lobby') {
         const spectator = freshPlayer(String(data.name || 'Espectador').trim().slice(0, 30));
         room.spectators ||= [];
-        room.spectators.push(spectator);
+        await bindParticipant(req,room,spectator);room.spectators.push(spectator);
         log(room, `${spectator.name} entrou para assistir à partida.`);
         send(res, 200, { code: room.code, token: spectator.token, spectator: true });
         emit(room);
         return;
       }
       const player = freshPlayer(String(data.name || 'Mercenário').trim().slice(0, 30));
-      room.players.push(player);
+      await bindParticipant(req,room,player);room.players.push(player);
       log(room, `${player.name} entrou na sala.`);
       send(res, 200, { code: room.code, token: player.token });
       emit(room);
@@ -704,7 +704,7 @@ export const server = http.createServer(async (req, res) => {
     }
     const access = requireRoomPlayer(req, res, roomCode);
     if (!access) return;
-    const { room, player } = access;
+    const { room, player } = access;await verifyParticipant(req,player);roomPolicy.touch(room);
     if (operation === 'state' && req.method === 'GET') { send(res, 200, viewFor(room, player.id)); return; }
     if (operation === 'events' && req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', 'connection': 'keep-alive' });
@@ -712,11 +712,12 @@ export const server = http.createServer(async (req, res) => {
       room.clients.add(client);
       res.write(`data: ${JSON.stringify(viewFor(room, player.id))}\n\n`);
       const heartbeat = setInterval(() => res.write(': ping\n\n'), 20000);
-      req.on('close', () => { clearInterval(heartbeat); room.clients.delete(client); });
+      req.on('close', () => { clearInterval(heartbeat); room.clients.delete(client);roomPolicy.touch(room); });
       return;
     }
     if (operation === 'action' && req.method === 'POST') {
       const data = await body(req);
+      if(data.type==='takeSeat'&&await roomRole(req,'player')==='spectator')throw Object.assign(Error('Entre com Discord para ocupar uma vaga.'),{status:401});if(data.type==='takeSeat')await bindParticipant(req,room,player);
       if (!room.players.includes(player) && !['takeSeat','leave'].includes(data.type)) { send(res, 403, { error: 'Espectadores não podem alterar a partida.' }); return; }
       act(room, player, data);
       send(res, 200, { ok: true });
@@ -726,11 +727,11 @@ export const server = http.createServer(async (req, res) => {
     }
     send(res, 405, { error: 'Método inválido.' });
   } catch (error) {
-    send(res, 400, { error: error.message || 'Erro inesperado.' });
+    send(res, error.status||400, { error: error.message || 'Erro inesperado.' });
   }
 });
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const port = Number(process.env.PORT || 3000);
-  server.listen(port, '0.0.0.0', () => {console.log(`Mesa disponível em http://localhost:${port}`);void startFlowTest().catch(()=>console.error('Não foi possível iniciar o teste de fluxo solicitado.'));});
+  server.listen(port, '0.0.0.0', () => {console.log(`Mesa disponível em http://localhost:${port}`);void startTorre().catch(()=>console.error('Não foi possível iniciar a Torre de Comando.'));});
 }
