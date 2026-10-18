@@ -80,7 +80,7 @@ function wrapRichLines(ctx, runs, width, size) {
   return lines;
 }
 function layoutRules(ctx,card,{width=650,top=884,bottom=1097}={}){
- const highlighted=new Set(card.highlightKeywords||[]);const runs=richRuns(card.rules||'',Boolean(card.rulesItalic)).map(run=>({...run,color:highlighted.has(run.text.trim().replace(/[.]$/,''))?'#17678b':undefined}));let size=number(card.fontRules,16,52,31),lines,lineHeight,ascent,descent,total;
+ const highlighted=new Set(card.highlightKeywords||[]);const runs=richRuns(card.rules||'',Boolean(card.rulesItalic)).map(run=>({...run,color:highlighted.has(run.text.trim().replace(/[.]$/,''))?'#17678b':undefined}));let size=card.autoFitRules?52:number(card.fontRules,16,52,31),lines,lineHeight,ascent,descent,total;
  do{
   lines=wrapRichLines(ctx,runs,width,size);lineHeight=size*1.2;ascent=0;descent=0;
   for(const line of lines)for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+size+'px "EB Garamond",Georgia,serif';const m=ctx.measureText(run.text);ascent=Math.max(ascent,m.actualBoundingBoxAscent??size*.85);descent=Math.max(descent,m.actualBoundingBoxDescent??size*.25);}

@@ -215,3 +215,121 @@ O JSON do editor pode ser carregado na **escolha de deck**. O servidor conserva 
 - Aplicados os dois arquivos enviados: ilustrações, enquadramentos e enunciados na mesa e no criador. Toque com zoom 150; Fundamental com a nova arte da sala de aula. Custos, efeitos e quantidades específicas de cada deck preservados; quatro decks de 30 cartas.
 - Suíte completa npm test aprovada. Navegador confirmou artes HTTP 200, textos sincronizados e ausência de erros; evidências em outputs/importacao-cartas-20261011.
 - Preparada publicação das atualizações acumuladas de RunaMarca: balanceamento, enunciados/glossário, falas e introduções dos Patronos, martelo e pacotes. O clone foi conferido contra origin/main; arquivos de Torre mantêm a versão atual do GitHub. Exportações de usuário, runtime e resultados experimentais volumosos permanecem locais.
+
+### 11/10/2026 — Visibilidade da mesa, Silêncio e Rúnico Eficiente
+- Armadilhas visíveis ao conjurador por hover, foco e clique; rivais continuam vendo apenas o marcador oculto. Arrastar/desfazer/mover preservados.
+- Nartvanyr renderiza as cartas independentemente da ocultação de baixas/voos da mesa; o zoom também ignora essa ocultação. Olho e criaturas com posição pública fixa continuam no campo para ambos os jogadores; novas escolhas de formação permanecem secretas.
+- Silêncio mostra somente Silenciado no enunciado do zoom, com ícone próprio de caveira sem nariz e dedo pedindo silêncio. Motor mantém texto de jogo removido; retorno à mão restaura conforme a regra existente.
+- Aprendizes exibem marca em ambas as perspectivas; duas setas para o mesmo alvo usam curvas distintas e identificação do lado rival. Setas consumidas deixam de aparecer. Reserva ocupa o espaço livre até o baralho, com espaçamento maior e faixa responsiva ajustada.
+- Nova arte e enquadramento de Rúnico Eficiente importados na mesa/criador, retirando marca de arte pendente. Atributos, custo, efeitos e quantidades preservados (2 padrão, 4 variante). Quatro decks com 30 cartas.
+- Suíte npm test aprovada e nova regressão pública aprovada. Chrome conferiu conjurador/oponente e largura de 780 px: armadilhas, Nartvanyr, Olho, Silêncio, duas setas e reserva sem transbordamento. Evidências em outputs/visibilidade-mesa-20261011. Prévia 3081 mantém as salas das portas anteriores. Alterações locais nesta etapa.
+
+## 11/10/2026 — Mesa centralizada e textos legíveis
+- Patronos renomeados para Lyrik, O Forjador; Marika, A Mestrarcana; Dom, O Maioral, incluindo a galeria de diálogos.
+- Subtipo Axiom aplicado a Rúnico Eficiente, Engrenauta Defeituoso e Engrenauta Persistente nos dois catálogos. Nomes das cartas preservados.
+- Engenheiro Cauteloso passa a afetar a segunda posição; testes ajustados para verificar ambas as posições e a duplicação do bônus no Rúnico agora Axiom.
+- Avisos centrais de etapas removidos, mantendo os tempos da fila e os controles de decisão. Destaques de magia simétricos em torno do centro da tela.
+- Tabuleiro centralizado com espaços laterais iguais; registro abaixo da mesa em telas menores. Textos do jogo usam o maior tamanho que cabe no painel, sem alterar o ajuste manual do criador.
+- Bateria completa de regressão aprovada. Chrome: duas perspectivas a 1800 px e tela de 780 px; centro exato, destaques simétricos, sem transbordamento. João Bobão usa fonte 52 e Persistente 44, antes sem tamanho definido (padrão 31).
+- Lista de criaturas sem fala própria e deck variante: outputs/mesa-legivel-20261011/cartas-e-falas.md.
+- Prévia local nova: http://127.0.0.1:3082/runamarca/. Nenhuma publicação Git nesta etapa. O martelo segue SVG; a dúvida sobre 3D foi explicada, sem substituir o efeito por um modelo novo.
+
+## 11/10/2026 — Martelo volumétrico, sombras e prévia ativa
+- Modelo próprio de martelo em malha 3D (faces biseladas, aço, colares dourados, cabo revestido e emblema), renderizado por WebGL com profundidade, luz e reflexo. Sem dependência remota. Alternativa por projeção da mesma malha quando WebGL não estiver disponível.
+- Poder e entrada do Lyrik usam o modelo compartilhado. Som/partículas/virada no impacto; início do deslocamento da entrada ligado ao mesmo relógio. Modelo desaparece até 137 ms depois da batida, sem reaparecer. Recursos gráficos e sombras removidos ao terminar/cancelar.
+- Sombras de contato para martelo, cartas e retratos; sombra ampliada ao levantar/arrastar. Tabuleiro com iluminação superior esquerda, relevos suaves nas bordas e encaixes.
+- Variante: Defeituoso 3→2; Atualização 3→4. Atualização tornou-se Bronze nos dois decks por confirmação explícita do usuário. Variante: 30 cartas, 18 criaturas e 12 magias.
+- Bateria completa de regressão aprovada. Chrome real: malha WebGL em diversos quadros, invisibilidade no final, poder, chegada, cancelamento e movimento reduzido. Alternativa sem WebGL aprovada. Mesa conferida nas duas perspectivas (1800 px) e em 780 px.
+- Prévia em segundo plano (janela oculta), porta 3083: http://127.0.0.1:3083/runamarca/; galeria /runamarca/efeitos.html#patron-voices. A porta 3082 estava ocupada por um servidor inacessível; nova porta verificada no navegador. Processo iniciado: 32836.
+- Relatórios e capturas: outputs/lyrik-3d-20261011/. Alterações locais, sem publicação Git nesta etapa.
+
+## 11/10/2026 — Perspectiva do martelo pelo jogador
+- Entrada e poder orientam o modelo conforme o lado do jogador que controla Lyrik. Cabo voltado ao jogador; trajetória parte de baixo para o jogador inferior e de cima para o rival, com inclinação em direção à câmera.
+- Ponto de contato, som, partículas e dissolução preservados. Área do canvas ampliada para acomodar o cabo; versões dos arquivos atualizadas para invalidar o cache.
+- Regressões de poder, apresentação e dano aprovadas. Chrome verificou entrada e poder nos dois lados, pixels reais da malha, direção do cabo, trajetória, invisibilidade final e limpeza após cancelar. Sem erros JavaScript.
+- Evidências em outputs/martelo-perspectiva-20261011/verificacao.json. Prévia permanece na porta 3083. Alterações locais.
+
+## 11/10/2026 — Golpe com a face lateral do martelo
+- Poder e entrada usam contato na face de aço da extremidade +X da cabeça, substituindo o ponto inferior central. Acrescentadas placas de aço nas duas extremidades; rotação e trajetória em arco levam a face lateral em direção ao tabuleiro, mantendo o cabo voltado ao jogador.
+- Relógio de impacto, som e dissolução preservados. Cache dos arquivos atualizado. Regressões de poder, apresentação e dano aprovadas.
+- Chrome verificou entrada/poder nas duas perspectivas, cabo orientado ao dono, ausência de reaparecimento e limpeza dos efeitos. Geometria confirma normal da face apontada ao tabuleiro no impacto, também com movimento reduzido. Capturas e relatórios em outputs/martelo-face-20261011. Prévia local permanece em 3083.
+
+## 11/10/2026 — Recuo do martelo e lançamento direcional de Lyrik
+- Modelo 3D preservado. Golpe do poder em arco com avanço rápido, contato, recuo amortecido e dissolução gradual dourada: cabeça/cabo se desfazem em pequenos fragmentos e partículas luminosas. Poder conserva o contato em aproximadamente 395 ms; saída completa em cerca de 1 segundo, substituindo o desaparecimento de 137 ms após o impacto.
+- Entrada usa um movimento próprio: contato na borda do retrato oposta ao destino, face do martelo alinhada ao vetor até o espaço do Patrono. Compressão e reverberação do retrato seguem essa direção. Relógio único liga golpe, áudio e lançamento; martelo recua e dissolve enquanto o retrato segue até o encaixe.
+- Regressões de poder, apresentação e dano aprovadas. Chrome confirmou malha sólida durante recuo, redução de velocidade, dissolução/partículas, direção de lançamento nas duas perspectivas, cancelamento e movimento reduzido. Alternativa sem WebGL também aprovada; nenhum erro JavaScript.
+- Evidências em outputs/martelo-recuo-20261011/verificacao.json. Cache atualizado; prévia local permanece em http://127.0.0.1:3083/runamarca/efeitos.html#patron-voices. Sem publicação Git nesta etapa.
+
+## 11/10/2026 — Contato plano do martelo no poder
+- Ajustada somente a orientação do golpe do poder: face da extremidade paralela ao botão, com arestas alinhadas no contato. Os quatro pontos da face têm a mesma profundidade no impacto, eliminando a chegada pela quina. Modelo, trajetória, recuo e dissolução preservados; entrada mantém seu perfil direcional aprovado.
+- Chrome aprovou ambas as perspectivas, recuo, dissolução, chegada, cancelamento, movimento reduzido e projeção sem WebGL. Verificação geométrica confirma normal perpendicular ao botão e diferença zero de profundidade na face de contato. Evidências em outputs/martelo-plano-20261011.
+- Confirmadas sombras intencionais nos Patronos/cartas e iluminação/relevos do tabuleiro por CSS. Martelo usa malha 3D com iluminação e profundidade; tabuleiro e cartas continuam com relevo visual por sombras/gradientes. Cache atualizado; alteração local na mesma prévia 3083.
+
+## 11/10/2026 — Névoa contínua, revelação por luz e espaço da reserva
+- Névoa em canvas persistente, com relógio independente das reconstruções da sala: novas formações do rival não reiniciam o movimento. Nuvens suaves vazam até 14px além das casas. Revelação usa luz quente, chamas e partículas que varrem da esquerda para a direita de cada espectador, dissipando a névoa progressivamente pelo relógio do combate. Criaturas permanecem imóveis; retirado o efeito de escala da Revelação.
+- Éter à esquerda dos retratos centrais e poderes à direita. Reserva ganha espaço; fileiras cheias sobrepõem apenas o necessário, preservando tamanho, zoom e seleção sem barra horizontal. Em telas estreitas, a reserva ocupa uma fileira inteira.
+- Arraste projeta uma sombra independente no plano da mesa, com deslocamento, suavidade e escala acompanhando a carta; desaparece ao soltar, cancelar ou sair da sala.
+- Ataque efetivo zero não gera golpe nem evento de ataque: sem gastar durabilidade, aplicar recuo ou avançar Corrupção/Retaliação por esse golpe inexistente. Criaturas continuam defendendo e resolvendo os demais efeitos. Se recebem bônus que tornam o ataque positivo, atacam normalmente. Combate com seis criaturas zero pula os golpes.
+- Suíte npm test aprovada, incluindo novo teste-zero-attack e atualizações de expectativas antigas. Chrome aprovou perspectivas aliada/rival em 1800/1366px e tela de 780px: canvas preservado após revisões, pequeno vazamento, varredura, geometria imóvel das criaturas, Éter à esquerda, reserva sem scroll, sombra móvel e limpeza. Evidências em outputs/mesa-nevoa-20261011/verificacao.json; log em outputs/test-nevoa-20261011.log.
+- Prévia local reiniciada na mesma porta 3083 para carregar a regra do motor. Alterações locais, sem publicação Git nesta etapa.
+
+## 11/10/2026 — Névoa sem recorte e sombra perceptível
+- Removido o bitmap recortado por casa: névoa desenhada diretamente no espaço da tela, com massas de densidade variável, deslocamentos independentes e filamentos curvos afilados nas bordas. Casas ancoram o efeito; nenhuma caixa recorta a fumaça. Continuidade entre revisões e revelação da esquerda para a direita preservadas.
+- Retirado o limitador de aproximadamente 30 FPS. Névoa e fogo acompanham cada requestAnimationFrame; pincéis suaves são gerados uma vez e reutilizados para reduzir trabalho por quadro. Varredura usa relógio monotônico de alta resolução, alinhado ao início do combate.
+- Sombra de arraste mais contrastante, menos difusa e deslocada em relação à carta, com tamanho e distância proporcionais. Removido o brilho excessivo do clone. Corrigido zoom que reaparecia ao passar sobre outra carta durante o arraste e encobria a sombra.
+- Chrome aprovou perspectivas aliada/rival em 1800/1366px e tela de 780px: continuidade, névoa irregular, varredura, cadência sem limite de 30 FPS, sombra da reserva e da mão, ausência de zoom durante arraste e limpeza dos efeitos. Evidências em outputs/mesa-nevoa-organica-20261011/verificacao.json. Testes de UI, apresentação e composição da mesa aprovados. Mesma prévia local 3083, cache atualizado; sem publicação Git nesta etapa.
+
+## 11/10/2026 — Laterais ocupadas, encaixes e áudio da mesa
+- Registro mantido à esquerda; lateral direita recebe conta/Discord, perfil, saída da conta, código da sala, criador, regras, convite, arquibancada e saída da sala. Os nós originais foram movidos, preservando ações e autenticação. Campo continua no centro da tela com laterais simétricas; em desktop estreito, controles e Registro seguem abaixo. Conta continua acessível na seleção de deck.
+- Éter, retrato e poderes ligados por um alojamento metálico único. Molduras vazias ficam visíveis durante o diálogo e recebem os retratos na chegada. Movimentos/modelo do martelo preservados.
+- Duas colunas contínuas de Emanação, cada uma com título central e um número de fundo. Quatro alvos reais de encaixe permanecem independentes nas mesmas posições.
+- Novo áudio compartilhado: mecanismo discreto ao encerrar preparação/formação; impacto de martelo com corpo grave e ressonância metálica baixa nas entradas e nos poderes. Sons dependem da ação/impacto, sem repetição por atualização da sala. Galeria recebeu botão para testar o mecanismo.
+- UI, composição, forja, dano e apresentação aprovados. Chrome verificou 1800/1366/1000px, perspectivas diferentes, convidados/conta autenticada em fixtures isoladas, volta à entrada, controles na escolha do deck, encaixes, Emanação e um som por clique. Áudio renderizado offline sem saturação; evidências em outputs/mesa-unificada-20261011/verificacao.json e WAVs na mesma pasta.
+- Auditoria de efeitos genéricos em outputs/mesa-unificada-20261011/efeitos-a-revisar.md. Somente levantamento nesta rodada; nenhuma regra ou carta foi alterada. Prévia local na porta 3083, cache atualizado, sem publicação Git nesta etapa.
+
+## 11/10/2026 — Efeitos de cartas, pavio e aço da armadura
+- Implementadas 28 identidades visuais e sonoras na mesa e na galeria, incluindo os onze efeitos pedidos pelo usuário. SVGs persistentes acompanham os estados e sobrevivem às revisões; validação nas duas perspectivas, cancelamento, movimento reduzido e áudio sem saturação em outputs/efeitos-cartas-20261011/verificacao.json. Mapeamento em implementacao.md na mesma pasta.
+- Preparação de 45s e formação de combate de 15s, com prazo autoritativo no servidor. Corda queima da esquerda para o botão nos últimos 10s; explosão e encerramento obrigatório. A resolução automática mantém o tempo necessário para as animações. Escolhas pendentes recebem padrões conservadores sem jogar novas cartas.
+- Lyrik: Hora da Bigorna (1) e Forja Eterna (3) nas duas Forjas e no criador. Custos de armas 1/3/6 propostos como recomendação, ainda não aplicados.
+- Armadura com moldura metálica fixa e aço incandescente a cada aumento; brilho esfria em 1,3s e não reinicia ao redesenhar. Poder do Lyrik aplica o aumento no impacto do martelo.
+- Suíte completa npm test e QA Chrome aprovados; evidências em outputs/pavio-armadura-20261011. Prévia atualizada em localhost:3084/runamarca; anterior 127.0.0.1:3083 e sala AC781B preservadas. Sem publicação Git nesta etapa.
+
+## 11/10/2026 — Pacotes, armas, Estudos Avançados e novas versões
+- Formação de combate ampliada para 25s; preparação permanece 45s. Moldura da armadura esfria para cinza escuro. Prazo real de 25s e duas perspectivas verificados.
+- Custos de armas 1/3/6 aplicados e atributos rebalanceados; Forja Eterna custa 3. Verificadas 27 receitas e 81 resoluções de combate. Dados em outputs/armas-pacotes-20261011/armas.md e armas-27.json; sem inferência de win rate.
+- Quatro decks apresentados como pacotes com Patrono acima, nome em faixa central grossa e energia abaixo. Escolha, bloqueios, artes e três larguras de tela aprovados.
+- Marika recebeu Sumário Ecoante (1, compra uma, uma vez por rodada) e Estudos Avançados (10/20/30 cartas, custos 3/6/9, cada avanço uma vez e benefícios permanentes). Contagem de cinco cartas na mão inicial final, sem progresso extra de mulligan; cada carta original comprada conta uma vez. Magias em casas se propagam para uma adjacente escolhida, sem Emanação ou habilidades. Grimório mostra todas as cartas originais e permite cinco cópias, com até duas de custo impresso até quatro jogadas sem custo.
+- Ícones encaixados nos círculos; contador junto à segunda habilidade. Corrigida sobreposição da mão sobre os controles do Patrono.
+- Importadas versões de João Bobão, Rúnico Persistente (antes Engrenauta Persistente), Toque Gélido e Adquirir Atualização (antes Atualização), preservando quantidades dos decks, IDs e falas existentes quando não substituídas nos arquivos. Catálogo e criador sincronizados.
+- Regressão completa e QA Chrome aprovados; relatórios em outputs/armas-pacotes-20261011/implementacao.md. Prévia atualizada em localhost:3084/runamarca, porta 3083 preservada, sem publicação Git.
+
+## 11/10/2026 — Zoom das habilidades e pavio central
+- Sumário Ecoante com ampliação de 18%; Estudos Avançados com ampliação de 75% e recorte circular independente, preservando o contorno do livro.
+- Pavio horizontal, sem arco ou oscilação, exatamente no centro vertical do tabuleiro. Botão final alinhado à mesma altura. Espessura aumentada em 25%.
+- Conferência visual e medidas aprovadas em 1800/1366px, nas duas perspectivas. Evidências em outputs/armas-pacotes-20261011/zoom-pavio-verificacao.json. Alterações estáticas na prévia da porta 3084, sem reiniciar partidas.
+
+## 12/10/2026 — Animações da Marika e correntes com volume
+- Sumário recebeu círculo central e compra com fade-in; Estudos folheia um pequeno livro; Otimização mantém cristal azul reativo; Conhecimento espalha páginas pelas casas afetadas.
+- Grimório com livro animado e imagens, catálogo de 30 cartas, cinco escolhas flutuantes visíveis ao rival e escolha posterior de até duas cópias elegíveis para uso gratuito, com regras normais de alvos/Entrada. Cópias restantes são guardadas; sigilo do restante do deck preservado.
+- Correntes avermelhadas com elos projetados em profundidade, sombras no tabuleiro, quatro pontos de fixação ligados aos cantos reais da carta e tensão suave. Galeria e mesa usam o mesmo renderizador.
+- Corrigida composição da face dos ícones da Marika, preservando zoom e giro. Sons próprios de papel, cristal, círculo e correntes.
+- Regressão completa e inspeção Chrome em duas perspectivas aprovadas. Relatório e capturas em outputs/marika-animacoes-20261011/implementacao.md. Prévia separada localhost:3085/runamarca; nenhuma publicação Git solicitada nesta etapa.
+
+## 12/10/2026 — Oficina Experimental e desempenho do aprisionamento
+- Correntes conservam entrada e volume; elos usam traçados agrupados, sombras sem blur por quadro e desenho estabilizado reutilizado. Cartas ancoradas não repetem a animação ociosa de flutuação.
+- Camada global de cartas em trânsito acima da montagem Patrono/Éter; hover da reserva também ganha prioridade de sobreposição.
+- Quatro pacotes com nomes curtos, estratégias abertas e sem etiquetas Patrono/quantidade/estatísticas.
+- Oficina Experimental: sem João Bobão e Toque Gélido; uma Engenheira do S.E.P e um Engenheiro Cauteloso; duas Pesquisa Aplicada (5, Prata) e três Legado da Oficina (2, 1/2, Prata). Total 30.
+- Pesquisa concede +2/+2 permanente e compra metade do ataque efetivo após o bônus, para baixo. Legado fortalece somente criaturas já na mão ao morrer, respeitando duplicação de ganhos. Novas artes provisórias, indicadas como pendentes.
+- Catálogos da mesa/criador sincronizados; orçamento declara mecânicas novas sem preço calibrado. Regressões passaram após atualizar a expectativa de Toque no experimental. QA Chrome em 1800/1366/780px, seis correntes sem repintura estável e arraste sobre Éter. Evidências: outputs/oficina-20261012/verificacao.json.
+
+## 13/10/2026 — Medalhões e três entradas das armas
+- Armas equipadas em criaturas usam medalhões; carta completa preservada na ampliação. Enunciados das 27 receitas usam Combatente equipado, com atributos/custos originais.
+- Galeria local armas.html: punhal furtivo, martelo com impacto/runa esfriando e espada dourada; arma antes do Patrono, arraste e duas perspectivas. Integração de combate do Patrono fica para a etapa mecânica solicitada pelo usuário.
+- Testes de equipamentos/UI e conferência Chrome aprovados; detalhes em outputs/armas-entrada-20261013/implementacao.md. Prévia porta 3085.
+
+## 17/10/2026 — Ornamentos da Marika, planilha e comparação publicada
+- Corrigido o pequeno livro de Estudos Avançados que vazava sobre a escolha da mão inicial: livro e cristal persistentes acompanham a visibilidade do tabuleiro e a introdução. Conferido na sala local com a mão inicial aberta; o livro tem visibility:hidden. Ícones e regras das habilidades preservados; versão do CSS atualizada.
+- Planilha Google recebeu novamente as cores das energias com texto contrastante: Forja dourada, Fluxo azul, Ruptura vinho. Nomes e energias usam regras condicionais. Quatro abas vinculadas por QUERY à coleção, com Patronos fora da contagem, 30 cartas em cada deck, nomes/cópias e cabeçalhos congelados. Referência em design/planilha-colecao.json.
+- Comparação somente de leitura confirmou que index.html, cartas.json, mesa-central.css, patron-dialogues.json, weapons-data.js e app.js hospedados correspondem à main 43f1ccb. Diferenças locais registradas em outputs/comparacao-main-20261017.json. Nenhuma publicação realizada.
+- Três rascunhos sonoros originais para entradas de criaturas Platina em outputs/entradas-platina-20261017, separados por energia. Arquivos para avaliação; não integrados à mesa. Vídeo de referência aberto visualmente, sem acesso ao áudio do player para análise auditiva.

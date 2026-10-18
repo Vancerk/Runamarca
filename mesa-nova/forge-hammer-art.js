@@ -28,16 +28,17 @@
  <path d="M108 130 L145 118 L159 140 L123 154 Z" fill="url(#${id}-gold)" stroke="#634521" stroke-width="3"/>
  <path d="M118 137 L148 128 M124 147 L153 137" stroke="#ffe9a4" stroke-width="2"/>
  </g><g class="forge-art-heat" opacity="0" fill="url(#${id}-heat)"><path d="M35 49 L72 22 L169 42 L192 67 L166 128 L137 148 L46 121 L24 91 Z"/><path d="M119 105 L147 96 L250 294 L242 314 L221 317 L205 303 Z"/></g></svg>`;};
- root.RunaForgeHammerStrike=(reduced=false)=>({duration:reduced?350:760,impact:reduced?.4:.52,vanished:reduced?.65:.70,frames:reduced?[
-  {opacity:0},{opacity:1,offset:.4},{opacity:0,offset:.65},{opacity:0}
+ root.RunaForgeHammerStrike=(reduced=false)=>({duration:reduced?350:1040,impact:reduced?.4:.38,vanished:reduced?.90:.98,frames:reduced?[
+  {opacity:0},{opacity:1,offset:.4},{opacity:1,offset:.46},{opacity:0,offset:.90},{opacity:0}
  ]:[
   {transform:'translate(68px,-145px) rotate(-38deg) scale(1.16)',opacity:0},
-  {transform:'translate(50px,-118px) rotate(-32deg) scale(1.12)',opacity:1,offset:.16},
-  {transform:'translate(34px,-94px) rotate(-25deg) scale(1.08)',opacity:1,offset:.32,easing:'cubic-bezier(.7,0,1,.35)'},
-  {transform:'translate(0,0) rotate(0deg) scale(1)',opacity:1,offset:.52},
-  {transform:'translate(-3px,4px) rotate(3deg) scale(.98)',opacity:.8,offset:.56},
-  {transform:'translate(5px,-10px) rotate(-3deg) scale(1.02)',opacity:.3,offset:.63},
-  {transform:'translate(13px,-23px) rotate(-6deg) scale(1.05)',opacity:0,offset:.70},
-  {transform:'translate(13px,-23px) rotate(-6deg) scale(1.05)',opacity:0}
+  {transform:'translate(50px,-118px) rotate(-32deg) scale(1.12)',opacity:1,offset:.10},
+  {transform:'translate(34px,-94px) rotate(-25deg) scale(1.08)',opacity:1,offset:.25,easing:'cubic-bezier(.7,0,1,.35)'},
+  {transform:'translate(0,0) rotate(0deg) scale(1)',opacity:1,offset:.38},
+  {transform:'translate(9px,-16px) rotate(-4deg) scale(1.01)',opacity:1,offset:.46,easing:'ease-out'},
+  {transform:'translate(22px,-37px) rotate(-10deg) scale(1.03)',opacity:1,offset:.56},
+  {transform:'translate(26px,-42px) rotate(-11deg) scale(1.03)',opacity:.65,offset:.74},
+  {transform:'translate(28px,-45px) rotate(-12deg) scale(1.03)',opacity:0,offset:.98},
+  {transform:'translate(28px,-45px) rotate(-12deg) scale(1.03)',opacity:0}
  ]});
 })(globalThis);

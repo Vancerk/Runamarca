@@ -3,7 +3,7 @@ import {act,makeRoom,join,resolveCombat,view,easyBotAction} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url))),main=catalog.decks.find(d=>d.id==='forja-oficina-lyrik');
 const card=(id,p,extra={})=>({...structuredClone([...catalog.decks.flatMap(d=>d.cards),...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...extra});
 function setup(){const room=makeRoom('ENTRY','A'),a=room.players[0],b=join(room,'B');for(const p of[a,b])Object.assign(p,{patron:{hp:20,maxHp:20},mana:10,manaMax:10,deck:Array.from({length:8},()=>({uid:randomUUID()}))});Object.assign(room,{phase:'prep',turn:a.id,first:a.id,collectPreview:true});return{room,a,b};}
-for(const d of catalog.decks.filter(d=>d.affinity==='forja')){assert.equal(d.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(d.cards.find(c=>c.id==='FL17').cost,2);assert.equal(d.cards.find(c=>c.id==='FL13').artZoom,150);}
+for(const d of catalog.decks.filter(d=>d.affinity==='forja')){assert.equal(d.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(d.cards.find(c=>c.id==='FL17').cost,2);if(d.id==='forja-oficina-lyrik')assert.equal(d.cards.find(c=>c.id==='FL13').artZoom,137);}
 assert.equal(main.cards.find(c=>c.id==='FL01').cost,2);assert.equal(main.cards.find(c=>c.id==='FL06').cost,3);assert.equal(main.cards.find(c=>c.id==='FL05').quantity,1);assert.equal(main.cards.find(c=>c.id==='FL10').quantity,3);
 {
  const {room,a,b}=setup(),source=card('FL01',a),ally=card('FL05',a),enemy=card('RG02',b);a.hand=[source];a.reserve=[ally];b.reserve=[enemy];

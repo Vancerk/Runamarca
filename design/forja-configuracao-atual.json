@@ -1,0 +1,375 @@
+{
+  "status": "Configuracao para proximos testes; sem nova bateria de partidas",
+  "axiomCost": 9,
+  "checks": [
+    "Area direta: dano correto na reserva; emanacao protegida.",
+    "Area preparada: alcance e dano corretos; consumida depois de ativar.",
+    "Area sem gatilho expira ao fim da rodada sem combate, sem causar dano.",
+    "Area sem gatilho expira ao fim da rodada com combate, sem causar dano.",
+    "Tiro direto atinge emanacao e nao compra se o alvo sobreviver.",
+    "Tiro direto atinge emanacao e compra uma carta ao eliminar.",
+    "Tiro preparado: eliminacao na etapa de magias concede a compra.",
+    "Cleriga: cura custa 1 mana; sem mana nao cura nem gera saldo negativo.",
+    "Cleriga: opcional, nao cura a si mesma e nao cobra por alvo sem ferimento.",
+    "Duas Clerigas: cada ativacao paga separadamente, respeitando a mana disponivel.",
+    "Escudeiro: Revelacao e seu aviso so ocorrem quando ja esta ferido.",
+    "Escudeiro ferido por armadilha antes da Revelacao ativa o efeito no mesmo combate.",
+    "Axiom: 8 mana insuficiente; por 9 entra 8/8 e compra uma carta.",
+    "Drakonir: 3/5, custo 5 e Revelacao de 1 dano preservados."
+  ],
+  "deck": {
+    "id": "forja-juramento",
+    "name": "Juramento de Aço",
+    "archetype": "Controle",
+    "affinity": "forja",
+    "patron": {
+      "id": "P-F",
+      "name": "A Bigorna Desperta",
+      "health": 24,
+      "affinities": [
+        "forja"
+      ],
+      "starts_in_play": true,
+      "counts_toward_deck": false,
+      "ability": null,
+      "text": "Seu baralho só pode conter cartas de Forja. Sua mana pode pagar os custos dessas cartas.",
+      "lore_status": "Título original de protótipo; não identifica uma divindade oficial."
+    },
+    "plan": "Conservar criaturas, desgastar adversários e chegar às ameaças de custo 6 e 7. Suas curas limitadas compram tempo, mas não substituem ocupar as três posições.",
+    "weakness": "Ataque inicial baixo, nenhuma compra adicional e mãos com cartas caras. Armadilhas de dano e remoção direta podem impedir suas trocas favoráveis.",
+    "narrative": "Uma companhia de proteção reúne artífices anões, guardiões e Axiom autônomos. A restauração é etérea para funcionar com seres vivos e corpos construídos.",
+    "cards": [
+      {
+        "id": "F01",
+        "name": "Vigia do Clã",
+        "type": "creature",
+        "subtype": "Anão · Vigia",
+        "cost": 1,
+        "quantity": 3,
+        "attack": 1,
+        "health": 2,
+        "text": "Revelação: ganha +1 de ataque neste combate.",
+        "role": "Defesa inicial resistente, com pouca pressão.",
+        "lore_basis": "Livro principal, 6.5.2: clãs anões.",
+        "flavor": "Reconhece uma aproximação pelo silêncio da oficina.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "revelation",
+            "op": "attack_modifier",
+            "target": "self",
+            "amount": 1,
+            "duration": "round_end"
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "lacaio",
+        "image": "art/F01.webp",
+        "speech": "Ninguém passa."
+      },
+      {
+        "id": "F02",
+        "name": "Escudeiro Sheldran",
+        "type": "creature",
+        "subtype": "Sheldran · Escudeiro",
+        "cost": 2,
+        "quantity": 3,
+        "attack": 1,
+        "health": 3,
+        "text": "Revelação: se estiver ferido, cause 1 de dano à criatura inimiga na mesma posição.",
+        "role": "Absorver desgaste sem ganhar rapidamente.",
+        "lore_basis": "Livro principal, 6.5.1: Sheldran.",
+        "flavor": "Algumas promessas têm o peso de um escudo.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "revelation",
+            "op": "damage",
+            "target": "opposing_creature_same_lane",
+            "amount": 1,
+            "duration": "round_end",
+            "condition": "self_wounded"
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "lacaio",
+        "image": "art/F02.webp",
+        "speech": "Escudo erguido."
+      },
+      {
+        "id": "F03",
+        "name": "Clériga da Forja",
+        "type": "creature",
+        "subtype": "Anã · Clériga",
+        "cost": 2,
+        "quantity": 3,
+        "attack": 1,
+        "health": 2,
+        "text": "Emanação: ao fim da sua preparação, você pode pagar 1 mana para curar 1 de dano de outra criatura aliada.",
+        "role": "Preservar o campo por pequenas recuperações.",
+        "lore_basis": "Livro principal, 6.5.2: fé e ofício anões; Livro de Especializações, 1.5.3: Clérigo como suporte. Personagem original.",
+        "flavor": "Seu ofício devolve firmeza tanto à pedra quanto ao pulso.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "end_owner_preparation_while_emanating",
+            "op": "heal",
+            "target": "chosen_allied_creature",
+            "amount": 1,
+            "mana_cost": 1,
+            "exclude_self": true
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "lacaio",
+        "image": "art/F03.webp",
+        "speech": "A chama nos guarda."
+      },
+      {
+        "id": "F04",
+        "name": "Sentinela Engrenauta",
+        "type": "creature",
+        "subtype": "Axiom · Engrenauta",
+        "cost": 4,
+        "quantity": 2,
+        "attack": 2,
+        "health": 5,
+        "text": "Ao entrar: compre uma carta.",
+        "role": "Corpo defensivo do meio da partida.",
+        "lore_basis": "Livro principal, 6.5.6: Axiom Engrenauta.",
+        "flavor": "Escolheu ficar. Nenhuma ordem poderia valer mais.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "on_enter",
+            "op": "draw",
+            "target": "owner",
+            "amount": 1
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "padrao",
+        "image": "art/F04.webp",
+        "speech": "Protocolos ativos."
+      },
+      {
+        "id": "F05",
+        "name": "Veterano das Arenas",
+        "type": "creature",
+        "subtype": "Lezhar · Veterano",
+        "cost": 4,
+        "quantity": 2,
+        "attack": 3,
+        "health": 5,
+        "text": "Revelação: ganha +1 de ataque neste combate.",
+        "role": "Começar a transformar defesa em pressão.",
+        "lore_basis": "Livro principal, 6.5.1: Arenas Sagradas.",
+        "flavor": "Uma cicatriz não ensina a vencer. Ensina a voltar.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "revelation",
+            "op": "attack_modifier",
+            "target": "self",
+            "amount": 1,
+            "duration": "round_end"
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "padrao",
+        "image": "art/F05.webp",
+        "speech": "Já vi pior."
+      },
+      {
+        "id": "F06",
+        "name": "Drakonir dos Túmulos",
+        "type": "creature",
+        "subtype": "Drakonir · Guardião",
+        "cost": 5,
+        "quantity": 2,
+        "attack": 3,
+        "health": 5,
+        "text": "Revelação: cause 1 de dano à criatura inimiga na mesma posição.",
+        "role": "Ameaça resistente para repetidos confrontos.",
+        "lore_basis": "Livro principal, 6.5.1: Drakonir dos Túmulos Dracônicos.",
+        "flavor": "Há nomes antigos que ainda merecem um guardião.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "revelation",
+            "op": "damage",
+            "target": "opposing_creature_same_lane",
+            "amount": 1,
+            "duration": "round_end"
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "padrao",
+        "image": "art/F06.webp",
+        "speech": "Os túmulos vigiam."
+      },
+      {
+        "id": "F07",
+        "name": "Gigante do Bastião",
+        "type": "creature",
+        "subtype": "Gigante · Protetor",
+        "cost": 6,
+        "quantity": 1,
+        "attack": 6,
+        "health": 7,
+        "text": "Revelação: ganha +2 de ataque neste combate.",
+        "role": "Finalizador resistente.",
+        "lore_basis": "Livro principal, 6.5.2: Gigantes e proteção de fronteiras; bastião original.",
+        "flavor": "O bastião começa onde ele decide parar.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "revelation",
+            "op": "attack_modifier",
+            "target": "self",
+            "amount": 2,
+            "duration": "round_end"
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "elite",
+        "image": "art/F07.webp",
+        "speech": "Este bastião resiste."
+      },
+      {
+        "id": "F08",
+        "name": "Axiom de Cerco",
+        "type": "creature",
+        "subtype": "Axiom · Engrenauta",
+        "cost": 9,
+        "quantity": 1,
+        "attack": 8,
+        "health": 8,
+        "text": "Ao entrar: compre uma carta.",
+        "role": "Grande ameaça que exige bloqueio ou remoção.",
+        "lore_basis": "Livro principal, 6.5.6: corpos pesados e autoconsciência dos Axiom.",
+        "flavor": "Foi construído para romper muralhas. Escolheu proteger as pessoas atrás delas.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "on_enter",
+            "op": "draw",
+            "target": "owner",
+            "amount": 1
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "elite",
+        "image": "art/F08.webp",
+        "speech": "Iniciar cerco."
+      },
+      {
+        "id": "F09",
+        "name": "Restauração Etérea",
+        "type": "direct_spell",
+        "subtype": "Magia · Restauração",
+        "cost": 2,
+        "quantity": 2,
+        "text": "Escolha um: cure 3 de dano de uma criatura aliada; ou restaure 2 de vida do seu Patrono.",
+        "role": "Recuperação limitada e flexível.",
+        "lore_basis": "Livro principal: energia Vida e restauração mágica de Axiom; efeito original.",
+        "flavor": "Recompor é dar à resistência mais uma oportunidade.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "on_play",
+            "op": "choose_one",
+            "options": [
+              {
+                "op": "heal",
+                "target": "chosen_allied_creature",
+                "amount": 3
+              },
+              {
+                "op": "heal",
+                "target": "own_patron",
+                "amount": 2
+              }
+            ]
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "padrao",
+        "image": "art/F09.webp"
+      },
+      {
+        "id": "F10",
+        "name": "Martelo Rúnico",
+        "type": "direct_spell",
+        "subtype": "Magia · Impacto",
+        "cost": 3,
+        "quantity": 2,
+        "text": "Cause 3 de dano a uma criatura inimiga.",
+        "role": "Finalizar uma criatura ferida ou remover suporte.",
+        "lore_basis": "Livro principal: engenharia anã, inscrições e Éter; efeito original.",
+        "flavor": "O golpe termina. A runa ainda ressoa.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "on_play",
+            "op": "damage",
+            "target": "chosen_enemy_creature",
+            "amount": 3
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "padrao",
+        "image": "art/F10.webp"
+      },
+      {
+        "id": "F11",
+        "name": "Selo de Estacas",
+        "type": "prepared_spell",
+        "subtype": "Magia preparada · Selo",
+        "cost": 2,
+        "quantity": 2,
+        "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, cause 2 de dano a essa criatura.",
+        "role": "Interromper ameaças pequenas antes do confronto.",
+        "lore_basis": "Criação original com energia Terra e inscrições rúnicas do livro principal.",
+        "flavor": "A pedra estava esperando uma razão para se erguer.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "prepared_trigger",
+            "op": "damage",
+            "target": "triggering_creature",
+            "amount": 2
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "padrao",
+        "image": "art/F11.webp"
+      },
+      {
+        "id": "F12",
+        "name": "Névoa de Fuligem",
+        "type": "prepared_spell",
+        "subtype": "Magia preparada · Névoa",
+        "cost": 2,
+        "quantity": 1,
+        "text": "Prepare em uma casa inimiga. Quando uma criatura for revelada nela, ela recebe -3 de ataque até o fim desta rodada.",
+        "role": "Reduzir a pressão de uma ameaça grande por um combate.",
+        "lore_basis": "Criação original inspirada em forjas e obstrução sensorial; livro principal, 4.4.",
+        "flavor": "Quem não encontra o alvo ainda precisa atravessar a defesa.",
+        "flavor_status": "criação original para o protótipo",
+        "effects": [
+          {
+            "timing": "prepared_trigger",
+            "op": "attack_modifier",
+            "target": "triggering_creature",
+            "amount": -3,
+            "duration": "round_end"
+          }
+        ],
+        "affinity": "forja",
+        "rarity": "elite",
+        "image": "art/F12.webp"
+      }
+    ]
+  }
+}

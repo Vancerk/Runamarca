@@ -4,7 +4,7 @@ export const weaponOptions=globalThis.RunaWeapons.options;
 export const weaponRecipe=globalThis.RunaWeapons.recipe;
 export function startForge(room,p,power,data,{emit,pushLog}){
  if(p.forge)throw Error('Uma arma já está em produção.');
- const cost=Number(data.weaponCost);if(![1,5,10].includes(cost))throw Error('Escolha custo 1, 5 ou 10 para a arma.');
+ const cost=Number(data.weaponCost);if(![1,3,6].includes(cost))throw Error('Escolha custo 1, 3 ou 6 para a arma.');
  p.mana-=power.cost;(p.patron.usedPowers??={})[power.id]=room.round;
  p.forge={stage:'durability',cost,dueRound:room.round+1,powerId:power.id};
  emit(room,'forge_started',{playerId:p.id,cost});pushLog(room,p.name+' iniciou a criação de uma arma de custo '+cost+'.',p.id);

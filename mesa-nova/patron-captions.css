@@ -1,0 +1,5 @@
+.patron-power-caption{position:fixed;z-index:160;max-width:min(320px,75vw);padding:14px 21px;border:2px solid #b89863;border-radius:22px;background:linear-gradient(155deg,#fff6df,#e5cfa5);box-shadow:0 6px 20px #0008,inset 0 1px #fff9;color:#302317;text-align:center;font:600 17px/1.35 Georgia,serif;pointer-events:none}
+.patron-power-caption::after{content:'';position:absolute;left:calc(50% - 8px);bottom:-10px;width:15px;height:15px;background:#e5cfa5;border-right:2px solid #b89863;border-bottom:2px solid #b89863;transform:rotate(45deg)}
+.patron-power-caption.below::after{bottom:auto;top:-10px;transform:rotate(225deg);background:#f8edce}
+#mulligan-timer{color:#e3d1ad;font-size:13px;margin:17px 0 0;font-variant-numeric:tabular-nums}
+#mulligan-timer.urgent{color:#ffcc88;font-weight:700}

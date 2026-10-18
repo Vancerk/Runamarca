@@ -81,6 +81,7 @@
    const add=(effect,extra={})=>rows.push({...base,effect,...extra});
    const unknown=()=>add('custom',{customPoints:0,reason:'Mecânica sem preço calibrado: '+JSON.stringify(e)});
    if(e.target==='any'||e.uncounterable){unknown();continue;}
+   if(e.draw_attack_divisor){unknown();continue;}
    if(e.condition&& !['self_wounded','owner_played_direct_spell_this_round'].includes(e.condition)){unknown();continue;}
    if(e.op==='heal_patron'){add('heal',{target:'patron',duration:'instant'});continue;}
    if(e.subtypeIncludes){unknown();continue;}

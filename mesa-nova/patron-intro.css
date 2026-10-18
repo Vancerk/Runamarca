@@ -1,9 +1,13 @@
 .patron-intro-active{overflow:hidden}
+.patron-socket{position:absolute;pointer-events:none;border-radius:35% 35% 12% 12%;border:3px solid #a7864b;background:radial-gradient(ellipse at 50% 60%,#100d0a,#251d14 70%);box-shadow:inset 0 0 0 2px #352516,inset 0 4px 14px #000e,0 0 0 1px #e6c489aa,0 3px 0 4px #332519,0 7px 13px #0008}
+.patron-socket::before{content:'';position:absolute;inset:-5px;border:1px solid #c5a36588;border-radius:inherit;box-shadow:inset 0 2px 0 #ffe1a744}
+.patron-socket::after{content:'';position:absolute;left:calc(50% - 6px);bottom:-7px;width:12px;height:12px;border:1px solid #d0ad6b;background:linear-gradient(135deg,#b98b45,#45301a);transform:rotate(45deg);box-shadow:0 2px 4px #0009}
+.intro-home-socket{z-index:-1;box-sizing:border-box}
 .patron-intro-active #mulligan-overlay,.patron-intro-active #hand,.patron-intro-active #opponent-hand,.patron-intro-active #game .patron-card,.patron-intro-active .stage .patron-card{visibility:hidden!important;pointer-events:none!important}
 .patron-intro-active #game.is-obscured{filter:none}
 .patron-intro-scene{position:fixed;inset:0;z-index:14500;overflow:hidden;isolation:isolate;color:#ffe4b7;font-family:Georgia,serif;perspective:1000px}
 .intro-veil{position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 50% 42%,#4c281f88,#160e12d9 64%,#090708ed);transition:opacity .7s}
-.intro-heading{position:absolute;top:9%;left:0;width:100%;text-align:center;font-size:13px;letter-spacing:.28em;color:#cead7a;transition:opacity .5s}
+.intro-heading{position:absolute;top:9%;left:5%;width:auto;max-width:35%;text-align:left;font-size:13px;letter-spacing:.28em;color:#cead7a;transition:opacity .5s}
 .intro-crossing{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:65px;color:#c99b53;text-shadow:0 0 35px #f98a4d66;transition:opacity .5s}
 .intro-patron{position:absolute;top:22%;width:clamp(140px,17vw,230px);text-align:center;transition:filter .3s;filter:brightness(.76)}
 .intro-ally{left:calc(50% - clamp(180px,24vw,320px))}.intro-rival{right:calc(50% - clamp(180px,24vw,320px))}

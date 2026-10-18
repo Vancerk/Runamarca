@@ -1,10 +1,11 @@
 import {startForge} from './equipment.mjs';
-export function activatePatronPower(room,p,data,{findCreature,attack,spellBuff,emit,pushLog}){
+export function activatePatronPower(room,p,data,{findCreature,attack,spellBuff,draw,emit,pushLog}){
  const power=p.patron?.powers?.find(e=>e.id===data.powerId);
  if(!power)throw Error('Este Patrono não possui esse poder.');
  const used=p.patron.usedPowers?.[power.id];
  if((power.limit==='match'&&used!==undefined)||(power.limit==='round'&&used===room.round))throw Error('Este poder já foi utilizado.');
  if(p.mana<power.cost)throw Error('Energia insuficiente para o poder.');
+ if(power.id==='sumario-ecoante'){p.mana-=power.cost;(p.patron.usedPowers??={})[power.id]=room.round;const start=room.events.at(-1)?.id||0;draw(room,p,1);for(const e of room.events)if(e.id>start&&e.type==='draw'&&e.playerId===p.id)e.sourcePower='sumario-ecoante';emit(room,'patron_power',{playerId:p.id,powerId:power.id,name:power.name,op:'draw',amount:1});pushLog(room,p.name+' usou '+power.name+' para comprar uma carta.',p.id);return;}
  if(power.id==='forjar-arma'){startForge(room,p,power,data,{emit,pushLog});return;}
  if(power.id==='forjar-armadura'){p.mana-=power.cost;(p.patron.usedPowers??={})[power.id]=room.round;p.patron.extraLife=(p.patron.extraLife||0)+1;emit(room,'patron_power',{playerId:p.id,powerId:power.id,name:power.name,op:'extra_life',amount:0,targetPatronId:p.id,healthUpdates:[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp,extraLife:p.patron.extraLife}]});pushLog(room,p.name+' forjou 1 de Vida Extra para o Patrono.',p.id);return;}
  const target=findCreature(p,data.targetId);if(!target||target.damage>=target.health)throw Error('Escolha uma criatura aliada em campo.');

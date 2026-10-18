@@ -1,0 +1,11 @@
+.table-music-controls{margin-top:18px;border-top:1px solid #ad8a514f;padding-top:12px;color:#dcc9a6;font-size:13px}
+.table-music-controls summary{cursor:pointer;list-style-position:inside;letter-spacing:.03em}
+.table-music-panel{display:grid;gap:12px;padding-top:14px}
+.table-music-panel label{display:grid;grid-template-columns:1fr auto;gap:7px 8px;align-items:center}
+.table-music-panel input[type=range]{grid-row:2;grid-column:1/-1;width:100%;accent-color:#ba9554;cursor:pointer}
+.table-music-panel output{grid-column:2;grid-row:1;font-variant-numeric:tabular-nums;color:#c6b18b}
+.table-music-panel .table-music-mute{display:flex;align-items:center;font-size:12px;line-height:1.5}
+.table-music-mute input{accent-color:#ba9554}
+.table-music-panel small{font-size:11px;line-height:1.5;color:#af9c7e}
+.table-music-panel button{font-size:12px;padding:8px}
+.table-music-panel [hidden]{display:none}

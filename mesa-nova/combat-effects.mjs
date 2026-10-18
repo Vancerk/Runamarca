@@ -13,7 +13,7 @@ export function resolveDirectedCombat(room,{effects,attack,laneCard,alive,applyD
  });
  const contributors=new Map(),steps=[];
  for(const initiative of [true,false]){
-  const eligible=strikes.filter(s=>s.initiative===initiative&&alive(s.card)&&!s.card.sleep&&s.card.eyeSkipCombat!==room.combatCount);
+  const eligible=strikes.filter(s=>s.initiative===initiative&&alive(s.card)&&!s.card.sleep&&s.card.eyeSkipCombat!==room.combatCount&&attack(s.card,room,s.lane)>0);
   // A Taunt that died in the earlier initiative phase releases redirected
   // attackers to their original defender (or Patron if that lane was empty).
   // Original defenders killed earlier still block, as in the existing rule.

@@ -1,13 +1,13 @@
 {
-  "version": 1,
+  "version": 3,
   "characters": {
     "lyrik": {
-      "name": "Lyrik Koltar",
+      "name": "Lyrik, O Forjador",
       "affinity": "forja",
       "image": "patrons/bigorna-desperta-nova.png"
     },
     "marika": {
-      "name": "Marika Venn",
+      "name": "Marika, A Mestrarcana",
       "affinity": "fluxo",
       "image": "patrons/olho-dos-pactos-novo.png"
     },
@@ -25,21 +25,23 @@
       "lines": [
         {
           "speaker": "lyrik",
-          "text": "A teoria aguenta o calor da minha forja, Marika?",
-          "audio": "audio/intro/lyrik-marika-abertura.mp3",
-          "durationSeconds": 2.84734375
+          "text": "Li em seu livro sobre como o Éter não nasceu para matar. Acredita mesmo nisso?",
+          "audio": "audio/intro/lyrik-studio-v2/L01.mp3",
+          "durationSeconds": 4.68,
+          "recordingCode": "LR01"
         },
         {
           "speaker": "marika",
-          "text": "Ela me ensinou a construir sem precisar ferir.",
-          "audio": "audio/intro/marika-lyrik-resposta.mp3",
-          "durationSeconds": 3.2653020833333333
+          "text": "Enquanto não o usarmos apenas para melhorar a vida, estaremos sempre caminhando à regressão.",
+          "audio": null,
+          "durationSeconds": 6.5
         },
         {
           "speaker": "lyrik",
-          "text": "Então mostre. Eu ainda tenho muito a aperfeiçoar.",
-          "audio": "audio/intro/lyrik-marika-fecho.mp3",
-          "durationSeconds": 4.806520833333333
+          "text": "Quero que esteja certa, mas não vejo esse mundo.",
+          "audio": "audio/intro/lyrik-studio-v2/L02.mp3",
+          "durationSeconds": 2.68,
+          "recordingCode": "LR02"
         }
       ]
     },
@@ -50,21 +52,22 @@
       "lines": [
         {
           "speaker": "marika",
-          "text": "Lyrik, suas criações também lhe ensinam?",
-          "audio": "audio/intro/marika-lyrik-abertura.mp3",
-          "durationSeconds": 3.3175416666666666
+          "text": "Você tem arrependimento ou orgulho do que criou?",
+          "audio": null,
+          "durationSeconds": 3.8
         },
         {
           "speaker": "lyrik",
-          "text": "Cada falha me custa uma lâmina.",
-          "audio": "audio/intro/lyrik-marika-resposta.mp3",
-          "durationSeconds": 2.0636666666666668
+          "text": "Nada… além de medo.",
+          "audio": "audio/intro/lyrik-studio-v2/L03.mp3",
+          "durationSeconds": 2.4,
+          "recordingCode": "LR03"
         },
         {
           "speaker": "marika",
-          "text": "Desde que não lhe custe a vontade de aprender.",
-          "audio": "audio/intro/marika-lyrik-fecho.mp3",
-          "durationSeconds": 2.9779583333333335
+          "text": "E o que fará a respeito?",
+          "audio": null,
+          "durationSeconds": 2.8
         }
       ]
     },
@@ -76,20 +79,23 @@
         {
           "speaker": "lyrik",
           "text": "Aço bem forjado não precisa dessa brutalidade, Dom.",
-          "audio": "audio/intro/lyrik-dom-abertura.mp3",
-          "durationSeconds": 3.50040625
+          "audio": "audio/intro/voz-propria-20261017/L04.mp3",
+          "durationSeconds": 3.4522083333333335,
+          "recordingCode": "L04"
         },
         {
           "speaker": "dom",
           "text": "Minha corrente funciona muito bem com ela.",
-          "audio": "audio/intro/dom-lyrik-resposta.mp3",
-          "durationSeconds": 2.298770833333333
+          "audio": "audio/intro/voz-propria-20261017/D01.mp3",
+          "durationSeconds": 2.5479583333333333,
+          "recordingCode": "D01"
         },
         {
           "speaker": "lyrik",
           "text": "Funcionar é pouco. Até sucata faz barulho.",
-          "audio": "audio/intro/lyrik-dom-fecho.mp3",
-          "durationSeconds": 4.4408125
+          "audio": "audio/intro/voz-propria-20261017/L05.mp3",
+          "durationSeconds": 2.6513125,
+          "recordingCode": "L05"
         }
       ]
     },
@@ -101,20 +107,23 @@
         {
           "speaker": "dom",
           "text": "Anão, teu juramento aguenta uma pancada?",
-          "audio": "audio/intro/dom-lyrik-abertura.mp3",
-          "durationSeconds": 2.481625
+          "audio": "audio/intro/voz-propria-20261017/D02.mp3",
+          "durationSeconds": 3.324104166666667,
+          "recordingCode": "D02"
         },
         {
           "speaker": "lyrik",
           "text": "Aguenta, e eu quero ver se você aguenta a resposta.",
-          "audio": "audio/intro/lyrik-dom-resposta.mp3",
-          "durationSeconds": 4.15346875
+          "audio": "audio/intro/voz-propria-20261017/L06.mp3",
+          "durationSeconds": 3.1413541666666664,
+          "recordingCode": "L06"
         },
         {
           "speaker": "dom",
           "text": "Então faz teu pior! Eu não vim admirar tua forja.",
-          "audio": "audio/intro/dom-lyrik-fecho.mp3",
-          "durationSeconds": 3.44815625
+          "audio": "audio/intro/voz-propria-20261017/D03.mp3",
+          "durationSeconds": 3.3792708333333334,
+          "recordingCode": "D03"
         }
       ]
     },
@@ -126,20 +135,23 @@
         {
           "speaker": "marika",
           "text": "Seu ódio não precisa decidir quem você será, Dom.",
-          "audio": "audio/intro/marika-dom-abertura.mp3",
-          "durationSeconds": 3.631010416666667
+          "audio": "audio/intro/voz-propria-20261017/M04.mp3",
+          "durationSeconds": 3.0105,
+          "recordingCode": "M04"
         },
         {
           "speaker": "dom",
           "text": "Guarda a lição. Magia é muleta dos fracos.",
-          "audio": "audio/intro/dom-marika-resposta.mp3",
-          "durationSeconds": 3.6832604166666667
+          "audio": "audio/intro/voz-propria-20261017/D04.mp3",
+          "durationSeconds": 3.4930625,
+          "recordingCode": "D04"
         },
         {
           "speaker": "marika",
           "text": "Quando quiser aprender, minha porta estará aberta.",
-          "audio": "audio/intro/marika-dom-fecho.mp3",
-          "durationSeconds": 3.3175416666666666
+          "audio": "audio/intro/voz-propria-20261017/M05.mp3",
+          "durationSeconds": 3.2450208333333332,
+          "recordingCode": "M05"
         }
       ]
     },
@@ -151,22 +163,201 @@
         {
           "speaker": "dom",
           "text": "Sem magia, o que sobra de você, professora?",
-          "audio": "audio/intro/dom-marika-abertura.mp3",
-          "durationSeconds": 3.3175416666666666
+          "audio": "audio/intro/voz-propria-20261017/D05.mp3",
+          "durationSeconds": 2.7234791666666665,
+          "recordingCode": "D05"
         },
         {
           "speaker": "marika",
           "text": "Tudo o que levei uma vida para aprender.",
-          "audio": "audio/intro/marika-dom-resposta.mp3",
-          "durationSeconds": 2.2465208333333333
+          "audio": "audio/intro/voz-propria-20261017/M06.mp3",
+          "durationSeconds": 2.3975208333333335,
+          "recordingCode": "M06"
         },
         {
           "speaker": "dom",
           "text": "Vamos ver quanto disso aguenta uma porrada.",
-          "audio": "audio/intro/dom-marika-fecho.mp3",
-          "durationSeconds": 2.429385416666667
+          "audio": "audio/intro/voz-propria-20261017/D06.mp3",
+          "durationSeconds": 2.6670416666666665,
+          "recordingCode": "D06"
+        }
+      ]
+    },
+    {
+      "id": "lyrik-lyrik-duvida",
+      "first": "lyrik",
+      "second": "lyrik",
+      "label": "Espelho · Não parece certo",
+      "lines": [
+        {
+          "speaker": "lyrik",
+          "text": "Não parece certo.",
+          "audio": "audio/intro/lyrik-studio-v2/L04.mp3",
+          "durationSeconds": 1.5,
+          "recordingCode": "LR04",
+          "role": "first"
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Eu ia dizer a mesma coisa!",
+          "audio": "audio/intro/lyrik-studio-v2/L05.mp3",
+          "durationSeconds": 2.12,
+          "recordingCode": "LR05",
+          "role": "second"
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Deve ser obra da minha mente.",
+          "audio": "audio/intro/lyrik-studio-v2/L06.mp3",
+          "durationSeconds": 1.68,
+          "recordingCode": "LR06",
+          "role": "first"
+        }
+      ]
+    },
+    {
+      "id": "lyrik-lyrik-culpa",
+      "first": "lyrik",
+      "second": "lyrik",
+      "label": "Espelho · Você ainda se culpa?",
+      "lines": [
+        {
+          "speaker": "lyrik",
+          "text": "Se isso é real, me diga. Você ainda se culpa?",
+          "audio": "audio/intro/lyrik-studio-v2/L07.mp3",
+          "durationSeconds": 3.76,
+          "recordingCode": "LR07",
+          "role": "second"
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Você sabe a resposta.",
+          "audio": "audio/intro/lyrik-studio-v2/L08.mp3",
+          "durationSeconds": 1.6,
+          "recordingCode": "LR08",
+          "role": "first"
+        },
+        {
+          "speaker": "lyrik",
+          "text": "Sei, só estava confirmando.",
+          "audio": "audio/intro/lyrik-studio-v2/L09.mp3",
+          "durationSeconds": 2.16,
+          "recordingCode": "LR09",
+          "role": "second"
         }
       ]
     }
-  ]
+  ],
+  "voicePack": {
+    "id": "voz-propria-20261017",
+    "name": "Lyrik — voz tratada; demais falas — gravações próprias",
+    "date": "2026-10-17",
+    "sourceGrouping": {
+      "13": [
+        "L01",
+        "L02",
+        "L03"
+      ],
+      "14": [
+        "L04",
+        "L05",
+        "L06"
+      ],
+      "15": [
+        "M01",
+        "M02",
+        "M03"
+      ],
+      "16": [
+        "M04",
+        "M05",
+        "M06"
+      ],
+      "17": [
+        "D01",
+        "D02",
+        "D03"
+      ],
+      "18": [
+        "D04",
+        "D05",
+        "D06"
+      ]
+    },
+    "lyrikUpdate": {
+      "id": "lyrik-russo-20261017",
+      "mapping": "Arquivos 1 a 14 na ordem das falas de Lyrik no roteiro; Gemido para derrota.",
+      "pending": "Novas respostas de Marika em texto, aguardando gravação.",
+      "processing": {
+        "version": "studio-v2",
+        "targetLUFS": -18,
+        "pitchChanged": false,
+        "originalsPreserved": true,
+        "description": "Perfil de ruído por gravação, redução espectral moderada, limpeza do início, expansão suave das pausas e voz seca sem reverberação adicional."
+      }
+    }
+  },
+  "cues": {
+    "lyrik": {
+      "powers": {
+        "forjar-armadura": {
+          "speaker": "lyrik",
+          "text": "Sem ordens, nem deveres. Só aço e chamas!",
+          "audio": "audio/intro/lyrik-studio-v2/L10.mp3",
+          "durationSeconds": 3.66,
+          "recordingCode": "LR10",
+          "label": "Hora da Bigorna",
+          "captions": [
+            {
+              "at": 0,
+              "text": "Sem ordens, nem deveres."
+            },
+            {
+              "at": 1.88,
+              "text": "Só aço e chamas!"
+            }
+          ],
+          "enabled": false
+        },
+        "forjar-arma": {
+          "speaker": "lyrik",
+          "text": "Minha última obra mudou tudo. Essa mudará todos!",
+          "audio": "audio/intro/lyrik-studio-v2/L11.mp3",
+          "durationSeconds": 4.78,
+          "recordingCode": "LR11",
+          "label": "Forja Eterna"
+        }
+      },
+      "victory": {
+        "neutral": {
+          "speaker": "lyrik",
+          "text": "Martelar e moldar. Simples assim.",
+          "audio": "audio/intro/lyrik-studio-v2/L12.mp3",
+          "durationSeconds": 2.26,
+          "recordingCode": "LR12"
+        },
+        "marika": {
+          "speaker": "lyrik",
+          "text": "Espero que sempre defenda o que acredita, independente de hoje.",
+          "audio": "audio/intro/lyrik-studio-v2/L13.mp3",
+          "durationSeconds": 3.52,
+          "recordingCode": "LR13"
+        },
+        "lyrik": {
+          "speaker": "lyrik",
+          "text": "Você não era real, se fosse nunca perderia assim!",
+          "audio": "audio/intro/lyrik-studio-v2/L14.mp3",
+          "durationSeconds": 3.74,
+          "recordingCode": "LR14"
+        }
+      },
+      "defeat": {
+        "speaker": "lyrik",
+        "text": "(Som de insatisfação)",
+        "audio": "audio/intro/lyrik-studio-v2/L15.mp3",
+        "durationSeconds": 0.76,
+        "recordingCode": "LR15"
+      }
+    }
+  }
 }
