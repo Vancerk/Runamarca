@@ -1,0 +1,731 @@
+{
+  "version": 3,
+  "status": "Prévia local com fallback para os sons anteriores; audição artística e cobertura de publicação pendentes.",
+  "cues": {
+    "hammer": {
+      "url": "audio/epidemic/93bebe87-65f6-413b-b188-4f97dab42e1e.mp3?v=polish2",
+      "sourceId": "93bebe87-65f6-413b-b188-4f97dab42e1e",
+      "gain": 0.7046,
+      "duration": 2.2,
+      "enabled": true,
+      "fadeOut": 0.55
+    },
+    "weapon_hammer_land": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.5256,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "forge_landing": {
+      "url": "audio/epidemic/640ead81-4a79-4410-8418-2f24da03618e.mp3?v=polish2",
+      "sourceId": "640ead81-4a79-4410-8418-2f24da03618e",
+      "gain": 0.4723,
+      "duration": 4.67,
+      "enabled": true,
+      "fadeOut": 1.25
+    },
+    "anchor": {
+      "url": "audio/epidemic/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.mp3",
+      "sourceId": "a34ceb26-9839-4e8b-b8ae-7275f5c50b1f",
+      "gain": 0.2809,
+      "duration": 0.445,
+      "enabled": true
+    },
+    "chain_throw": {
+      "url": "audio/epidemic/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.mp3",
+      "sourceId": "a34ceb26-9839-4e8b-b8ae-7275f5c50b1f",
+      "gain": 0.2809,
+      "duration": 0.445,
+      "enabled": true
+    },
+    "chain_land": {
+      "url": "audio/epidemic/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.mp3",
+      "sourceId": "a34ceb26-9839-4e8b-b8ae-7275f5c50b1f",
+      "gain": 0.2809,
+      "duration": 0.445,
+      "enabled": true
+    },
+    "study_page": {
+      "url": "audio/epidemic/8658d2ec-5400-4ded-b54b-34b551fab94d.mp3",
+      "sourceId": "8658d2ec-5400-4ded-b54b-34b551fab94d",
+      "gain": 0.5708,
+      "duration": 0.75,
+      "enabled": true
+    },
+    "draw": {
+      "url": "audio/epidemic/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7.mp3?v=polish2",
+      "sourceId": "375cfb4d-2ba9-4a0d-94b3-e956c806fbb7",
+      "gain": 0.85,
+      "duration": 0.34,
+      "enabled": true,
+      "fadeOut": 0.1,
+      "minIntervalMs": 85
+    },
+    "contract_paper": {
+      "url": "audio/epidemic/8658d2ec-5400-4ded-b54b-34b551fab94d.mp3",
+      "sourceId": "8658d2ec-5400-4ded-b54b-34b551fab94d",
+      "gain": 0.5708,
+      "duration": 0.75,
+      "enabled": true
+    },
+    "gear": {
+      "url": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",
+      "sourceId": "394fa979-5757-4f42-bd1c-9747469f75d2",
+      "gain": 0.8163,
+      "duration": 1.4,
+      "enabled": true
+    },
+    "upgrade": {
+      "url": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",
+      "sourceId": "394fa979-5757-4f42-bd1c-9747469f75d2",
+      "gain": 0.8163,
+      "duration": 1.4,
+      "enabled": true
+    },
+    "turn": {
+      "url": "audio/epidemic/7f899191-54bb-400a-84c0-a5a8f91155b7.mp3",
+      "sourceId": "7f899191-54bb-400a-84c0-a5a8f91155b7",
+      "gain": 0.4444,
+      "duration": 0.8,
+      "enabled": true
+    },
+    "speed": {
+      "url": "audio/epidemic/7f899191-54bb-400a-84c0-a5a8f91155b7.mp3",
+      "sourceId": "7f899191-54bb-400a-84c0-a5a8f91155b7",
+      "gain": 0.5595,
+      "duration": 0.7,
+      "enabled": true
+    },
+    "ice": {
+      "url": "audio/epidemic/33c9b0b9-ae26-456c-8073-8c72040ade07.mp3?v=polish2",
+      "sourceId": "33c9b0b9-ae26-456c-8073-8c72040ade07",
+      "gain": 0.4626,
+      "duration": 5.39,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "frost": {
+      "url": "audio/epidemic/33c9b0b9-ae26-456c-8073-8c72040ade07.mp3?v=polish2",
+      "sourceId": "33c9b0b9-ae26-456c-8073-8c72040ade07",
+      "gain": 0.4626,
+      "duration": 5.39,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "stasis": {
+      "url": "audio/epidemic/33c9b0b9-ae26-456c-8073-8c72040ade07.mp3?v=polish2",
+      "sourceId": "33c9b0b9-ae26-456c-8073-8c72040ade07",
+      "gain": 0.4626,
+      "duration": 5.39,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "barrier": {
+      "url": "audio/epidemic/6a66e10b-f19c-4b51-bc32-156fd6880016.mp3?v=polish2",
+      "sourceId": "6a66e10b-f19c-4b51-bc32-156fd6880016",
+      "gain": 0.3096,
+      "duration": 4.08,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "wind_cast": {
+      "url": "audio/epidemic/6a66e10b-f19c-4b51-bc32-156fd6880016.mp3?v=polish2",
+      "sourceId": "6a66e10b-f19c-4b51-bc32-156fd6880016",
+      "gain": 0.3096,
+      "duration": 4.08,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "sleep": {
+      "url": "audio/epidemic/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f.mp3?v=polish2",
+      "sourceId": "d70c6c13-bd3c-4d22-9a1d-3ff258e3157f",
+      "gain": 0.386,
+      "duration": 2.88,
+      "enabled": true,
+      "fadeOut": 0.6
+    },
+    "heal": {
+      "url": "audio/epidemic/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6.mp3?v=polish2",
+      "sourceId": "9cbefa67-43a8-4f01-bbd5-d05d0c6932c6",
+      "gain": 0.3632,
+      "duration": 2.72,
+      "enabled": true,
+      "fadeOut": 0.6
+    },
+    "growth": {
+      "url": "audio/epidemic/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6.mp3?v=polish2",
+      "sourceId": "9cbefa67-43a8-4f01-bbd5-d05d0c6932c6",
+      "gain": 0.3632,
+      "duration": 2.72,
+      "enabled": true,
+      "fadeOut": 0.6
+    },
+    "yang": {
+      "url": "audio/epidemic/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6.mp3?v=polish2",
+      "sourceId": "9cbefa67-43a8-4f01-bbd5-d05d0c6932c6",
+      "gain": 0.3632,
+      "duration": 2.72,
+      "enabled": true,
+      "fadeOut": 0.6
+    },
+    "aura": {
+      "url": "audio/epidemic/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6.mp3?v=polish2",
+      "sourceId": "9cbefa67-43a8-4f01-bbd5-d05d0c6932c6",
+      "gain": 0.3632,
+      "duration": 2.72,
+      "enabled": true,
+      "fadeOut": 0.6
+    },
+    "fundamental": {
+      "url": "audio/epidemic/5fa1c18e-d272-4111-9f4a-bb27b1b943a9.mp3?v=polish2",
+      "sourceId": "5fa1c18e-d272-4111-9f4a-bb27b1b943a9",
+      "gain": 0.2297,
+      "duration": 4.07,
+      "enabled": true,
+      "fadeOut": 0.8
+    },
+    "rally": {
+      "url": "audio/epidemic/5fa1c18e-d272-4111-9f4a-bb27b1b943a9.mp3?v=polish2",
+      "sourceId": "5fa1c18e-d272-4111-9f4a-bb27b1b943a9",
+      "gain": 0.2297,
+      "duration": 4.07,
+      "enabled": true,
+      "fadeOut": 0.8
+    },
+    "curse": {
+      "url": "audio/epidemic/a4548dc8-49ca-4397-9d78-b89ad8901d90.mp3?v=polish2",
+      "sourceId": "a4548dc8-49ca-4397-9d78-b89ad8901d90",
+      "gain": 0.218,
+      "duration": 4.75,
+      "enabled": true,
+      "fadeOut": 1.0
+    },
+    "yin": {
+      "url": "audio/epidemic/a4548dc8-49ca-4397-9d78-b89ad8901d90.mp3?v=polish2",
+      "sourceId": "a4548dc8-49ca-4397-9d78-b89ad8901d90",
+      "gain": 0.218,
+      "duration": 4.75,
+      "enabled": true,
+      "fadeOut": 1.0
+    },
+    "fault": {
+      "url": "audio/epidemic/a4548dc8-49ca-4397-9d78-b89ad8901d90.mp3?v=polish2",
+      "sourceId": "a4548dc8-49ca-4397-9d78-b89ad8901d90",
+      "gain": 0.218,
+      "duration": 4.75,
+      "enabled": true,
+      "fadeOut": 1.0
+    },
+    "silence": {
+      "url": "audio/epidemic/70d928c4-2fcd-45a2-9967-d7601651ef79.mp3?v=polish2",
+      "sourceId": "70d928c4-2fcd-45a2-9967-d7601651ef79",
+      "gain": 0.4173,
+      "duration": 6.15,
+      "enabled": true,
+      "fadeOut": 1.2
+    },
+    "taunt": {
+      "url": "audio/epidemic/70d928c4-2fcd-45a2-9967-d7601651ef79.mp3?v=polish2",
+      "sourceId": "70d928c4-2fcd-45a2-9967-d7601651ef79",
+      "gain": 0.4173,
+      "duration": 6.15,
+      "enabled": true,
+      "fadeOut": 1.2
+    },
+    "ember_cast": {
+      "url": "audio/epidemic/651caaf9-da78-418b-b9cc-b893c2436e8c.mp3",
+      "sourceId": "651caaf9-da78-418b-b9cc-b893c2436e8c",
+      "gain": 0.2358,
+      "duration": 1.715,
+      "enabled": true
+    },
+    "burn": {
+      "url": "audio/epidemic/651caaf9-da78-418b-b9cc-b893c2436e8c.mp3",
+      "sourceId": "651caaf9-da78-418b-b9cc-b893c2436e8c",
+      "gain": 0.2358,
+      "duration": 1.715,
+      "enabled": true
+    },
+    "ember_impact": {
+      "url": "audio/epidemic/feb8546b-4edc-4034-9ef1-a27e0be1b695.mp3",
+      "sourceId": "feb8546b-4edc-4034-9ef1-a27e0be1b695",
+      "gain": 0.2976,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "volatile": {
+      "url": "audio/epidemic/feb8546b-4edc-4034-9ef1-a27e0be1b695.mp3",
+      "sourceId": "feb8546b-4edc-4034-9ef1-a27e0be1b695",
+      "gain": 0.2976,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "fulgor_impact": {
+      "url": "audio/epidemic/feb8546b-4edc-4034-9ef1-a27e0be1b695.mp3",
+      "sourceId": "feb8546b-4edc-4034-9ef1-a27e0be1b695",
+      "gain": 0.4046,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "fulgor_cast": {
+      "url": "audio/epidemic/2466c6eb-1918-470e-8848-433318347306.mp3?v=polish2",
+      "sourceId": "2466c6eb-1918-470e-8848-433318347306",
+      "gain": 0.2126,
+      "duration": 4.29,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "forge_cast": {
+      "url": "audio/epidemic/2466c6eb-1918-470e-8848-433318347306.mp3?v=polish2",
+      "sourceId": "2466c6eb-1918-470e-8848-433318347306",
+      "gain": 0.2126,
+      "duration": 4.29,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "forge_pressure": {
+      "url": "audio/epidemic/2466c6eb-1918-470e-8848-433318347306.mp3?v=polish2",
+      "sourceId": "2466c6eb-1918-470e-8848-433318347306",
+      "gain": 0.2126,
+      "duration": 4.29,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "coin": {
+      "url": "audio/epidemic/7b8515b3-adcc-4a36-b81a-e48548f9e11e.mp3",
+      "sourceId": "7b8515b3-adcc-4a36-b81a-e48548f9e11e",
+      "gain": 0.3207,
+      "duration": 0.65,
+      "enabled": true
+    },
+    "place": {
+      "url": "audio/epidemic/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7.mp3?v=polish2",
+      "sourceId": "375cfb4d-2ba9-4a0d-94b3-e956c806fbb7",
+      "gain": 0.85,
+      "duration": 0.34,
+      "enabled": true,
+      "fadeOut": 0.1
+    },
+    "grave": {
+      "url": "audio/epidemic/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7.mp3?v=polish2",
+      "sourceId": "375cfb4d-2ba9-4a0d-94b3-e956c806fbb7",
+      "gain": 0.85,
+      "duration": 0.34,
+      "enabled": true,
+      "fadeOut": 0.1
+    },
+    "pack_reveal_platinum": {
+      "url": "audio/epidemic/94f7ef43-2ca8-4007-9ab5-76572ebba391.mp3",
+      "sourceId": "94f7ef43-2ca8-4007-9ab5-76572ebba391",
+      "gain": 0.521,
+      "duration": 4.8,
+      "enabled": true
+    },
+    "weapon_royal_launch": {
+      "url": "audio/epidemic/7c35f032-2c5d-4abe-b908-823b0901978f.mp3?v=polish2",
+      "sourceId": "7c35f032-2c5d-4abe-b908-823b0901978f",
+      "gain": 0.5635,
+      "duration": 5.33,
+      "enabled": true,
+      "fadeOut": 0.8
+    },
+    "weapon_sword_land": {
+      "url": "audio/epidemic/7c35f032-2c5d-4abe-b908-823b0901978f.mp3?v=polish2",
+      "sourceId": "7c35f032-2c5d-4abe-b908-823b0901978f",
+      "gain": 0.5635,
+      "duration": 5.33,
+      "enabled": true,
+      "fadeOut": 0.8
+    },
+    "pack_reveal_gold": {
+      "url": "audio/epidemic/7c35f032-2c5d-4abe-b908-823b0901978f.mp3?v=polish2",
+      "sourceId": "7c35f032-2c5d-4abe-b908-823b0901978f",
+      "gain": 0.5635,
+      "duration": 5.33,
+      "enabled": true,
+      "fadeOut": 0.8
+    },
+    "arrow": {
+      "url": "audio/epidemic/d6a586c6-b808-4cb7-8414-95557cde8500.mp3",
+      "sourceId": "d6a586c6-b808-4cb7-8414-95557cde8500",
+      "gain": 0.5772,
+      "duration": 1.575,
+      "enabled": true
+    },
+    "pierce": {
+      "url": "audio/epidemic/d6a586c6-b808-4cb7-8414-95557cde8500.mp3",
+      "sourceId": "d6a586c6-b808-4cb7-8414-95557cde8500",
+      "gain": 0.5772,
+      "duration": 1.575,
+      "enabled": true
+    },
+    "shard_impact": {
+      "url": "audio/epidemic/d6a586c6-b808-4cb7-8414-95557cde8500.mp3",
+      "sourceId": "d6a586c6-b808-4cb7-8414-95557cde8500",
+      "gain": 0.5772,
+      "duration": 1.575,
+      "enabled": true
+    },
+    "impactHeavy": {
+      "url": "audio/epidemic/84ce305d-716c-4804-bc04-1912f1a17671.mp3?v=polish2",
+      "sourceId": "84ce305d-716c-4804-bc04-1912f1a17671",
+      "duration": 0.9,
+      "fadeOut": 0.28,
+      "enabled": true,
+      "gain": 0.4447,
+      "rate": 0.84,
+      "minIntervalMs": 0
+    },
+    "forge_impact": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.5256,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "armor": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.3316,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "impactMedium": {
+      "url": "audio/epidemic/84ce305d-716c-4804-bc04-1912f1a17671.mp3?v=polish2",
+      "sourceId": "84ce305d-716c-4804-bc04-1912f1a17671",
+      "duration": 0.9,
+      "fadeOut": 0.28,
+      "enabled": true,
+      "gain": 0.3533,
+      "minIntervalMs": 0
+    },
+    "impactLow": {
+      "url": "audio/epidemic/9f1a15a8-6a87-4681-a423-b75f0cc4f125.mp3?v=polish2",
+      "sourceId": "9f1a15a8-6a87-4681-a423-b75f0cc4f125",
+      "duration": 0.78,
+      "fadeOut": 0.23,
+      "enabled": true,
+      "gain": 0.4585,
+      "minIntervalMs": 0
+    },
+    "pack_land": {
+      "url": "audio/epidemic/1acfad48-3238-478e-85d4-a21fd7cf4b9a.mp3",
+      "sourceId": "1acfad48-3238-478e-85d4-a21fd7cf4b9a",
+      "gain": 0.2963,
+      "duration": 1.7,
+      "enabled": true
+    },
+    "study_crystal": {
+      "url": "audio/epidemic/a2a19084-2b20-4e52-b39a-918bcd7e5cbb.mp3?v=polish2",
+      "sourceId": "a2a19084-2b20-4e52-b39a-918bcd7e5cbb",
+      "gain": 0.548,
+      "duration": 4.28,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "coating": {
+      "url": "audio/epidemic/a2a19084-2b20-4e52-b39a-918bcd7e5cbb.mp3?v=polish2",
+      "sourceId": "a2a19084-2b20-4e52-b39a-918bcd7e5cbb",
+      "gain": 0.548,
+      "duration": 4.28,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "geometry": {
+      "url": "audio/epidemic/a2a19084-2b20-4e52-b39a-918bcd7e5cbb.mp3?v=polish2",
+      "sourceId": "a2a19084-2b20-4e52-b39a-918bcd7e5cbb",
+      "gain": 0.548,
+      "duration": 4.28,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "mirror": {
+      "url": "audio/epidemic/05a2889d-5253-4f25-9353-461ad5d1ddb6.mp3",
+      "sourceId": "05a2889d-5253-4f25-9353-461ad5d1ddb6",
+      "gain": 0.3438,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "memory": {
+      "url": "audio/epidemic/05a2889d-5253-4f25-9353-461ad5d1ddb6.mp3",
+      "sourceId": "05a2889d-5253-4f25-9353-461ad5d1ddb6",
+      "gain": 0.3438,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "study_circle": {
+      "url": "audio/epidemic/05a2889d-5253-4f25-9353-461ad5d1ddb6.mp3",
+      "sourceId": "05a2889d-5253-4f25-9353-461ad5d1ddb6",
+      "gain": 0.3438,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "pack_reveal_silver": {
+      "url": "audio/epidemic/84f203b4-d3b9-4a24-ab24-32d48bc16f15.mp3",
+      "sourceId": "84f203b4-d3b9-4a24-ab24-32d48bc16f15",
+      "gain": 0.2486,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "weapon_shadow_launch": {
+      "url": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "sourceId": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "gain": 0.2129,
+      "duration": 0.6,
+      "enabled": true
+    },
+    "pull": {
+      "url": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "sourceId": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "gain": 0.2912,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "contract_depart": {
+      "url": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "sourceId": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "gain": 0.2313,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "flux_whisper": {
+      "url": "audio/epidemic/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f.mp3?v=polish2",
+      "sourceId": "d70c6c13-bd3c-4d22-9a1d-3ff258e3157f",
+      "gain": 0.386,
+      "duration": 2.88,
+      "enabled": true,
+      "fadeOut": 0.6
+    },
+    "magic": {
+      "url": "audio/epidemic/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f.mp3?v=polish2",
+      "sourceId": "d70c6c13-bd3c-4d22-9a1d-3ff258e3157f",
+      "gain": 0.386,
+      "duration": 2.88,
+      "enabled": true,
+      "fadeOut": 0.6
+    },
+    "contract_tear": {
+      "url": "audio/epidemic/0dca976d-cdd3-4e79-9750-6db63ea15149.mp3",
+      "sourceId": "0dca976d-cdd3-4e79-9750-6db63ea15149",
+      "gain": 0.1802,
+      "duration": 0.75,
+      "enabled": true
+    },
+    "pack_clasp": {
+      "url": "audio/epidemic/0dca976d-cdd3-4e79-9750-6db63ea15149.mp3",
+      "sourceId": "0dca976d-cdd3-4e79-9750-6db63ea15149",
+      "gain": 0.1802,
+      "duration": 0.75,
+      "enabled": true
+    },
+    "timeout": {
+      "url": "audio/epidemic/94473817-86d4-47b8-8f63-e00cbdd904e3.mp3",
+      "sourceId": "94473817-86d4-47b8-8f63-e00cbdd904e3",
+      "gain": 0.283,
+      "duration": 2.34,
+      "enabled": true
+    },
+    "pack_burst": {
+      "url": "audio/epidemic/94473817-86d4-47b8-8f63-e00cbdd904e3.mp3",
+      "sourceId": "94473817-86d4-47b8-8f63-e00cbdd904e3",
+      "gain": 0.3562,
+      "duration": 2.34,
+      "enabled": true
+    },
+    "weapon_heavy_launch": {
+      "url": "audio/epidemic/640ead81-4a79-4410-8418-2f24da03618e.mp3?v=polish2",
+      "sourceId": "640ead81-4a79-4410-8418-2f24da03618e",
+      "gain": 0.298,
+      "duration": 4.67,
+      "enabled": true,
+      "fadeOut": 1.25
+    },
+    "contract_impact": {
+      "url": "audio/epidemic/9ed7d117-d9b6-4f19-9eae-0c7b886915cf.mp3",
+      "sourceId": "9ed7d117-d9b6-4f19-9eae-0c7b886915cf",
+      "gain": 0.2932,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "weapon_dagger_land": {
+      "url": "audio/epidemic/9ed7d117-d9b6-4f19-9eae-0c7b886915cf.mp3",
+      "sourceId": "9ed7d117-d9b6-4f19-9eae-0c7b886915cf",
+      "gain": 0.2932,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "gun": {
+      "url": "audio/epidemic/3dd82305-16f8-4c67-ae81-ce8ee11cffdb.mp3",
+      "sourceId": "3dd82305-16f8-4c67-ae81-ce8ee11cffdb",
+      "gain": 0.2468,
+      "duration": 1.725,
+      "enabled": true
+    },
+    "capture": {
+      "url": "audio/epidemic/3dd82305-16f8-4c67-ae81-ce8ee11cffdb.mp3",
+      "sourceId": "3dd82305-16f8-4c67-ae81-ce8ee11cffdb",
+      "gain": 0.2468,
+      "duration": 1.725,
+      "enabled": true
+    },
+    "tribal": {
+      "url": "audio/epidemic/48009f31-710a-412a-a710-34d77f81348f.mp3",
+      "sourceId": "48009f31-710a-412a-a710-34d77f81348f",
+      "gain": 0.2065,
+      "duration": 4.8,
+      "enabled": true
+    },
+    "fuse": {
+      "url": "audio/epidemic/357a5b7d-db8a-453a-a77a-29029963371b.mp3?v=polish2",
+      "sourceId": "357a5b7d-db8a-453a-a77a-29029963371b",
+      "gain": 0.5854,
+      "duration": 10,
+      "enabled": true,
+      "fadeOut": 0.65,
+      "minIntervalMs": 0
+    },
+    "axe_cast": {
+      "url": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "sourceId": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "gain": 0.2129,
+      "duration": 0.6,
+      "enabled": true
+    },
+    "axe_impact": {
+      "url": "audio/epidemic/1acfad48-3238-478e-85d4-a21fd7cf4b9a.mp3",
+      "sourceId": "1acfad48-3238-478e-85d4-a21fd7cf4b9a",
+      "gain": 0.2963,
+      "duration": 1.7,
+      "enabled": true
+    },
+    "contract_throw": {
+      "url": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "sourceId": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "gain": 0.2129,
+      "duration": 0.6,
+      "enabled": true
+    },
+    "pack_charge": {
+      "url": "audio/epidemic/6a66e10b-f19c-4b51-bc32-156fd6880016.mp3?v=polish2",
+      "sourceId": "6a66e10b-f19c-4b51-bc32-156fd6880016",
+      "gain": 0.3096,
+      "duration": 4.08,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "pack_platinum_charge": {
+      "url": "audio/epidemic/05a2889d-5253-4f25-9353-461ad5d1ddb6.mp3",
+      "sourceId": "05a2889d-5253-4f25-9353-461ad5d1ddb6",
+      "gain": 0.3438,
+      "duration": 2.4,
+      "enabled": true
+    },
+    "pack_reveal_bronze": {
+      "url": "audio/epidemic/84f203b4-d3b9-4a24-ab24-32d48bc16f15.mp3",
+      "sourceId": "84f203b4-d3b9-4a24-ab24-32d48bc16f15",
+      "gain": 0.2348,
+      "duration": 0.65,
+      "enabled": true
+    },
+    "shard_cast": {
+      "url": "audio/epidemic/a2a19084-2b20-4e52-b39a-918bcd7e5cbb.mp3?v=polish2",
+      "sourceId": "a2a19084-2b20-4e52-b39a-918bcd7e5cbb",
+      "gain": 0.548,
+      "duration": 4.28,
+      "enabled": true,
+      "fadeOut": 1
+    },
+    "wind_impact": {
+      "url": "audio/epidemic/6a66e10b-f19c-4b51-bc32-156fd6880016.mp3?v=polish2",
+      "sourceId": "6a66e10b-f19c-4b51-bc32-156fd6880016",
+      "gain": 0.3096,
+      "duration": 4.08,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "veronica": {
+      "url": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",
+      "sourceId": "394fa979-5757-4f42-bd1c-9747469f75d2",
+      "gain": 0.8163,
+      "duration": 1.4,
+      "enabled": true
+    },
+    "heavy_impact": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.5256,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "kinetic_impact": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.4175,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "brutal_impact": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.5256,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "cone_impact": {
+      "url": "audio/epidemic/6a66e10b-f19c-4b51-bc32-156fd6880016.mp3?v=polish2",
+      "sourceId": "6a66e10b-f19c-4b51-bc32-156fd6880016",
+      "gain": 0.3096,
+      "duration": 4.08,
+      "enabled": true,
+      "fadeOut": 0.9
+    },
+    "metalImpactLow": {
+      "url": "audio/epidemic/1acfad48-3238-478e-85d4-a21fd7cf4b9a.mp3",
+      "sourceId": "1acfad48-3238-478e-85d4-a21fd7cf4b9a",
+      "gain": 0.2963,
+      "duration": 1.7,
+      "enabled": true,
+      "minIntervalMs": 0
+    },
+    "metalImpactMedium": {
+      "url": "audio/epidemic/1acfad48-3238-478e-85d4-a21fd7cf4b9a.mp3",
+      "sourceId": "1acfad48-3238-478e-85d4-a21fd7cf4b9a",
+      "gain": 0.373,
+      "duration": 1.7,
+      "enabled": true,
+      "minIntervalMs": 0
+    },
+    "metalImpactHeavy": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.5256,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9,
+      "minIntervalMs": 0
+    },
+    "card_select": {
+      "url": "audio/epidemic/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7.mp3?v=polish2",
+      "sourceId": "375cfb4d-2ba9-4a0d-94b3-e956c806fbb7",
+      "gain": 0.8121,
+      "duration": 0.34,
+      "enabled": true,
+      "fadeOut": 0.1,
+      "minIntervalMs": 85,
+      "rate": 1.07
+    }
+  },
+  "levelCalibration": {
+    "date": "2026-10-18",
+    "method": "75th percentile of active 20 ms RMS windows; measured on the played segment",
+    "peakCeilingDbfs": -8,
+    "auditionedByAssistant": false
+  }
+}

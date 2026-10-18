@@ -1,7 +1,7 @@
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const code=fs.readFileSync(new URL('damage-fx.js',import.meta.url),'utf8');let now=0,raf=[],created=0,live=0;const gradient={addColorStop(){}};
 const drawing=new Proxy({}, {get:(o,k)=>k in o?o[k]:k.startsWith('create')?()=>gradient:(...args)=>{for(const x of args)if(typeof x==='number')assert.ok(Number.isFinite(x),k+' needs finite coordinates');},set:(o,k,v)=>(o[k]=v,true)});
-const context={console,innerWidth:1920,innerHeight:1080,devicePixelRatio:2,performance:{now:()=>now},requestAnimationFrame:fn=>(raf.push(fn),raf.length),setTimeout(){},matchMedia:()=>({matches:false}),document:{createElement:()=>{created++;return {isConnected:true,setAttribute(){},getContext:()=>drawing,remove(){if(this.isConnected){this.isConnected=false;live--;}}};},body:{append(){live++;}}}};vm.createContext(context);vm.runInContext(code,context);
+const context={console,innerWidth:1920,innerHeight:1080,devicePixelRatio:2,performance:{now:()=>now},requestAnimationFrame:fn=>(raf.push(fn),raf.length),cancelAnimationFrame(id){raf[id-1]=()=>{};},setTimeout(){},matchMedia:()=>({matches:false}),document:{createElement:()=>{created++;return {isConnected:true,setAttribute(){},getContext:()=>drawing,remove(){if(this.isConnected){this.isConnected=false;live--;}}};},body:{append(){live++;}}}};vm.createContext(context);vm.runInContext(code,context);
 const step=t=>{now=t;const callbacks=raf.splice(0);for(const fn of callbacks)fn(t);},source={getBoundingClientRect:()=>({left:200,top:800,width:100,height:160})},target={getBoundingClientRect:()=>({left:1200,top:200,width:100,height:140})};
 for(const kind of Object.keys(context.RunaDamageFX.timing)){now=0;let hits=0;const task=context.RunaDamageFX.play({kind,from:source,to:target,donor:target,onHit:()=>hits++});const [charge,flight]=context.RunaDamageFX.timing[kind],impact=charge+flight;if(impact){step(0);step(Math.max(0,charge-1));step(charge+flight/2);step(impact-1);assert.equal(hits,0,kind+' cannot apply damage during flight');}step(impact);assert.equal(hits,1);step(impact+1);assert.equal(hits,1);step(context.RunaDamageFX.duration(kind));assert.equal(await task,true);assert.equal(live,0,kind+' releases canvas');}
 now=0;let hits=0,generation=1;const stale=context.RunaDamageFX.play({kind:'shard',from:source,to:target,onHit:()=>hits++,getGeneration:()=>generation});generation=2;step(2000);assert.equal(await stale,false);assert.equal(hits,0,'no damage after leaving room');
@@ -26,3 +26,14 @@ for(const [from,to] of [[{x:960,y:900},{x:960,y:160}],[{x:960,y:160},{x:400,y:80
 }
 assert.ok(css.includes('isolation:auto'),'power disc must preserve the 3D faces');assert.ok(css.includes("url('card-back.png')"));assert.ok(css.includes('transform:rotateX(180deg) translateZ(.5px)'));assert.ok(css.includes('.used-power .power-cost{transform:rotateX(180deg)}'));
 console.log('Fulgor: sete emissores convergem ao ponto no eixo do alvo; verso real do poder e giro horizontal configurados.');
+
+// Finishing a match releases all shared effects immediately, without delayed damage.
+now=0;const cancelledHits=hits;
+const ending=context.RunaDamageFX.play({kind:'fulgor',from:source,to:target,onHit:()=>hits++});
+context.RunaDamageFX.shockwave(target,9);
+context.RunaDamageFX.clear();context.RunaDamageFX.clear();
+assert.equal(live,0,'terminal cleanup removes the shared impact canvas immediately');
+assert.equal(await ending,false,'cancelled projectiles settle their waiting promises');
+step(10000);assert.equal(hits,cancelledHits,'no delayed impact after cleanup');
+const next=context.RunaDamageFX.play({kind:'shard',from:source,to:target});step(12000);
+assert.equal(await next,true,'effects work again in the next match');

@@ -1,0 +1,788 @@
+{
+  "date": "2026-10-17",
+  "musicVolume": 0.17,
+  "ambienceVolume": 0.07,
+  "activeCues": 94,
+  "items": [
+    {
+      "id": "epidemic-af7acf9a-0bec-4062-af06-522c9fd0b726",
+      "title": "My Soul Delights",
+      "artist": "Bonnie Grace",
+      "sourceId": "af7acf9a-0bec-4062-af06-522c9fd0b726",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/af7acf9a-0bec-4062-af06-522c9fd0b726/",
+      "durationSeconds": 212.55,
+      "url": "audio/epidemic/af7acf9a-0bec-4062-af06-522c9fd0b726.mp3",
+      "suggestedStage": "opening",
+      "stages": [
+        "opening"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": false,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "opening",
+      "label": "My Soul Delights",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "epidemic-0730cf9a-021b-3097-aec0-4eb369a7759d",
+      "title": "Highland Hymn",
+      "artist": "Bonnie Grace",
+      "sourceId": "0730cf9a-021b-3097-aec0-4eb369a7759d",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/0730cf9a-021b-3097-aec0-4eb369a7759d/",
+      "durationSeconds": 188.74,
+      "url": "audio/epidemic/0730cf9a-021b-3097-aec0-4eb369a7759d.mp3",
+      "suggestedStage": "opening",
+      "stages": [
+        "opening"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": false,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "opening",
+      "label": "Highland Hymn",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "epidemic-9bf28dd8-30a3-3255-87a9-9b0ef54dd64e",
+      "title": "Tudor",
+      "artist": "Bonnie Grace",
+      "sourceId": "9bf28dd8-30a3-3255-87a9-9b0ef54dd64e",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/9bf28dd8-30a3-3255-87a9-9b0ef54dd64e/",
+      "durationSeconds": 147.45,
+      "url": "audio/epidemic/9bf28dd8-30a3-3255-87a9-9b0ef54dd64e.mp3",
+      "suggestedStage": "opening",
+      "stages": [
+        "opening"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": false,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "opening",
+      "label": "Tudor",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "epidemic-5f16b3e0-e1f7-3ef2-93a0-7ae978160799",
+      "title": "Opa Opa",
+      "artist": "Nathan Welch",
+      "sourceId": "5f16b3e0-e1f7-3ef2-93a0-7ae978160799",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/5f16b3e0-e1f7-3ef2-93a0-7ae978160799/",
+      "durationSeconds": 110.2,
+      "url": "audio/epidemic/5f16b3e0-e1f7-3ef2-93a0-7ae978160799.mp3",
+      "suggestedStage": "table",
+      "stages": [
+        "table"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": false,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "table",
+      "label": "Opa Opa",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "epidemic-024a4b03-3abc-3b30-a3d8-d069453312b9",
+      "title": "A Call From the Wild",
+      "artist": "Rune Dale",
+      "sourceId": "024a4b03-3abc-3b30-a3d8-d069453312b9",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/024a4b03-3abc-3b30-a3d8-d069453312b9/",
+      "durationSeconds": 136.42000000000002,
+      "url": "audio/epidemic/024a4b03-3abc-3b30-a3d8-d069453312b9.mp3",
+      "suggestedStage": "tension",
+      "stages": [
+        "tension"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": false,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "tension",
+      "label": "A Call From the Wild",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "epidemic-569e335c-84c8-4247-8aea-21e9e6a7dc5e",
+      "title": "Well I Just Don't Care",
+      "artist": "Stationary Sign",
+      "sourceId": "569e335c-84c8-4247-8aea-21e9e6a7dc5e",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/569e335c-84c8-4247-8aea-21e9e6a7dc5e/",
+      "durationSeconds": 138.0,
+      "url": "audio/epidemic/569e335c-84c8-4247-8aea-21e9e6a7dc5e.mp3",
+      "suggestedStage": "table",
+      "stages": [
+        "table"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": false,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "table",
+      "label": "Well I Just Don't Care",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "epidemic-e4a0dbb4-e38c-4252-a90a-6b0257e47513",
+      "title": "Beneath the Old Moon",
+      "artist": "Adriel Fair",
+      "sourceId": "e4a0dbb4-e38c-4252-a90a-6b0257e47513",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/e4a0dbb4-e38c-4252-a90a-6b0257e47513/",
+      "durationSeconds": 157.82999999999998,
+      "url": "audio/epidemic/e4a0dbb4-e38c-4252-a90a-6b0257e47513.mp3",
+      "suggestedStage": "table",
+      "stages": [
+        "table"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": true,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "table",
+      "label": "Beneath the Old Moon",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "epidemic-b87eba35-32aa-4be3-95e8-adf3f49deb19",
+      "title": "Castle Festivities",
+      "artist": "Bonnie Grace",
+      "sourceId": "b87eba35-32aa-4be3-95e8-adf3f49deb19",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/b87eba35-32aa-4be3-95e8-adf3f49deb19/",
+      "durationSeconds": 183.49,
+      "url": "audio/epidemic/b87eba35-32aa-4be3-95e8-adf3f49deb19.mp3",
+      "suggestedStage": "reserve",
+      "stages": [
+        "reserve"
+      ],
+      "enabled": false,
+      "semanticMoodConfirmed": false,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "reserve",
+      "label": "Castle Festivities",
+      "previewVolume": 0.17,
+      "integrated": false
+    },
+    {
+      "id": "epidemic-da973b10-79ef-4bae-851d-23d0a224d2e7",
+      "title": "Jig on the Brig",
+      "artist": "Olof Kennemark",
+      "sourceId": "da973b10-79ef-4bae-851d-23d0a224d2e7",
+      "sourceUrl": "https://www.epidemicsound.com/pt/music/tracks/da973b10-79ef-4bae-851d-23d0a224d2e7/",
+      "durationSeconds": 173.75,
+      "url": "audio/epidemic/da973b10-79ef-4bae-851d-23d0a224d2e7.mp3",
+      "suggestedStage": "climax",
+      "stages": [
+        "climax"
+      ],
+      "enabled": true,
+      "semanticMoodConfirmed": true,
+      "usageReview": "Local integration requested. Game publication coverage not confirmed by the current Business plan.",
+      "kind": "music",
+      "role": "climax",
+      "label": "Jig on the Brig",
+      "previewVolume": 0.17,
+      "integrated": true
+    },
+    {
+      "id": "93bebe87-65f6-413b-b188-4f97dab42e1e",
+      "title": "Tools, Hand, Hammer, Anvil, Impacts, Blacksmith, Indoors, Close",
+      "label": "Bigorna — impacto próximo",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/93bebe87-65f6-413b-b188-4f97dab42e1e/",
+      "url": "audio/epidemic/93bebe87-65f6-413b-b188-4f97dab42e1e.mp3?v=polish2",
+      "durationSeconds": 2.2,
+      "cues": [
+        "hammer",
+        "weapon_hammer_land",
+        "forge_landing"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "a34ceb26-9839-4e8b-b8ae-7275f5c50b1f",
+      "title": "Chains, Movement, Impacts, Chain, Metal, Heavy, Rattle",
+      "label": "Correntes pesadas",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f/",
+      "url": "audio/epidemic/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.mp3",
+      "durationSeconds": 0.445,
+      "cues": [
+        "anchor",
+        "chain_throw",
+        "chain_land"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "8658d2ec-5400-4ded-b54b-34b551fab94d",
+      "title": "Objects, Book, Page Turn, Paper, Rustle, Flip, Movement, Soft",
+      "label": "Livro — páginas suaves",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/8658d2ec-5400-4ded-b54b-34b551fab94d/",
+      "url": "audio/epidemic/8658d2ec-5400-4ded-b54b-34b551fab94d.mp3",
+      "durationSeconds": 0.75,
+      "cues": [
+        "study_page",
+        "draw",
+        "contract_paper"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "394fa979-5757-4f42-bd1c-9747469f75d2",
+      "title": "Clocks, Mechanics, Clockwork, Small Mechanisms",
+      "label": "Inversor — relógio",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/394fa979-5757-4f42-bd1c-9747469f75d2/",
+      "url": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",
+      "durationSeconds": 1.4,
+      "cues": [
+        "gear",
+        "upgrade"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "7f899191-54bb-400a-84c0-a5a8f91155b7",
+      "title": "Clocks, Mechanics, Medium Clockwork, Mechanic Stop, Spinning",
+      "label": "Engrenagem — giro e parada",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/7f899191-54bb-400a-84c0-a5a8f91155b7/",
+      "url": "audio/epidemic/7f899191-54bb-400a-84c0-a5a8f91155b7.mp3",
+      "durationSeconds": 0.985,
+      "cues": [
+        "turn",
+        "speed"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "33c9b0b9-ae26-456c-8073-8c72040ade07",
+      "title": "Magic, Elemental, Ice, Spell, Cast, Attack, Freeze, Video Game, JRPG 02",
+      "label": "Gelo — conjuração",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/33c9b0b9-ae26-456c-8073-8c72040ade07/",
+      "url": "audio/epidemic/33c9b0b9-ae26-456c-8073-8c72040ade07.mp3?v=polish2",
+      "durationSeconds": 5.39,
+      "cues": [
+        "ice",
+        "frost",
+        "stasis"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "6a66e10b-f19c-4b51-bc32-156fd6880016",
+      "title": "Magic, Elemental, Aerial Spell, Wind Magic, Cast, Charge 02",
+      "label": "Barreira — vento",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/6a66e10b-f19c-4b51-bc32-156fd6880016/",
+      "url": "audio/epidemic/6a66e10b-f19c-4b51-bc32-156fd6880016.mp3?v=polish2",
+      "durationSeconds": 4.08,
+      "cues": [
+        "barrier",
+        "wind_cast",
+        "sleep"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "9cbefa67-43a8-4f01-bbd5-d05d0c6932c6",
+      "title": "Magic, Angelic, Healing Spell, Buff, Positive, Cast 03",
+      "label": "Cura e fortalecimento",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6/",
+      "url": "audio/epidemic/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6.mp3?v=polish2",
+      "durationSeconds": 2.72,
+      "cues": [
+        "heal",
+        "growth",
+        "yang",
+        "aura"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "5fa1c18e-d272-4111-9f4a-bb27b1b943a9",
+      "title": "Magic, Angelic, Rejuvenation Spell, Holy, Cleanse, Healing",
+      "label": "Purificação",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/5fa1c18e-d272-4111-9f4a-bb27b1b943a9/",
+      "url": "audio/epidemic/5fa1c18e-d272-4111-9f4a-bb27b1b943a9.mp3?v=polish2",
+      "durationSeconds": 4.07,
+      "cues": [
+        "fundamental",
+        "rally"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "a4548dc8-49ca-4397-9d78-b89ad8901d90",
+      "title": "Magic, Evil, Debuff, Curse, Video Game, JRPG",
+      "label": "Corrupção e redução",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/a4548dc8-49ca-4397-9d78-b89ad8901d90/",
+      "url": "audio/epidemic/a4548dc8-49ca-4397-9d78-b89ad8901d90.mp3?v=polish2",
+      "durationSeconds": 4.75,
+      "cues": [
+        "curse",
+        "yin",
+        "fault"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "70d928c4-2fcd-45a2-9967-d7601651ef79",
+      "title": "Magic, Evil, Curse, Bowl, Magic, Reverb",
+      "label": "Silêncio e marca sombria",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/70d928c4-2fcd-45a2-9967-d7601651ef79/",
+      "url": "audio/epidemic/70d928c4-2fcd-45a2-9967-d7601651ef79.mp3?v=polish2",
+      "durationSeconds": 6.15,
+      "cues": [
+        "silence",
+        "taunt"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "651caaf9-da78-418b-b9cc-b893c2436e8c",
+      "title": "Magic, Elemental, Fire Magic Spell, Fast, Fireball",
+      "label": "Projétil de fogo",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/651caaf9-da78-418b-b9cc-b893c2436e8c/",
+      "url": "audio/epidemic/651caaf9-da78-418b-b9cc-b893c2436e8c.mp3",
+      "durationSeconds": 1.715,
+      "cues": [
+        "ember_cast",
+        "burn"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "feb8546b-4edc-4034-9ef1-a27e0be1b695",
+      "title": "Magic, Elemental, Fire Magic Spell, Fireball, Pyroblast",
+      "label": "Explosão de fogo",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/feb8546b-4edc-4034-9ef1-a27e0be1b695/",
+      "url": "audio/epidemic/feb8546b-4edc-4034-9ef1-a27e0be1b695.mp3",
+      "durationSeconds": 2.4,
+      "cues": [
+        "ember_impact",
+        "volatile",
+        "fulgor_impact"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "2466c6eb-1918-470e-8848-433318347306",
+      "title": "Magic, Elemental, Massive Fire Spell, Cast",
+      "label": "Fogo de grande escala",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/2466c6eb-1918-470e-8848-433318347306/",
+      "url": "audio/epidemic/2466c6eb-1918-470e-8848-433318347306.mp3?v=polish2",
+      "durationSeconds": 4.29,
+      "cues": [
+        "fulgor_cast",
+        "forge_cast",
+        "forge_pressure"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "7b8515b3-adcc-4a36-b81a-e48548f9e11e",
+      "title": "Objects, Coin, Coins, Movement, Handling",
+      "label": "Moedas e éter",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/7b8515b3-adcc-4a36-b81a-e48548f9e11e/",
+      "url": "audio/epidemic/7b8515b3-adcc-4a36-b81a-e48548f9e11e.mp3",
+      "durationSeconds": 0.65,
+      "cues": [
+        "coin"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "375cfb4d-2ba9-4a0d-94b3-e956c806fbb7",
+      "title": "Games, Casino, Shuffling Cards In Hands, Handle, Movement, Deck Of Cards 02",
+      "label": "Manuseio de cartas",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7/",
+      "url": "audio/epidemic/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7.mp3?v=polish2",
+      "durationSeconds": 0.34,
+      "cues": [
+        "place",
+        "draw",
+        "grave"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "94f7ef43-2ca8-4007-9ab5-76572ebba391",
+      "title": "Musical, Stinger, Warped Choir Stingers Sweetener, Shimmering, Cinematic Imaging Element 04",
+      "label": "Coro — camada de Platina Fluxo",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/94f7ef43-2ca8-4007-9ab5-76572ebba391/",
+      "url": "audio/epidemic/94f7ef43-2ca8-4007-9ab5-76572ebba391.mp3",
+      "durationSeconds": 4.8,
+      "cues": [
+        "platinum_fluxo",
+        "pack_reveal_platinum"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "7c35f032-2c5d-4abe-b908-823b0901978f",
+      "title": "Musical, Stinger, Orchestral Impact, Harp, Dramatic, Tonal Tail",
+      "label": "Impacto orquestral e harpa",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/7c35f032-2c5d-4abe-b908-823b0901978f/",
+      "url": "audio/epidemic/7c35f032-2c5d-4abe-b908-823b0901978f.mp3?v=polish2",
+      "durationSeconds": 5.33,
+      "cues": [
+        "weapon_royal_launch",
+        "weapon_sword_land",
+        "pack_reveal_gold"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "d6a586c6-b808-4cb7-8414-95557cde8500",
+      "title": "Weapons, Arrow, Arrow Impact, Metal",
+      "label": "Flecha em metal",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/d6a586c6-b808-4cb7-8414-95557cde8500/",
+      "url": "audio/epidemic/d6a586c6-b808-4cb7-8414-95557cde8500.mp3",
+      "durationSeconds": 1.575,
+      "cues": [
+        "arrow",
+        "pierce",
+        "shard_impact"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "title": "Metal, Impact, Heavy, Sledgehammer, Box, Plate, Hard Hit",
+      "label": "Marreta — impacto pesado",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/2403cbb5-d238-4e86-89d7-907f0a96062c/",
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "durationSeconds": 4.3,
+      "cues": [
+        "impactHeavy",
+        "weapon_hammer_land",
+        "forge_impact",
+        "armor"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "1acfad48-3238-478e-85d4-a21fd7cf4b9a",
+      "title": "Metal, Impact, Heavy, Sledgehammer, Box, Plate, Medium Hit",
+      "label": "Metal — impacto médio",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/1acfad48-3238-478e-85d4-a21fd7cf4b9a/",
+      "url": "audio/epidemic/1acfad48-3238-478e-85d4-a21fd7cf4b9a.mp3",
+      "durationSeconds": 1.7,
+      "cues": [
+        "impactMedium",
+        "impactLow",
+        "pack_land"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "a2a19084-2b20-4e52-b39a-918bcd7e5cbb",
+      "title": "Magic, Shimmer, Healing Spell, Glassy, Crystal",
+      "label": "Cristal e proteção",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/a2a19084-2b20-4e52-b39a-918bcd7e5cbb/",
+      "url": "audio/epidemic/a2a19084-2b20-4e52-b39a-918bcd7e5cbb.mp3?v=polish2",
+      "durationSeconds": 4.28,
+      "cues": [
+        "study_crystal",
+        "coating",
+        "geometry"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "05a2889d-5253-4f25-9353-461ad5d1ddb6",
+      "title": "Magic, Shimmer, Glass, Time Magic, Spell, Cast, Reverse, Eerie 02",
+      "label": "Reflexo e tempo",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/05a2889d-5253-4f25-9353-461ad5d1ddb6/",
+      "url": "audio/epidemic/05a2889d-5253-4f25-9353-461ad5d1ddb6.mp3",
+      "durationSeconds": 2.4,
+      "cues": [
+        "mirror",
+        "memory",
+        "study_circle"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "84f203b4-d3b9-4a24-ab24-32d48bc16f15",
+      "title": "Magic, Shimmer, Chime, Crystal, Glint, Twinkle, Fantasy 02",
+      "label": "Revelação Prata",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/84f203b4-d3b9-4a24-ab24-32d48bc16f15/",
+      "url": "audio/epidemic/84f203b4-d3b9-4a24-ab24-32d48bc16f15.mp3",
+      "durationSeconds": 2.4,
+      "cues": [
+        "pack_reveal_silver"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "title": "Magic, Spell, Cold, Whoosh, Dark",
+      "label": "Deslocamento furtivo",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/1460d4a4-4db2-4421-ae66-539b50569919/",
+      "url": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "durationSeconds": 2.4,
+      "cues": [
+        "weapon_shadow_launch",
+        "pull",
+        "contract_depart"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "d70c6c13-bd3c-4d22-9a1d-3ff258e3157f",
+      "title": "Magic, Spell, Cold, Synth Whoosh Windy",
+      "label": "Passagem etérea",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f/",
+      "url": "audio/epidemic/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f.mp3?v=polish2",
+      "durationSeconds": 2.88,
+      "cues": [
+        "flux_whisper",
+        "sleep",
+        "magic"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "0dca976d-cdd3-4e79-9750-6db63ea15149",
+      "title": "Paper, Rip, Letter Paper Tear",
+      "label": "Contrato — rasgo",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/0dca976d-cdd3-4e79-9750-6db63ea15149/",
+      "url": "audio/epidemic/0dca976d-cdd3-4e79-9750-6db63ea15149.mp3",
+      "durationSeconds": 0.75,
+      "cues": [
+        "contract_tear",
+        "pack_clasp"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "8370f7a5-9ccb-4952-9a61-07a36d190e9a",
+      "title": "Fire, Misc, Fuse, Stop, Burn Out, Bomb, Dynamite 03",
+      "label": "Pavio — término",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/8370f7a5-9ccb-4952-9a61-07a36d190e9a/",
+      "url": "audio/epidemic/8370f7a5-9ccb-4952-9a61-07a36d190e9a.mp3",
+      "durationSeconds": 2.2,
+      "cues": [
+        "fuse"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "94473817-86d4-47b8-8f63-e00cbdd904e3",
+      "title": "Explosions, Misc, Bomb, Explosion, Small, Bang, Detonation 04",
+      "label": "Pavio — explosão",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/94473817-86d4-47b8-8f63-e00cbdd904e3/",
+      "url": "audio/epidemic/94473817-86d4-47b8-8f63-e00cbdd904e3.mp3",
+      "durationSeconds": 2.34,
+      "cues": [
+        "timeout",
+        "pack_burst"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "640ead81-4a79-4410-8418-2f24da03618e",
+      "title": "Fire, Burning, Flame, Large Burst 01",
+      "label": "Forja — lufada quente",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/640ead81-4a79-4410-8418-2f24da03618e/",
+      "url": "audio/epidemic/640ead81-4a79-4410-8418-2f24da03618e.mp3?v=polish2",
+      "durationSeconds": 4.67,
+      "cues": [
+        "forge_landing",
+        "weapon_heavy_launch"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "9ed7d117-d9b6-4f19-9eae-0c7b886915cf",
+      "title": "Weapons, Knife, Dagger, Throwing Knife, Shuriken, Impact Wood 02",
+      "label": "Faca — impacto na madeira",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/9ed7d117-d9b6-4f19-9eae-0c7b886915cf/",
+      "url": "audio/epidemic/9ed7d117-d9b6-4f19-9eae-0c7b886915cf.mp3",
+      "durationSeconds": 2.4,
+      "cues": [
+        "contract_impact",
+        "weapon_dagger_land"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "3dd82305-16f8-4c67-ae81-ce8ee11cffdb",
+      "title": "Guns, Pistol, Designed, Fire, Single Shot, Short",
+      "label": "Disparo — captura",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/3dd82305-16f8-4c67-ae81-ce8ee11cffdb/",
+      "url": "audio/epidemic/3dd82305-16f8-4c67-ae81-ce8ee11cffdb.mp3",
+      "durationSeconds": 1.725,
+      "cues": [
+        "gun",
+        "capture"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "48009f31-710a-412a-a710-34d77f81348f",
+      "title": "Designed, Stinger, Hit, Tribal, Drums, Deep, Suspense",
+      "label": "Ruptura — percussão grave",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/48009f31-710a-412a-a710-34d77f81348f/",
+      "url": "audio/epidemic/48009f31-710a-412a-a710-34d77f81348f.mp3",
+      "durationSeconds": 4.8,
+      "cues": [
+        "tribal"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "357a5b7d-db8a-453a-a77a-29029963371b",
+      "title": "Fire, Burning, Burning Wood, Bonfire, Crispy, Soft Intensity, Loop",
+      "label": "Pavio — crepitação suave",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/357a5b7d-db8a-453a-a77a-29029963371b/",
+      "url": "audio/epidemic/357a5b7d-db8a-453a-a77a-29029963371b.mp3?v=polish2",
+      "durationSeconds": 10,
+      "cues": [
+        "fuse"
+      ],
+      "previewVolume": 0.4,
+      "integrated": true
+    },
+    {
+      "id": "9f1a15a8-6a87-4681-a423-b75f0cc4f125",
+      "title": "Fight, Impact, Punch, Body",
+      "label": "Impacto corporal — leve",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/9f1a15a8-6a87-4681-a423-b75f0cc4f125/",
+      "url": "audio/epidemic/9f1a15a8-6a87-4681-a423-b75f0cc4f125.mp3?v=polish2",
+      "durationSeconds": 0.78,
+      "cues": [
+        "impactLow"
+      ],
+      "previewVolume": 0.5,
+      "integrated": true
+    },
+    {
+      "id": "84ce305d-716c-4804-bc04-1912f1a17671",
+      "title": "Fight, Impact, Punch, Fat, Only Impact x5 03",
+      "label": "Impacto corporal — robusto",
+      "kind": "sfx",
+      "role": "effects",
+      "sourceUrl": "https://www.epidemicsound.com/pt/sound-effects/tracks/84ce305d-716c-4804-bc04-1912f1a17671/",
+      "url": "audio/epidemic/84ce305d-716c-4804-bc04-1912f1a17671.mp3?v=polish2",
+      "durationSeconds": 0.9,
+      "cues": [
+        "impactHeavy",
+        "impactMedium"
+      ],
+      "previewVolume": 0.5,
+      "integrated": true
+    }
+  ],
+  "remainingOriginalCues": []
+}

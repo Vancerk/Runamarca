@@ -1,0 +1,212 @@
+{
+  "updatedAt": "2026-10-17",
+  "purpose": "Curadoria de trilhas do Epidemic Sound para RunaMarca",
+  "status": "Arquivos oficiais baixados e integrados localmente; verificar cobertura para publicação em jogo.",
+  "openingBrief": {
+    "description": "Abertura de taverna com entrada suave em registro grave, contrabaixo ou cordas graves; evitar ataques agressivos e melodias agudas competindo com os diálogos dos Patronos.",
+    "alternatingTracks": 3,
+    "sharedBetweenPlayers": true,
+    "avoidImmediateRepeat": true,
+    "musicVolumeRange": [
+      0.15,
+      0.2
+    ],
+    "duckUnderDialogue": true,
+    "humanAuditionRequired": true
+  },
+  "selections": [
+    {
+      "title": "Beneath the Old Moon",
+      "artist": "Adriel Fair",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/e4a0dbb4-e38c-4252-a90a-6b0257e47513/",
+      "role": "mesa",
+      "roleConfirmedByUser": true,
+      "userFeedback": "Boa como música de fundo da mesa, em vez de introdução.",
+      "downloaded": true,
+      "integrated": true,
+      "id": "e4a0dbb4-e38c-4252-a90a-6b0257e47513",
+      "localFile": "audio/epidemic/e4a0dbb4-e38c-4252-a90a-6b0257e47513.mp3"
+    },
+    {
+      "title": "Castle Festivities",
+      "artist": "Bonnie Grace",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/b87eba35-32aa-4be3-95e8-adf3f49deb19/",
+      "role": "reserva-animada",
+      "roleConfirmedByUser": false,
+      "excludedFromOpening": true,
+      "userFeedback": "Mais agressiva; não apropriada para a abertura desejada.",
+      "selectionNote": "Conservar como alternativa animada. Momento exato da partida ainda não definido pelo usuário.",
+      "downloaded": true,
+      "integrated": false,
+      "id": "b87eba35-32aa-4be3-95e8-adf3f49deb19",
+      "localFile": "audio/epidemic/b87eba35-32aa-4be3-95e8-adf3f49deb19.mp3"
+    },
+    {
+      "title": "Jig on the Brig",
+      "artist": "Olof Kennemark",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/da973b10-79ef-4bae-851d-23d0a224d2e7/",
+      "role": "final-tenso",
+      "roleConfirmedByUser": true,
+      "userFeedback": "Pode tocar no final do jogo, quando fica mais tenso.",
+      "downloaded": true,
+      "integrated": true,
+      "id": "da973b10-79ef-4bae-851d-23d0a224d2e7",
+      "localFile": "audio/epidemic/da973b10-79ef-4bae-851d-23d0a224d2e7.mp3"
+    }
+  ],
+  "openingCandidates": [
+    "af7acf9a-0bec-4062-af06-522c9fd0b726",
+    "0730cf9a-021b-3097-aec0-4eb369a7759d",
+    "9bf28dd8-30a3-3255-87a9-9b0ef54dd64e"
+  ],
+  "newUserCandidates": [
+    {
+      "id": "af7acf9a-0bec-4062-af06-522c9fd0b726",
+      "title": "My Soul Delights",
+      "artist": "Bonnie Grace",
+      "durationSeconds": 212,
+      "bpm": null,
+      "genres": [
+        "Solos de guitarra/violão"
+      ],
+      "moods": [
+        "Esperança",
+        "Agitação"
+      ],
+      "proposedRole": "opening",
+      "note": "Introdução alternativa, conforme seleção do usuário. Confirmar os primeiros segundos junto às falas.",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/af7acf9a-0bec-4062-af06-522c9fd0b726/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "source": "Página oficial: nome, artista, duração, gênero e clima; audição do usuário",
+      "integrated": true,
+      "localFile": "audio/epidemic/af7acf9a-0bec-4062-af06-522c9fd0b726.mp3"
+    },
+    {
+      "id": "0730cf9a-021b-3097-aec0-4eb369a7759d",
+      "title": "Highland Hymn",
+      "artist": "Bonnie Grace",
+      "durationSeconds": 188,
+      "bpm": null,
+      "genres": [
+        "Medieval",
+        "Renaissance",
+        "Aventura",
+        "Irlanda",
+        "Escócia"
+      ],
+      "moods": [
+        "Épico",
+        "Esperança"
+      ],
+      "proposedRole": "opening",
+      "note": "Introdução solene; testar se o trecho inicial deixa espaço para a dublagem.",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/0730cf9a-021b-3097-aec0-4eb369a7759d/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "source": "Página oficial: nome, artista, duração, gênero e clima; audição do usuário",
+      "integrated": true,
+      "localFile": "audio/epidemic/0730cf9a-021b-3097-aec0-4eb369a7759d.mp3"
+    },
+    {
+      "id": "9bf28dd8-30a3-3255-87a9-9b0ef54dd64e",
+      "title": "Tudor",
+      "artist": "Bonnie Grace",
+      "durationSeconds": 147,
+      "bpm": 110,
+      "genres": [
+        "Medieval",
+        "Renaissance",
+        "Aventura"
+      ],
+      "moods": [
+        "Relaxante",
+        "Esperança"
+      ],
+      "proposedRole": "opening",
+      "note": "Primeira candidata para abertura tranquila, pela seleção do usuário e pelo clima cadastrado.",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/9bf28dd8-30a3-3255-87a9-9b0ef54dd64e/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "source": "Página oficial: nome, artista, duração, gênero e clima; audição do usuário",
+      "integrated": true,
+      "localFile": "audio/epidemic/9bf28dd8-30a3-3255-87a9-9b0ef54dd64e.mp3"
+    },
+    {
+      "id": "5f16b3e0-e1f7-3ef2-93a0-7ae978160799",
+      "title": "Opa Opa",
+      "artist": "Nathan Welch",
+      "durationSeconds": 110,
+      "bpm": 92,
+      "genres": [
+        "Grécia",
+        "Acústico"
+      ],
+      "moods": [
+        "Mistério",
+        "Sentimental"
+      ],
+      "proposedRole": "table",
+      "note": "Mesa em ritmo moderado, com curiosidade. Não classificada como clímax.",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/5f16b3e0-e1f7-3ef2-93a0-7ae978160799/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "source": "Página oficial: nome, artista, duração, gênero e clima; audição do usuário",
+      "integrated": true,
+      "localFile": "audio/epidemic/5f16b3e0-e1f7-3ef2-93a0-7ae978160799.mp3"
+    },
+    {
+      "id": "024a4b03-3abc-3b30-a3d8-d069453312b9",
+      "title": "A Call From the Wild",
+      "artist": "Rune Dale",
+      "durationSeconds": 136,
+      "bpm": 99,
+      "genres": [
+        "Acústico",
+        "Aventura"
+      ],
+      "moods": [
+        "Mistério",
+        "Agitação"
+      ],
+      "proposedRole": "tension",
+      "note": "Candidata para tensão intermediária; associação provisória baseada nos metadados.",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/024a4b03-3abc-3b30-a3d8-d069453312b9/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "source": "Página oficial: nome, artista, duração, gênero e clima; audição do usuário",
+      "integrated": true,
+      "localFile": "audio/epidemic/024a4b03-3abc-3b30-a3d8-d069453312b9.mp3"
+    },
+    {
+      "id": "569e335c-84c8-4247-8aea-21e9e6a7dc5e",
+      "title": "Well I Just Don't Care",
+      "artist": "Stationary Sign",
+      "durationSeconds": 138,
+      "bpm": 126,
+      "genres": [
+        "Comédia",
+        "Desenhos animados"
+      ],
+      "moods": [
+        "Divertido",
+        "Peculiar"
+      ],
+      "proposedRole": "table-playful",
+      "note": "Alternativa de mesa descontraída. O andamento rápido não a torna tensa ou épica.",
+      "url": "https://www.epidemicsound.com/pt/music/tracks/569e335c-84c8-4247-8aea-21e9e6a7dc5e/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "source": "Página oficial: nome, artista, duração, gênero e clima; audição do usuário",
+      "integrated": true,
+      "localFile": "audio/epidemic/569e335c-84c8-4247-8aea-21e9e6a7dc5e.mp3"
+    }
+  ],
+  "withdrawnRotation": "Ale and Anecdotes e as amostras Medieval enviadas anteriormente; arquivos preservados.",
+  "remainingAmbience": "crowded-tavern, volume 7%",
+  "licensing": {
+    "status": "Confirmar cobertura para uso dentro do jogo antes de distribuir os arquivos. Conta observada como Free; teste não ativado pelo assistente.",
+    "source": "https://www.epidemicsound.com/our-plans/business-plan/",
+    "note": "Página específica atual menciona jogos no Business Plus; outra página oficial ainda menciona Business. Confirmar condições vigentes com suporte."
+  }
+}

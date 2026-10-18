@@ -1,15 +1,17 @@
 // Avisos públicos independentes de áudio e da fila de animações.
 const spokenEvents=new Set(),shownSpeechEvents=new Set();let speechSession='',forceClock=null,retaliationSession='';const retaliationCounts=new Map();
 function queueSpeech(){
+ if(!state||['lobby','finished'].includes(state.phase))return;
  const key=state?[state.code,state.matchId||'lobby'].join(':'):'';if(key!==speechSession){spokenEvents.clear();shownSpeechEvents.clear();speechSession=key;document.querySelectorAll('.live-speech').forEach(n=>n.remove());}
  for(const event of state?.events||[])if(['creature','summon'].includes(event.type)&&Date.now()-serverClockOffset-event.at<8000&&!spokenEvents.has(event.id)){
   spokenEvents.add(event.id);const generation=visualGeneration;setTimeout(()=>{if(generation===visualGeneration)speechBubble(event);},1050);
  }
 }
 function speechBubble(event){
+ if(!state||['lobby','finished'].includes(state.phase))return;
  if(shownSpeechEvents.has(event.id))return;
  const anchor=()=>[...document.querySelectorAll('#game .card')].find(n=>n.dataset.uid===event.cardId&&n.getBoundingClientRect().width>0);
- if(!anchor())return;shownSpeechEvents.add(event.id);const box=document.createElement('div');box.className='speech-bubble live-speech';box.textContent=event.speech||'Estou a postos!';box.dataset.eventId=event.id;document.body.append(box);
+ if(!anchor())return;shownSpeechEvents.add(event.id);const creature=(state.players||[]).flatMap(p=>[...(p.reserve||[]),...(p.discard||[])]).find(c=>c.uid===event.cardId);globalThis.RunaCreatureEntrances?.play({card:creature,key:[state.code,state.matchId,event.cardId].join(':'),context:audioContext,to:anchor(),valid:()=>Boolean(state&&!['lobby','finished'].includes(state.phase))});const box=document.createElement('div');box.className='speech-bubble live-speech';box.textContent=globalThis.RunaCreatureEntrances?.text(creature,event.speech||'Estou a postos!')||event.speech||'Estou a postos!';box.dataset.eventId=event.id;document.body.append(box);
  const start=performance.now();const follow=now=>{const card=anchor();if(!card||now-start>3600||!box.isConnected){box.remove();return;}const r=card.getBoundingClientRect();box.style.left=Math.max(box.offsetWidth/2+8,Math.min(innerWidth-box.offsetWidth/2-8,r.left+r.width/2))+'px';box.style.top=Math.max(box.offsetHeight+12,r.top-10)+'px';requestAnimationFrame(follow);};requestAnimationFrame(follow);
 }
 function renderForceWindow(){
@@ -51,6 +53,8 @@ async function choosePatronPower(power){
  if(forgingClickBusy||commandBusy)return;
  if(typeof hidePatronPowerZoom==='function')hidePatronPowerZoom();
  if(['forjar-armadura','forjar-arma'].includes(power.id)){forgingClickBusy=true;try{await playForgeHammer(self.id,power.id,{localClick:true,onImpact:()=>{if(state?.phase!=='prep'||state.turn!==self.id||state.spectator||clickSession!==[state.code,state.matchId,state.round,state.turn].join(':'))return;if(power.id==='forjar-arma')showForgePicker('cost',null,power);else void command({type:'patronPower',powerId:power.id});}});}finally{forgingClickBusy=false;}return;}
+ if(power.id==='estudos-avancados'){showStudyPower(power);return;}
+ if(power.id==='sumario-ecoante'){command({type:'patronPower',powerId:power.id});return;}
  if(power.id==='forjar-arma'){showForgePicker('cost',null,power);return;}
  if(power.id==='forjar-armadura'){command({type:'patronPower',powerId:power.id});return;}
  showTargetPicker(power,self.reserve.filter(c=>c.damage<c.health).map(c=>c.uid),targetId=>{

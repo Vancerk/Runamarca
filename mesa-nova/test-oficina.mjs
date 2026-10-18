@@ -67,7 +67,7 @@ console.log('Oficina de Lyrik: composição, artes, Iniciativa, Transpassar, Pro
  const {room,a,b}=setup();room.phase='prep';const target=card('FL09',b),source=card('FL01',a,{attack:4});b.reserve.push(target);a.reserve.push(source);a.hand.push(card('FL15',a));assert.throws(()=>act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'direct',targetId:target.uid},catalog),/controla/);assert.equal(a.mana,10);act(room,a,{type:'play',cardId:a.hand[0].uid,mode:'direct',sourceId:source.uid,targetId:target.uid},catalog);assert.equal(target.damage,4);assert.equal(source.damage,0);assert.equal(a.mana,8);assert.equal(room.events.find(e=>e.type==='spell').healthUpdates[0].hp,6);assert.equal(room.events.find(e=>e.type==='spell').sourceId,source.uid);
 }
 console.log('Forja revisado: 30 cartas, custos/atributos, redução permanente, sigilo, Emanação imune a área e dano direto aprovados.');
-for(const [subtype,lane,expectedAttack,expectedHp] of [['axiom',0,3,3],['axiom Sintético',0,3,3],['humano',0,2,3],['axiom',1,2,2]]){
+for(const [subtype,lane,expectedAttack,expectedHp] of [['axiom',1,3,3],['axiom Sintético',1,3,3],['humano',1,2,3],['axiom',0,2,2]]){
  const {room,a}=setup(),engineer=card('FL17',a);a.reserve.push(engineer);a.emanation=[engineer.uid];place(a,card('FL01',a,{effects:[],subtype}),lane);resolveCombat(room);const preview=room.preClash[lane].cards[0];assert.equal(preview.attack,expectedAttack);assert.equal(preview.health,expectedHp);
 }
 for(const mode of ['direct','lane']){

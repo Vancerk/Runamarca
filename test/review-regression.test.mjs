@@ -19,12 +19,12 @@ test('Uma conexão temporária preserva a vaga; token inválido e sala inexisten
 });
 function visualContext(){
  const node={dataset:{uid:'card'},classList:{remove(){}},remove(){},style:{visibility:'hidden'}};
- const ctx={state:{code:'AUD123',you:'me',matchId:'new',eventId:12,eventsFrom:1,events:[{id:11,type:'coin'},{id:12,type:'opening'}]},visualMatchKey:'AUD123:me:lobby',visualBooted:true,lastVisualId:10,lastBattleStep:'',visualGeneration:0,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:['card'],movingCards:new Set(['card']),deadVisuals:new Map(),displayedAttack:new Map(),pendingAttack:new Map(),displayedHealth:new Map(),pendingHealth:new Map(),displayedPatronHealth:new Map(),pendingPatronHealth:new Map(),spellTargetRects:new Map(),mulliganDepartures:new Map(),$:()=>({replaceChildren(){}}),document:{querySelectorAll:()=>[node]},setTimeout(){},serverClockOffset:0,played:[],Date,animateEvent:async e=>{ctx.played.push(e.type);}};
+ const ctx={state:{code:'AUD123',you:'me',matchId:'new',eventId:12,eventsFrom:1,events:[{id:11,type:'coin'},{id:12,type:'opening'}]},visualMatchKey:'AUD123:me:lobby',visualBooted:true,lastVisualId:10,lastBattleStep:'',visualGeneration:0,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:['card'],movingCards:new Set(['card']),deadVisuals:new Map(),displayedAttack:new Map(),pendingAttack:new Map(),displayedHealth:new Map(),pendingHealth:new Map(),displayedPatronHealth:new Map(),pendingPatronHealth:new Map(),spellTargetRects:new Map(),mulliganDepartures:new Map(),$:()=>({replaceChildren(){}}),document:{querySelectorAll:()=>[node]},setTimeout(){},serverClockOffset:0,cleared:false,clearTableEffects(){ctx.cleared=true;},played:[],Date,animateEvent:async e=>{ctx.played.push(e.type);}};
  vm.createContext(ctx);vm.runInContext(damagePresentation,ctx);vm.runInContext(section(app,'function resetVisualSession()','function tickCombat()'),ctx);return {ctx,node};
 }
 test('Abertura de uma partida nova cancela efeitos antigos e ainda reproduz a moeda e a mão inicial',async()=>{
  const {ctx}=visualContext();ctx.resetVisualSession();ctx.queueEvents();await ctx.visualQueue;
- assert.deepEqual(ctx.played,['coin','opening']);assert.equal(ctx.visualGeneration,1);assert.equal(ctx.lastVisualId,12);assert.equal(ctx.movingCards.size,0);
+ assert.equal(ctx.cleared,true);assert.deepEqual(ctx.played,['coin','opening']);assert.equal(ctx.visualGeneration,1);assert.equal(ctx.lastVisualId,12);assert.equal(ctx.movingCards.size,0);
 });
 test('Lacuna de eventos cancela a fila antiga e recupera a visibilidade de cartas',()=>{
  const {ctx,node}=visualContext();ctx.state.eventsFrom=120;ctx.state.eventId=130;ctx.state.events=[];ctx.recoverVisualGap();

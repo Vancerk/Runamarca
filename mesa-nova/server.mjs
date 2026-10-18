@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {enableMusicClock,stopMusicClock} from './music-director.mjs';
 import {createAccessSessions} from './access-session.mjs';
 import {waitRevision} from './wait-revision.mjs';
 import {registerGame,bindParticipant,assertUniqueAccount,verifyParticipant,persistMatch,normalizeWager} from '../accounts.mjs';
@@ -48,7 +49,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.',code:'ACCESS_REQUIRED'});
     }
     if(routePath==='/api/create'&&req.method==='POST'){
-      const data=await payload(req);let id;do{id=code();}while(rooms.has(id));const room=makeRoom(id,data.name,data.role==='spectator'?'spectator':'player');room.stake=normalizeWager(data.stake);room.onChange=()=>{scheduleBot(room);void persistMatch(room,'runamarca');};const p=room.players[0]||room.spectators[0];await bindParticipant(req,room,p);rooms.set(id,room);return json(res,200,{code:id,token:p.token,state:view(room,p)});
+      const data=await payload(req);let id;do{id=code();}while(rooms.has(id));const room=makeRoom(id,data.name,data.role==='spectator'?'spectator':'player');room.stake=normalizeWager(data.stake);room.onChange=()=>{scheduleBot(room);void persistMatch(room,'runamarca');};const p=room.players[0]||room.spectators[0];await bindParticipant(req,room,p);rooms.set(id,room);enableMusicClock(room);return json(res,200,{code:id,token:p.token,state:view(room,p)});
     }
     const route=routePath.match(/^\/api\/rooms\/([A-F0-9]{6})\/(join|state|act)$/);
     if(route){const room=rooms.get(route[1]);if(!room)throw Object.assign(Error('Sala não encontrada.'),{code:'ROOM_NOT_FOUND'});const operation=route[2];
@@ -59,7 +60,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
         if(url.searchParams.has('revision')&&Number(url.searchParams.get('revision'))===room.revision){res.writeHead(204,{'Cache-Control':'no-store'});return res.end();}
         return json(res,200,view(room,p));
       }
-      if(operation==='act'&&req.method==='POST'){const data=await payload(req);await persistMatch(room,'runamarca');act(room,p,data,catalog);await persistMatch(room,'runamarca');scheduleBot(room);if(data.type==='leave'){if(!room.spectators.length&&room.players.every(x=>x.bot)){clearTimeout(room.botTimer);rooms.delete(room.code);}return json(res,200,{left:true});}return json(res,200,view(room,p));}
+      if(operation==='act'&&req.method==='POST'){const data=await payload(req);await persistMatch(room,'runamarca');act(room,p,data,catalog);await persistMatch(room,'runamarca');scheduleBot(room);if(data.type==='leave'){if(!room.spectators.length&&room.players.every(x=>x.bot)){clearTimeout(room.botTimer);stopMusicClock(room);rooms.delete(room.code);}return json(res,200,{left:true});}return json(res,200,view(room,p));}
       return json(res,405,{error:'Método inválido.'});
     }
     if(req.method!=='GET')return json(res,405,{error:'Método inválido.'});

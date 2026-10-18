@@ -1,0 +1,72 @@
+{
+  "title": "RunaMarca — Coleção de cartas",
+  "artifactRef": "artifact_55ryeTtMM1YX3AEgFXTyaIZ2UDhPX7Q0",
+  "artifactType": "spreadsheet",
+  "updatedAt": "2026-10-17",
+  "storage": "google-sheets",
+  "url": "https://docs.google.com/spreadsheets/d/1MYbQvo_NYjzfGKC_lIWIFXGGcu_H63zCbi8NIz405p4/edit",
+  "spreadsheetId": "1MYbQvo_NYjzfGKC_lIWIFXGGcu_H63zCbi8NIz405p4",
+  "googleSheetIds": {
+    "Cartas": 476260716,
+    "Habilidades": 1472346150,
+    "Forja Padrão": 1369974796,
+    "Forja Variante": 1990300808,
+    "Fluxo Padrão": 2001691064,
+    "Ruptura Padrão": 1992428761
+  },
+  "style": {
+    "bodyText": "#000000",
+    "headerBackground": "#000000",
+    "headerText": "#FFFFFF",
+    "alternatingRows": [
+      "#FFFFFF",
+      "#D9D9D9"
+    ],
+    "categoriesIdentifiedByText": true,
+    "energyColors": {
+      "Forja": {
+        "background": "#FFCC66",
+        "text": "#000000"
+      },
+      "Fluxo": {
+        "background": "#005A9C",
+        "text": "#FFFFFF"
+      },
+      "Ruptura": {
+        "background": "#8B1E3F",
+        "text": "#FFFFFF"
+      }
+    }
+  },
+  "pageId": null,
+  "cloudCreationStatus": "failed: invalid_page_schema",
+  "cloudCreationIdempotencyKey": "1b5469ae-fae9-42db-887e-e1374e721f64",
+  "sheets": [
+    "Cartas",
+    "Forja Padrão",
+    "Ruptura Padrão",
+    "Fluxo Padrão",
+    "Forja Variante",
+    "Habilidades"
+  ],
+  "records": {
+    "cardsAndPatrons": 88,
+    "patronAbilities": 7
+  },
+  "sources": [
+    "mesa-nova/cartas.json",
+    "mesa-nova/weapons-data.js",
+    "mesa-nova/fluxo-studies.mjs",
+    "mesa-nova/ruptura-effects.mjs",
+    "mesa-nova/forja-effects.mjs"
+  ],
+  "updatePolicy": "A planilha Google indicada em url é o documento principal compartilhado, fornecido pelo usuário. Nas próximas atualizações solicitadas, atualizar esse mesmo documento. Ler o estado online antes de escrever. Usar ID na coluna Q de Cartas e ID na coluna H de Habilidades para conciliar linhas e preservar alterações manuais. Preservar as cores correspondentes às energias com texto contrastante e rótulos. As quatro abas de decks derivam de Cartas: atualizar a fonte, sem substituir os resultados das fórmulas. Não criar outra cópia por padrão. O artifactRef é a versão interativa anterior, não a fonte principal.",
+  "automaticSync": false,
+  "deckViews": {
+    "Forja Padrão": "M",
+    "Fluxo Padrão": "N",
+    "Ruptura Padrão": "O",
+    "Forja Variante": "P"
+  },
+  "deckViewsSync": "QUERY vinculada à aba Cartas; exclui Patronos do total de 30. Atualização online da coleção ainda é feita quando solicitada."
+}

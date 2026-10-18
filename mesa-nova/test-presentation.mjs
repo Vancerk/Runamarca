@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 const source=fs.readFileSync(new URL('./app.js',import.meta.url),'utf8'),feedback=fs.readFileSync(new URL('./table-feedback.js',import.meta.url),'utf8');
 function fn(name){const start=source.indexOf('function '+name+'(');assert.ok(start>=0);const end=source.indexOf('\n',start);return source.slice(start,end);}
 const nodes=[],cards=new Map(),frames=[];let rect={left:200,top:300,width:100,height:140};
-const context=vm.createContext({innerWidth:1000,innerHeight:800,seat:()=>({id:'a'}),tableCard:uid=>cards.get(uid),spellTargetRects:new Map(),performance:{now:()=>0},requestAnimationFrame:cb=>frames.push(cb),document:{querySelectorAll:()=>[...cards.values()],body:{append:n=>{n.isConnected=true;nodes.push(n);}},createElement:()=>({style:{},dataset:{},offsetWidth:100,offsetHeight:40,remove(){this.isConnected=false;}})}});
+const context=vm.createContext({state:{phase:"prep"},innerWidth:1000,innerHeight:800,seat:()=>({id:'a'}),tableCard:uid=>cards.get(uid),spellTargetRects:new Map(),performance:{now:()=>0},requestAnimationFrame:cb=>frames.push(cb),document:{querySelectorAll:()=>[...cards.values()],body:{append:n=>{n.isConnected=true;nodes.push(n);}},createElement:()=>({style:{},dataset:{},offsetWidth:100,offsetHeight:40,remove(){this.isConnected=false;}})}});
 const speech=feedback.slice(feedback.indexOf('function speechBubble('),feedback.indexOf('function renderForceWindow('));
 vm.runInContext('const shownSpeechEvents=new Set();\n'+speech+'\n'+fn('center')+'\n'+fn('spellTarget'),context);
 cards.set('x',{dataset:{uid:'x'},getBoundingClientRect:()=>rect});

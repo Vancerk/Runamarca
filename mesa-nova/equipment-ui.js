@@ -5,7 +5,7 @@ function showForgePicker(stage,cost,power=null){
  dialog.dataset.ownerKey=[state?.code,state?.matchId,state?.round,state?.you].join(':');const mandatory=!power;dialog.dataset.mandatory=String(mandatory);$('close-forge-picker').hidden=mandatory;
  text(content,'small',stage==='cost'?'ETAPA 1 DE 3':stage==='durability'?'ETAPA 2 DE 3':'ETAPA 3 DE 3','forge-step-label');
  text(content,'h2',stage==='cost'?'Escolha o custo da arma':stage==='durability'?'Escolha a estrutura':'Escolha a lâmina');
- text(content,'p',stage==='cost'?'Iniciar custa 4 Éter. A arma ficará pronta na sua terceira preparação.':stage==='durability'?'A escolha de dano acontecerá antes da sua próxima preparação.':'Depois desta escolha, a arma será entregue na sua mão.');
+ text(content,'p',stage==='cost'?`Iniciar custa ${power?.cost??3} Éter. A arma ficará pronta na sua terceira preparação.`:stage==='durability'?'A escolha de dano acontecerá antes da sua próxima preparação.':'Depois desta escolha, a arma será entregue na sua mão.');
  const row=document.createElement('div');row.className='forge-options';
  for(const option of RunaWeapons.options(stage,cost)){
   const choice=document.createElement('button');choice.type='button';choice.className='forge-choice';const image=document.createElement('img');image.src=RunaWeapons.imageForCost(stage==='cost'?Number(option.id):cost);image.alt='';choice.append(image);text(choice,'strong',option.name);text(choice,'span',option.text);
@@ -35,7 +35,7 @@ function addEquipmentVisual(node,card){
   for(const [value,x,y,klass] of [['+'+card.attack,83.3,1172,'weapon-attack'],[card.durability,826,1177.12,'weapon-durability']]){const number=document.createElementNS(ns,'text');number.setAttribute('x',x);number.setAttribute('y',y);number.setAttribute('text-anchor','middle');number.setAttribute('dominant-baseline','central');number.setAttribute('class',klass);number.textContent=String(value);stats.append(number);}
   node.dataset.maxDurability=card.maxDurability;node.append(stats);updateWeaponCrack(node,card.durability,card.maxDurability);node.onclick=()=>chooseEquipment(card);
  }
- if(card.equipment){const weapon=card.equipment,chip=document.createElement('span');chip.className='equipped-weapon';chip.dataset.weaponId=weapon.uid;chip.dataset.maxDurability=weapon.maxDurability;chip.setAttribute('aria-label',weapon.name+' · '+weapon.durability+' de durabilidade');const image=document.createElement('img');image.src=RunaWeapons.imageForCost(weapon.cost)||weapon.image;image.alt='';chip.append(image);text(chip,'b','+'+weapon.attack,'weapon-bonus');text(chip,'b',String(weapon.durability),'weapon-durability');chip.onmouseenter=e=>{e.stopPropagation();showHover(weapon,e);};chip.onmousemove=e=>{e.stopPropagation();moveHover(e);};chip.onmouseleave=e=>{e.stopPropagation();hideHover();};chip.onclick=e=>{e.stopPropagation();showCard(weapon);};node.append(chip);updateWeaponCrack(chip,weapon.durability,weapon.maxDurability);}
+ if(card.equipment){const weapon=card.equipment,chip=typeof RunaWeaponPresentation!=='undefined'?RunaWeaponPresentation.token(weapon):document.createElement('span');if(typeof RunaWeaponPresentation==='undefined')chip.className='equipped-weapon';chip.dataset.weaponId=weapon.uid;chip.dataset.maxDurability=weapon.maxDurability;chip.setAttribute('aria-label',weapon.name+' · '+weapon.durability+' de durabilidade');const image=document.createElement('img');image.src=RunaWeapons.imageForCost(weapon.cost)||weapon.image;image.alt='';if(typeof RunaWeaponPresentation==='undefined'){chip.append(image);text(chip,'b','+'+weapon.attack,'weapon-bonus');text(chip,'b',String(weapon.durability),'weapon-durability');}chip.onpointerdown=e=>e.stopPropagation();chip.onmouseenter=e=>{e.stopPropagation();showHover(weapon,e);};chip.onmousemove=e=>{e.stopPropagation();moveHover(e);};chip.onmouseleave=e=>{e.stopPropagation();hideHover();};chip.onclick=e=>{e.stopPropagation();showCard(weapon);};chip.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();showCard(weapon);}};node.append(chip);updateWeaponCrack(chip,weapon.durability,weapon.maxDurability);}
 }
 function renderWeapons(){
  for(const [side,p] of [['self',seat()],['opponent',rival()]]){const reserve=$(side+'-reserve');if(!reserve||!p)continue;const weapons=p.weapons||[];if(!weapons.length)continue;const row=document.createElement('div');row.className='weapons-row';row.setAttribute('aria-label','Equipamentos na reserva');for(const weapon of weapons){const node=cardEl(weapon,{mini:true});row.append(node);}reserve.append(row);}
@@ -43,9 +43,22 @@ function renderWeapons(){
 function applyEquipmentUpdates(updates=[]){
  for(const update of updates)for(const node of document.querySelectorAll('.equipped-weapon, .equipment-card'))if((node.dataset.weaponId||node.dataset.uid)===update.cardId){if(update.broken){breakWeaponVisual(node);}else{const n=node.querySelector('.weapon-durability');if(n)n.textContent=String(update.durability);updateWeaponCrack(node,update.durability,Number(node.dataset.maxDurability));}}
 }
+const armorHeat=new Map();let armorHeatSession='';
 function updatePatronExtraLife(owner,value){
+ const session=[state?.code,state?.matchId].join(':');if(session!==armorHeatSession){armorHeat.clear();armorHeatSession=session;}
+ const previous=armorHeat.get(owner),now=performance.now();
+ const start=previous&&value>previous.value?now:previous?.start||0;
+ armorHeat.set(owner,{value,start});
+ if(previous&&value>previous.value&&typeof RunaTableAudio!=='undefined'&&typeof audioContext!=='undefined')RunaTableAudio.effect(audioContext,'armor');
  const head=$(owner===seat()?.id?'self-head':'opponent-head'),avatar=head?.querySelector('.patron-avatar');if(!avatar)return;
  let badge=avatar.querySelector('.patron-extra-life');if(!value){badge?.remove();return;}if(!badge){badge=document.createElement('span');badge.className='patron-extra-life';avatar.append(badge);}badge.textContent=String(value);badge.title='Vida Extra: '+value+' · absorve dano antes da vida normal';badge.setAttribute('aria-label',badge.title);
+ badge.dataset.armor=String(value);
+ if(start&&now-start<1300){
+  badge.classList.add('armor-tempered');badge.getAnimations?.().forEach(a=>a.cancel());
+  badge.animate?.([{filter:'drop-shadow(0 0 2px #ff9b31) brightness(1.3)'},{filter:'drop-shadow(0 0 9px #ffb048) drop-shadow(0 0 3px #ffd99b) brightness(1.9)',offset:.22},{filter:'drop-shadow(0 2px 2px #0008) brightness(1)'}],{duration:1300,delay:-(now-start)});
+  const rim=document.createElement('i');rim.className='armor-hot-rim';rim.setAttribute('aria-hidden','true');badge.append(rim);
+  const elapsed=now-start;rim.animate?.([{opacity:0},{opacity:1,offset:.12},{opacity:.8,offset:.4},{opacity:0}],{duration:1300,delay:-elapsed,fill:'forwards'});
+ }
 }
 $('close-forge-picker').onclick=()=>{$('forge-picker').close();forgeDialogKey='';};
 $('forge-picker').addEventListener('cancel',event=>{if($('forge-picker').dataset.mandatory==='true')event.preventDefault();});

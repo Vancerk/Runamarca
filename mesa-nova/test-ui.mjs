@@ -52,8 +52,8 @@ console.log('OK: zoom de alvos aliados/inimigos, seleção preservada e fonte se
 // The zoom must join the modal top layer, then return to the page outside it.
 {
  const holder={hidden:true,parentElement:null,replaceChildren(){},append(){}},host=()=>({append(el){el.parentElement=this;}}),body=host(),dialog=host();dialog.open=true;
- const preview={hoverUid:null,narrativeTimer:null,clearTimeout(){},keywordGlossary:[],moveHover(){},cardEl:()=>({classList:{add(){}}}),document:{body},$:id=>id==='hover-preview'?holder:dialog};vm.createContext(preview);vm.runInContext(extract('function showHover','function moveHover'),preview);
- preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,dialog);assert.equal(holder.hidden,false);dialog.open=false;preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,body);
+ const preview={activeDrag:null,hideHover(){holder.hidden=true;},hoverUid:null,narrativeTimer:null,clearTimeout(){},keywordGlossary:[],moveHover(){},cardEl:()=>({classList:{add(){}}}),document:{body},$:id=>id==='hover-preview'?holder:dialog};vm.createContext(preview);vm.runInContext(extract('function showHover','function moveHover'),preview);
+ preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,dialog);assert.equal(holder.hidden,false);dialog.open=false;preview.showHover({uid:'ally'},{});assert.equal(holder.parentElement,body);preview.activeDrag=()=>{};preview.showHover({uid:'enemy'},{});assert.equal(holder.hidden,true,'Arraste não permite zoom cobrir carta e sombra');assert.equal(preview.hoverUid,'ally');
 }
 
 // A slingshot winds up against the target direction, touches at the sound cue,

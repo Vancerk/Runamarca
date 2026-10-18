@@ -1,0 +1,954 @@
+{
+  "date": "2026-10-17",
+  "backup": "outputs/audio-backup-20261017/manifest.json",
+  "scope": "Efeitos do RunaMarca; falas gravadas dos Patronos preservadas.",
+  "inventory": [
+    {
+      "source": "table-audio.js",
+      "cues": [
+        "anchor",
+        "armor",
+        "aura",
+        "barrier",
+        "coating",
+        "curse",
+        "fault",
+        "frost",
+        "fundamental",
+        "fuse",
+        "gear",
+        "geometry",
+        "growth",
+        "hammer",
+        "ice",
+        "memory",
+        "mirror",
+        "pierce",
+        "pull",
+        "rally",
+        "silence",
+        "sleep",
+        "speed",
+        "stasis",
+        "study_circle",
+        "study_crystal",
+        "study_page",
+        "taunt",
+        "timeout",
+        "tribal",
+        "turn",
+        "upgrade",
+        "veronica",
+        "volatile",
+        "weapon_dagger_land",
+        "weapon_hammer_land",
+        "weapon_heavy_launch",
+        "weapon_royal_launch",
+        "weapon_shadow_launch",
+        "weapon_sword_land",
+        "yang",
+        "yin"
+      ],
+      "status": "Original preservado. Substituição aguarda seleção auditiva e arquivos oficiais."
+    },
+    {
+      "source": "app.js",
+      "cues": [
+        "impactLow",
+        "impactMedium",
+        "impactHeavy",
+        "grave",
+        "place",
+        "arrow",
+        "gun",
+        "capture",
+        "heal",
+        "burn",
+        "coin",
+        "draw",
+        "magic"
+      ],
+      "status": "Original preservado. Substituição aguarda seleção auditiva e arquivos oficiais."
+    },
+    {
+      "source": "damage-fx.js",
+      "cues": [
+        "wind_cast",
+        "wind_impact",
+        "fulgor_cast",
+        "fulgor_impact",
+        "forge_cast",
+        "forge_impact",
+        "axe_cast",
+        "axe_impact",
+        "shard_cast",
+        "shard_impact",
+        "ember_cast",
+        "ember_impact"
+      ],
+      "status": "Original preservado. Substituição aguarda seleção auditiva e arquivos oficiais."
+    },
+    {
+      "source": "patron-intro.js",
+      "cues": [
+        "forge_pressure",
+        "forge_landing",
+        "flux_whisper",
+        "chain_throw",
+        "chain_land"
+      ],
+      "status": "Original preservado. Substituição aguarda seleção auditiva e arquivos oficiais."
+    },
+    {
+      "source": "pacotes-preview.js",
+      "cues": [
+        "pack_charge",
+        "pack_clasp",
+        "pack_burst",
+        "pack_land",
+        "pack_reveal_bronze",
+        "pack_reveal_silver",
+        "pack_reveal_gold",
+        "pack_reveal_platinum"
+      ],
+      "status": "Original preservado. Substituição aguarda seleção auditiva e arquivos oficiais."
+    },
+    {
+      "source": "contract-opening.js",
+      "cues": [
+        "contract_depart",
+        "contract_paper",
+        "contract_throw",
+        "contract_impact",
+        "contract_tear"
+      ],
+      "status": "Original preservado. Substituição aguarda seleção auditiva e arquivos oficiais."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "93bebe87-65f6-413b-b188-4f97dab42e1e",
+      "title": "Tools, Hand, Hammer, Anvil, Impacts, Blacksmith, Indoors, Close",
+      "cues": [
+        "hammer",
+        "weapon_hammer_land",
+        "forge_landing"
+      ],
+      "mixingIntent": "Separar uma pancada próxima; preservar corpo grave e encurtar o toque agudo.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/93bebe87-65f6-413b-b188-4f97dab42e1e/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Candidato por descrição oficial; não é substituição aprovada por audição.",
+      "label": "Bigorna — impacto próximo",
+      "queueId": "SFX-01",
+      "suggestedFilename": "sfx-01-93bebe87-65f6-413b-b188-4f97dab42e1e.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/93bebe87-65f6-413b-b188-4f97dab42e1e.mp3",
+      "integratedCues": [
+        "hammer"
+      ]
+    },
+    {
+      "id": "a34ceb26-9839-4e8b-b8ae-7275f5c50b1f",
+      "title": "Chains, Movement, Impacts, Chain, Metal, Heavy, Rattle",
+      "cues": [
+        "anchor",
+        "chain_throw",
+        "chain_land"
+      ],
+      "mixingIntent": "Separar lançamento e trava. O contato deve coincidir com cada corrente agarrando a carta.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Candidato por descrição oficial; não é substituição aprovada por audição.",
+      "label": "Correntes pesadas",
+      "queueId": "SFX-02",
+      "suggestedFilename": "sfx-02-a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.mp3",
+      "integratedCues": [
+        "anchor",
+        "chain_throw",
+        "chain_land"
+      ]
+    },
+    {
+      "id": "8658d2ec-5400-4ded-b54b-34b551fab94d",
+      "title": "Objects, Book, Page Turn, Paper, Rustle, Flip, Movement, Soft",
+      "cues": [
+        "study_page",
+        "draw",
+        "contract_paper"
+      ],
+      "mixingIntent": "Ruído curto de página, com volume baixo para não cobrir falas.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/8658d2ec-5400-4ded-b54b-34b551fab94d/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Candidato por descrição oficial; não é substituição aprovada por audição.",
+      "label": "Livro — páginas suaves",
+      "queueId": "SFX-03",
+      "suggestedFilename": "sfx-03-8658d2ec-5400-4ded-b54b-34b551fab94d.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/8658d2ec-5400-4ded-b54b-34b551fab94d.mp3",
+      "integratedCues": [
+        "study_page",
+        "contract_paper"
+      ]
+    },
+    {
+      "id": "394fa979-5757-4f42-bd1c-9747469f75d2",
+      "title": "Clocks, Mechanics, Clockwork, Small Mechanisms",
+      "cues": [
+        "gear",
+        "upgrade"
+      ],
+      "mixingIntent": "Inversor: mecanismo e tique-taque, sem apito eletrônico.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/394fa979-5757-4f42-bd1c-9747469f75d2/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Candidato por descrição oficial; não é substituição aprovada por audição.",
+      "label": "Inversor — relógio",
+      "queueId": "SFX-04",
+      "suggestedFilename": "sfx-04-394fa979-5757-4f42-bd1c-9747469f75d2.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",
+      "integratedCues": [
+        "gear",
+        "upgrade",
+        "veronica"
+      ]
+    },
+    {
+      "id": "7f899191-54bb-400a-84c0-a5a8f91155b7",
+      "title": "Clocks, Mechanics, Medium Clockwork, Mechanic Stop, Spinning",
+      "cues": [
+        "turn",
+        "speed"
+      ],
+      "mixingIntent": "Extrair giro e parada; usar o motor acelerando separadamente na Esteira.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/7f899191-54bb-400a-84c0-a5a8f91155b7/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Candidato por descrição oficial; não é substituição aprovada por audição.",
+      "label": "Engrenagem — giro e parada",
+      "queueId": "SFX-05",
+      "suggestedFilename": "sfx-05-7f899191-54bb-400a-84c0-a5a8f91155b7.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/7f899191-54bb-400a-84c0-a5a8f91155b7.mp3",
+      "integratedCues": [
+        "turn",
+        "speed"
+      ]
+    },
+    {
+      "id": "33c9b0b9-ae26-456c-8073-8c72040ade07",
+      "title": "Magic, Elemental, Ice, Spell, Cast, Attack, Freeze, Video Game, JRPG 02",
+      "cues": [
+        "ice",
+        "frost",
+        "stasis"
+      ],
+      "mixingIntent": "Comparar variantes; evitar brilho agudo excessivo e sincronizar a expansão do gelo.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/33c9b0b9-ae26-456c-8073-8c72040ade07/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Candidato por descrição oficial; não é substituição aprovada por audição.",
+      "label": "Gelo — conjuração",
+      "queueId": "SFX-06",
+      "suggestedFilename": "sfx-06-33c9b0b9-ae26-456c-8073-8c72040ade07.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/33c9b0b9-ae26-456c-8073-8c72040ade07.mp3",
+      "integratedCues": [
+        "ice",
+        "frost",
+        "stasis"
+      ]
+    },
+    {
+      "id": "6a66e10b-f19c-4b51-bc32-156fd6880016",
+      "title": "Magic, Elemental, Aerial Spell, Wind Magic, Cast, Charge 02",
+      "cues": [
+        "barrier",
+        "wind_cast",
+        "sleep"
+      ],
+      "mixingIntent": "Candidato para sopro/viagem, testar duração para cada animação.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/6a66e10b-f19c-4b51-bc32-156fd6880016/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Candidato por descrição oficial; não é substituição aprovada por audição.",
+      "label": "Barreira — vento",
+      "queueId": "SFX-07",
+      "suggestedFilename": "sfx-07-6a66e10b-f19c-4b51-bc32-156fd6880016.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/6a66e10b-f19c-4b51-bc32-156fd6880016.mp3",
+      "integratedCues": [
+        "barrier",
+        "wind_cast",
+        "pack_charge",
+        "wind_impact",
+        "cone_impact"
+      ]
+    },
+    {
+      "id": "9cbefa67-43a8-4f01-bbd5-d05d0c6932c6",
+      "title": "Magic, Angelic, Healing Spell, Buff, Positive, Cast 03",
+      "label": "Cura e fortalecimento",
+      "cues": [
+        "heal",
+        "growth",
+        "yang",
+        "aura"
+      ],
+      "mixingIntent": "Ataque curto e suave; preservar o corpo, reduzir brilho que cubra falas.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-08",
+      "suggestedFilename": "sfx-08-9cbefa67-43a8-4f01-bbd5-d05d0c6932c6.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/9cbefa67-43a8-4f01-bbd5-d05d0c6932c6.mp3",
+      "integratedCues": [
+        "heal",
+        "growth",
+        "yang",
+        "aura"
+      ]
+    },
+    {
+      "id": "5fa1c18e-d272-4111-9f4a-bb27b1b943a9",
+      "title": "Magic, Angelic, Rejuvenation Spell, Holy, Cleanse, Healing",
+      "label": "Purificação",
+      "cues": [
+        "fundamental",
+        "rally"
+      ],
+      "mixingIntent": "Extrair a limpeza do efeito, sem prolongar a preparação.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/5fa1c18e-d272-4111-9f4a-bb27b1b943a9/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-09",
+      "suggestedFilename": "sfx-09-5fa1c18e-d272-4111-9f4a-bb27b1b943a9.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/5fa1c18e-d272-4111-9f4a-bb27b1b943a9.mp3",
+      "integratedCues": [
+        "fundamental",
+        "rally"
+      ]
+    },
+    {
+      "id": "a4548dc8-49ca-4397-9d78-b89ad8901d90",
+      "title": "Magic, Evil, Debuff, Curse, Video Game, JRPG",
+      "label": "Corrupção e redução",
+      "cues": [
+        "curse",
+        "yin",
+        "fault"
+      ],
+      "mixingIntent": "Som de enfraquecimento; testar a cauda junto do dano.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/a4548dc8-49ca-4397-9d78-b89ad8901d90/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-10",
+      "suggestedFilename": "sfx-10-a4548dc8-49ca-4397-9d78-b89ad8901d90.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/a4548dc8-49ca-4397-9d78-b89ad8901d90.mp3",
+      "integratedCues": [
+        "curse",
+        "yin",
+        "fault"
+      ]
+    },
+    {
+      "id": "70d928c4-2fcd-45a2-9967-d7601651ef79",
+      "title": "Magic, Evil, Curse, Bowl, Magic, Reverb",
+      "label": "Silêncio e marca sombria",
+      "cues": [
+        "silence",
+        "taunt"
+      ],
+      "mixingIntent": "Candidato de ressonância para corte abafado; avaliar se não vira toque de sino.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/70d928c4-2fcd-45a2-9967-d7601651ef79/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-11",
+      "suggestedFilename": "sfx-11-70d928c4-2fcd-45a2-9967-d7601651ef79.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/70d928c4-2fcd-45a2-9967-d7601651ef79.mp3",
+      "integratedCues": [
+        "silence",
+        "taunt"
+      ]
+    },
+    {
+      "id": "651caaf9-da78-418b-b9cc-b893c2436e8c",
+      "title": "Magic, Elemental, Fire Magic Spell, Fast, Fireball",
+      "label": "Projétil de fogo",
+      "cues": [
+        "ember_cast",
+        "burn"
+      ],
+      "mixingIntent": "Preservar deslocamento rápido; ataque no lançamento.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/651caaf9-da78-418b-b9cc-b893c2436e8c/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-12",
+      "suggestedFilename": "sfx-12-651caaf9-da78-418b-b9cc-b893c2436e8c.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/651caaf9-da78-418b-b9cc-b893c2436e8c.mp3",
+      "integratedCues": [
+        "ember_cast",
+        "burn"
+      ]
+    },
+    {
+      "id": "feb8546b-4edc-4034-9ef1-a27e0be1b695",
+      "title": "Magic, Elemental, Fire Magic Spell, Fireball, Pyroblast",
+      "label": "Explosão de fogo",
+      "cues": [
+        "ember_impact",
+        "volatile",
+        "fulgor_impact"
+      ],
+      "mixingIntent": "Recortar o impacto e limitar o grave para não esconder a fala.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/feb8546b-4edc-4034-9ef1-a27e0be1b695/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-13",
+      "suggestedFilename": "sfx-13-feb8546b-4edc-4034-9ef1-a27e0be1b695.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/feb8546b-4edc-4034-9ef1-a27e0be1b695.mp3",
+      "integratedCues": [
+        "ember_impact",
+        "volatile",
+        "fulgor_impact"
+      ]
+    },
+    {
+      "id": "2466c6eb-1918-470e-8848-433318347306",
+      "title": "Magic, Elemental, Massive Fire Spell, Cast",
+      "label": "Fogo de grande escala",
+      "cues": [
+        "fulgor_cast",
+        "forge_cast",
+        "forge_pressure"
+      ],
+      "mixingIntent": "Camada de pressão para Forja; evitar volume maior como único sinal de força.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/2466c6eb-1918-470e-8848-433318347306/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-14",
+      "suggestedFilename": "sfx-14-2466c6eb-1918-470e-8848-433318347306.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/2466c6eb-1918-470e-8848-433318347306.mp3",
+      "integratedCues": [
+        "fulgor_cast",
+        "forge_cast",
+        "forge_pressure"
+      ]
+    },
+    {
+      "id": "7b8515b3-adcc-4a36-b81a-e48548f9e11e",
+      "title": "Objects, Coin, Coins, Movement, Handling",
+      "label": "Moedas e éter",
+      "cues": [
+        "coin"
+      ],
+      "mixingIntent": "Usar um gesto curto por acionamento, em volume discreto.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/7b8515b3-adcc-4a36-b81a-e48548f9e11e/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-15",
+      "suggestedFilename": "sfx-15-7b8515b3-adcc-4a36-b81a-e48548f9e11e.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/7b8515b3-adcc-4a36-b81a-e48548f9e11e.mp3",
+      "integratedCues": [
+        "coin"
+      ]
+    },
+    {
+      "id": "375cfb4d-2ba9-4a0d-94b3-e956c806fbb7",
+      "title": "Games, Casino, Shuffling Cards In Hands, Handle, Movement, Deck Of Cards 02",
+      "label": "Manuseio de cartas",
+      "cues": [
+        "place",
+        "draw",
+        "grave"
+      ],
+      "mixingIntent": "Separar contato e deslizamento; não repetir um embaralhamento inteiro.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-16",
+      "suggestedFilename": "sfx-16-375cfb4d-2ba9-4a0d-94b3-e956c806fbb7.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/375cfb4d-2ba9-4a0d-94b3-e956c806fbb7.mp3",
+      "integratedCues": [
+        "draw",
+        "place",
+        "grave"
+      ]
+    },
+    {
+      "id": "94f7ef43-2ca8-4007-9ab5-76572ebba391",
+      "title": "Musical, Stinger, Warped Choir Stingers Sweetener, Shimmering, Cinematic Imaging Element 04",
+      "label": "Coro — camada de Platina Fluxo",
+      "cues": [
+        "platinum_fluxo",
+        "pack_reveal_platinum"
+      ],
+      "mixingIntent": "Camada para entrada musical; não equivale à vinheta completa aprovada. Precisa de crescimento e resolução.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/94f7ef43-2ca8-4007-9ab5-76572ebba391/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-17",
+      "suggestedFilename": "sfx-17-94f7ef43-2ca8-4007-9ab5-76572ebba391.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/94f7ef43-2ca8-4007-9ab5-76572ebba391.mp3",
+      "integratedCues": [
+        "pack_reveal_platinum"
+      ]
+    },
+    {
+      "id": "7c35f032-2c5d-4abe-b908-823b0901978f",
+      "title": "Musical, Stinger, Orchestral Impact, Harp, Dramatic, Tonal Tail",
+      "label": "Impacto orquestral e harpa",
+      "cues": [
+        "weapon_royal_launch",
+        "weapon_sword_land",
+        "pack_reveal_gold"
+      ],
+      "mixingIntent": "Candidato ao clímax glorioso; combinar com subida anterior, sem cortar a cauda musical.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/7c35f032-2c5d-4abe-b908-823b0901978f/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-18",
+      "suggestedFilename": "sfx-18-7c35f032-2c5d-4abe-b908-823b0901978f.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/7c35f032-2c5d-4abe-b908-823b0901978f.mp3",
+      "integratedCues": [
+        "weapon_royal_launch",
+        "weapon_sword_land",
+        "pack_reveal_gold"
+      ]
+    },
+    {
+      "id": "d6a586c6-b808-4cb7-8414-95557cde8500",
+      "title": "Weapons, Arrow, Arrow Impact, Metal",
+      "label": "Flecha em metal",
+      "cues": [
+        "arrow",
+        "pierce",
+        "shard_impact"
+      ],
+      "mixingIntent": "Recorte de impacto; o voo é uma camada separada.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/d6a586c6-b808-4cb7-8414-95557cde8500/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-19",
+      "suggestedFilename": "sfx-19-d6a586c6-b808-4cb7-8414-95557cde8500.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/d6a586c6-b808-4cb7-8414-95557cde8500.mp3",
+      "integratedCues": [
+        "arrow",
+        "pierce",
+        "shard_impact"
+      ]
+    },
+    {
+      "id": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "title": "Metal, Impact, Heavy, Sledgehammer, Box, Plate, Hard Hit",
+      "label": "Marreta — impacto pesado",
+      "cues": [
+        "impactHeavy",
+        "weapon_hammer_land",
+        "forge_impact",
+        "armor"
+      ],
+      "mixingIntent": "Complementar bigorna com corpo grave; impedir som fino e agudo demais.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/2403cbb5-d238-4e86-89d7-907f0a96062c/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-20",
+      "suggestedFilename": "sfx-20-2403cbb5-d238-4e86-89d7-907f0a96062c.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3",
+      "integratedCues": [
+        "weapon_hammer_land",
+        "impactHeavy",
+        "forge_impact",
+        "armor",
+        "heavy_impact",
+        "kinetic_impact",
+        "brutal_impact"
+      ]
+    },
+    {
+      "id": "1acfad48-3238-478e-85d4-a21fd7cf4b9a",
+      "title": "Metal, Impact, Heavy, Sledgehammer, Box, Plate, Medium Hit",
+      "label": "Metal — impacto médio",
+      "cues": [
+        "impactMedium",
+        "impactLow",
+        "pack_land"
+      ],
+      "mixingIntent": "Selecionar intensidade pela gravação e mixagem, sem sobrecarregar o jogo.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/1acfad48-3238-478e-85d4-a21fd7cf4b9a/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-21",
+      "suggestedFilename": "sfx-21-1acfad48-3238-478e-85d4-a21fd7cf4b9a.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/1acfad48-3238-478e-85d4-a21fd7cf4b9a.mp3",
+      "integratedCues": [
+        "impactMedium",
+        "impactLow",
+        "pack_land",
+        "axe_impact"
+      ]
+    },
+    {
+      "id": "a2a19084-2b20-4e52-b39a-918bcd7e5cbb",
+      "title": "Magic, Shimmer, Healing Spell, Glassy, Crystal",
+      "label": "Cristal e proteção",
+      "cues": [
+        "study_crystal",
+        "coating",
+        "geometry"
+      ],
+      "mixingIntent": "Curto brilho de cristal; testar registro para não soar estridente.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/a2a19084-2b20-4e52-b39a-918bcd7e5cbb/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-22",
+      "suggestedFilename": "sfx-22-a2a19084-2b20-4e52-b39a-918bcd7e5cbb.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/a2a19084-2b20-4e52-b39a-918bcd7e5cbb.mp3",
+      "integratedCues": [
+        "study_crystal",
+        "coating",
+        "geometry",
+        "shard_cast"
+      ]
+    },
+    {
+      "id": "05a2889d-5253-4f25-9353-461ad5d1ddb6",
+      "title": "Magic, Shimmer, Glass, Time Magic, Spell, Cast, Reverse, Eerie 02",
+      "label": "Reflexo e tempo",
+      "cues": [
+        "mirror",
+        "memory",
+        "study_circle"
+      ],
+      "mixingIntent": "Inversão sonora para miragem e tempo, com final bem definido.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/05a2889d-5253-4f25-9353-461ad5d1ddb6/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-23",
+      "suggestedFilename": "sfx-23-05a2889d-5253-4f25-9353-461ad5d1ddb6.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/05a2889d-5253-4f25-9353-461ad5d1ddb6.mp3",
+      "integratedCues": [
+        "mirror",
+        "memory",
+        "study_circle",
+        "pack_platinum_charge"
+      ]
+    },
+    {
+      "id": "84f203b4-d3b9-4a24-ab24-32d48bc16f15",
+      "title": "Magic, Shimmer, Chime, Crystal, Glint, Twinkle, Fantasy 02",
+      "label": "Revelação Prata",
+      "cues": [
+        "pack_reveal_silver"
+      ],
+      "mixingIntent": "Usar só um acento; volume menor que a Platina.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/84f203b4-d3b9-4a24-ab24-32d48bc16f15/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-24",
+      "suggestedFilename": "sfx-24-84f203b4-d3b9-4a24-ab24-32d48bc16f15.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/84f203b4-d3b9-4a24-ab24-32d48bc16f15.mp3",
+      "integratedCues": [
+        "pack_reveal_silver",
+        "pack_reveal_bronze"
+      ]
+    },
+    {
+      "id": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "title": "Magic, Spell, Cold, Whoosh, Dark",
+      "label": "Deslocamento furtivo",
+      "cues": [
+        "weapon_shadow_launch",
+        "pull",
+        "contract_depart"
+      ],
+      "mixingIntent": "Base de deslocamento; misturar sem repetir o mesmo som em todos os eventos.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/1460d4a4-4db2-4421-ae66-539b50569919/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-25",
+      "suggestedFilename": "sfx-25-1460d4a4-4db2-4421-ae66-539b50569919.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "integratedCues": [
+        "weapon_shadow_launch",
+        "pull",
+        "contract_depart",
+        "axe_cast",
+        "contract_throw"
+      ]
+    },
+    {
+      "id": "d70c6c13-bd3c-4d22-9a1d-3ff258e3157f",
+      "title": "Magic, Spell, Cold, Synth Whoosh Windy",
+      "label": "Passagem etérea",
+      "cues": [
+        "flux_whisper",
+        "sleep",
+        "magic"
+      ],
+      "mixingIntent": "Candidato ao fluxo de éter; comparar com o sopro da Barreira.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-26",
+      "suggestedFilename": "sfx-26-d70c6c13-bd3c-4d22-9a1d-3ff258e3157f.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f.mp3",
+      "integratedCues": [
+        "sleep",
+        "flux_whisper",
+        "magic"
+      ]
+    },
+    {
+      "id": "0dca976d-cdd3-4e79-9750-6db63ea15149",
+      "title": "Paper, Rip, Letter Paper Tear",
+      "label": "Contrato — rasgo",
+      "cues": [
+        "contract_tear",
+        "pack_clasp"
+      ],
+      "mixingIntent": "Sincronizar o início do rasgo com a abertura do papel.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/0dca976d-cdd3-4e79-9750-6db63ea15149/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-27",
+      "suggestedFilename": "sfx-27-0dca976d-cdd3-4e79-9750-6db63ea15149.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/0dca976d-cdd3-4e79-9750-6db63ea15149.mp3",
+      "integratedCues": [
+        "contract_tear",
+        "pack_clasp"
+      ]
+    },
+    {
+      "id": "8370f7a5-9ccb-4952-9a61-07a36d190e9a",
+      "title": "Fire, Misc, Fuse, Stop, Burn Out, Bomb, Dynamite 03",
+      "label": "Pavio — término",
+      "cues": [
+        "fuse"
+      ],
+      "mixingIntent": "Candidato para o fim do pavio; ainda falta selecionar a queima contínua dos 10 segundos.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/8370f7a5-9ccb-4952-9a61-07a36d190e9a/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-28",
+      "suggestedFilename": "sfx-28-8370f7a5-9ccb-4952-9a61-07a36d190e9a.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/8370f7a5-9ccb-4952-9a61-07a36d190e9a.mp3",
+      "integratedCues": []
+    },
+    {
+      "id": "94473817-86d4-47b8-8f63-e00cbdd904e3",
+      "title": "Explosions, Misc, Bomb, Explosion, Small, Bang, Detonation 04",
+      "label": "Pavio — explosão",
+      "cues": [
+        "timeout",
+        "pack_burst"
+      ],
+      "mixingIntent": "Impacto curto, sem susto excessivo; separar o término do ruído do pavio.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/94473817-86d4-47b8-8f63-e00cbdd904e3/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-29",
+      "suggestedFilename": "sfx-29-94473817-86d4-47b8-8f63-e00cbdd904e3.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/94473817-86d4-47b8-8f63-e00cbdd904e3.mp3",
+      "integratedCues": [
+        "timeout",
+        "pack_burst"
+      ]
+    },
+    {
+      "id": "640ead81-4a79-4410-8418-2f24da03618e",
+      "title": "Fire, Burning, Flame, Large Burst 01",
+      "label": "Forja — lufada quente",
+      "cues": [
+        "forge_landing",
+        "weapon_heavy_launch"
+      ],
+      "mixingIntent": "Camada de calor e pressão por baixo do impacto metálico.",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/640ead81-4a79-4410-8418-2f24da03618e/",
+      "downloaded": true,
+      "auditionedByAssistant": false,
+      "status": "Pré-seleção por descrição oficial; escuta e recorte pendentes.",
+      "queueId": "SFX-30",
+      "suggestedFilename": "sfx-30-640ead81-4a79-4410-8418-2f24da03618e.wav",
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/640ead81-4a79-4410-8418-2f24da03618e.mp3",
+      "integratedCues": [
+        "forge_landing",
+        "weapon_heavy_launch"
+      ]
+    },
+    {
+      "id": "9ed7d117-d9b6-4f19-9eae-0c7b886915cf",
+      "kind": "sfx",
+      "title": "Weapons, Knife, Dagger, Throwing Knife, Shuriken, Impact Wood 02",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/9ed7d117-d9b6-4f19-9eae-0c7b886915cf/",
+      "cues": [
+        "contract_impact",
+        "weapon_dagger_land"
+      ],
+      "label": "Faca — impacto na madeira",
+      "auditionedByAssistant": false,
+      "queueId": "SFX-31",
+      "mixingIntent": "Candidato localizado pela descrição oficial; revisão auditiva pendente.",
+      "downloaded": true,
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/9ed7d117-d9b6-4f19-9eae-0c7b886915cf.mp3",
+      "integratedCues": [
+        "contract_impact",
+        "weapon_dagger_land"
+      ]
+    },
+    {
+      "id": "3dd82305-16f8-4c67-ae81-ce8ee11cffdb",
+      "kind": "sfx",
+      "title": "Guns, Pistol, Designed, Fire, Single Shot, Short",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/3dd82305-16f8-4c67-ae81-ce8ee11cffdb/",
+      "cues": [
+        "gun",
+        "capture"
+      ],
+      "label": "Disparo — captura",
+      "auditionedByAssistant": false,
+      "queueId": "SFX-32",
+      "mixingIntent": "Candidato localizado pela descrição oficial; revisão auditiva pendente.",
+      "downloaded": true,
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/3dd82305-16f8-4c67-ae81-ce8ee11cffdb.mp3",
+      "integratedCues": [
+        "gun",
+        "capture"
+      ]
+    },
+    {
+      "id": "48009f31-710a-412a-a710-34d77f81348f",
+      "kind": "sfx",
+      "title": "Designed, Stinger, Hit, Tribal, Drums, Deep, Suspense",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/48009f31-710a-412a-a710-34d77f81348f/",
+      "cues": [
+        "tribal"
+      ],
+      "label": "Ruptura — percussão grave",
+      "auditionedByAssistant": false,
+      "queueId": "SFX-33",
+      "mixingIntent": "Candidato localizado pela descrição oficial; revisão auditiva pendente.",
+      "downloaded": true,
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/48009f31-710a-412a-a710-34d77f81348f.mp3",
+      "integratedCues": [
+        "tribal"
+      ]
+    },
+    {
+      "id": "357a5b7d-db8a-453a-a77a-29029963371b",
+      "kind": "sfx",
+      "title": "Fire, Burning, Burning Wood, Bonfire, Crispy, Soft Intensity, Loop",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/357a5b7d-db8a-453a-a77a-29029963371b/",
+      "cues": [
+        "fuse"
+      ],
+      "label": "Pavio — crepitação suave",
+      "auditionedByAssistant": false,
+      "queueId": "SFX-34",
+      "mixingIntent": "Candidato localizado pela descrição oficial; revisão auditiva pendente.",
+      "downloaded": true,
+      "downloadStatus": "WAV original salvo; amostra MP3 preparada",
+      "localFile": "audio/epidemic/357a5b7d-db8a-453a-a77a-29029963371b.mp3",
+      "integratedCues": [
+        "fuse"
+      ]
+    }
+  ],
+  "existingRecordedFiles": [
+    "impactGeneric_light_000.ogg",
+    "impactGeneric_light_002.ogg",
+    "impactPunch_medium_000.ogg",
+    "impactPunch_medium_002.ogg",
+    "impactPunch_heavy_000.ogg",
+    "impactPunch_heavy_002.ogg",
+    "bookClose.ogg",
+    "dropLeather.ogg",
+    "bookPlace1.ogg",
+    "bookPlace2.ogg",
+    "knifeSlice.ogg",
+    "knifeSlice2.ogg",
+    "chop.ogg",
+    "capture-shot.wav",
+    "impactBell_heavy_000.ogg",
+    "cloth1.ogg",
+    "handleCoins.ogg",
+    "handleCoins2.ogg",
+    "bookFlip1.ogg",
+    "bookFlip2.ogg",
+    "bookFlip3.ogg",
+    "impactGlass_light_000.ogg",
+    "impactBell_heavy_002.ogg"
+  ],
+  "remainingFamilies": [
+    "Entradas musicais completas de Platina: Forja, Fluxo e Ruptura (fontes de camadas ainda não são a vinheta final)",
+    "Pavio: queima contínua de 10 segundos; candidato atual cobre apenas o término",
+    "Armas: golpes, lançamento e assentamento específicos ainda sem fonte em unmappedCues",
+    "Todos os candidatos: ouvir, recortar e ajustar na animação antes de aprovar a substituição"
+  ],
+  "restore": {
+    "backup": "outputs/audio-backup-20261017",
+    "instructions": "Conferir manifest.json e restaurar apenas os efeitos ou trechos de áudio necessários. Não substituir app.js inteiro sem comparar, pois há mudanças de interface posteriores ao backup.",
+    "originalSoundsStillActive": true
+  },
+  "unmappedCues": [],
+  "summary": {
+    "downloadedSources": 34,
+    "activeCues": 90,
+    "remainingOriginalCues": [],
+    "auditionedByAssistant": false
+  },
+  "selectionBasis": "Metadados exibidos na busca oficial do Epidemic Sound em 17/10/2026. Não houve audição direta pelo assistente."
+}

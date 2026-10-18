@@ -88,10 +88,10 @@
       "name": "Oficina de Lyrik",
       "affinity": "forja",
       "archetype": "Crescimento e máquinas",
-      "plan": "Um novo Forja criado pelo grupo: máquinas, crescimento permanente e controle das posições.",
+      "plan": "Sobreviva ao início da partida, fortaleça suas criaturas e esmague seu oponente no final do jogo",
       "patron": {
         "id": "P-F-LYRIK",
-        "name": "Lyrik Koltar",
+        "name": "Lyrik, O Forjador",
         "health": 20,
         "affinities": [
           "forja"
@@ -105,7 +105,7 @@
         "powers": [
           {
             "id": "forjar-armadura",
-            "name": "Forjar Armadura",
+            "name": "Hora da Bigorna",
             "cost": 1,
             "text": "Conceda +1 de Vida Extra ao seu Patrono. Vida Extra absorve dano antes da vida normal, sem curar nem aumentar a vida máxima.",
             "image": "power-forja-potencializar.png",
@@ -114,9 +114,9 @@
           },
           {
             "id": "forjar-arma",
-            "name": "Forjar Arma",
-            "cost": 4,
-            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina. A arma vai para sua mão e custa 1, 5 ou 10 Éter para jogar. Equipar custa 1 Éter.",
+            "name": "Forja Eterna",
+            "cost": 3,
+            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina. A arma vai para sua mão e custa 1, 3 ou 6 Éter para jogar. Equipar custa 1 Éter.",
             "image": "power-forja-ultimato.png",
             "limit": "match",
             "duration": "permanent"
@@ -230,16 +230,16 @@
           "cost": 2,
           "quantity": 2,
           "rarity": "lacaio",
-          "subtype": "Rúnico",
+          "subtype": "Axiom",
           "attack": 1,
           "health": 1,
           "text": "Entrada — compre 1 carta. Aumentos de ataque e vida concedidos a esta criatura são dobrados.",
           "speech": "Cada melhoria rende mais.",
           "narrative": "",
-          "image": "art/oficina-lyrik/anao-taverneiro.jpg",
-          "artZoom": 179,
-          "artX": 57,
-          "artY": 17,
+          "image": "art/forja-personalizada/runico-eficiente.jpg",
+          "artZoom": 100,
+          "artX": 31,
+          "artY": 61,
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 52,
@@ -287,7 +287,8 @@
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente.",
-          "artPending": true
+          "imageKind": "illustration",
+          "artStatus": "own"
         },
         {
           "id": "FL04",
@@ -567,20 +568,20 @@
         },
         {
           "id": "FL10",
-          "name": "Atualização",
+          "name": "Adquirir Atualização",
           "type": "direct_spell",
           "affinity": "forja",
           "cost": 2,
           "quantity": 3,
-          "rarity": "padrao",
-          "subtype": "",
+          "rarity": "lacaio",
+          "subtype": "Magia direta",
           "text": "Conceda +1/+1 permanentemente a uma criatura aliada.",
           "speech": "",
           "narrative": "",
-          "image": "art/oficina-lyrik/reforco-divino.jpg",
-          "artZoom": 100,
-          "artX": 73,
-          "artY": 37,
+          "image": "art/forja-personalizada/adquirir-atualizacao.jpg",
+          "artZoom": 145,
+          "artX": 53,
+          "artY": 9,
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 52,
@@ -624,7 +625,9 @@
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono."
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
+          "imageKind": "illustration",
+          "artStatus": "own"
         },
         {
           "id": "FL11",
@@ -731,13 +734,13 @@
           "cost": 1,
           "quantity": 2,
           "rarity": "padrao",
-          "subtype": "",
+          "subtype": "Magia preparada",
           "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida.",
           "speech": "",
           "narrative": "",
-          "image": "art/forja-personalizada/toque-gelido.jpg",
-          "artZoom": 150,
-          "artX": 50,
+          "image": "art/forja-personalizada/toque-gelido-v2.jpg",
+          "artZoom": 137,
+          "artX": 58,
           "artY": 50,
           "fontName": 43,
           "fontSubtype": 21,
@@ -889,11 +892,11 @@
               "op": "taunt"
             }
           ],
-          "image": "art/lyrik/joao-bobao.png",
+          "image": "art/forja-personalizada/joao-bobao.png",
           "imageKind": "illustration",
-          "artZoom": 100,
-          "artX": 50,
-          "artY": 50,
+          "artZoom": 128,
+          "artX": 43,
+          "artY": 15,
           "subtype": "",
           "budgetEffects": [
             {
@@ -912,7 +915,11 @@
               "customPoints": 0
             }
           ],
-          "budgetVersion": 3
+          "budgetVersion": 3,
+          "artStatus": "own",
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36
         },
         {
           "id": "FL17",
@@ -925,18 +932,18 @@
           "attack": 1,
           "health": 1,
           "subtype": "humano",
-          "text": "Emanação — a criatura aliada na primeira posição tem +1 de vida. Se ela for Axiom, também tem +1 de ataque.",
+          "text": "Emanação — a criatura aliada na segunda posição tem +1 de vida. Se ela for Axiom, também tem +1 de ataque.",
           "effects": [
             {
               "op": "lane_health_aura",
               "amount": 1,
-              "lane": 0,
+              "lane": 1,
               "timing": "emanation"
             },
             {
               "op": "lane_attack_aura",
               "amount": 1,
-              "lane": 0,
+              "lane": 1,
               "timing": "emanation",
               "subtypeIncludes": "axiom"
             }
@@ -953,7 +960,7 @@
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "Emanação: +1 de vida na posição 1",
+              "name": "Emanação: +1 de vida na posição 2",
               "timing": "emanation",
               "target": "fixedAlly",
               "duration": "round",
@@ -976,7 +983,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"lane_attack_aura\",\"amount\":1,\"lane\":0,\"timing\":\"emanation\",\"subtypeIncludes\":\"axiom\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"lane_attack_aura\",\"amount\":1,\"lane\":1,\"timing\":\"emanation\",\"subtypeIncludes\":\"axiom\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1094,10 +1101,10 @@
       "name": "Ecos de Virelion",
       "affinity": "fluxo",
       "archetype": "Magias e posições",
-      "plan": "Fluxo criado pelo grupo: preparar casas, sustentar aliados e renovar a mão.",
+      "plan": "Utilize magias para ganhar tempo o suficiente para esvair a vida de seu oponente",
       "patron": {
         "id": "P-FL-VIRELION",
-        "name": "Marika Venn",
+        "name": "Marika, A Mestrarcana",
         "health": 20,
         "affinities": [
           "fluxo"
@@ -1107,7 +1114,27 @@
         "ability": null,
         "text": "Seu baralho só pode conter cartas de Fluxo. Sua mana pode pagar os custos dessas cartas.",
         "lore_status": "Título original inspirado em pactos; não identifica uma divindade oficial.",
-        "image": "patrons/olho-dos-pactos-novo.png"
+        "image": "patrons/olho-dos-pactos-novo.png",
+        "powers": [
+          {
+            "id": "sumario-ecoante",
+            "name": "Sumário Ecoante",
+            "cost": 1,
+            "text": "Compre 1 carta.",
+            "image": "patrons/sumario-ecoante.png",
+            "limit": "round",
+            "duration": "permanent"
+          },
+          {
+            "id": "estudos-avancados",
+            "name": "Estudos Avançados",
+            "cost": 3,
+            "image": "patrons/estudos-avancados.png",
+            "limit": "stages",
+            "duration": "permanent",
+            "text": "Estude seu deck original: 10 cartas liberam Otimização Etérea (3 Éter); 20 liberam Conhecimento Compartilhado (6 Éter); 30 liberam Grimório Completo (9 Éter). Cada avanço pode ser ativado uma vez."
+          }
+        ]
       },
       "cards": [
         {
@@ -1718,7 +1745,7 @@
     },
     {
       "id": "ruptura-grupo",
-      "name": "Ruptura do grupo",
+      "name": "Ruptura do Grupo",
       "affinity": "ruptura",
       "cards": [
         {
@@ -2364,7 +2391,7 @@
         }
       ],
       "archetype": "Pressão, Tribais e fichas",
-      "plan": "Ruptura criado pelo grupo: pressão rápida, criaturas pequenas e ataques coordenados.",
+      "plan": "Destrua seu inimigo antes que ele possa pensar em se defender",
       "patron": {
         "id": "RGP",
         "name": "Dom, O Maioral",
@@ -2374,14 +2401,14 @@
     },
     {
       "id": "forja-oficina-experimental",
-      "name": "Oficina Experimental de Lyrik",
+      "name": "Oficina Experimental",
       "affinity": "forja",
       "variantOf": "forja-oficina-lyrik",
       "archetype": "Crescimento, Emanação e experimentação",
-      "plan": "Construa uma máquina, proteja seu crescimento e transforme seus atributos.",
+      "plan": "Evolua uma criatura ao máximo, destrua seu inimigo com uma criação destruidora",
       "patron": {
         "id": "P-F-LYRIK",
-        "name": "Lyrik Koltar",
+        "name": "Lyrik, O Forjador",
         "health": 20,
         "affinities": [
           "forja"
@@ -2395,7 +2422,7 @@
         "powers": [
           {
             "id": "forjar-armadura",
-            "name": "Forjar Armadura",
+            "name": "Hora da Bigorna",
             "cost": 1,
             "text": "Conceda +1 de Vida Extra ao seu Patrono. Vida Extra absorve dano antes da vida normal, sem curar nem aumentar a vida máxima.",
             "image": "power-forja-potencializar.png",
@@ -2404,9 +2431,9 @@
           },
           {
             "id": "forjar-arma",
-            "name": "Forjar Arma",
-            "cost": 4,
-            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina. A arma vai para sua mão e custa 1, 5 ou 10 Éter para jogar. Equipar custa 1 Éter.",
+            "name": "Forja Eterna",
+            "cost": 3,
+            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina. A arma vai para sua mão e custa 1, 3 ou 6 Éter para jogar. Equipar custa 1 Éter.",
             "image": "power-forja-ultimato.png",
             "limit": "match",
             "duration": "permanent"
@@ -2469,23 +2496,23 @@
           "type": "creature",
           "affinity": "forja",
           "rarity": "padrao",
-          "quantity": 2,
+          "quantity": 1,
           "cost": 2,
           "attack": 1,
           "health": 1,
           "subtype": "humano",
-          "text": "Emanação — a criatura aliada na primeira posição tem +1 de vida. Se ela for Axiom, também tem +1 de ataque.",
+          "text": "Emanação — a criatura aliada na segunda posição tem +1 de vida. Se ela for Axiom, também tem +1 de ataque.",
           "effects": [
             {
               "op": "lane_health_aura",
               "amount": 1,
-              "lane": 0,
+              "lane": 1,
               "timing": "emanation"
             },
             {
               "op": "lane_attack_aura",
               "amount": 1,
-              "lane": 0,
+              "lane": 1,
               "timing": "emanation",
               "subtypeIncludes": "axiom"
             }
@@ -2502,7 +2529,7 @@
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "Emanação: +1 de vida na posição 1",
+              "name": "Emanação: +1 de vida na posição 2",
               "timing": "emanation",
               "target": "fixedAlly",
               "duration": "round",
@@ -2525,7 +2552,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"lane_attack_aura\",\"amount\":1,\"lane\":0,\"timing\":\"emanation\",\"subtypeIncludes\":\"axiom\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"lane_attack_aura\",\"amount\":1,\"lane\":1,\"timing\":\"emanation\",\"subtypeIncludes\":\"axiom\"}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -2537,47 +2564,6 @@
           "narrative": "Ele só não é cauteloso com os gastos no fim do mês, esse aí adora uma chorumela!"
         },
         {
-          "id": "FL16",
-          "name": "João Bobão",
-          "type": "creature",
-          "rarity": "lacaio",
-          "affinity": "forja",
-          "cost": 1,
-          "attack": 0,
-          "health": 3,
-          "quantity": 2,
-          "text": "Provocar.",
-          "effects": [
-            {
-              "op": "taunt"
-            }
-          ],
-          "image": "art/lyrik/joao-bobao.png",
-          "imageKind": "illustration",
-          "artZoom": 100,
-          "artX": 50,
-          "artY": 50,
-          "subtype": "",
-          "budgetEffects": [
-            {
-              "sourceIndex": 0,
-              "name": "taunt",
-              "timing": "turn",
-              "target": "enemy",
-              "duration": "round",
-              "condition": "none",
-              "amount": 0,
-              "count": 1,
-              "activationCost": 0,
-              "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"taunt\"}",
-              "effect": "custom",
-              "customPoints": 0
-            }
-          ],
-          "budgetVersion": 3
-        },
-        {
           "id": "FL21",
           "name": "Rúnico Eficiente",
           "type": "creature",
@@ -2585,16 +2571,16 @@
           "cost": 2,
           "quantity": 4,
           "rarity": "lacaio",
-          "subtype": "Rúnico",
+          "subtype": "Axiom",
           "attack": 1,
           "health": 1,
           "text": "Entrada — compre 1 carta. Aumentos de ataque e vida concedidos a esta criatura são dobrados.",
           "speech": "Cada melhoria rende mais.",
           "narrative": "",
-          "image": "art/oficina-lyrik/anao-taverneiro.jpg",
-          "artZoom": 179,
-          "artX": 57,
-          "artY": 17,
+          "image": "art/forja-personalizada/runico-eficiente.jpg",
+          "artZoom": 100,
+          "artX": 31,
+          "artY": 61,
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 52,
@@ -2642,24 +2628,25 @@
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente.",
-          "artPending": true
+          "imageKind": "illustration",
+          "artStatus": "own"
         },
         {
           "id": "FL10",
-          "name": "Atualização",
+          "name": "Adquirir Atualização",
           "type": "direct_spell",
           "affinity": "forja",
           "cost": 2,
-          "quantity": 3,
-          "rarity": "padrao",
-          "subtype": "",
+          "quantity": 4,
+          "rarity": "lacaio",
+          "subtype": "Magia direta",
           "text": "Conceda +1/+1 permanentemente a uma criatura aliada.",
           "speech": "",
           "narrative": "",
-          "image": "art/oficina-lyrik/reforco-divino.jpg",
-          "artZoom": 100,
-          "artX": 73,
-          "artY": 37,
+          "image": "art/forja-personalizada/adquirir-atualizacao.jpg",
+          "artZoom": 145,
+          "artX": 53,
+          "artY": 9,
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 52,
@@ -2704,57 +2691,7 @@
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
-          "directOnly": true
-        },
-        {
-          "id": "FL13",
-          "name": "Toque Gélido",
-          "type": "prepared_spell",
-          "affinity": "forja",
-          "cost": 1,
-          "quantity": 1,
-          "rarity": "padrao",
-          "subtype": "",
-          "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida.",
-          "speech": "",
-          "narrative": "",
-          "image": "art/forja-personalizada/toque-gelido.jpg",
-          "artZoom": 150,
-          "artX": 50,
-          "artY": 50,
-          "fontName": 43,
-          "fontSubtype": 21,
-          "fontRules": 42,
-          "effects": [
-            {
-              "op": "attack_modifier",
-              "amount": -1,
-              "permanent": true,
-              "healthAmount": -1
-            }
-          ],
-          "positionOnly": true,
-          "enemyOnly": true,
-          "budgetEffects": [
-            {
-              "sourceIndex": 0,
-              "name": "attack_modifier",
-              "timing": "trap",
-              "target": "trigger",
-              "duration": "permanent",
-              "condition": "none",
-              "amount": 1,
-              "count": 1,
-              "activationCost": 0,
-              "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"attack_modifier\",\"amount\":-1,\"permanent\":true,\"healthAmount\":-1}",
-              "effect": "custom",
-              "customPoints": 0
-            }
-          ],
-          "budgetVersion": 3,
-          "authoredBy": "Grupo Elysium",
-          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
+          "directOnly": true,
           "imageKind": "illustration",
           "artStatus": "own"
         },
@@ -2860,7 +2797,7 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "padrao",
           "text": "Emanação — escolha uma posição de combate aliada. A criatura nessa posição tem Transpassar enquanto esta Emanação estiver ativa.",
           "effects": [
@@ -2908,7 +2845,7 @@
           "type": "creature",
           "affinity": "forja",
           "cost": 3,
-          "quantity": 3,
+          "quantity": 2,
           "rarity": "lacaio",
           "text": "O primeiro dano recebido por esta criatura é dobrado.",
           "effects": [
@@ -2918,7 +2855,7 @@
           ],
           "attack": 0,
           "health": 9,
-          "subtype": "Engrenauta",
+          "subtype": "Axiom",
           "image": "art/forja-personalizada/engrenauta-defeituoso.jpg",
           "imageKind": "illustration",
           "fontRules": 38,
@@ -3041,7 +2978,7 @@
         },
         {
           "id": "FEX06",
-          "name": "Engrenauta Persistente",
+          "name": "Rúnico Persistente",
           "type": "creature",
           "affinity": "forja",
           "cost": 3,
@@ -3049,19 +2986,19 @@
           "health": 3,
           "quantity": 2,
           "rarity": "padrao",
-          "subtype": "engrenauta",
+          "subtype": "Axiom",
           "text": "Na primeira vez nesta partida que uma magia inimiga devolver esta criatura à sua mão, conserve seus bônus permanentes de ataque e vida.",
           "effects": [
             {
               "op": "retain_buffs_on_return"
             }
           ],
-          "image": "art/forja-personalizada/engrenauta-defeituoso.jpg",
+          "image": "art/forja-personalizada/runico-persistente.jpg",
           "imageKind": "illustration",
-          "artStatus": "pending",
-          "artZoom": 100,
-          "artX": 50,
-          "artY": 0,
+          "artStatus": "own",
+          "artZoom": 108,
+          "artX": 100,
+          "artY": 37,
           "budgetEffects": [
             {
               "sourceIndex": 0,
@@ -3078,7 +3015,10 @@
               "effect": "custom",
               "customPoints": 0
             }
-          ]
+          ],
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36
         },
         {
           "id": "FEX07",
@@ -3170,6 +3110,87 @@
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+        },
+        {
+          "id": "FEX08",
+          "name": "Pesquisa Aplicada",
+          "type": "direct_spell",
+          "affinity": "forja",
+          "cost": 5,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "Magia direta",
+          "text": "Conceda +2/+2 permanentemente a uma criatura aliada. Compre cartas iguais à metade do ataque dela após o bônus, arredondada para baixo.",
+          "effects": [
+            {
+              "op": "stat_buff",
+              "attack": 2,
+              "health": 2,
+              "target": "chosen_allied_creature",
+              "draw_attack_divisor": 2
+            }
+          ],
+          "directOnly": true,
+          "image": "art/oficina-lyrik/reforco-divino.jpg",
+          "imageKind": "illustration",
+          "artStatus": "pending",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "stat_buff",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"stat_buff\",\"attack\":2,\"health\":2,\"target\":\"chosen_allied_creature\",\"draw_attack_divisor\":2}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FEX09",
+          "name": "Legado da Oficina",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 2,
+          "attack": 1,
+          "health": 2,
+          "quantity": 3,
+          "rarity": "padrao",
+          "subtype": "Criatura",
+          "text": "Último Suspiro — conceda +1/+1 permanentemente a todas as criaturas na sua mão.",
+          "effects": [
+            {
+              "op": "death_hand_stat_buff",
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "image": "art/oficina-lyrik/anao-taverneiro.jpg",
+          "imageKind": "illustration",
+          "artStatus": "pending",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "death_hand_stat_buff",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"death_hand_stat_buff\",\"attack\":1,\"health\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
         }
       ]
     }

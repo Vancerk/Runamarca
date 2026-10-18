@@ -10,7 +10,7 @@ assert.equal(variant.cards.reduce((n,c)=>n+c.quantity,0),30);
 assert.equal(variant.cards.find(c=>c.id==='FEX04').cost,1);
 assert.equal(variant.cards.find(c=>c.id==='FEX05').cost,1);
 for(const deck of catalog.decks){assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);for(const c of deck.cards)assert.ok(c.quantity<=({lacaio:4,padrao:3,elite:2,soberano:1})[c.rarity],c.name+' respeita limite de raridade');}
-assert.equal(variant.cards.find(c=>c.id==='FL10').quantity,3);assert.equal(variant.cards.find(c=>c.id==='FL16').quantity,2);assert.equal(variant.cards.some(c=>c.id==='FEX02'),false);assert.equal(variant.cards.find(c=>c.id==='FEX05').quantity,1);assert.equal(variant.cards.find(c=>c.id==='FEX01').cost,2);
+assert.equal(variant.cards.find(c=>c.id==='FL10').quantity,4);assert.equal(variant.cards.find(c=>c.id==='FL10').rarity,'lacaio');assert.equal(variant.cards.find(c=>c.id==='FEX03').quantity,2);assert.equal(variant.cards.some(c=>c.id==='FL16'),false);assert.equal(variant.cards.some(c=>c.id==='FEX02'),false);assert.equal(variant.cards.find(c=>c.id==='FEX05').quantity,1);assert.equal(variant.cards.find(c=>c.id==='FEX01').cost,2);
 function setup(){const room=makeRoom('TEST01','A'),a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{patron:{hp:100,maxHp:100},mana:10,manaMax:10,deck:Array.from({length:12},()=>({uid:randomUUID()}))});Object.assign(room,{first:a.id,turn:a.id,phase:'prep',collectPreview:true});return {room,a,b};}
 function card(id,p,extra={}){return {...structuredClone([...catalog.decks.flatMap(d=>d.cards),...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:randomUUID(),owner:p.id,modelId:id,damage:0,attackMod:0,...extra};}
 function cast(room,p,id,targetId){const c=card(id,p);p.hand.push(c);act(room,p,{type:'play',cardId:c.uid,mode:'direct',targetId},catalog);}
@@ -46,7 +46,7 @@ function cast(room,p,id,targetId){const c=card(id,p);p.hand.push(c);act(room,p,{
 {
  const {room,a,b}=setup(),target=card('FEX03',a),enemy=card('FL05',b,{attack:1,health:2});a.reserve=[target];b.reserve=[enemy];a.formation[0]=target.uid;b.formation[0]=enemy.uid;target.attack=2;cast(room,a,'FEX05',target.uid);assert.ok(keywordPresentation(target).highlightKeywords.includes('Iniciativa'));assert.equal(view(room,a).players[0].reserve[0].highlightKeywords[0],'Iniciativa');room.phase='resolving';resolveCombat(room);assert.ok(b.discard.includes(enemy));assert.equal(target.damage,0,'inimigo não revida e não há desgaste');
 }
-for(const cost of [1,5,10])for(const structure of ['resistente','perfurante','veloz'])for(const blade of ['precisa','dentada','brutal']){const w=RunaWeapons.recipe(cost,structure,blade);assert.ok(!/Equipamento —|Perde 1 de durabilidade/.test(w.text));assert.ok(w.maxDurability>0);}
+for(const cost of [1,3,6])for(const structure of ['resistente','perfurante','veloz'])for(const blade of ['precisa','dentada','brutal']){const w=RunaWeapons.recipe(cost,structure,blade);assert.ok(!/Equipamento —|Perde 1 de durabilidade/.test(w.text));assert.ok(w.maxDurability>0);}
 console.log('Forja variante: catálogo, Geada, volatilidade, inversão, primeiro dano dobrado, auras, Iniciativa e 27 textos de armas aprovados.');
 
 {

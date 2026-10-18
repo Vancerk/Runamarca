@@ -1,0 +1,20 @@
+.weapon-entry-scene{position:fixed;inset:0;z-index:4400;pointer-events:none;overflow:hidden;--weapon-glow:#8bddc6;contain:layout style}
+.wa-hammer{--weapon-glow:#ff7c3c}.wa-sword{--weapon-glow:#f4db93}
+.wa-thrown-weapon{position:absolute;transform-origin:50% 85%;filter:drop-shadow(3px 5px 3px #0009);will-change:transform,opacity}
+.wa-thrown-weapon svg{width:100%;height:100%;display:block}
+.wa-ground{position:absolute;aspect-ratio:200/120;transform:translate(-50%,-50%);color:var(--weapon-glow)}
+.wa-ground svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.5;filter:drop-shadow(0 0 3px var(--weapon-glow))}
+.wa-hammer .wa-ground svg{stroke-width:3}.wa-dagger .wa-ground svg{opacity:.25;stroke-dasharray:8 12}
+.wa-weapon-shadow{position:absolute;width:100px;height:30px;border-radius:50%;background:radial-gradient(ellipse,#000a,#0000 72%)}
+.wa-arrival-light{position:absolute;width:130px;height:180px;border-radius:50%;background:radial-gradient(ellipse,var(--weapon-glow),transparent 67%);mix-blend-mode:screen}
+.wa-sword .wa-arrival-light{width:180px;height:310px;background:radial-gradient(ellipse at 50% 70%,#fff3c788,transparent 62%),linear-gradient(90deg,transparent 32%,#ffeebd99 48%,#fff8d8bb 50%,#ffeebd99 52%,transparent 68%)}
+.wa-mote{position:absolute;width:var(--mote-size);height:var(--mote-size);border-radius:50%;background:var(--weapon-glow);box-shadow:0 0 4px var(--weapon-glow)}
+.wa-impact-wave{position:absolute;width:140px;height:50px;border:2px solid #ffb563;border-radius:50%;box-shadow:0 0 8px #ff613d88}
+.wa-smoke{position:absolute;width:70px;height:70px;border-radius:50%;background:radial-gradient(ellipse,#735b4866,transparent 70%)}
+.wa-assassin-mist{position:absolute;width:165px;height:185px;border-radius:50%;background:radial-gradient(ellipse at 35% 50%,#090e18e6,transparent 65%),radial-gradient(ellipse at 65% 55%,#275450c9,transparent 65%);filter:blur(3px)}
+.wa-patron{position:absolute;border:3px double #e0bc75;border-radius:25px 25px 10px 10px;box-sizing:border-box;background-size:cover;background-position:50% 25%;box-shadow:0 7px 12px #000b,inset 0 0 0 2px #392914;transform-origin:0 0;will-change:transform,opacity}
+.wa-patron>img{width:100%;height:100%;object-fit:cover;object-position:50% 25%;border-radius:22px 22px 7px 7px}
+.wa-patron .weapon-medallion{right:-19px;top:45%}
+.wa-patron .weapon-medallion[role="button"]{pointer-events:auto}
+.wa-patron-health{position:absolute;bottom:-10px;right:-10px;width:31px;height:31px;display:grid;place-items:center;border:2px solid #d4b970;border-radius:50%;background:#376040;color:#fff8d4;font:700 19px Georgia}
+@media(prefers-reduced-motion:reduce){.wa-assassin-mist,.wa-mote,.wa-smoke,.wa-impact-wave{display:none}.wa-thrown-weapon,.wa-patron{will-change:opacity}}
