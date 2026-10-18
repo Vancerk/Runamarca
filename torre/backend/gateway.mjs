@@ -1,5 +1,5 @@
 import {createDiscordRest} from './discord-rest.mjs';
-import {authorNotice} from './avisos-autor.mjs';
+import {createAuthorNotifier} from './notificar-autor.mjs';
 import {createPublisher} from './publicacao.mjs';
 import {createInteractionHandler} from './interacoes.mjs';
 import {createCommandHandler,registerCommands} from './comandos.mjs';
@@ -8,6 +8,7 @@ export function createDiscord(token,onDecision,options={}){
   let socket,sequence=null,session=null,resumeUrl=null,heartbeat,retry,stopped=false,connected=false,ack=true,attempt=0,lastError=null;
   const rest=createDiscordRest(token),api=rest.api,dmChannels=new Map();
   async function dmFor(id){if(!dmChannels.has(id)){if(dmChannels.size>=256)dmChannels.delete(dmChannels.keys().next().value);const request=api('/users/@me/channels',{recipient_id:id}).catch(error=>{dmChannels.delete(id);throw error;});dmChannels.set(id,request);}return dmChannels.get(id);}
+  const notifyAuthor=createAuthorNotifier({api,dmFor,siteUrl:options.siteUrl,fallbackChannel:options.fallbackChannel});
   const push=(op,d)=>{if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify({op,d}));};
   const beat=()=>{if(!ack){socket.close();return;}ack=false;push(1,sequence);};
   const interaction=createInteractionHandler({api,onDecision,checkDecision:options.checkDecision,checkNotification:options.checkNotification,notify:options.notify,onApproved:options.onApproved});
@@ -30,8 +31,7 @@ export function createDiscord(token,onDecision,options={}){
   if(token)connect();
   return {metrics:rest.metrics,publish:createPublisher({api,readAttachment:meta=>options.readAttachment(meta)}),ready:()=>connected,configured:()=>Boolean(token),state:()=>!token?'unconfigured':connected?'ready':stopped?'failed':'connecting',error:()=>lastError,async waitReady(timeout=10000){if(!token)throw Object.assign(new Error('Bot não configurado.'),{status:503,publicMessage:'O token do bot não foi configurado no servidor.'});const until=Date.now()+timeout;while(!connected&&!stopped&&Date.now()<until)await new Promise(resolve=>setTimeout(resolve,100));if(!connected)throw Object.assign(new Error('Bot indisponível.'),{status:503,publicMessage:lastError||'O bot está conectando ao Discord. Aguarde alguns segundos e tente novamente.'});},async notifyAuthor(r){
     if(!r.authorDiscordId)throw new Error('Relato antigo sem autor cadastrado.');
-    const channel=await dmFor(r.authorDiscordId);
-    return api('/channels/'+channel.id+'/messages',authorNotice(r,options.siteUrl));
+    return notifyAuthor(r);
   },close(){stopped=true;clearTimeout(retry);clearInterval(heartbeat);socket?.close();},async send(r,{test=false}={}){
     const channel=await dmFor(r.masterId);
     const text=`${r.title}\nData: ${r.date}\nAutor: ${r.authorCard?.player||r.authorCard?.name||'Não informado'}\nMestre: ${r.master}\nParticipantes:\n${r.participants.join('\n')}\n\n${r.narrative}\n\nDocumentos:\n${(r.documentLinks||[]).join('\n')}`;

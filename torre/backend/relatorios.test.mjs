@@ -52,3 +52,15 @@ test('gravação durável antecede a DM e é confirmada antes de responder',asyn
 test('falha no banco antes da entrega não envia mensagem ao mestre',async t=>{
  const {options}=fixture(t);let sends=0;const store=createStore({...options,durable:async()=>{throw Error('Banco indisponível');},send:async()=>{sends++;}});await assert.rejects(store.submit(body()),/Banco indisponível/);assert.equal(sends,0);assert.deepEqual(store.list(),[]);
 });
+
+test('autor autenticado recupera sua decisão sem DM, terceiros não recebem motivo ou segredo',async t=>{
+ const {store,options}=fixture(t);const b=body(),r=await store.submit(b);
+ assert.throws(()=>store.authorDecision(r.id,b.authorDiscordId),{status:409});
+ store.decide({id:r.id,version:1,action:'correct',reason:'Ajuste a data.',userId:'master-1',messageId:'message-1'});
+ assert.throws(()=>store.authorDecision(r.id,'992870741202702356'),{status:403});
+ const access=store.authorDecision(r.id,b.authorDiscordId);assert.equal(access.decisionReason,'Ajuste a data.');assert.equal(access.receipt,r.receipt);assert.equal(access.canEdit,true);assert.equal(access.correctionReceipt,store.notification(r.id).editReceipt);
+ store.notificationResult(r.id,null,{method:'channel',version:1,channelId:'channel',messageId:'notice'});assert.equal(createStore(options).notification(r.id).notificationDelivery.messageId,'notice');assert.equal(store.own(r.id,r.receipt).notificationDelivery,undefined);
+ await store.revise(r.id,access.correctionReceipt,{...b,expectedVersion:1});assert.throws(()=>store.authorDecision(r.id,b.authorDiscordId),{status:409});
+ store.decide({id:r.id,version:2,action:'reject',reason:'Encerrado.',userId:'master-1',messageId:'message-1'});
+ const closed=store.authorDecision(r.id,b.authorDiscordId);assert.equal(closed.canEdit,false);assert.equal(closed.correctionReceipt,undefined);
+});

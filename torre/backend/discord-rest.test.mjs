@@ -13,3 +13,8 @@ test('unknown delivery and server failure are not retried; invalid token stops l
  const invalid=createDiscordRest('fake',{fetchImpl:async()=>{requests++;return response(401,{code:0});}});await assert.rejects(invalid.api('/channels/123/messages',{}));await assert.rejects(invalid.api('/users/@me/channels',{}));assert.equal(requests,2);
  const failed=createDiscordRest('fake',{fetchImpl:async()=>response(500,{})});await assert.rejects(failed.api('/channels/123/messages',{}),error=>error.definite===false);
 });
+
+test('falha explícita da DM conserva o código Discord para o aviso alternativo',async()=>{
+ const rest=createDiscordRest('fake',{fetchImpl:async()=>new Response(JSON.stringify({code:50007,message:'Cannot send messages to this user'}),{status:403,headers:{'Content-Type':'application/json'}})});
+ await assert.rejects(rest.api('/channels/dm/messages',{content:'teste'}),error=>error.discordCode===50007&&error.httpStatus===403&&error.definite===true);
+});

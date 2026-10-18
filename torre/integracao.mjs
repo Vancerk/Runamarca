@@ -9,6 +9,7 @@ import {startRequestedMasters} from './mestres-solicitado.mjs';
 import {startRequestedVisual} from './visual-solicitado.mjs';
 import {readFlowResult,startRequestedFlow} from './fluxo-solicitado.mjs';
 import {visitorIdentity} from './visitantes.mjs';
+import {isTorreAdmin} from './backend/acesso.mjs';
 const folder=fileURLToPath(new URL('.',import.meta.url));
 let pending,runtime,tail=Promise.resolve();
 const json=(res,status,error)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({error}));};
@@ -21,12 +22,12 @@ export async function handleTorre(req,res,url){
  try{
   if(process.env.LEGION_ENABLED==='false'||!accountsConfigured()){json(res,503,'A Torre de Comando ainda não está configurada neste servidor.');return true;}
   const user=await identify(req);
-  const isAdmin=Boolean(user&&user.discord_id===process.env.DISCORD_ADMIN_ID);
+  const isAdmin=Boolean(user&&isTorreAdmin(user.discord_id));
   if(url.pathname.startsWith('/torre/api/admin/')&&!isAdmin){json(res,403,'Acesso reservado ao administrador.');return true;}
   if(url.pathname==='/torre'){res.writeHead(308,{Location:'/torre/','Cache-Control':'no-store'});res.end();return true;}
   if(['POST','PUT','PATCH','DELETE'].includes(req.method)&&req.headers.origin!==publicOrigin()){json(res,403,'Origem inválida.');return true;}
   req.torreVisitorId=user?'user:'+user.discord_id:visitorIdentity(req,res);
-  const tower=await getRuntime();req.torreAdminId=isAdmin?user.discord_id:undefined;
+  const tower=await getRuntime();req.torreAdminId=isAdmin?user.discord_id:undefined;req.torreUserId=user?.discord_id;
   const run=async()=>{const original=req.url;req.url=url.pathname.slice('/torre'.length)+url.search;
    const headers=new Map(),parts=[];let status=200;
    const buffered={setHeader:(key,value)=>headers.set(key,value),writeHead(code,values={}){status=code;for(const [key,value]of Object.entries(values))headers.set(key,value);},end(value){if(value!==undefined)parts.push(Buffer.isBuffer(value)?value:Buffer.from(String(value)));}};

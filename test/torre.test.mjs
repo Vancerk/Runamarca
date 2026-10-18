@@ -30,6 +30,18 @@ test('Torre shares the games server and OAuth; allows public visitors while prot
   assert.equal((await call('/torre/api/config')).status,200);assert.equal((await call('/torre/',player)).status,200);assert.equal((await call('/torre/assets/detalhado-sem-codigos.webp',player)).status,200);
   const page=await call('/torre/',admin);assert.equal(page.status,200);assert.match(await page.text(),/\/account.js/);
   const config=await (await call('/torre/api/config',admin)).json();assert.equal(config.admin,true);assert.equal(config.managedAccount,true);assert.equal(config.ready,false);assert.equal(config.botConfigured,false);assert.equal(config.botState,'unconfigured');assert.match(config.botError,/DISCORD_BOT_TOKEN/);assert.ok(config.masters.some(m=>m.name==='Kagami'));
+  const previousExtra=process.env.TORRE_ADMIN_IDS;
+  try{
+   process.env.TORRE_ADMIN_IDS='222222222222222222';
+   assert.equal((await (await call('/torre/api/config',player)).json()).admin,true);
+   assert.equal((await call('/torre/api/admin/reports',player)).status,200);
+   assert.equal((await call('/torre/api/admin/reports',admin)).status,200);
+   assert.equal((await call('/torre/api/admin/reports',visitor)).status,403);
+   assert.equal((await call('/torre/api/admin/bot/test-report',player,{submissionKey:'b'.repeat(36)},'https://attacker.invalid')).status,403);
+   delete process.env.TORRE_ADMIN_IDS;
+   assert.equal((await (await call('/torre/api/config',player)).json()).admin,false);
+   assert.equal((await call('/torre/api/admin/reports',player)).status,403);
+  }finally{if(previousExtra===undefined)delete process.env.TORRE_ADMIN_IDS;else process.env.TORRE_ADMIN_IDS=previousExtra;}
   const unavailable=await call('/torre/api/admin/bot/test-report',admin,{submissionKey:'a'.repeat(36)});assert.equal(unavailable.status,503);assert.match((await unavailable.json()).error,/DISCORD_BOT_TOKEN/);assert.equal((await call('/torre/api/admin/bot/test-report',player,{submissionKey:'a'.repeat(36)})).status,403);
   const image=await call('/torre/assets/detalhado-sem-codigos.webp',admin);assert.equal(image.status,200);assert.ok((await image.arrayBuffer()).byteLength>2000000);
   assert.equal((await call('/torre/api/connect',admin,{token:'not-a-real-token'})).status,403);
@@ -39,6 +51,6 @@ test('Torre shares the games server and OAuth; allows public visitors while prot
   const saved=await call('/torre/api/characters/discord',admin,{id:'character-test',discordId:'222222222222222222'});assert.equal(saved.status,200);await closeTorre();assert.equal((await (await call('/torre/api/characters',admin)).json())[0].discordId,'222222222222222222');
   assert.equal((await call('/torre/api/admin/start',admin,{})).status,405);assert.equal((await call('/torre/api/admin/reports',player)).status,403);
   const index=await call('/torre/api/reports/index',admin);assert.equal(index.status,200);assert.deepEqual(await index.json(),[]);const conditional=await fetch(base+'/torre/api/reports/index',{headers:{cookie:admin,'If-None-Match':index.headers.get('etag')}});assert.equal(conditional.status,304);
-  assert.equal((await call('/torre/api/reports/index',player)).status,200);const otherVisitor=(await call('/torre/')).headers.get('set-cookie').split(';')[0];for(let n=0;n<20;n++)assert.equal((await call('/torre/api/connect',visitor,{token:'fake'})).status,403);assert.equal((await call('/torre/api/connect',visitor,{token:'fake'})).status,429);assert.equal((await call('/torre/api/connect',otherVisitor,{token:'fake'})).status,403);assert.equal((await call('/torre/api/reports',otherVisitor,{submissionKey:'a'.repeat(36)})).status,503);
+  assert.equal((await call('/torre/api/reports/index',player)).status,200);assert.equal((await call('/torre/api/reports/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/author-decision',visitor)).status,401);assert.equal((await call('/torre/api/reports/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/author-decision',player)).status,403);const otherVisitor=(await call('/torre/')).headers.get('set-cookie').split(';')[0];for(let n=0;n<20;n++)assert.equal((await call('/torre/api/connect',visitor,{token:'fake'})).status,403);assert.equal((await call('/torre/api/connect',visitor,{token:'fake'})).status,429);assert.equal((await call('/torre/api/connect',otherVisitor,{token:'fake'})).status,403);assert.equal((await call('/torre/api/reports',otherVisitor,{submissionKey:'a'.repeat(36)})).status,503);
  }finally{await closeTorre();await new Promise(r=>server.close(r));await pool.end();}
 });
