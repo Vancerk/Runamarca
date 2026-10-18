@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-18",
+  "provider": "Epidemic Sound",
+  "scope": "Rolagens e combinações valiosas/lendárias do Seis Ossos",
+  "auditionedByAssistant": false,
+  "selection": "Descrições oficiais e análise de envelopes; aprovação artística por escuta humana na prévia.",
+  "license": "Epidemic Sound. Publicação solicitada pelo titular em 18/10/2026; a verificação específica da cobertura contratual de jogos não foi realizada pelo assistente.",
+  "sources": {
+    "dice-six": {
+      "id": "310a2d56-ae82-43e5-abab-8b261fd71897",
+      "title": "Games, Misc, Dice, Wooden Dice, Roll On Wooden Board, Dice x6",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/310a2d56-ae82-43e5-abab-8b261fd71897/",
+      "sha256": "bfd41c9904ffd605b9d90b6bdec41900ed7ca62162b22de087d77528d7341df4"
+    },
+    "dice-three": {
+      "id": "27a3dbe8-9009-44d2-8b1a-71ecc0ad9cbf",
+      "title": "Games, Misc, Dice, Wooden Dice, Roll On Wooden Board, Dice x3",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/27a3dbe8-9009-44d2-8b1a-71ecc0ad9cbf/",
+      "sha256": "5d22677414ac922165d4f388181083a1d5e02712dc041c3f905aa15cee96d474"
+    },
+    "dice-two": {
+      "id": "88374a48-ae97-4e89-8e6e-1bdb2c278849",
+      "title": "Games, Misc, Dice, Wooden Dice, Roll On Wooden Board, Dice x2",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/88374a48-ae97-4e89-8e6e-1bdb2c278849/",
+      "sha256": "5a6926bd27c5b27696861e9417990b538f5b50b6ff519cbf8c3e8c180bf00d99"
+    },
+    "harp": {
+      "id": "7c35f032-2c5d-4abe-b908-823b0901978f",
+      "title": "Musical, Stinger, Orchestral Impact, Harp, Dramatic, Tonal Tail",
+      "url": "https://www.epidemicsound.com/pt/sound-effects/tracks/7c35f032-2c5d-4abe-b908-823b0901978f/",
+      "sha256": "75ea8d96b9bb342ffc4a8156555f098c587c3d05d32f4eebe77f1c3c4c52bf98"
+    }
+  },
+  "clips": [
+    {
+      "name": "roll-six-a",
+      "source": "dice-six",
+      "sourceStartSeconds": 0,
+      "durationSeconds": 1.08,
+      "gain": 0.5349,
+      "peak": 0.662,
+      "rms": 0.0223,
+      "bytes": 23031,
+      "file": "/audio/seis-ossos/roll-six-a.mp3",
+      "sha256": "aaa42f8dbaa210125adda36abdf3740152f21b2a19f4cc6738b116e0db21ca1b"
+    },
+    {
+      "name": "roll-six-b",
+      "source": "dice-six",
+      "sourceStartSeconds": 2.32,
+      "durationSeconds": 1.1,
+      "gain": 0.5471,
+      "peak": 0.6666,
+      "rms": 0.0292,
+      "bytes": 23554,
+      "file": "/audio/seis-ossos/roll-six-b.mp3",
+      "sha256": "06065a9b5ace1332af0e7ee51302991167416aa23b985b3d65932b17cafb6a5c"
+    },
+    {
+      "name": "roll-three-a",
+      "source": "dice-three",
+      "sourceStartSeconds": 0,
+      "durationSeconds": 1.08,
+      "gain": 0.5338,
+      "peak": 0.6581,
+      "rms": 0.0185,
+      "bytes": 23031,
+      "file": "/audio/seis-ossos/roll-three-a.mp3",
+      "sha256": "1550673dd7c2d3a09bc8efec3dbdc2f2028cb5e006a0b28bef7372cf3a2a259c"
+    },
+    {
+      "name": "roll-three-b",
+      "source": "dice-three",
+      "sourceStartSeconds": 1.74,
+      "durationSeconds": 1.08,
+      "gain": 0.5207,
+      "peak": 0.6674,
+      "rms": 0.0185,
+      "bytes": 23031,
+      "file": "/audio/seis-ossos/roll-three-b.mp3",
+      "sha256": "58c16cdef92c0f394a5128c25f769f2562c5cdc52727d7475eeaf6022642567e"
+    },
+    {
+      "name": "roll-two-a",
+      "source": "dice-two",
+      "sourceStartSeconds": 0,
+      "durationSeconds": 0.83,
+      "gain": 0.5252,
+      "peak": 0.662,
+      "rms": 0.0212,
+      "bytes": 17807,
+      "file": "/audio/seis-ossos/roll-two-a.mp3",
+      "sha256": "f702f0e9cdb6ebe1f5a01c8f8d159a34b979dd8e345d9768a10bd4245b2fcd4e"
+    },
+    {
+      "name": "roll-two-b",
+      "source": "dice-two",
+      "sourceStartSeconds": 1.74,
+      "durationSeconds": 1.0,
+      "gain": 0.5242,
+      "peak": 0.655,
+      "rms": 0.0247,
+      "bytes": 21464,
+      "file": "/audio/seis-ossos/roll-two-b.mp3",
+      "sha256": "5322b29ce9029bad7b0628e217ebcde975828333c1ab62f08704cd86a1bdf8d3"
+    },
+    {
+      "name": "combo",
+      "source": "harp",
+      "sourceStartSeconds": 0,
+      "durationSeconds": 2.0,
+      "gain": 1.0189,
+      "peak": 0.5969,
+      "rms": 0.0631,
+      "bytes": 41317,
+      "file": "/audio/seis-ossos/combo.mp3",
+      "sha256": "3297e99c52a40dcd94c16fe1558be6ef950abc1ea478f7bff3520ff76935e5ae"
+    },
+    {
+      "name": "combo-grand",
+      "source": "harp",
+      "sourceStartSeconds": 0,
+      "durationSeconds": 3.2,
+      "gain": 1.0189,
+      "peak": 0.5969,
+      "rms": 0.0571,
+      "bytes": 65350,
+      "file": "/audio/seis-ossos/combo-grand.mp3",
+      "sha256": "0635aaf937430eba261851fd8a337b95094c7d05797a2e252bb0c59a60c0a89c"
+    }
+  ]
+}
