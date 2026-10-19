@@ -2,7 +2,7 @@
 (function(root){
  const base=new URL('.',root.document?.currentScript?.src||root.location?.href||'http://localhost/').href;
  let manifest=null,pending=null,generation=0;const buffers=new Map(),seen=new Set(),active=new Set();
- async function catalog(){return manifest||(pending??=fetch(base+'creature-entrances.json?v=20261018-mix3').then(r=>{if(!r.ok)throw Error('Entradas indisponíveis');return r.json();}).then(x=>manifest=x).catch(e=>{pending=null;throw e;}));}
+ async function catalog(){return manifest||(pending??=fetch(base+'creature-entrances.json?v=20261018-mix4').then(r=>{if(!r.ok)throw Error('Entradas indisponíveis');return r.json();}).then(x=>manifest=x).catch(e=>{pending=null;throw e;}));}
  function select(data,card){if(card?.type!=='creature')return null;return data.cards?.[card.modelId||card.id]||(card.rarity==='soberano'?{audio:data.energies?.[card.affinity]}:null);}
  async function buffer(context,url){if(!buffers.has(url))buffers.set(url,fetch(base+url).then(r=>{if(!r.ok)throw Error('Áudio indisponível');return r.arrayBuffer();}).then(b=>context.decodeAudioData(b)).catch(e=>{buffers.delete(url);throw e;}));return buffers.get(url);}
  async function preload(context){if(context?.state!=='running')return;try{const data=await catalog();await Promise.allSettled([...new Set([...Object.values(data.energies),...Object.values(data.cards).map(c=>c.audio)])].map(url=>buffer(context,url)));}catch{}}

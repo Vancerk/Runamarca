@@ -1,8 +1,9 @@
 import {randomUUID} from 'node:crypto';
+import {selectStudyOriginals,shuffleStudyDeck} from './study-selection.mjs';
 export const STUDY_STAGES=[
  {threshold:10,cost:3,name:'Otimização Etérea',text:'Até o fim da partida, suas magias custam 1 Éter a menos.'},
  {threshold:20,cost:6,name:'Conhecimento Compartilhado',text:'Até o fim da partida, suas magias em casas de combate também afetam uma casa adjacente à sua escolha. Não inclui Emanação ou habilidades.'},
- {threshold:30,cost:9,name:'Grimório Completo',text:'Veja seu deck original. Crie cópias de até 5 cartas e jogue até 2 dessas cópias de custo até 4 sem pagar Éter.'}
+ {threshold:30,cost:9,name:'Grimório Completo',text:'Selecione aleatoriamente 5 cartas do seu deck original, buscando variedade de custos e funções. Crie uma cópia de cada para a mão e outra para o baralho. Você pode jogar até 2 das cópias para a mão de custo até 4 sem pagar Éter.'}
 ];
 export function initStudies(p){
  delete p.study;delete p.studyBook;delete p.studyPreview;
@@ -49,15 +50,18 @@ export function activateStudies(room,p,data,{emit,pushLog,applyExisting}){
  let copies=[],instantIds=[];
  if(stage.threshold===20&&![0,2].includes(data.centerNeighbor))throw Error('Escolha uma casa adjacente para as magias da casa central.');
  if(stage.threshold===30){
-  if(!Array.isArray(data.originalIds)||data.originalIds.length>5||new Set(data.originalIds).size!==data.originalIds.length)throw Error('Escolha até 5 cartas do deck original.');
-  const originals=data.originalIds.map(id=>p.originalDeck.find(c=>c.studyOriginalId===id));if(originals.some(c=>!c))throw Error('Carta fora do deck original.');
-  const instant=data.instantIndices||[];if(!Array.isArray(instant)||instant.length>2||new Set(instant).size!==instant.length||instant.some(i=>!Number.isInteger(i)||!originals[i]||originals[i].cost>4))throw Error('Escolha até 2 das cópias, com custo impresso até 4, para usar agora.');
-  copies=originals.map(c=>{const copy={...structuredClone(c),uid:randomUUID(),owner:p.id,damage:0,attackMod:0};delete copy.studyOriginalId;delete copy.quantity;return copy;});instantIds=data.chooseInstant===true?copies.filter(c=>c.cost<=4).map(c=>c.uid):instant.map(i=>copies[i].uid);
+  const originals=selectStudyOriginals(p);
+  if(originals.length!==5)throw Error('O deck original precisa conter cartas para formar o Grimório.');
+  const create=c=>{const copy={...structuredClone(c),uid:randomUUID(),owner:p.id,damage:0,attackMod:0};delete copy.studyOriginalId;delete copy.quantity;return copy;};
+  copies=originals.map(create);
+  const deckCopies=originals.map(create);p.deck.push(...deckCopies);shuffleStudyDeck(p.deck);
+  instantIds=copies.filter(c=>c.cost<=4).map(c=>c.uid);
+  emit(room,'grimoire_refill',{playerId:p.id,handCopies:5,deckCopies:5,deckCount:p.deck.length});
  }
  p.mana-=stage.cost;p.study.activated.push(stage.threshold);
  if(stage.threshold===10)p.study.discount=true;
  if(stage.threshold===20){p.study.sharing=true;p.study.centerNeighbor=data.centerNeighbor;applyExisting?.();}
- if(stage.threshold===30){delete p.studyPreview;p.studyBook={cards:copies,instantIds,remaining:data.chooseInstant===true?2:instantIds.length,round:room.round,preparation:p.preparationSerial};if(!instantIds.length)finishStudyBook(room,p,{emit,pushLog});}
+ if(stage.threshold===30){delete p.studyPreview;p.studyBook={cards:copies,instantIds,remaining:Math.min(2,instantIds.length),round:room.round,preparation:p.preparationSerial};if(!instantIds.length)finishStudyBook(room,p,{emit,pushLog});}
  emit(room,'patron_power',{playerId:p.id,powerId:'estudos-avancados',name:stage.name,op:'study',threshold:stage.threshold});pushLog(room,p.name+' concluiu '+stage.name+'.',p.id);
 }
 export function consumeStudyCopy(room,p,card,{emit,pushLog}){
@@ -74,9 +78,6 @@ export function finishStudyBook(room,p,{emit,pushLog}){
 }
 export function previewStudyBook(p,data){
  if(data.close){delete p.studyPreview;return;}
- if(studyStage(p)?.threshold!==30||p.study.seenIds.length<30||p.mana<9)throw Error('O Grimório ainda não está disponível.');
- const ids=data.originalIds;if(!Array.isArray(ids)||ids.length>5||new Set(ids).size!==ids.length)throw Error('Escolha até 5 cartas.');
- const cards=ids.map(id=>p.originalDeck.find(c=>c.studyOriginalId===id));if(cards.some(c=>!c))throw Error('Carta fora do deck original.');
- p.studyPreview={cards:structuredClone(cards)};
+ throw Error('As cartas do Grimório são sorteadas ao ativar o poder.');
 }
 export function studyView(p,self){if(!p.study)return null;const stage=studyStage(p);return {seen:p.study.seenIds.length,total:p.study.total,activated:p.study.activated,discount:p.study.discount,sharing:p.study.sharing,centerNeighbor:p.study.centerNeighbor,stage,originalCards:self&&stage?.threshold===30?p.originalDeck:undefined,book:self?p.studyBook:undefined,grimoire:p.studyBook?{phase:'casting',cards:p.studyBook.cards,remaining:p.studyBook.remaining}:p.studyPreview?{phase:'selecting',cards:p.studyPreview.cards}:null};}

@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": "3-manifestations-v2",
   "status": "Prévia local com fallback para os sons anteriores; audição artística e cobertura de publicação pendentes.",
   "cues": {
     "hammer": {
@@ -720,6 +720,137 @@
       "fadeOut": 0.1,
       "minIntervalMs": 85,
       "rate": 1.07
+    },
+    "death_runic": {
+      "url": "audio/epidemic/e9608a98-6ae2-4dc3-a5b1-904d0b642599.mp3",
+      "sourceId": "e9608a98-6ae2-4dc3-a5b1-904d0b642599",
+      "sourceUrl": "https://www.epidemicsound.com/sound-effects/tracks/e9608a98-6ae2-4dc3-a5b1-904d0b642599/",
+      "gain": 0.5,
+      "enabled": true,
+      "duration": 1.468417,
+      "fadeOut": 0.16,
+      "minIntervalMs": 100
+    },
+    "death_synthetic": {
+      "url": "audio/epidemic/e9142d1d-11ea-4dde-a00a-80e5f5783367.mp3",
+      "sourceId": "e9142d1d-11ea-4dde-a00a-80e5f5783367",
+      "sourceUrl": "https://www.epidemicsound.com/sound-effects/tracks/e9142d1d-11ea-4dde-a00a-80e5f5783367/",
+      "gain": 0.5,
+      "enabled": true,
+      "duration": 1.0,
+      "fadeOut": 0.16,
+      "minIntervalMs": 100
+    },
+    "death_machine": {
+      "url": "audio/epidemic/d360a290-d6eb-486d-9839-72f34785d888.mp3",
+      "sourceId": "d360a290-d6eb-486d-9839-72f34785d888",
+      "sourceUrl": "https://www.epidemicsound.com/sound-effects/tracks/d360a290-d6eb-486d-9839-72f34785d888/",
+      "gain": 0.45,
+      "enabled": true,
+      "duration": 5.835792,
+      "fadeOut": 0.16,
+      "minIntervalMs": 100
+    },
+    "entry_assembly": {
+      "url": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",
+      "sourceId": "394fa979-5757-4f42-bd1c-9747469f75d2",
+      "gain": 0.8163,
+      "duration": 1.4,
+      "enabled": true,
+      "minIntervalMs": 80
+    },
+    "entry_lock": {
+      "url": "audio/epidemic/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.mp3",
+      "sourceId": "a34ceb26-9839-4e8b-b8ae-7275f5c50b1f",
+      "gain": 0.2809,
+      "duration": 0.445,
+      "enabled": true,
+      "minIntervalMs": 80
+    },
+    "entry_pressure": {
+      "url": "audio/epidemic/2466c6eb-1918-470e-8848-433318347306.mp3?v=polish2",
+      "sourceId": "2466c6eb-1918-470e-8848-433318347306",
+      "gain": 0.2126,
+      "duration": 4.29,
+      "enabled": true,
+      "fadeOut": 1,
+      "minIntervalMs": 80
+    },
+    "entry_mace": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.5256,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9,
+      "minIntervalMs": 80
+    },
+    "entry_armor": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.5256,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9,
+      "minIntervalMs": 80
+    },
+    "entry_seal_open": {
+      "url": "audio/epidemic/05a2889d-5253-4f25-9353-461ad5d1ddb6.mp3",
+      "sourceId": "05a2889d-5253-4f25-9353-461ad5d1ddb6",
+      "gain": 0.3438,
+      "duration": 2.4,
+      "enabled": true,
+      "minIntervalMs": 80
+    },
+    "entry_seal_pass": {
+      "url": "audio/epidemic/d70c6c13-bd3c-4d22-9a1d-3ff258e3157f.mp3?v=polish2",
+      "sourceId": "d70c6c13-bd3c-4d22-9a1d-3ff258e3157f",
+      "gain": 0.386,
+      "duration": 2.88,
+      "enabled": true,
+      "fadeOut": 0.6,
+      "minIntervalMs": 80
+    },
+    "entry_hook": {
+      "url": "audio/epidemic/9ed7d117-d9b6-4f19-9eae-0c7b886915cf.mp3",
+      "sourceId": "9ed7d117-d9b6-4f19-9eae-0c7b886915cf",
+      "gain": 0.2932,
+      "duration": 1.1,
+      "enabled": true,
+      "minIntervalMs": 80
+    },
+    "entry_tether": {
+      "url": "audio/epidemic/1460d4a4-4db2-4421-ae66-539b50569919.mp3",
+      "sourceId": "1460d4a4-4db2-4421-ae66-539b50569919",
+      "gain": 0.2912,
+      "duration": 2.4,
+      "enabled": true,
+      "minIntervalMs": 80
+    },
+    "entry_anchor": {
+      "url": "audio/epidemic/a34ceb26-9839-4e8b-b8ae-7275f5c50b1f.mp3",
+      "sourceId": "a34ceb26-9839-4e8b-b8ae-7275f5c50b1f",
+      "gain": 0.2809,
+      "duration": 0.445,
+      "enabled": true,
+      "minIntervalMs": 80
+    },
+    "entry_assault": {
+      "url": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",
+      "sourceId": "394fa979-5757-4f42-bd1c-9747469f75d2",
+      "gain": 0.8163,
+      "duration": 1.4,
+      "enabled": true,
+      "minIntervalMs": 80
+    },
+    "entry_escort": {
+      "url": "audio/epidemic/2403cbb5-d238-4e86-89d7-907f0a96062c.mp3?v=polish2",
+      "sourceId": "2403cbb5-d238-4e86-89d7-907f0a96062c",
+      "gain": 0.3316,
+      "duration": 4.3,
+      "enabled": true,
+      "fadeOut": 0.9,
+      "minIntervalMs": 80
     }
   },
   "levelCalibration": {
@@ -727,5 +858,6 @@
     "method": "75th percentile of active 20 ms RMS windows; measured on the played segment",
     "peakCeilingDbfs": -8,
     "auditionedByAssistant": false
-  }
+  },
+  "sourcePolicy": "Epidemic Sound only; missing samples stay silent."
 }

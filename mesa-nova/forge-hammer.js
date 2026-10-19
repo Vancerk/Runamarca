@@ -26,7 +26,7 @@ async function playForgeHammer(owner,powerId,{localClick=false,onImpact=null}={}
 }
 async function publicForgeHammer(event,powerId,{onImpact=null}={}){const key=hammerKey(event.playerId,powerId);if(locallyHammeredPowers.delete(key)){onImpact?.();return;}await playForgeHammer(event.playerId,powerId,{onImpact:()=>{flipConfirmedForgePower(event.playerId,powerId);onImpact?.();}});}
 
-function forgeHammerSound(){if(typeof RunaDamageFX!=='undefined'){RunaDamageFX.audio('hammer','impact',{x:innerWidth/2});return;}sound('impact',10);try{if(typeof audioContext==='undefined'||audioContext?.state!=='running')return;const now=audioContext.currentTime;for(const [frequency,volume,duration] of [[120,.11,.18],[540,.045,.6],[1320,.025,.46],[2470,.014,.32]]){const tone=audioContext.createOscillator(),gain=audioContext.createGain();tone.type='sine';tone.frequency.setValueAtTime(frequency,now);if(frequency===120)tone.frequency.exponentialRampToValueAtTime(48,now+.16);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(volume,now+.003);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);tone.connect(gain).connect(audioContext.destination);tone.start(now);tone.stop(now+duration+.03);}}catch{}}
+function forgeHammerSound(){const ac=typeof audioContext!=='undefined'?audioContext:null;globalThis.RunaTableAudio?.hammer(ac,{to:{x:innerWidth/2,y:innerHeight/2}});}
 
 function flipConfirmedForgePower(owner,powerId){
  if(typeof powerUsagePresentation==='undefined')return;const key=[state.code,state.matchId,owner,powerId].join(':'),previous=powerUsagePresentation.get(key);if(!previous?.used)return;powerUsagePresentation.set(key,{used:true,pending:false,started:Date.now()});

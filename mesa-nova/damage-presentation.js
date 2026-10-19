@@ -8,7 +8,23 @@ function damageTarget(uid){return damageRemnants.get(uid)||tableCard(uid)||(dama
 function resetDamagePresentation(){globalThis.RunaHandBuff?.clear();shownHandBuffs.clear();if(typeof resetCardIdentityPresentation==='function')resetCardIdentityPresentation();for(const n of damageRemnants.values())n.remove();damageRemnants.clear();damageSnapshots.clear();visuallyDefeated.clear();shownDeathBursts.clear();presentedPushes.clear();}
 function damageSpellKind(card,op){const id=card?.modelId||card?.id;if(op==='push_right')return 'wind';if(id==='RG07'||/estilhaço elétrico/i.test(card?.name||''))return 'shard';if(id==='RG04'||/fulgor final/i.test(card?.name||''))return 'fulgor';if(op==='ally_attack_damage')return 'forge';return op==='damage'||op==='area_damage'?'ember':null;}
 function patronDamageSource(owner){return $(owner===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card');}
-function finishDamageVictim(update){if(!update.uid||update.hp>0||visuallyDefeated.has(update.uid))return;visuallyDefeated.add(update.uid);const record=deadVisuals.get(update.uid),active=[...document.querySelectorAll('#visual-layer .visual-card')].find(n=>n.dataset.uid===update.uid);if(active&&!record)return;const source=damageRemnants.get(update.uid)||tableCard(update.uid);if(!source&&!record)return;const node=record?.copy||damageRemnants.get(update.uid)||visualCard(source),p=state.players.find(p=>[...p.reserve,...p.discard||[]].some(c=>c.uid===update.uid)),grave=$(p?.id===seat()?.id?'self-grave':'opponent-grave'),a=center(node),b=center(grave);deadVisuals.delete(update.uid);node.classList.add('visual-dead');safeFlight(node,[{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${b.x-a.x}px,${b.y-a.y}px) scale(.18) rotate(9deg)`,opacity:0}],{duration:620,easing:'ease-in',fill:'forwards'},update.uid).finally(()=>{damageRemnants.delete(update.uid);});}
+function finishDamageVictim(update){
+ if(!update.uid||update.hp>0||visuallyDefeated.has(update.uid))return;
+ const record=deadVisuals.get(update.uid),active=[...document.querySelectorAll('#visual-layer .visual-card')].find(n=>n.dataset.uid===update.uid);
+ const source=damageRemnants.get(update.uid)||tableCard(update.uid);
+ if(!source&&!record&&!active)return;
+ const p=state.players.find(p=>[...(p.reserve||[]),...(p.discard||[])].some(c=>c.uid===update.uid));
+ const card=[...(p?.reserve||[]),...(p?.discard||[])].find(c=>c.uid===update.uid);
+ const node=record?.copy||active||damageRemnants.get(update.uid)||visualCard(source);
+ visuallyDefeated.add(update.uid);node.classList.add('visual-dead');
+ globalThis.RunaCreatureDeath?.play({card,target:node,context:typeof audioContext==='undefined'?null:audioContext,key:state.matchId+':'+update.uid});
+ // A corpse stays on the battlefield until the result step. Do not fly it to
+ // the graveyard while other lanes are still revealing or attacking.
+ if(state.phase==='resolving'&&state.combat?.id){deadVisuals.set(update.uid,{copy:node,owner:p?.id||card?.owner});return;}
+ const grave=$(p?.id===seat()?.id?'self-grave':'opponent-grave'),a=center(node),b=center(grave);
+ deadVisuals.delete(update.uid);
+ safeFlight(node,[{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate(0,-3px) scale(.98)',opacity:1,offset:.25},{transform:`translate(${b.x-a.x}px,${b.y-a.y}px) scale(.18) rotate(9deg)`,opacity:0}],{duration:800,easing:'ease-in',fill:'forwards'},update.uid).finally(()=>{damageRemnants.delete(update.uid);});
+}
 function applyDamageHit(updates=[]){applyHealthUpdates(updates);for(const u of updates)finishDamageVictim(u);}
 function playDamageEffect(kind,from,to,onHit,donor=null){const combatId=state?.phase==='resolving'?state.combat?.id:null;return RunaDamageFX.play({kind,from,to,donor,onHit,getGeneration:()=>combatId?visualGeneration+':'+combatPresentationCurrent(combatId):visualGeneration});}
 async function presentDamageSpell(event){if(event.echo)globalThis.RunaMarikaEffects?.pages([damageTarget(event.targetId)].filter(Boolean));const from=patronDamageSource(event.playerId),target=event.targetPatronId?patronDamageSource(event.targetPatronId):damageTarget(event.targetId),kind=damageSpellKind(event.card||{name:event.name},event.op),donor=event.sourceId?damageTarget(event.sourceId):null;if(!kind||!from||!target){applyDamageHit(event.healthUpdates);return false;}await playDamageEffect(kind,from,target,()=>{if(event.targetPatronId)patronImpact(target);applyDamageHit(event.healthUpdates);if(event.sourceHealthUpdate)applyHealthUpdates([event.sourceHealthUpdate]);},donor);return true;}

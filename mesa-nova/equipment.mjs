@@ -26,13 +26,16 @@ export function chooseForge(room,p,data,{emit,pushLog}){
  }else throw Error('Etapa de forja inválida.');
 }
 export function equipWeapon(room,p,data,{emit,pushLog,attack}){
- const weapon=(p.weapons||[]).find(w=>w.uid===data.cardId&&w.durability>0),target=p.reserve.find(c=>c.uid===data.targetId&&c.type==='creature'&&c.damage<c.health);
- if(!weapon||!target)throw Error('Escolha uma arma da reserva e uma criatura aliada viva.');
- if(target.equipment)throw Error('Esta criatura já possui um equipamento.');
+ const patronTarget=data.targetId==='patron'||data.targetId==='patron:'+p.id;
+ const weapon=(p.weapons||[]).find(w=>w.uid===data.cardId&&w.durability>0),target=patronTarget&&p.patron?.hp>0?p.patron:p.reserve.find(c=>c.uid===data.targetId&&c.type==='creature'&&c.damage<c.health);
+ if(!weapon||!target)throw Error('Escolha uma arma da reserva e um Combatente aliado vivo.');
+ if(target.equipment)throw Error('Este Combatente já possui um equipamento.');
  if(p.mana<1)throw Error('Equipar custa 1 Éter.');
  p.mana--;p.weapons=p.weapons.filter(w=>w!==weapon);target.equipment=weapon;
- emit(room,'equipment_equipped',{playerId:p.id,targetId:target.uid,card:structuredClone(weapon),healthUpdates:[{uid:target.uid,hp:target.health-target.damage,maxHp:target.health,attack:attack(target,room,p.formation.indexOf(target.uid))}]});pushLog(room,p.name+' equipou '+weapon.name+' em '+target.name+'.',p.id);
+ emit(room,'equipment_equipped',{playerId:p.id,targetId:patronTarget?null:target.uid,targetPatronId:patronTarget?p.id:null,card:structuredClone(weapon),healthUpdates:patronTarget?[]:[{uid:target.uid,hp:target.health-target.damage,maxHp:target.health,attack:attack(target,room,p.formation.indexOf(target.uid))}]});pushLog(room,p.name+' equipou '+weapon.name+' em '+target.name+'.',p.id);
 }
+
+export function patronWeaponAttack(p){const weapon=p.patron?.equipment;if(!weapon)return 0;return Math.max(0,weapon.attack+(p.patron.hp<p.patron.maxHp?(weapon.woundedBonus||0):0));}
 export function releaseEquipment(room,p,creature,{emit,pushLog}){
  const weapon=creature.equipment;if(!weapon)return;delete creature.equipment;
  if(weapon.durability>0){(p.weapons??=[]).push(weapon);emit(room,'equipment_returned',{playerId:p.id,cardId:weapon.uid,sourceId:creature.uid});pushLog(room,weapon.name+' voltou à reserva com '+weapon.durability+' de durabilidade.',p.id);}

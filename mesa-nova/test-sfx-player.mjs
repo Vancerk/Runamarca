@@ -15,7 +15,7 @@ function fixture({fail=false,maxVoices=16}={}){
  fetcher:async()=>{fetched++;return {ok:!fail,arrayBuffer:async()=>new ArrayBuffer(8)};}});
  return {player,context,sources,counts:()=>({fetched,decoded})};
 }
-test('a cold cue falls back immediately and never plays late after loading',async()=>{
+test('a cold cue stays silent and never plays late after loading',async()=>{
  const f=fixture();assert.equal(f.player.play(f.context,'hammer'),false);
  await f.player.preload(f.context);assert.equal(f.sources.length,0);
  assert.equal(f.player.play(f.context,'hammer'),true);assert.equal(f.sources.length,1);
@@ -26,11 +26,16 @@ test('scene tracking cancels samples and cleanup releases their nodes',async()=>
  f.player.play(f.context,'hammer',{track:s=>tracked=s});assert.equal(tracked,f.sources[0]);
  tracked.stop();assert.equal(f.player.status().active,0);assert.equal(tracked.disconnected,true);
 });
-test('original mode and missing files preserve the prior sound path',async()=>{
+test('missing and disabled samples stay silent',async()=>{
  const f=fixture({fail:true});await f.player.preload(f.context);
  assert.equal(f.player.play(f.context,'hammer'),false);assert.equal(f.player.play(f.context,'pending'),false);
  f.player.preferences({mode:'original'});assert.equal(f.player.play(f.context,'hammer'),false);
  assert.equal(f.sources.length,0);
+});
+
+test('an old original-mode preference cannot reactivate a non-Epidemic sound path',async()=>{
+ const f=fixture();await f.player.preload(f.context);f.player.preferences({mode:'original'});
+ assert.equal(f.player.status().mode,'epidemic');assert.equal(f.player.play(f.context,'hammer'),true);assert.equal(f.sources.length,1);
 });
 test('muting suppresses playback without triggering a fallback sound',async()=>{
  const f=fixture();await f.player.preload(f.context);f.player.preferences({muted:true});

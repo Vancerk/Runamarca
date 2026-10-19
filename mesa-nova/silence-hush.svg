@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+ <rect x="4" y="4" width="92" height="92" rx="20" fill="#18372f" stroke="#e1d4a8" stroke-width="3"/>
+ <!-- A face in profile places the index finger visibly against the lips. -->
+ <path d="M22 73V62C11 44 18 18 37 17c15-1 23 8 23 20l7 9-8 5 1 7-6 4-1 11Z" fill="#f8efd6"/>
+ <path d="m48 38 7 1M53 55h7M52 60h6" fill="none" stroke="#18372f" stroke-width="3" stroke-linecap="round"/>
+ <path d="M67 87 62 77l-7-8c-4-5 0-9 4-7l6 5V46c0-7 9-7 9 0v20c4-4 8-2 8 2 6-2 10 4 7 10l-3 9Z" fill="#f8efd6" stroke="#18372f" stroke-width="3" stroke-linejoin="round"/>
+ <path d="M74 67v8m8-5-1 8M66 72l4 6" stroke="#18372f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+ <text x="31" y="87" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#f8efd6">SHH</text>
+</svg>

@@ -17,11 +17,11 @@ act(room,a,{type:'deck',deckId:catalog.decks[0].id},catalog);act(room,b,{type:'d
 act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);
 const player=room.players.find(p=>p.id===room.turn);player.deck=[];player.patron.hp=player.patron.maxHp=100;
 function buy(amount){const spell={uid:'buy-'+Math.random(),id:'draw-test',name:'Compra de teste',cost:0,type:'direct_spell',effects:[{op:'draw',amount}],owner:player.id};player.hand=[spell];act(room,player,{type:'play',cardId:spell.uid,mode:'direct'},catalog);}
-buy(4);assert.deepEqual(room.events.filter(e=>e.type==='fatigue').map(e=>e.amount),[1,2,4,8]);assert.equal(player.patron.hp,85);
-buy(1);assert.equal(player.patron.hp,69);assert.equal(player.fatigue,16);
+buy(4);assert.deepEqual(room.events.filter(e=>e.type==='fatigue').map(e=>e.amount),[1,2,3,4]);assert.equal(player.patron.hp,90);
+buy(1);assert.equal(player.patron.hp,85);assert.equal(player.fatigue,5);
 player.patron.hp=10;buy(3);assert.equal(room.phase,'finished');assert.equal(room.winner,room.players.find(p=>p!==player).id);
-assert.equal(player.fatigue,32,'A compra para quando a fadiga encerra a partida');
-console.log('OK: máximo de 30 cartas, quatro raridades, fadiga exponencial e derrota por fadiga.');
+assert.equal(player.fatigue,7,'A compra para quando a fadiga encerra a partida');
+console.log('OK: máximo de 30 cartas, quatro raridades, fadiga linear e derrota por fadiga.');
 const stories=makeRoom('STORY','Narrador'),author=stories.players[0],reader=join(stories,'Leitor');
 const creatureId=first.cards.find(card=>card.type==='creature').id;
 act(stories,author,{type:'deck',deckId:first.id,art:{[creatureId]:{speech:'A caçada começa!',narrative:'Uma lembrança entre as brumas.'}}},catalog);

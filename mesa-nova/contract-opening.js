@@ -29,18 +29,7 @@
   }};
  }
  function paper(players,base){const sheet=node('article','contract-paper');const crest=node('span','contract-crest');crest.innerHTML='<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 2 26 14 38 20 26 26 20 38 14 26 2 20 14 14Z"/><path d="M5 20Q20 3 35 20Q20 37 5 20Z"/><path d="M20 10v20"/></svg>';sheet.append(crest,node('h2','','CONTRATO DE CAÇADA'),node('p','contract-subtitle','Duas marcas. Um destino a ser escrito.'));const parties=node('div','contract-parties');players.slice(0,2).forEach((p,i)=>{if(i)parties.append(node('span','contract-versus','×'));const party=node('div','contract-party'),frame=node('div','contract-portrait'),img=node('img');img.src=new URL(p.patron?.image||portraitFor(p.patron?.affinity),new URL(base,location.href)).href;img.alt='';frame.append(img);party.append(frame,node('strong','',p.patron?.name||'Patrono'),node('span','',p.name||''));parties.append(party);});sheet.append(parties);const signature=node('div','contract-signature');signature.append(node('span','','REGISTRADO EM ELYSIUM'),node('span','contract-wax','◈'),node('span','','ACEITO À MESA'));sheet.append(signature);return sheet;}
- function sound(ctx,kind,record){if(record.muted||ctx?.state!=='running')return;
-  if(root.RunaSfx?.play?.(ctx,'contract_'+kind,{track:source=>record.sounds.add(source)}))return;
-  const at=ctx.currentTime,bus=ctx.createGain();bus.gain.value=.48;bus.connect(ctx.destination);let count=0;
-  function attach(s,chain){count++;record.sounds.add(s);s.onended=()=>{record.sounds.delete(s);s.disconnect();chain.forEach(n=>n.disconnect());if(--count===0)bus.disconnect();};}
-  function tone(freq,end,duration,volume,delay=0){const s=ctx.createOscillator(),g=ctx.createGain(),t=at+delay;s.type='sine';s.frequency.setValueAtTime(freq,t);s.frequency.exponentialRampToValueAtTime(end,t+duration);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(volume,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+duration);s.connect(g).connect(bus);attach(s,[g]);s.start(t);s.stop(t+duration+.02);}
-  function noise(duration,frequency,volume,delay=0){const buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*duration),ctx.sampleRate),data=buffer.getChannelData(0);let last=0;for(let i=0;i<data.length;i++){last=(last+(Math.random()*2-1)*.09)/1.09;data[i]=last*2.8;}const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain(),t=at+delay;s.buffer=buffer;f.type='bandpass';f.frequency.value=frequency;f.Q.value=.6;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(volume,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+duration);s.connect(f).connect(g).connect(bus);attach(s,[f,g]);s.start(t);s.stop(t+duration+.02);}
-  if(kind==='impact'){tone(112,38,.28,.5);tone(241,164,.19,.13);tone(588,545,.34,.025);noise(.18,1500,.65);noise(.5,280,.18,.03);}
-  else if(kind==='throw'){noise(.28,800,.34);tone(180,90,.23,.025);}
-  else if(kind==='tear'){for(let i=0;i<4;i++)noise(.22,900+i*120,.28,.07*i);noise(.6,280,.09);}
-  else if(kind==='paper'){noise(.38,650,.2);noise(.21,1100,.12,.08);}
-  else if(kind==='depart'){noise(.7,380,.1);tone(98,66,.7,.06);}
- }
+ function sound(ctx,kind,record){if(record.muted||ctx?.state!=='running')return;root.RunaSfx?.play(ctx,'contract_'+kind,{track:source=>record.sounds.add(source)});}
  function phaseAt(ms){return ms<900?'decks':ms<1600?'focus':ms<2300?'contract':ms<2630?'throw':ms<3370?'impact':ms<4100?'tear':'reveal';}
  function poseAt(ms){const t=clamp((ms-2300)/330),impact=ms>=2630,after=(ms-2630)/1000;return {tipX:800+(1-t)*830,tipY:278-(1-t)*500-100*Math.sin(t*Math.PI),angles:[.62+(1-t)*.48+(impact?Math.sin(after*39)*Math.exp(-after*8)*.075:0),.22+(1-t)*1.1,-.68-(1-t)*.72+(impact?Math.sin(after*47)*Math.exp(-after*7)*.055:0)],scale:68+(1-t)*43,opacity:smooth((ms-2280)/90)*(1-smooth((ms-4150)/450))};}
  function cancel(){active?.controller.abort();}

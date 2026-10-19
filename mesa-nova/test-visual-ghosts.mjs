@@ -30,7 +30,9 @@ function appFunction(name,next){const start=app.indexOf('function '+name+'('),en
 }
 {
  const {ctx,layer}=fixture([],[new Node('victim',2)]),attacker=new Node('victim',2);attacker.dataset.combatId='battle';layer.append(attacker);ctx.movingCards.add('victim');ctx.document.querySelectorAll=s=>s==='#visual-layer .visual-card'?[attacker]:[];
+ ctx.state.phase='resolving';ctx.state.combat={id:'battle'};
  ctx.finishDamageVictim({uid:'victim',hp:0});assert.equal(layer.children.length,1,'a lethal secondary effect must reuse the attacking copy instead of making another');assert.ok(vm.runInContext("visuallyDefeated.has('victim')",ctx));
+ assert.equal(attacker.isConnected,true,'a creature killed before its next action remains red on the battlefield');assert.ok(attacker.classes.has('visual-dead'));
  ctx.deadVisuals.set('victim',{copy:attacker,owner:'b'});ctx.center=()=>({x:100,y:200});ctx.safeFlight=async node=>{node.remove();};
  vm.runInContext(appFunction('animateCasualties','async function animateBanquet('),ctx);ctx.animateCasualties({casualties:[{uid:'victim',owner:'b'}]});assert.equal(attacker.isConnected,false,'a flagged casualty still removes its registered attack copy');assert.equal(ctx.deadVisuals.size,0);
 }

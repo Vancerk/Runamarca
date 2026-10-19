@@ -36,7 +36,16 @@
    ctx.lineWidth=2;ctx.strokeStyle=`rgba(255,170,62,${1-t})`;ctx.beginPath();ctx.arc(e.x,e.y,8+t*65,0,Math.PI*2);ctx.stroke();
    if(!reduced())for(let i=0;i<28;i++){const a=i*2.399,dist=t*(30+(i%5)*12);ctx.globalAlpha=1-t;ctx.fillStyle=i%3?'#d9873b':'#ffdc83';ctx.fillRect(e.x+Math.cos(a)*dist,e.y+Math.sin(a)*dist+25*t*t,2,3);}ctx.globalAlpha=1;
   }
-  if(visible||explosions.length)raf=requestAnimationFrame(frame);
+  // The rope belongs to the table: erase it beneath every visible card, including
+  // floating/dragged copies whose stacking context differs from the board's.
+  if(visible||explosions.length){
+   ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle='#000';ctx.beginPath();
+   for(const node of document.querySelectorAll('.card,.patron-card,.card-flight,.drag-preview,.used-spell,.combat-return-card,.grimoire-floating-card')){
+    const r=node.getBoundingClientRect();if(!r.width||!r.height||getComputedStyle(node).visibility==='hidden'||node.closest('[hidden]'))continue;
+    ctx.roundRect(r.left-2,r.top-2,r.width+4,r.height+4,Math.min(7,r.width*.06));
+   }
+   ctx.fill();ctx.restore();raf=requestAnimationFrame(frame);
+  }
  }
  function sync(){const s=typeof state==='undefined'?null:state;if(!s||['lobby','finished'].includes(s.phase)){root.RunaTurnClock.clear();return;}if(!raf)raf=requestAnimationFrame(frame);}
  root.RunaTurnClock={sync,burst,clear(){stopFuse();document.getElementById('center-actions')?.style.removeProperty('--turn-control-offset');current=null;explosions=[];if(raf)cancelAnimationFrame(raf);raf=0;if(canvas)ctx.clearRect(0,0,canvas.width,canvas.height);if(badge)badge.hidden=true;}};
