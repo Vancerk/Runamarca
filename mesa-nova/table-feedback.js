@@ -54,7 +54,8 @@ async function choosePatronPower(power){
  if(typeof hidePatronPowerZoom==='function')hidePatronPowerZoom();
  if(['forjar-armadura','forjar-arma'].includes(power.id)){forgingClickBusy=true;try{await playForgeHammer(self.id,power.id,{localClick:true,onImpact:()=>{if(state?.phase!=='prep'||state.turn!==self.id||state.spectator||clickSession!==[state.code,state.matchId,state.round,state.turn].join(':'))return;if(power.id==='forjar-arma')showForgePicker('cost',null,power);else void command({type:'patronPower',powerId:power.id});}});}finally{forgingClickBusy=false;}return;}
  if(power.id==='estudos-avancados'){showStudyPower(power);return;}
- if(power.id==='sumario-ecoante'){command({type:'patronPower',powerId:power.id});return;}
+ if(['sumario-ecoante','convocar-carrasco','represalia-de-eter'].includes(power.id)){command({type:'patronPower',powerId:power.id});return;}
+ if(power.id==='golpe-do-maioral'){showTargetPicker(power,[...state.players.flatMap(p=>p.reserve.filter(c=>c.damage<c.health).map(c=>c.uid)),...state.players.map(p=>'patron:'+p.id)],targetId=>command({type:'patronPower',powerId:power.id,targetId}));return;}
  if(power.id==='forjar-arma'){showForgePicker('cost',null,power);return;}
  if(power.id==='forjar-armadura'){command({type:'patronPower',powerId:power.id});return;}
  showTargetPicker(power,self.reserve.filter(c=>c.damage<c.health).map(c=>c.uid),targetId=>{

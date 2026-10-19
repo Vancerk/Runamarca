@@ -1,9 +1,9 @@
 /* Sample playback is synchronous at the animation cue. A cold/missing sample
-   returns false so the existing sound can play, never a late duplicate. */
+   stays silent rather than generating or substituting an unrelated sound. */
 (function(root){
  'use strict';
  function create({manifest={cues:{}},base='',fetcher=root.fetch?.bind(root),mode='epidemic',maxVoices=16}={}){
-  let catalog=manifest,selectedMode=mode,volume=1,muted=false;
+  let catalog=manifest,selectedMode='epidemic',volume=1,muted=false;
   const contexts=new WeakMap(),voices=new Set(),sources=new WeakMap(),bytes=new Map(),loading=new Map();
   const stats={played:0,fallback:0,failed:0,suppressed:0};
   function state(context){let value=contexts.get(context);if(!value){value={buffers:new Map(),pending:new Map(),last:new Map(),buses:new WeakMap()};contexts.set(context,value);}return value;}
@@ -35,7 +35,7 @@
    return {input,dispose(){nodes.forEach(n=>{try{n.disconnect();}catch{}});}};
   }
   function preferences(options={}){
-   if(options.mode!==undefined){selectedMode=options.mode==='original'?'original':'epidemic';stopAll();}
+   if(options.mode!==undefined){selectedMode='epidemic';stopAll();}
    if(options.muted!==undefined){muted=Boolean(options.muted);if(muted)stopAll();}
    if(Number.isFinite(options.volume))volume=Math.min(1,Math.max(0,options.volume));
   }
@@ -68,8 +68,9 @@
  if(root.document){
   const script=root.document.currentScript,base=new URL('.',script?.src||root.location.href).href;
   const live=create({base});root.RunaSfx=Object.assign(live,{create});
-  try{live.preferences({mode:root.localStorage.getItem('runamarca-sfx-mode')||'epidemic'});}catch{}
-  root.fetch(new URL('sfx-catalog.json?v=20261018-levels',base)).then(r=>{if(!r.ok)throw Error('SFX catalog unavailable');return r.json();}).then(data=>live.setManifest(data)).catch(()=>{});
+  try{root.localStorage.removeItem('runamarca-sfx-mode');}catch{}
+  const ready=root.fetch(new URL('sfx-catalog.json?v=20261018-manifestations-v2',base)).then(r=>{if(!r.ok)throw Error('SFX catalog unavailable');return r.json();}).then(data=>live.setManifest(data)).catch(()=>{});
+  const preload=live.preload;live.preload=async context=>{await ready;return preload(context);};
   root.addEventListener('pagehide',()=>live.stopAll());
  }
 })(globalThis);

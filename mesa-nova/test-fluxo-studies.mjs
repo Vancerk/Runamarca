@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';import fs from 'node:fs';import {randomU
 import {act,makeRoom,join,view,resolveCombat} from './game.mjs';import {initStudies,seeStudyCard,studyCardCost,studyPrepared} from './fluxo-studies.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('cartas.json',import.meta.url))),deck=catalog.decks.find(d=>d.affinity==='fluxo');
 function setup(){const room=makeRoom('STUDY1','Marika'),a=room.players[0],b=join(room,'Lyrik');Object.assign(room,{phase:'prep',turn:a.id,first:a.id,collectPreview:true,round:4});for(const p of [a,b])Object.assign(p,{deckData:deck,mana:10,manaMax:10,preparationSerial:1,patron:{...structuredClone(deck.patron),hp:100,maxHp:100,affinity:p===a?'fluxo':'forja'},deck:[]});a.deck=deck.cards.flatMap(c=>Array.from({length:c.quantity},()=>({...structuredClone(c),uid:randomUUID(),owner:a.id,modelId:c.id,baseStats:{attack:c.attack,health:c.health,cost:c.cost},damage:0,attackMod:0})));initStudies(a);return {room,a,b};}
-const vanilla=(p)=>({uid:randomUUID(),owner:p.id,modelId:'plain',name:'Alvo',type:'creature',cost:1,attack:0,health:10,damage:0,attackMod:0,effects:[],baseStats:{attack:0,health:10,cost:1}});
+const vanilla=(p)=>({uid:randomUUID(),owner:p.id,name:'Alvo',type:'creature',cost:1,attack:0,health:10,damage:0,attackMod:0,effects:[],baseStats:{attack:0,health:10,cost:1}});
 const spell=(p,effects,cost=1)=>({uid:randomUUID(),owner:p.id,id:randomUUID(),name:'Magia',type:'spell',cost,effects});
 const progress=(p,n)=>p.study.seenIds=p.originalDeck.slice(0,n).map(c=>c.studyOriginalId);
 const advance=(room,p,extra={})=>act(room,p,{type:'patronPower',powerId:'estudos-avancados',...extra},catalog);
@@ -36,13 +36,13 @@ const advance=(room,p,extra={})=>act(room,p,{type:'patronPower',powerId:'estudos
 }
 {
  const {room,a,b}=setup();progress(a,30);advance(room,a);a.mana=10;advance(room,a,{centerNeighbor:2});a.mana=10;
- const originals=[vanilla(a),spell(a,[{op:'damage',target:'chosen_enemy_creature',amount:1}],4),spell(a,[{op:'draw',amount:1}],5),vanilla(a),vanilla(a)];a.originalDeck=originals.map(c=>({...c,studyOriginalId:c.uid}));const ids=originals.map(c=>c.uid),enemy=vanilla(b);b.reserve=[enemy];
- assert.throws(()=>advance(room,a,{originalIds:ids,instantIndices:[2]}),/custo/);assert.equal(a.mana,10);assert.throws(()=>advance(room,a,{originalIds:[ids[0],ids[0]]}),/até 5/);assert.throws(()=>advance(room,a,{originalIds:['inexistente']}),/original/);
- advance(room,a,{originalIds:ids,instantIndices:[0,1]});assert.equal(a.mana,1);assert.equal(a.studyBook.cards.length,5);const [creature,magic]=a.studyBook.cards;assert.ok(a.studyBook.cards.every(c=>!c.studyOriginalId));assert.equal(view(room,b).players.find(p=>p.id===a.id).study.book,undefined);
- act(room,a,{type:'play',cardId:creature.uid},catalog);assert.equal(a.reserve[0].uid,creature.uid);assert.equal(a.mana,1);assert.throws(()=>act(room,a,{type:'play',cardId:magic.uid,targetId:'invalid'},catalog));assert.equal(a.studyBook.instantIds.length,1);assert.equal(a.mana,1);act(room,a,{type:'play',cardId:magic.uid,targetId:enemy.uid},catalog);assert.equal(enemy.damage,1);assert.equal(a.mana,1);assert.equal(a.studyBook,undefined);assert.equal(a.hand.length,3);assert.equal(a.study.seenIds.length,30);assert.throws(()=>advance(room,a),/concluídos/);
+ const originals=[vanilla(a),spell(a,[{op:'damage',target:'chosen_enemy_creature',amount:1}],4),spell(a,[{op:'draw',amount:1}],5),vanilla(a),vanilla(a)];a.originalDeck=originals.map(c=>({...c,studyOriginalId:c.uid}));a.deck=[];const enemy=vanilla(b);b.reserve=[enemy];a.fatigue=3;
+ advance(room,a,{originalIds:['ignored-client-selection'],chooseInstant:true});assert.equal(a.mana,1);assert.equal(a.studyBook.cards.length,5);assert.equal(a.deck.length,5);assert.equal(a.studyBook.remaining,2);assert.equal(a.fatigue,3,'refilling the deck does not reset accumulated fatigue');
+ assert.equal(new Set([...a.studyBook.cards,...a.deck].map(c=>c.uid)).size,10);assert.ok([...a.studyBook.cards,...a.deck].every(c=>!c.studyOriginalId));assert.equal(view(room,b).players.find(p=>p.id===a.id).study.book,undefined);
+ const creature=a.studyBook.cards.find(c=>c.type==='creature'),magic=a.studyBook.cards.find(c=>c.cost===4);act(room,a,{type:'play',cardId:creature.uid},catalog);assert.equal(a.mana,1);assert.throws(()=>act(room,a,{type:'play',cardId:magic.uid,targetId:'invalid'},catalog));assert.equal(a.studyBook.remaining,1);act(room,a,{type:'play',cardId:magic.uid,targetId:enemy.uid},catalog);assert.equal(enemy.damage,1);assert.equal(a.mana,1);assert.equal(a.studyBook,undefined);assert.equal(a.hand.length,3);assert.equal(a.study.seenIds.length,30);assert.throws(()=>advance(room,a),/concluídos/);
 }
 {
- const {room,a}=setup();progress(a,30);a.study.activated=[10,20];a.study.discount=true;const card=a.originalDeck.find(c=>c.cost<=4);advance(room,a,{originalIds:[card.studyOriginalId],instantIndices:[0]});assert.equal(a.studyBook.cards.length,1);act(room,a,{type:'endPrep'},catalog);assert.equal(a.studyBook,undefined);assert.equal(a.hand.length,1,'closing preparation safely stores unused copies');
+ const {room,a}=setup();progress(a,30);a.study.activated=[10,20];a.study.discount=true;const card=a.originalDeck.find(c=>c.cost<=4);advance(room,a,{originalIds:[card.studyOriginalId],instantIndices:[0]});assert.equal(a.studyBook.cards.length,5);act(room,a,{type:'endPrep'},catalog);assert.equal(a.studyBook,undefined);assert.equal(a.hand.length,5,'closing preparation safely stores unused copies');
 }
 {
  const {room,a}=setup(),allies=[vanilla(a),vanilla(a)];a.reserve=allies;a.formation=[allies[0].uid,allies[1].uid,null];
@@ -56,13 +56,16 @@ const advance=(room,p,extra={})=>act(room,p,{type:'patronPower',powerId:'estudos
 }
 {
  const {room,a,b}=setup();progress(a,30);a.study.activated=[10,20];a.study.discount=true;a.mana=10;
- const originals=Array.from({length:5},()=>vanilla(a));a.originalDeck=originals.map(c=>({...c,studyOriginalId:c.uid}));const ids=originals.map(c=>c.uid);
- act(room,a,{type:'grimoirePreview',originalIds:ids.slice(0,2)},catalog);const publicStudy=view(room,b).players.find(p=>p.id===a.id).study;
- assert.equal(publicStudy.grimoire.cards.length,2);assert.equal(publicStudy.originalCards,undefined);assert.equal(publicStudy.book,undefined);assert.equal(a.mana,10);
- assert.throws(()=>act(room,a,{type:'grimoirePreview',originalIds:['invalid']},catalog),/original/);
- advance(room,a,{originalIds:ids,chooseInstant:true});assert.equal(a.studyBook.instantIds.length,5);assert.equal(a.studyBook.remaining,2);assert.equal(a.studyPreview,undefined);
- const cards=[...a.studyBook.cards];act(room,a,{type:'play',cardId:cards[4].uid},catalog);assert.equal(a.studyBook.remaining,1);act(room,a,{type:'play',cardId:cards[2].uid},catalog);
- assert.equal(a.studyBook,undefined);assert.equal(a.hand.length,3);assert.equal(a.mana,1);a.mana=0;assert.throws(()=>act(room,a,{type:'play',cardId:cards[0].uid},catalog),/Mana/);
- assert.equal(room.events.filter(e=>e.type==='creature'&&e.fromGrimoire).length,2);assert.equal(view(room,b).players.find(p=>p.id===a.id).study.grimoire,null);
+ const originals=Array.from({length:5},()=>vanilla(a));a.originalDeck=originals.map(c=>({...c,studyOriginalId:c.uid}));
+ assert.throws(()=>act(room,a,{type:'grimoirePreview',originalIds:[originals[0].uid]},catalog),/sorteadas/);assert.equal(a.mana,10);
+ advance(room,a,{chooseInstant:true});assert.equal(a.studyBook.instantIds.length,5);assert.equal(a.studyBook.remaining,2);const publicStudy=view(room,b).players.find(p=>p.id===a.id).study;assert.equal(publicStudy.grimoire.cards.length,5);assert.equal(publicStudy.originalCards,undefined);assert.equal(publicStudy.book,undefined);
+ const cards=[...a.studyBook.cards];act(room,a,{type:'play',cardId:cards[4].uid},catalog);assert.equal(a.studyBook.remaining,1);act(room,a,{type:'play',cardId:cards[2].uid},catalog);assert.equal(a.studyBook,undefined);assert.equal(a.hand.length,3);assert.equal(a.mana,1);a.mana=0;assert.throws(()=>act(room,a,{type:'play',cardId:cards[0].uid},catalog),/Mana/);assert.equal(view(room,b).players.find(p=>p.id===a.id).study.grimoire,null);
 }
-console.log('Fluxo: estudos, compartilhamento, escolha pública do Grimório, 5 cópias, escolha posterior de 2 usos gratuitos, alvos, sigilo do deck e encerramento aprovados.');
+
+{
+ const {room,a}=setup();progress(a,30);a.study.activated=[10,20];a.mana=10;const before=a.deck.length;a.hand=Array.from({length:9},()=>vanilla(a));advance(room,a,{chooseInstant:true});
+ assert.equal(a.deck.length,before+5);const copy=a.studyBook.cards[0],twin=a.deck.find(c=>!c.studyOriginalId&&c.modelId===copy.modelId);assert.ok(twin);const health=twin.health;copy.health+=7;assert.equal(twin.health,health,'copies do not share mutable attributes');
+ act(room,a,{type:'grimoireFinish'},catalog);assert.equal(a.hand.length,9,'full hand keeps the limit');assert.equal(a.discard.length,5);assert.equal(a.deck.length,before+5);assert.equal(a.studyBook,undefined);
+}
+
+console.log('Fluxo: estudos, compartilhamento, sorteio público do Grimório, 10 cópias, escolha posterior de 2 usos gratuitos, alvos, sigilo do deck e encerramento aprovados.');

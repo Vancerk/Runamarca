@@ -43,7 +43,7 @@
     }
   ],
   "rules": {
-    "patron_health": 20,
+    "patron_health": 16,
     "deck_size": 24,
     "max_copies": {
       "lacaio": 3,
@@ -92,7 +92,7 @@
       "patron": {
         "id": "P-F-LYRIK",
         "name": "Lyrik, O Forjador",
-        "health": 20,
+        "health": 16,
         "affinities": [
           "forja"
         ],
@@ -1105,7 +1105,7 @@
       "patron": {
         "id": "P-FL-VIRELION",
         "name": "Marika, A Mestrarcana",
-        "health": 20,
+        "health": 16,
         "affinities": [
           "fluxo"
         ],
@@ -2396,7 +2396,27 @@
         "id": "RGP",
         "name": "Dom, O Maioral",
         "image": "patrons/dom-maioral.png",
-        "hp": 20
+        "hp": 16,
+        "powers": [
+          {
+            "id": "convocar-carrasco",
+            "name": "Convocar Carrasco",
+            "cost": 2,
+            "limit": "round",
+            "duration": "instant",
+            "image": "energy-icons/ruptura.png",
+            "text": "Convoque um Carrasco 1/1 na sua reserva."
+          },
+          {
+            "id": "represalia-de-eter",
+            "name": "Represália de Éter",
+            "cost": 4,
+            "limit": "match",
+            "duration": "round",
+            "image": "energy-icons/ruptura.png",
+            "text": "Até o fim desta rodada, sempre que qualquer jogador usar uma magia, cause ao Patrono dele dano igual ao Éter pago por ela. Inclui suas próprias magias."
+          }
+        ]
       }
     },
     {
@@ -2409,7 +2429,7 @@
       "patron": {
         "id": "P-F-LYRIK",
         "name": "Lyrik, O Forjador",
-        "health": 20,
+        "health": 16,
         "affinities": [
           "forja"
         ],

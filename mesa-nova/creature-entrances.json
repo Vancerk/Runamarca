@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "energies": {
     "forja": "audio/platinum-20261018/entrada-forja.mp3",
     "fluxo": "audio/platinum-20261018/entrada-fluxo.mp3",
@@ -24,10 +24,10 @@
       "kind": "voice"
     },
     "FL09": {
-      "audio": "audio/entrances-mix3-20261018/golias-alerta-naval.mp3",
-      "duration": 3.55,
-      "kind": "naval-siren",
-      "source": "https://www.epidemicsound.com/sound-effects/tracks/07870fdf-3505-4bc0-8d85-b2f98dd99dd4/"
+      "audio": "audio/entrances-mix4-20261018/golias-buzina-transatlantico.mp3",
+      "duration": 3.8,
+      "kind": "ship-horn",
+      "source": "https://www.epidemicsound.com/sound-effects/tracks/463af07a-e0b5-41be-9019-008d70e379e2/"
     }
   }
 }

@@ -64,6 +64,12 @@ function presentIdentityRevelation(ability){
  const targets=(ability.healthUpdates||[]).map(u=>damageTarget(u.uid)).filter(Boolean);
  let kind=null;if(ability.op==='stat_buff')kind='yang';else if(ability.op==='attack_modifier')kind=ability.amount<0?'yin':'rally';else if(ability.op==='damage_curse')kind='curse';else if(ability.op==='combat_protocol')kind='veronica';else if(ability.op==='adjacent_attack_buff')kind='aura';else if(ability.op==='duel_stasis')kind='stasis';
  if(!kind)return false;
+ if(kind==='veronica'&&globalThis.RunaPlatinumEntry){
+  const combatId=state.combat?.id,generation=visualGeneration;
+  void RunaPlatinumEntry.empower({source,targets:targets.length?targets:[source],mode:ability.mode,context:audioContext,valid:()=>generation===visualGeneration&&combatPresentationCurrent(combatId)});
+  deferVisual(()=>{if(!combatPresentationCurrent(combatId))return;applyHealthUpdates(ability.healthUpdates);for(const u of ability.healthUpdates||[])cardIdentityProtocol.add(u.uid);syncCardIdentities();},650);return true;
+ }
+
  if(kind==='stasis'){for(const n of [source,target])n?.classList.add('duel-stasis');targets.push(source,target);}
  identityPlay(kind,source,target||source,()=>{applyHealthUpdates(ability.healthUpdates);if(ability.op==='combat_protocol')for(const u of ability.healthUpdates||[])cardIdentityProtocol.add(u.uid);syncCardIdentities();},targets.length?targets:[target||source]);return true;
 }

@@ -15,13 +15,6 @@
  let saved={};try{saved=JSON.parse(localStorage.getItem('runamarca-music-v1')||'{}')||{};}catch{}
  const percent=(value,fallback)=>Number.isFinite(value)?Math.min(100,Math.max(0,Math.round(value*100))):fallback;
  const music=range('Música',percent(saved.music,17)),ambience=range('Ambiente',percent(saved.ambience,7));
- const effectLabel=document.createElement('label'),effectChoice=document.createElement('select');
- effectLabel.append(document.createTextNode('Efeitos sonoros '));
- for(const [value,label] of [['epidemic','Nova biblioteca'],['original','Versão anterior']]){const option=document.createElement('option');option.value=value;option.textContent=label;effectChoice.append(option);}
- effectChoice.setAttribute('aria-label','Biblioteca de efeitos sonoros');
- try{effectChoice.value=localStorage.getItem('runamarca-sfx-mode')||'epidemic';}catch{}
- effectLabel.append(effectChoice);panel.append(effectLabel);
- effectChoice.addEventListener('change',()=>{globalThis.RunaSfx?.preferences({mode:effectChoice.value});try{localStorage.setItem('runamarca-sfx-mode',effectChoice.value);}catch{}});
  const muteLabel=document.createElement('label'),mute=document.createElement('input');mute.type='checkbox';mute.checked=Boolean(saved.muted);
  muteLabel.className='table-music-mute';muteLabel.append(mute,document.createTextNode('Silenciar trilha e ambiente'));panel.append(muteLabel);
  const start=document.createElement('button');start.type='button';start.textContent='Ativar áudio';start.hidden=true;

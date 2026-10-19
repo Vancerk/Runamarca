@@ -2,7 +2,7 @@
   "date": "2026-10-17",
   "musicVolume": 0.17,
   "ambienceVolume": 0.07,
-  "activeCues": 94,
+  "activeCues": 109,
   "items": [
     {
       "id": "epidemic-af7acf9a-0bec-4062-af06-522c9fd0b726",
@@ -782,6 +782,48 @@
       ],
       "previewVolume": 0.5,
       "integrated": true
+    },
+    {
+      "id": "e9608a98-6ae2-4dc3-a5b1-904d0b642599",
+      "kind": "sfx",
+      "role": "effects",
+      "title": "Scifi, Machine, Power Down, Object",
+      "label": "Rúnico · energia desligando",
+      "url": "audio/epidemic/e9608a98-6ae2-4dc3-a5b1-904d0b642599.mp3",
+      "sourceUrl": "https://www.epidemicsound.com/sound-effects/tracks/e9608a98-6ae2-4dc3-a5b1-904d0b642599/",
+      "previewVolume": 0.5,
+      "durationSeconds": 1.468417,
+      "cues": [
+        "death_runic"
+      ]
+    },
+    {
+      "id": "e9142d1d-11ea-4dde-a00a-80e5f5783367",
+      "kind": "sfx",
+      "role": "effects",
+      "title": "Robots, Misc, Sci-Fi, Computer, Shut Down, Glitch",
+      "label": "Sintético · falha eletrônica",
+      "url": "audio/epidemic/e9142d1d-11ea-4dde-a00a-80e5f5783367.mp3",
+      "sourceUrl": "https://www.epidemicsound.com/sound-effects/tracks/e9142d1d-11ea-4dde-a00a-80e5f5783367/",
+      "previewVolume": 0.5,
+      "durationSeconds": 1.0,
+      "cues": [
+        "death_synthetic"
+      ]
+    },
+    {
+      "id": "d360a290-d6eb-486d-9839-72f34785d888",
+      "kind": "sfx",
+      "role": "effects",
+      "title": "Robots, Misc, Sci-Fi, Computer, Malfunction, Death",
+      "label": "Mecanoide · colapso",
+      "url": "audio/epidemic/d360a290-d6eb-486d-9839-72f34785d888.mp3",
+      "sourceUrl": "https://www.epidemicsound.com/sound-effects/tracks/d360a290-d6eb-486d-9839-72f34785d888/",
+      "previewVolume": 0.45,
+      "durationSeconds": 5.835792,
+      "cues": [
+        "death_machine"
+      ]
     }
   ],
   "remainingOriginalCues": []

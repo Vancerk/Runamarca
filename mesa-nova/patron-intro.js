@@ -23,12 +23,7 @@
  function cancel(){active?.controller.abort();}
  function trackSound(node){const record=active;if(!record)return;record.audioNodes.add(node);const stop=()=>{if(!record.completed&&!root.RunaSfx?.release(node))try{node.stop();}catch{}};record.controller.signal.addEventListener('abort',stop,{once:true});node.addEventListener('ended',()=>{record.audioNodes.delete(node);record.controller.signal.removeEventListener('abort',stop);},{once:true});}
  function stopEffects(){for(const node of active?.audioNodes||[]){if(!root.RunaSfx?.release(node))try{node.stop();}catch{}}}
- function pressureSound(context,muted,landing=false,point=null){
-  if(muted||context?.state!=='running')return;if(root.RunaSfx?.play(context,landing?'forge_landing':'forge_pressure',{track:trackSound,to:point}))return;const now=context.currentTime,length=landing?.48:.66,buffer=context.createBuffer(1,Math.ceil(context.sampleRate*length),context.sampleRate),samples=buffer.getChannelData(0);
-  let seed=1753;for(let i=0;i<samples.length;i++){seed=(Math.imul(seed,1664525)+1013904223)|0;samples[i]=(seed/2147483648)*Math.exp(-i/samples.length*4);}
-  const noise=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();noise.buffer=buffer;filter.type='bandpass';filter.frequency.setValueAtTime(landing?1650:2700,now);filter.frequency.exponentialRampToValueAtTime(landing?380:650,now+length);filter.Q.value=.65;gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(landing?.24:.31,now+.008);gain.gain.exponentialRampToValueAtTime(.0001,now+length);noise.connect(filter).connect(gain).connect(context.destination);trackSound(noise);noise.start(now);noise.onended=()=>{noise.disconnect();filter.disconnect();gain.disconnect();};
-  const bass=context.createOscillator(),thud=context.createGain();bass.frequency.setValueAtTime(landing?116:160,now);bass.frequency.exponentialRampToValueAtTime(landing?44:38,now+.18);thud.gain.setValueAtTime(landing?.2:.27,now);thud.gain.exponentialRampToValueAtTime(.0001,now+.25);bass.connect(thud).connect(context.destination);trackSound(bass);bass.start(now);bass.stop(now+.27);bass.onended=()=>{bass.disconnect();thud.disconnect();};
- }
+ function pressureSound(context,muted,landing=false,point=null){if(!muted)root.RunaSfx?.play(context,landing?'forge_landing':'forge_pressure',{track:trackSound,to:point});}
  function anvilSound(context,muted,point){if(muted||context?.state!=='running')return;if(root.RunaTableAudio)root.RunaTableAudio.hammer(context,{track:trackSound,to:point});else pressureSound(context,muted);}
  function impact(scene,point,context,muted,reduced){
   anvilSound(context,muted,point);if(reduced)return;
@@ -49,8 +44,8 @@
  }
  function frameMotion(ms,signal,draw){return new Promise(resolve=>{let raf=0,start=performance.now();const done=()=>{cancelAnimationFrame(raf);signal.removeEventListener('abort',done);resolve();};const tick=now=>{if(signal.aborted)return done();const t=Math.min(1,(now-start)/ms);draw(t);if(t<1)raf=requestAnimationFrame(tick);else done();};signal.addEventListener('abort',done,{once:true});raf=requestAnimationFrame(tick);});}
  const ease=t=>t*t*(3-2*t),clamp=t=>Math.max(0,Math.min(1,t));
- function whisper(context,muted,from,to){if(muted||context?.state!=='running')return;if(root.RunaSfx?.play(context,'flux_whisper',{track:trackSound,from,to,travelSeconds:1.6}))return;const now=context.currentTime;for(const [frequency,delay,volume] of [[523,0,.035],[784,.12,.018],[1047,.32,.008]]){const oscillator=context.createOscillator(),gain=context.createGain();oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(.0001,now+delay);gain.gain.linearRampToValueAtTime(volume,now+delay+.2);gain.gain.exponentialRampToValueAtTime(.0001,now+delay+1.4);oscillator.connect(gain).connect(context.destination);trackSound(oscillator);oscillator.start(now+delay);oscillator.stop(now+delay+1.5);oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};}}
- function chainSound(context,muted,heavy=false,from,to){if(muted||context?.state!=='running')return;if(root.RunaSfx?.play(context,heavy?'chain_land':'chain_throw',{track:trackSound,from,to,travelSeconds:.55}))return;const now=context.currentTime;for(let i=0;i<(heavy?4:9);i++){const time=now+i*(heavy?.014:.054),osc=context.createOscillator(),gain=context.createGain();osc.type='triangle';osc.frequency.setValueAtTime((heavy?310:1100)+i%3*347,time);osc.frequency.exponentialRampToValueAtTime((heavy?95:560)+i%2*90,time+.09);gain.gain.setValueAtTime(heavy?.04:.017,time);gain.gain.exponentialRampToValueAtTime(.0001,time+.11);osc.connect(gain).connect(context.destination);trackSound(osc);osc.start(time);osc.stop(time+.12);osc.onended=()=>{osc.disconnect();gain.disconnect();};}}
+ function whisper(context,muted,from,to){if(!muted)root.RunaSfx?.play(context,'flux_whisper',{track:trackSound,from,to,travelSeconds:1.6});}
+ function chainSound(context,muted,heavy=false,from,to){if(!muted)root.RunaSfx?.play(context,heavy?'chain_land':'chain_throw',{track:trackSound,from,to,travelSeconds:.55});}
  async function fluxArrival(scene,frame,start,end,signal,context,muted,reduced){
   const dx=end.left+end.width/2-start.left-start.width/2,dy=end.top+end.height/2-start.top-start.height/2,final='translate('+dx+'px,'+dy+'px) scale('+end.width/start.width+','+end.height/start.height+')';
   if(reduced){frame.style.transform=final;await wait(160,signal);return;}
@@ -169,7 +164,8 @@
    if(signal.aborted)return;scene.dataset.phase='settling';caption.style.opacity='0';heading.style.opacity='0';crest.style.opacity='0';portraits.forEach(n=>n.classList.remove('speaking'));
    await Promise.all(players.map(async player=>{
     const container=portraits.get(player.id),frame=flightNodes.get(player.id),home=options.getHome?.(player.id),start=frame.getBoundingClientRect(),end=home?.getBoundingClientRect();if(!end?.width||!end?.height){await wait(300,signal);return;}
-    container.querySelector('.intro-patron-name').style.opacity='0';const arrival=player.patron.affinity==='forja'?forgeArrival:player.patron.affinity==='fluxo'?fluxArrival:chainArrival;await arrival(scene,frame,start,end,signal,context,muted,reduced,player.id===options.selfId?'self':'opponent');
+    container.querySelector('.intro-patron-name').style.opacity='0';const arrival=player.patron.affinity==='forja'?forgeArrival:player.patron.affinity==='fluxo'?fluxArrival:chainArrival;
+    await arrival(scene,frame,start,end,signal,context,muted,reduced,player.id===options.selfId?'self':'opponent');
    }));
    if(!signal.aborted)await wait(reduced?100:1050,signal);record.completed=!signal.aborted;
   }finally{

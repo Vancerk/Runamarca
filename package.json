@@ -9,7 +9,8 @@
     "test:torre": "node --test test/torre.test.mjs torre/backend/*.test.mjs",
     "test:balance": "node --experimental-vm-modules design/simular-120-silencio-20261011.mjs",
     "test:escudo": "node --test escudo/backend/escudo.test.mjs",
-    "test:polish": "node --test mesa-nova/test-creature-entrances.mjs mesa-nova/test-sfx-player.mjs mesa-nova/test-combat-audio.mjs mesa-nova/test-hand-buff-presentation.mjs mesa-nova/test-match-effect-cleanup.mjs mesa-nova/test-opening-return.mjs mesa-nova/test-veronica-markers.mjs"
+    "test:polish": "node --test mesa-nova/test-creature-entrances.mjs mesa-nova/test-sfx-player.mjs mesa-nova/test-combat-audio.mjs mesa-nova/test-hand-buff-presentation.mjs mesa-nova/test-match-effect-cleanup.mjs mesa-nova/test-opening-return.mjs mesa-nova/test-veronica-markers.mjs",
+    "test:grimorio": "node --jitless --test mesa-nova/test-study-selection.mjs mesa-nova/test-fluxo-studies.mjs mesa-nova/test-deck-fatigue.mjs mesa-nova/test-patron-health.mjs"
   },
   "engines": {
     "node": ">=24"
