@@ -6,7 +6,7 @@ const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url
 const card=(id,p,extra={})=>({...structuredClone([...deck.cards,...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,baseStats:{...[...deck.cards,...(catalog.additionalCards||[])].find(c=>c.id===id)},attackMod:0,damage:0,...extra});
 function setup(phase='prep'){const room=makeRoom('RUPT','A'),a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{deckData:deck,patron:{hp:100,maxHp:100,affinity:'ruptura'},mana:10,manaMax:10,deck:Array.from({length:20},()=>({uid:crypto.randomUUID()})),taunts:{}});Object.assign(room,{phase,first:a.id,turn:a.id,collectPreview:true});return {room,a,b};}
 const place=(p,c,lane)=>{p.reserve.push(c);p.formation[lane]=c.uid;return c;};
-assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.length,13);for(const c of deck.cards){assert.ok(c.effects.length);assert.ok(fs.existsSync(new URL(c.image,import.meta.url)));}assert.ok(!deck.cards.find(c=>c.id==='RG05').text.includes('Sacrifique'));
+assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.length,14);for(const c of deck.cards){assert.ok(c.effects.length);assert.ok(fs.existsSync(new URL(c.image,import.meta.url)),c.id+' possui arte instalada');}assert.ok(!deck.cards.find(c=>c.id==='RG05').text.includes('Sacrifique'));
 {
  const {room,a,b}=setup();const spell=card('RG07',a);a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid,targetId:'patron:'+b.id},catalog);assert.equal(b.patron.hp,99);assert.equal(a.mana,9);const event=room.events.find(e=>e.type==='spell');assert.equal(event.card.uid,spell.uid);assert.equal(view(room,b).events.find(e=>e.id===event.id).card.uid,spell.uid);assert.equal(event.targetPatronId,b.id);assert.equal(event.healthUpdates[0].patronId,b.id);
 }
@@ -24,7 +24,7 @@ assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.card
 }
 {
  const {room,a,b}=setup('formation'),ram=place(a,card('RG11',a),0);
- act(room,a,{type:'revealPayment',cardId:ram.uid,pay:true},catalog);assert.equal(a.mana,9);assert.ok(view(room,b).events.some(e=>e.type==='ability_notice'&&e.message.includes('Aríete')));assert.throws(()=>act(room,a,{type:'revealPayment',cardId:ram.uid,pay:true},catalog));room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,1);assert.equal(b.patron.hp,99);assert.equal(ram.attack,0);assert.equal(ram.revealPaid,undefined);
+ act(room,a,{type:'revealPayment',cardId:ram.uid,pay:true},catalog);assert.equal(a.mana,10);assert.ok(view(room,b).events.some(e=>e.type==='ability_notice'&&e.message.includes('Aríete')));assert.throws(()=>act(room,a,{type:'revealPayment',cardId:ram.uid,pay:true},catalog));room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,2);assert.equal(b.patron.hp,98);assert.equal(ram.attack,0);assert.equal(ram.revealPaid,undefined);
 }
 {
  const {room,a,b}=setup('formation'),v=place(a,card('RG10',a),1),target=card('RG12',b),eman=card('RG13',b);b.reserve.push(target,eman);b.emanation=[eman.uid];room.forceWindow={until:Date.now()+5000,owners:[a.id]};
@@ -41,13 +41,13 @@ assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.card
  const {room,a,b}=setup(),spell=card('RG09',a),fighter=card('RG02',a),unused=card('RG01',a);a.hand=[spell];a.reserve=[fighter,unused];act(room,a,{type:'play',cardId:spell.uid},catalog);a.formation[0]=fighter.uid;room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,2);assert.equal(b.patron.hp,98);assert.equal(fighter.attackMod,0);assert.equal(unused.attackMod,0);assert.equal(a.pendingCombatAttack,undefined);
 }
 {
- const {room,a,b}=setup('resolving');a.patron.hp=49;place(a,card('RG12',a),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,5);assert.equal(b.patron.hp,95);
+ const {room,a,b}=setup('resolving');a.patron.hp=49;place(a,card('RG12',a),0);resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,4);assert.equal(b.patron.hp,96);
 }
 {
  const {room,a,b}=setup('formation'),ram=place(a,card('RG11',a),0),schedule=globalThis.setTimeout;let callback;
  act(room,a,{type:'revealPayment',cardId:ram.uid,pay:true},catalog);
  try{globalThis.setTimeout=fn=>{callback=fn;return 1;};act(room,a,{type:'ready'},catalog);act(room,b,{type:'ready'},catalog);}finally{globalThis.setTimeout=schedule;}
- const step=room.combat.timeline.find(s=>s.kind==='revelation'&&s.ability.sourceId===ram.uid);assert.equal(step.ability.op,'attack_modifier');assert.equal(step.ability.targetSide,a.id);assert.equal(step.ability.healthUpdates[0].attack,1);assert.ok(callback);callback();assert.equal(room.phase,'prep');
+ const step=room.combat.timeline.find(s=>s.kind==='revelation'&&s.ability.sourceId===ram.uid);assert.equal(step.ability.op,'attack_modifier');assert.equal(step.ability.targetSide,a.id);assert.equal(step.ability.healthUpdates[0].attack,2);assert.ok(callback);callback();assert.equal(room.phase,'prep');
 }
 {
  const {room,a}=setup(),spell=card('RG06',a);a.reserve=Array.from({length:7},()=>card('RG12',a));a.hand=[spell];act(room,a,{type:'play',cardId:spell.uid},catalog);assert.equal(a.reserve.length,8,'fichas respeitam o limite da reserva');
@@ -58,7 +58,7 @@ assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.card
 console.log('Ruptura: catálogo, dano a qualquer alvo, fichas/Gnoll, Último Suspiro simultâneo, pagamento público do Aríete, Vultobreve, aura Tribal, Retaliação e bônus de combate aprovados.');
 
 {const {room,a,b}=setup('formation'),v=card('RG10',a),target=card('RG12',b);a.reserve=[v];b.reserve=[target];room.forceWindow={until:Date.now()+5000,owners:[a.id]};assert.throws(()=>act(room,b,{type:'assign',cardId:target.uid,lane:0},catalog),/prioridade/);act(room,a,{type:'assign',cardId:v.uid,lane:0},catalog);room.forceWindow.until=Date.now()-1;assert.throws(()=>act(room,a,{type:'forceOpponent',cardId:v.uid,targetId:target.uid},catalog),/terminaram/);act(room,b,{type:'assign',cardId:target.uid,lane:1},catalog);assert.equal(b.formation[1],target.uid);}
-assert.equal(deck.cards.find(c=>c.id==='RG11').cost,3);
+assert.equal(deck.cards.find(c=>c.id==='RG11').cost,2);
 
 // Limites do rebalanceamento: condição de combate, frequência e custo real.
 for(const location of ['reserve','emanation','combat']){
@@ -69,7 +69,7 @@ for(const location of ['reserve','emanation','combat']){
 }
 {
  const {room,a}=setup('resolving');place(a,card('RG08',a),0);place(a,card('RG02',a),1);a.reserve.push(card('RG05',a));
- resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,2,'Gnoll não ativa com Tribal cujo ataque efetivo é 2');
+ resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,3,'Gnoll ativa com Tribal cujo ataque efetivo é 2');
 }
 {
  const {room,a,b}=setup('resolving'),geo=place(a,card('RG01',a),0),blocker=place(b,card('RG11',b,{attack:0,health:20}),0);

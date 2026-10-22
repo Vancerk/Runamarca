@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import {act,join,makeRoom,resolveCombat,view} from './game.mjs';import './combat-motion.js';
 import {unrestrictedReturn} from './test-return-fixture.mjs';
-const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url))),deck=catalog.decks.find(d=>d.id==='fluxo-virelion');assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.length,12);assert.equal(deck.cards.find(c=>c.id==='FV07').effects.length,1);assert.equal(deck.cards.find(c=>c.id==='FV06').effects.length,1);
+const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url))),deck=catalog.decks.find(d=>d.id==='fluxo-virelion');assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.length,14);assert.equal(deck.cards.find(c=>c.id==='FV07').effects.length,1);assert.equal(deck.cards.find(c=>c.id==='FV06').effects.length,1);
 const card=(id,p,extra={})=>({...structuredClone([...deck.cards,...catalog.additionalCards].find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...(id==='FV07'?{effects:[]}:{}),...extra});
 function setup(){const room=makeRoom('ABC123','A'),a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{deckData:deck,patron:{hp:100,maxHp:100},mana:10,manaMax:10,deck:Array.from({length:20},()=>({uid:crypto.randomUUID(),name:'Compra',cost:1}))});Object.assign(room,{first:a.id,turn:a.id,phase:'resolving',collectPreview:true});return {room,a,b};}
 const place=(p,c,lane)=>{p.reserve.push(c);p.formation[lane]=c.uid;return c;};
@@ -17,7 +17,7 @@ const place=(p,c,lane)=>{p.reserve.push(c);p.formation[lane]=c.uid;return c;};
  const {room,a,b}=setup(),c=place(a,card('FV07',a,{health:10}),0);place(b,card('FV07',b),0);a.prepared.push({card:card('FV11',a),lane:0,targetSide:a.id});resolveCombat(room);assert.equal(c.health,10);assert.equal(c.damage,1,'Barreira reduz ataque de 2 para 1');assert.equal(a.prepared[0].remaining,1);a.formation[0]=c.uid;room.phase='resolving';resolveCombat(room);assert.equal(a.prepared.length,0);assert.ok(a.discard.some(c=>c.id==='FV11'));
 }
 {
- const {room,a}=setup(),c=place(a,card('FV07',a),0);a.prepared.push({card:card('FV14',a,{effects:[{op:'stat_buff',attack:2,health:0}]}),lane:0,targetSide:a.id});resolveCombat(room);assert.equal(c.attack,4,'Benção é permanente');
+ const {room,a}=setup(),c=place(a,card('FV07',a),0);a.prepared.push({card:card('FV14',a,{enemyOnly:false,effects:[{op:'stat_buff',attack:2,health:0,target:'chosen_allied_creature'}]}),lane:0,targetSide:a.id});resolveCombat(room);assert.equal(c.attack,4,'Benção é permanente');
 }
 {
  const {room,a}=setup();const x=place(a,card('FV10',a),1),y=place(a,card('FV07',a),0),z=place(a,card('FV07',a),2);resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,5);assert.equal(room.preClash[2].cards[0].attack,5);assert.equal(y.attack,2);assert.equal(z.attack,2);

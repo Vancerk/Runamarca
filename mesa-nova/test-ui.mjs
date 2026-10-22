@@ -6,7 +6,7 @@ const source=(await readFile(new URL('./app.js',import.meta.url),'utf8')).replac
 function extract(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);}
 // A spell click must submit the individual chosen UID, including the patron option.
 let choices,played;
-const spells={commandBusy:false,state:{phase:'prep',turn:'me',you:'me'},seat:()=>({reserve:[{uid:'one'},{uid:'two'}]}),role:()=> 'friendly-or-patron',affordable:()=>true,showTargetPicker:(_card,ids,callback)=>{choices=ids;callback('two');},command:data=>{played=data;},selected:null};
+const spells={RunaTargeting:{creatureIds:()=>['patron','one','two']},commandBusy:false,state:{phase:'prep',turn:'me',you:'me'},seat:()=>({reserve:[{uid:'one'},{uid:'two'}]}),role:()=> 'friendly-or-patron',affordable:()=>true,showTargetPicker:(_card,ids,callback)=>{choices=typeof ids==='function'?ids():ids;callback('two');},command:data=>{played=data;},selected:null};
 vm.createContext(spells);vm.runInContext(extract('function chooseSpellTarget','function renderActions'),spells);spells.chooseSpellTarget({uid:'spell'});assert.deepEqual(Array.from(choices),['patron','one','two']);assert.equal(played.targetId,'two');assert.equal(played.mode,'direct');
 // All three lane targets must retain their endpoints on the rival's preparation.
 for(const x of [100,500,900]){
@@ -37,10 +37,10 @@ const arrivals={pendingArrival:[]};vm.createContext(arrivals);vm.runInContext(ex
  const node=()=>({children:[],classList:{add(){},remove(){}},append(c){this.children.push(c);},replaceChildren(){this.children=[];},getBoundingClientRect:()=>({right:200,top:100,height:200}),setAttribute(){}});
  const dialog=node();dialog.open=false;dialog.showModal=()=>dialog.open=true;dialog.close=()=>dialog.open=false;
  const content=node();nodes.set('target-picker',dialog);nodes.set('target-picker-content',content);
- const picker={state:{players:[{reserve:[{uid:'ally'},{uid:'enemy'}]}]},$:id=>nodes.get(id),hideHover:()=>hidden++,showHover:c=>hovered=c.uid,moveHover(){},cardEl:node,text(){},tableCard:uid=>({classList:{add:()=>highlight.add(uid),remove:()=>highlight.delete(uid)}}),document:{createElement:node,querySelectorAll:()=>[]}};
+ const picker={seat:()=>({hand:[]}),state:{players:[{reserve:[{uid:'ally',health:1,damage:0},{uid:'enemy',health:1,damage:0}]}]},$:id=>nodes.get(id),hideHover:()=>hidden++,showHover:c=>hovered=c.uid,moveHover(){},cardEl:node,text(){},tableCard:uid=>({classList:{add:()=>highlight.add(uid),remove:()=>highlight.delete(uid)}}),document:{createElement:node,querySelectorAll:()=>[]}};
  vm.createContext(picker);vm.runInContext(extract('function showTargetPicker','function chooseEmanationTarget'),picker);
  picker.showTargetPicker({},['ally','enemy'],uid=>{chosen=uid;});
- const [ally,enemy]=content.children[0].children;ally.onmouseenter({});assert.equal(hovered,'ally');assert.ok(highlight.has('ally'));ally.onmouseleave();assert.ok(!highlight.has('ally'));enemy.onfocus();assert.equal(hovered,'enemy');enemy.onclick();assert.equal(chosen,'enemy');assert.equal(dialog.open,false);assert.equal(hidden,3);
+ const [ally,enemy]=content.children[0].children;ally.onmouseenter({});assert.equal(hovered,'ally');assert.ok(highlight.has('ally'));ally.onmouseleave();assert.ok(!highlight.has('ally'));enemy.onfocus();assert.equal(hovered,'enemy');enemy.onclick();assert.equal(chosen,'enemy');assert.equal(dialog.open,false);assert.equal(hidden,4);
 }
 // Text fitting changes font size instead of horizontally stretching its glyphs.
 {
@@ -66,7 +66,7 @@ for(const [dx,dy,directionX,directionY] of [[0,-80,0,-160],[45,60,90,120],[0,0,0
 {
  const opened=[];let submitted;
  const dual={commandBusy:false,state:{phase:'prep',turn:'me',you:'me'},seat:()=>({reserve:[{uid:'ally',health:2,damage:0},{uid:'dead-ally',health:2,damage:2}]}),rival:()=>({reserve:[{uid:'enemy',health:4,damage:1},{uid:'dead-enemy',health:1,damage:1}]}),affordable:()=>true,showTargetPicker:(card,ids,callback,title)=>opened.push({ids:Array.from(ids),callback,title}),command:data=>submitted=data,selected:null};vm.createContext(dual);vm.runInContext(extract('function chooseSpellTarget','function renderActions'),dual);
- dual.chooseSpellTarget({uid:'disparo',effects:[{op:'ally_attack_damage'}]});assert.equal(opened.length,1);assert.deepEqual(opened[0].ids,['ally']);assert.equal(opened[0].title,'Escolha sua criatura');assert.equal(submitted,undefined);
+ dual.chooseSpellTarget({uid:'disparo',effects:[{op:'ally_attack_damage'}]});assert.equal(opened.length,1);assert.deepEqual(opened[0].ids,['ally']);assert.equal(opened[0].title,'Bomba Cinética · 1/2: escolha o aliado que fornecerá o ataque');assert.equal(submitted,undefined);
  opened[0].callback('ally');assert.equal(opened.length,2);assert.deepEqual(opened[1].ids,['enemy']);assert.equal(submitted,undefined);opened[1].callback('enemy');assert.equal(submitted.sourceId,'ally');assert.equal(submitted.targetId,'enemy');assert.equal(submitted.cardId,'disparo');assert.equal(submitted.mode,'direct');
  opened.length=0;dual.rival=()=>({reserve:[]});dual.chooseSpellTarget({effects:[{op:'ally_attack_damage'}]});assert.equal(opened.length,0,'Não abre seleção sem os dois lados válidos');
 }

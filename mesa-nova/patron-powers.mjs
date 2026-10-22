@@ -16,6 +16,7 @@ export function activatePatronPower(room,p,data,helpers){
  if(!['permanent','combat'].includes(power.duration))throw Error('A duração deste poder ainda não foi definida.');
  const atk=power.id==='ultimato-forja'?2:data.attribute==='attack'?1:0,hp=power.id==='ultimato-forja'?2:data.attribute==='health'?1:0;
  p.mana-=power.cost;(p.patron.usedPowers??={})[power.id]=room.round;
+ if(target.runeCoating){emit(room,'patron_power',{playerId:p.id,powerId:power.id,name:power.name,op:'blocked',targetId:target.uid,blocked:true,healthUpdates:[]});return;}
  if(power.duration==='permanent'){target.attack+=atk;target.health+=hp;if(power.id==='ultimato-forja')target.grantedTrample=true;}
  else{target.attackMod=(target.attackMod||0)+atk;target.health+=hp;target.temporaryHealth=(target.temporaryHealth||0)+hp;if(power.id==='ultimato-forja')target.temporaryTrample=true;}
  spellBuff(target,room.round,power.duration==='permanent');

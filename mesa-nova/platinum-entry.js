@@ -1,7 +1,7 @@
 /* The card is the actor. Only the server chooses positions and applies effects. */
 (function(root){
  'use strict';
- const active=new Set(),seen=new Set(),TAU=Math.PI*2;
+ const active=new Set(),seen=new Set(),pending=new Set(),TAU=Math.PI*2;
  const clamp=t=>Math.max(0,Math.min(1,t)),out=t=>1-(1-clamp(t))**3,smooth=t=>{t=clamp(t);return t*t*(3-2*t);},mix=(a,b,t)=>a+(b-a)*t,range=(t,a,b)=>clamp((t-a)/(b-a));
  const get=n=>typeof n==='function'?n():n,center=r=>({x:r.left+r.width/2,y:r.top+r.height/2});
  function profile(card){
@@ -16,17 +16,17 @@
   return {kind,phase:combat?'combat':'reserve',duration:combat?2600:3400,palette:palettes[kind],cues:cues[kind]||[]};
  }
  async function texture(node){
-  let timer;try{if(node.visualReady)await Promise.race([node.visualReady,new Promise(r=>timer=setTimeout(r,500))]);}catch{}finally{clearTimeout(timer);}
+  let timer;try{if(node.visualReady)await Promise.race([node.visualReady,new Promise(r=>timer=setTimeout(r,4000))]);}catch{}finally{clearTimeout(timer);}
   const original=node.querySelector('canvas');if(!original?.width||!original?.height)return null;
   const c=document.createElement('canvas');c.width=original.width;c.height=original.height;c.getContext('2d').drawImage(original,0,0);return c;
  }
  function clear(){for(const finish of [...active])finish(false);seen.clear();}
  async function play({card,source,phase='reserve',key,context,valid=()=>true,signal,duration,elapsedMs=0,reduced=root.matchMedia?.('(prefers-reduced-motion: reduce)').matches}={}){
   const spec=definition(card,phase),anchor=get(source);
-  if(card?.type!=='creature'||card.rarity!=='soberano'||!spec.palette||!anchor?.getBoundingClientRect().width||!valid()||signal?.aborted||(key&&seen.has(key)))return false;
-  if(key){seen.add(key);if(seen.size>300)seen.delete(seen.values().next().value);}
+  if(card?.type!=='creature'||card.rarity!=='soberano'||!spec.palette||!anchor?.getBoundingClientRect().width||!valid()||signal?.aborted||(key&&(seen.has(key)||pending.has(key))))return false;
+  if(key)pending.add(key);
   const requestedAt=performance.now();let cancelled=false;const pendingClose=()=>{cancelled=true;};active.add(pendingClose);
-  const image=await texture(anchor);active.delete(pendingClose);if(!image||cancelled||!valid()||signal?.aborted)return false;
+  const image=await texture(anchor);active.delete(pendingClose);if(key)pending.delete(key);if(!image||cancelled||!valid()||signal?.aborted)return false;if(key){seen.add(key);if(seen.size>300)seen.delete(seen.values().next().value);}
   if(spec.phase==='combat')elapsedMs+=performance.now()-requestedAt;
   return new Promise(resolve=>{
    const layer=document.createElement('div'),canvas=document.createElement('canvas');layer.className='platinum-entry-scene';layer.dataset.profile=spec.kind;layer.dataset.stage=spec.phase;layer.dataset.card=card.modelId||card.id;layer.setAttribute('aria-hidden','true');layer.append(canvas);document.body.append(layer);
@@ -113,13 +113,14 @@
   });
  }
  function empower({source,targets=[],mode='assault',context,valid=()=>true,duration=950}={}){
-  const from=get(source);if(!from||!valid())return Promise.resolve(false);const layer=document.createElement('div');layer.className='platinum-protocol-scene';layer.setAttribute('aria-hidden','true');document.body.append(layer);const animations=[],a=center(from.getBoundingClientRect()),reduced=root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const from=get(source);if(!from||!valid())return Promise.resolve(false);const layer=document.createElement('div');layer.className='platinum-protocol-scene';layer.setAttribute('aria-hidden','true');document.body.append(layer);const animations=[],links=[],a=center(from.getBoundingClientRect()),reduced=root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   root.RunaSfx?.play(context,mode==='escort'?'entry_escort':'entry_assault',{to:from,level:.65});
   for(const target of targets){const node=get(target);if(!node)continue;const r=node.getBoundingClientRect(),b=center(r),dx=b.x-a.x,dy=b.y-a.y;
-   if(!reduced){const rail=document.createElement('i');rail.className='protocol-link';Object.assign(rail.style,{left:a.x+'px',top:a.y+'px',width:Math.hypot(dx,dy)+'px',transform:`rotate(${Math.atan2(dy,dx)}rad)`});layer.append(rail);animations.push(rail.animate([{clipPath:'inset(0 100% 0 0)',opacity:0},{clipPath:'inset(0)',opacity:1,offset:.42},{opacity:0}],{duration,fill:'both'}));}
-   for(const side of [-1,1]){const plate=document.createElement('i');plate.className='protocol-plate '+(mode==='escort'?'protocol-shield':'protocol-arrow');Object.assign(plate.style,{left:(b.x+side*(r.width*.5+7))+'px',top:b.y+'px'});layer.append(plate);animations.push(plate.animate([{transform:`translate(${side*40}px,-50%) scale(.45)`,opacity:0},{transform:'translate(0,-50%) scale(1)',opacity:1,offset:.48},{transform:'translate(0,-50%) scale(1)',opacity:1,offset:.76},{transform:'translate(0,-50%) scale(.9)',opacity:0}],{duration:reduced?240:duration,fill:'both'}));}
+   const link={target,plates:[]};links.push(link);
+   if(!reduced){const rail=document.createElement('i');link.rail=rail;rail.className='protocol-link';Object.assign(rail.style,{left:a.x+'px',top:(a.y-2.5)+'px',width:Math.hypot(dx,dy)+'px',transform:`rotate(${Math.atan2(dy,dx)}rad)`});layer.append(rail);animations.push(rail.animate([{clipPath:'inset(0 100% 0 0)',opacity:0},{clipPath:'inset(0)',opacity:1,offset:.42},{opacity:0}],{duration,fill:'both'}));}
+   for(const side of [-1,1]){const plate=document.createElement('i');link.plates.push({plate,side});plate.className='protocol-plate '+(mode==='escort'?'protocol-shield':'protocol-arrow');Object.assign(plate.style,{left:(b.x+side*(r.width*.5+7))+'px',top:b.y+'px'});layer.append(plate);animations.push(plate.animate([{transform:`translate(${side*40}px,-50%) scale(.45)`,opacity:0},{transform:'translate(0,-50%) scale(1)',opacity:1,offset:.48},{transform:'translate(0,-50%) scale(1)',opacity:1,offset:.76},{transform:'translate(0,-50%) scale(.9)',opacity:0}],{duration:reduced?240:duration,fill:'both'}));}
   }
-  return new Promise(resolve=>{let done=false,raf=0;const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);animations.forEach(a=>a.cancel());layer.remove();active.delete(finish);resolve(true);};active.add(finish);const check=()=>{if(!valid())finish();else if(!done)raf=requestAnimationFrame(check);};raf=requestAnimationFrame(check);Promise.all(animations.map(a=>a.finished.catch(()=>{}))).then(finish);});
+  return new Promise(resolve=>{let done=false,raf=0;const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);animations.forEach(a=>a.cancel());layer.remove();active.delete(finish);resolve(true);};active.add(finish);const check=()=>{const current=get(source);if(!valid()||!current?.isConnected){finish();return;}const origin=center(current.getBoundingClientRect());for(const link of links){const node=get(link.target);if(!node?.isConnected){if(link.rail)link.rail.style.visibility='hidden';for(const {plate} of link.plates)plate.style.visibility='hidden';continue;}const r=node.getBoundingClientRect(),to=center(r),dx=to.x-origin.x,dy=to.y-origin.y;if(link.rail)Object.assign(link.rail.style,{left:origin.x+'px',top:(origin.y-2.5)+'px',width:Math.hypot(dx,dy)+'px',transform:`rotate(${Math.atan2(dy,dx)}rad)`});for(const {plate,side} of link.plates)Object.assign(plate.style,{left:(to.x+side*(r.width*.5+7))+'px',top:to.y+'px'});}if(!done)raf=requestAnimationFrame(check);};raf=requestAnimationFrame(check);Promise.all(animations.map(a=>a.finished.catch(()=>{}))).then(finish);});
  }
  root.RunaPlatinumEntry={profile,definition,play,empower,clear};root.addEventListener?.('pagehide',clear);
 })(globalThis);

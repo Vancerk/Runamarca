@@ -12,7 +12,7 @@ const play=({room,a,target,spell})=>act(room,a,{type:'play',cardId:spell.uid,tar
  const x=setup();play(x);assert.ok(x.b.hand.includes(x.target));assert.equal(x.target.attack,1);assert.equal(x.target.health,1);assert.equal(x.target.damage,0);assert.equal(x.a.mana,10-evasion.cost);assert.equal(x.a.hand.length,drawCount);assert.equal(x.a.deck.length,2-drawCount);assert.equal(x.room.events.filter(e=>e.type==='draw'&&e.playerId===x.a.id).length,drawCount);
 }
 {
- const x=setup();x.target.runeCoating=true;play(x);assert.ok(x.b.reserve.includes(x.target));assert.equal(x.target.runeCoating,undefined);assert.equal(x.target.attack,6);assert.equal(x.a.hand.length,drawCount,'A proteção impede devolução, não compra');assert.equal(x.a.deck.length,2-drawCount);
+ const x=setup();x.target.runeCoating=true;play(x);assert.ok(x.b.reserve.includes(x.target));assert.equal(x.target.runeCoating,true,'Antimagia permanece após bloquear a magia');assert.equal(x.target.attack,6);assert.equal(x.a.hand.length,drawCount,'A proteção impede devolução, não compra');assert.equal(x.a.deck.length,2-drawCount);
 }
 {
  const x=setup();assert.throws(()=>act(x.room,x.a,{type:'play',cardId:x.spell.uid,targetId:'inexistente'},catalog));assert.equal(x.a.mana,10);assert.equal(x.a.deck.length,2);assert.ok(x.a.hand.includes(x.spell));assert.ok(x.b.reserve.includes(x.target));

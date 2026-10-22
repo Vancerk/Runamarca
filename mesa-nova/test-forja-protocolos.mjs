@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {act,join,makeRoom,resolveCombat,view} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url))),deck=catalog.decks.find(d=>d.id==='forja-oficina-lyrik');
-const card=(id,p,extra={})=>({...structuredClone([...deck.cards,...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...extra});
+const card=(id,p,extra={})=>({...structuredClone([...catalog.decks.flatMap(d=>d.cards),...(catalog.additionalCards||[])].find(c=>c.id===id)),uid:crypto.randomUUID(),modelId:id,owner:p.id,damage:0,attackMod:0,...extra});
 const setup=()=>{const room=makeRoom('PROTO','A'),a=room.players[0],b=join(room,'B');for(const p of [a,b])Object.assign(p,{patron:{hp:100,maxHp:100},mana:10,manaMax:10,deckData:deck,deck:[],taunts:{}});Object.assign(room,{first:a.id,turn:a.id,phase:'formation',collectPreview:true});return {room,a,b};};
 const place=(p,c,l)=>{p.reserve.push(c);p.formation[l]=c.uid;return c;};
 assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.find(c=>c.id==='FL14').cost,4);
@@ -14,7 +14,7 @@ assert.ok(fs.existsSync(new URL(deck.patron.image,import.meta.url)));
  act(room,a,{type:'protocol',cardId:v.uid,mode:'assault'},catalog);
  assert.throws(()=>act(room,b,{type:'protocol',cardId:v.uid,mode:'escort'},catalog),/válido/);
  room.phase='resolving';resolveCombat(room);
- assert.deepEqual(room.preClash.map(x=>x.cards[0].attack),[1,6,1]);assert.equal(v.attack,4);assert.equal(v.attackMod,0);assert.equal(left.attack,0);assert.equal(right.attack,0);assert.equal(v.protocolMode,undefined);
+ assert.deepEqual(room.preClash.map(x=>x.cards[0].attack),[1,6,1]);assert.equal(v.attack,4);assert.equal(v.attackMod,0);assert.equal(left.attack,0);assert.equal(right.attack,0);assert.equal(v.protocolMode,'assault');
 }
 {
  const {room,a,b}=setup(),v=place(a,card('FL11',a,{damage:2}),1),left=place(a,card('FL02',a,{damage:1}),0);

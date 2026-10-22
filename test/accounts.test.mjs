@@ -23,6 +23,13 @@ test('login OAuth, sessão persistente, administrador, inventário e resultados'
   async function login(){const start=await call('/auth/discord?return=%2Fperfil');assert.equal(start.status,302);const target=new URL(start.response.headers.get('location'));assert.equal(target.searchParams.get('scope'),'identify');const state=target.searchParams.get('state');const cookie=start.response.headers.get('set-cookie').split(';')[0];const finish=await call('/auth/discord/callback?code=test-code&state='+state,null,cookie);assert.equal(finish.status,302);assert.equal(finish.response.headers.get('location'),'/perfil');return {cookie:finish.response.headers.getSetCookie().find(c=>c.startsWith('elysium_session=')).split(';')[0],state,oauthCookie:cookie};}
   try{
     const admin=await login();const who=await call('/api/account',null,admin.cookie);assert.equal(who.data.user.admin,true);
+    for(const [returnTo,expected] of [['/runamarca/?room=ABC123#mesa','/runamarca/?room=ABC123#mesa'],['/perfil','/perfil'],['//example.invalid/','/'],['/\t/example.invalid/','/'],['/\n/example.invalid/','/'],['/\\example.invalid/','/'],['https://example.invalid/','/'],['/\u0000/example.invalid/','/']]){
+      const start=await call('/auth/discord?return='+encodeURIComponent(returnTo));assert.equal(start.status,302);
+      const state=new URL(start.response.headers.get('location')).searchParams.get('state'),oauthCookie=start.response.headers.get('set-cookie').split(';')[0];
+      const finish=await call('/auth/discord/callback?code=test-code&state='+state,null,oauthCookie);
+      assert.equal(finish.status,302);assert.equal(finish.response.headers.get('location'),expected);assert.equal(new URL(expected,base).origin,base);
+    }
+    assert.equal((await call('/api/account',null,admin.cookie)).data.user.admin,true,'a sessão anterior continua válida após os retornos');
     const hashes=await store.query('SELECT token_hash FROM elysium_sessions');assert.notEqual(hashes.rows[0].token_hash,admin.cookie.split('=')[1]);
     const profile=await call('/api/account/profile',null,admin.cookie);assert.deepEqual(profile.data.inventory,[]);
     const replay=await call('/auth/discord/callback?code=test-code&state='+admin.state,null,admin.oauthCookie);assert.match(replay.response.headers.get('location'),/expired/);

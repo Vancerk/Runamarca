@@ -12,7 +12,7 @@ test('Sem evento de compra, a carta da mão não fica aguardando uma animação 
 });
 test('Uma conexão temporária preserva a vaga; token inválido e sala inexistente a encerram',async()=>{
  for(const code of [undefined,'ACCESS_REQUIRED','SEAT_INVALID','ROOM_NOT_FOUND']){
-  let erased=false;const ctx={connectionLost:false,refreshing:false,commandBusy:false,activeDrag:null,lastRevision:1,state:{phase:'prep'},sessionStorage:{getItem:()=>'{"code":"AUD123","token":"test"}',removeItem(){erased=true;}},api:async()=>{throw Object.assign(Error('offline'),{code});},render(){},err(){}};
+  let erased=false;const ctx={cancelPendingEntryPlacement(){},connectionLost:false,refreshing:false,commandBusy:false,activeDrag:null,lastRevision:1,state:{phase:'prep'},sessionStorage:{getItem:()=>'{"code":"AUD123","token":"test"}',removeItem(){erased=true;}},api:async()=>{throw Object.assign(Error('offline'),{code});},render(){},err(){}};
   vm.createContext(ctx);vm.runInContext(section(app,'async function refresh()','function button('),ctx);await ctx.refresh();
   const invalid=['SEAT_INVALID','ROOM_NOT_FOUND'].includes(code);assert.equal(erased,invalid);assert.equal(ctx.state===null,invalid);
  }
@@ -37,7 +37,7 @@ test('Animação que não finaliza possui prazo de recuperação e é cancelada'
  await ctx.settleAnimation({finished:new Promise(()=>{}),cancel(){cancelled=true;}},100);assert.equal(cancelled,true);
 });
 test('Reiniciar durante a abertura interrompe as compras animadas restantes',async()=>{
- const draws=[],ctx={visualGeneration:0,noticeQueue:Promise.resolve(),warmSounds:async()=>{},state:{players:[{id:'me'}]},seat:()=>({id:'me',hand:[{uid:'one'},{uid:'two'}]}),$:()=>({}),visualMessage(){},animateDraw:async uid=>{draws.push(uid);ctx.visualGeneration++;}};
+ const draws=[],ctx={tableCard:()=>null,visualGeneration:0,noticeQueue:Promise.resolve(),warmSounds:async()=>{},state:{players:[{id:'me'}]},seat:()=>({id:'me',hand:[{uid:'one'},{uid:'two'}]}),$:()=>({querySelector:()=>null}),visualMessage(){},animateDraw:async uid=>{draws.push(uid);ctx.visualGeneration++;}};
  vm.createContext(ctx);vm.runInContext(damagePresentation,ctx);vm.runInContext(section(app,'async function animateEvent','function resetVisualSession'),ctx);
  await ctx.animateEvent({type:'opening',playerId:'me'});assert.deepEqual(draws,['one']);
 });
@@ -55,7 +55,7 @@ test('A mão inicial espera cada compra, sem ocultar cartas de uma sessão já c
 test('Alvos de ataque seguem o dono e a posição reais nos dois lados da mesa',()=>{
  const nodes=[{dataset:{uid:'taunt'},closest:()=>({dataset:{owner:'b'}})},{dataset:{uid:'other'},closest:()=>({dataset:{owner:'b'}})}],patrons={a:{id:'patron-a',dataset:{owner:'a'}},b:{id:'patron-b',dataset:{owner:'b'}}};
  for(const viewer of ['a','b']){
-  const ctx={seat:()=>({id:viewer}),document:{querySelectorAll:selector=>selector.includes('patron-card')?Object.values(patrons):nodes},$:id=>({querySelector:()=>patrons[id==='self-head'?viewer:viewer==='a'?'b':'a']})};vm.createContext(ctx);vm.runInContext(section(app,'function attackTarget','async function animateLaneClash'),ctx);
+  const ctx={tableCard:uid=>nodes.find(n=>n.dataset.uid===uid)||null,seat:()=>({id:viewer}),document:{querySelectorAll:selector=>selector.includes('patron-card')?Object.values(patrons):nodes},$:id=>({querySelector:()=>patrons[id==='self-head'?viewer:viewer==='a'?'b':'a']})};vm.createContext(ctx);vm.runInContext(section(app,'function attackTarget','async function animateLaneClash'),ctx);
   assert.equal(ctx.attackTarget({owner:'a',targetOwner:'b',targetId:null}),patrons.b);
   assert.equal(ctx.attackTarget({owner:'b',targetOwner:'a',targetId:null}),patrons.a);
   assert.equal(ctx.attackTarget({owner:'a',targetOwner:'b',targetId:'taunt'}),nodes[0]);

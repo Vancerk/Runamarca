@@ -69,7 +69,7 @@
   const script=root.document.currentScript,base=new URL('.',script?.src||root.location.href).href;
   const live=create({base});root.RunaSfx=Object.assign(live,{create});
   try{root.localStorage.removeItem('runamarca-sfx-mode');}catch{}
-  const ready=root.fetch(new URL('sfx-catalog.json?v=20261018-manifestations-v2',base)).then(r=>{if(!r.ok)throw Error('SFX catalog unavailable');return r.json();}).then(data=>live.setManifest(data)).catch(()=>{});
+  const ready=root.fetch(new URL('sfx-catalog.json?v=20261021-polish',base)).then(r=>{if(!r.ok)throw Error('SFX catalog unavailable');return r.json();}).then(data=>live.setManifest(data)).catch(()=>{});
   const preload=live.preload;live.preload=async context=>{await ready;return preload(context);};
   root.addEventListener('pagehide',()=>live.stopAll());
  }

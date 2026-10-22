@@ -107,7 +107,7 @@
             "id": "forjar-armadura",
             "name": "Hora da Bigorna",
             "cost": 1,
-            "text": "Conceda +1 de Vida Extra ao seu Patrono. Vida Extra absorve dano antes da vida normal, sem curar nem aumentar a vida máxima.",
+            "text": "Conceda +1 de Vida Extra ao seu Patrono.",
             "image": "power-forja-potencializar.png",
             "limit": "round",
             "duration": "permanent"
@@ -116,7 +116,7 @@
             "id": "forjar-arma",
             "name": "Forja Eterna",
             "cost": 3,
-            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina. A arma vai para sua mão e custa 1, 3 ou 6 Éter para jogar. Equipar custa 1 Éter.",
+            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina.",
             "image": "power-forja-ultimato.png",
             "limit": "match",
             "duration": "permanent"
@@ -135,7 +135,7 @@
           "subtype": "humano",
           "attack": 2,
           "health": 2,
-          "text": "Entrada — conceda Iniciativa a um aliado à sua escolha.",
+          "text": "Entrada — conceda Iniciativa a uma criatura aliada à sua escolha. Pode escolher esta criatura.",
           "speech": "Direto da oficina para o combate!",
           "narrative": "Ele diz que é proativo, os colegas o chamam de ansioso!",
           "image": "art/oficina-lyrik/mecanico-proativo.jpg",
@@ -301,7 +301,7 @@
           "subtype": "axiom Sintético",
           "attack": 0,
           "health": 2,
-          "text": "Ao sobreviver a um combate em que participou, ganha +1/+1 permanentemente.",
+          "text": "Ao sobreviver a um combate em que participou, ganha +1/+1.",
           "speech": "Serei…perfeito!",
           "narrative": "Meio bonito, meio psicótico, totalmente funcional!",
           "image": "art/oficina-lyrik/sintetico-prospero.jpg",
@@ -465,7 +465,7 @@
           "subtype": "axiom",
           "attack": 3,
           "health": 4,
-          "text": "Revelação — escolha um: reduza em 2 o ataque do inimigo à frente; ou conceda +1/+1 ao aliado imediatamente à direita. Apenas neste combate.",
+          "text": "Entrada — escolha um modo para as próximas Revelações: −2 de ataque ao inimigo à frente ou +1/+1 ao aliado à direita. Efeitos só neste combate.",
           "speech": "Um combate? que desperdicio!",
           "narrative": "6 mãos? ele claramente só quer se exibir!",
           "image": "art/oficina-lyrik/monge-runico.jpg",
@@ -575,7 +575,7 @@
           "quantity": 3,
           "rarity": "lacaio",
           "subtype": "Magia direta",
-          "text": "Conceda +1/+1 permanentemente a uma criatura aliada.",
+          "text": "Conceda +1/+1 a uma criatura aliada.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/adquirir-atualizacao.jpg",
@@ -640,7 +640,7 @@
           "subtype": "axiom",
           "attack": 4,
           "health": 5,
-          "text": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes.",
+          "text": "Entrada — escolha um modo para as próximas Revelações: Assalto (+2 de ataque para si; +1 aos aliados adjacentes) ou Escolta (+2 de vida para si; +1 aos aliados adjacentes). Bônus só neste combate.",
           "speech": "Protocolo: Exterminar!",
           "narrative": "Dizem ser uma das criações secretas de Lyrik, e que para ele, é uma obra prima, e para seus inimigos, um problema!",
           "image": "art/oficina-lyrik/v-3-r-0-n-1-c-a.jpg",
@@ -735,7 +735,7 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "Magia preparada",
-          "text": "Prepare em uma posição inimiga. Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida.",
+          "text": "Ao ativar, a criatura nessa posição perde 1 de ataque e 1 de vida.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/toque-gelido-v2.jpg",
@@ -787,7 +787,7 @@
           "quantity": 1,
           "rarity": "elite",
           "subtype": "",
-          "text": "Escolha um — reduza permanentemente em 1 o ataque e a vida de até 3 criaturas aleatórias da reserva inimiga; ou prepare em uma posição inimiga para aplicar essa redução a todas as criaturas inimigas em combate.",
+          "text": "Escolha um — reduza em 1 o ataque e a vida de até 3 criaturas aleatórias da reserva inimiga; ou prepare em uma posição inimiga para aplicar essa redução a todas as criaturas inimigas em combate.",
           "speech": "",
           "narrative": "",
           "image": "art/oficina-lyrik/geada-implacavel.png",
@@ -835,7 +835,7 @@
           "type": "direct_spell",
           "affinity": "forja",
           "cost": 2,
-          "quantity": 2,
+          "quantity": 3,
           "rarity": "lacaio",
           "subtype": "",
           "text": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga.",
@@ -885,7 +885,7 @@
           "cost": 1,
           "attack": 0,
           "health": 3,
-          "quantity": 2,
+          "quantity": 3,
           "text": "Provocar.",
           "effects": [
             {
@@ -1003,7 +1003,7 @@
           "quantity": 1,
           "rarity": "elite",
           "subtype": "",
-          "text": "Altera a vida de uma criatura inimiga para 1.",
+          "text": "Defina a vida de uma criatura inimiga à sua escolha como 1.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/voltando-para-o-fundamental.jpg",
@@ -1041,56 +1041,6 @@
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio.",
           "directOnly": true,
-          "imageKind": "illustration",
-          "artStatus": "own"
-        },
-        {
-          "id": "FL20",
-          "name": "Miragem Provocadora",
-          "type": "prepared_spell",
-          "affinity": "forja",
-          "cost": 1,
-          "quantity": 2,
-          "rarity": "padrao",
-          "subtype": "",
-          "text": "Prepare em uma posição inimiga. Ao ativar, se sua posição à frente estiver livre, convoque nela uma Miragem 0/1. Se não houver espaço, descarte esta magia sem efeito.",
-          "speech": "",
-          "narrative": "",
-          "image": "art/forja-personalizada/miragem-provocadora.jpg",
-          "artZoom": 149,
-          "artX": 32,
-          "artY": 78,
-          "fontName": 43,
-          "fontSubtype": 21,
-          "fontRules": 42,
-          "effects": [
-            {
-              "op": "mirage",
-              "grant_trample": false
-            }
-          ],
-          "enemyOnly": true,
-          "budgetEffects": [
-            {
-              "sourceIndex": 0,
-              "name": "mirage",
-              "timing": "trap",
-              "target": "trigger",
-              "duration": "round",
-              "condition": "none",
-              "amount": 0,
-              "count": 1,
-              "activationCost": 0,
-              "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"mirage\",\"grant_trample\":false}",
-              "effect": "custom",
-              "customPoints": 0
-            }
-          ],
-          "budgetVersion": 3,
-          "authoredBy": "Grupo Elysium",
-          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
-          "positionOnly": true,
           "imageKind": "illustration",
           "artStatus": "own"
         }
@@ -1193,7 +1143,7 @@
           "type": "prepared_spell",
           "affinity": "fluxo",
           "cost": 1,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "elite",
           "subtype": "",
           "text": "Prepare em uma posição. Ancoragem — prenda a criatura revelada nessa posição durante este combate e o seguinte.",
@@ -1245,7 +1195,7 @@
           "subtype": "humana",
           "attack": 1,
           "health": 1,
-          "text": "Entrada — marque uma criatura inimiga. Ao jogar sua próxima magia, cause 1 de dano à criatura marcada. Se ela sair de campo antes do disparo, escolha outra. Uma vez enquanto esta Aprendiz estiver em campo.",
+          "text": "Emanação — quando você jogar sua primeira magia da rodada, cause 1 de dano a uma criatura inimiga à sua escolha.",
           "speech": "O éter é a minha arma",
           "narrative": "O Segundo Grau da Escola de Magia de Virelion, especializado em magias de combate e parte da Casta de Dravorn",
           "image": "art/virelion/FV03.jpg",
@@ -1257,19 +1207,17 @@
           "fontRules": 38,
           "effects": [
             {
-              "op": "bound_spell_damage",
-              "amount": 1,
-              "target": "chosen_enemy_creature",
-              "timing": "owner_plays_spell",
-              "once_per_field": true
+              "op": "first_spell_damage",
+              "timing": "emanation",
+              "amount": 1
             }
           ],
           "positionOnly": false,
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "bound_spell_damage",
-              "timing": "turn",
+              "name": "first_spell_damage",
+              "timing": "emanation",
               "target": "enemy",
               "duration": "round",
               "condition": "none",
@@ -1277,7 +1225,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"bound_spell_damage\",\"amount\":1,\"target\":\"chosen_enemy_creature\",\"timing\":\"owner_plays_spell\",\"once_per_field\":true}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"first_spell_damage\",\"timing\":\"emanation\",\"amount\":1}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1295,13 +1243,13 @@
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Prepare em uma posição inimiga. Ao ativar, empurre a criatura revelada uma posição à direita e cause 1 de dano a ela. Se o destino estiver ocupado, ela não se move; cause também 1 de dano ao ocupante. Na última posição, ela não se move.",
+          "text": "Ao ativar, empurre a criatura uma posição à direita e cause 1 de dano a ela. Se o destino estiver ocupado, não empurre; cause também 1 de dano ao ocupante. Na última posição, não há movimento.",
           "speech": "",
           "narrative": "",
-          "image": "art/virelion/FV02.jpg",
+          "image": "images/artes-20261021/FV16.png",
           "artZoom": 100,
-          "artX": 8,
-          "artY": 56,
+          "artX": 50,
+          "artY": 50,
           "fontName": 43,
           "fontSubtype": 21,
           "fontRules": 40,
@@ -1333,7 +1281,9 @@
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente.",
           "artPending": true,
           "positionOnly": true,
-          "enemyOnly": true
+          "enemyOnly": true,
+          "imageKind": "illustration",
+          "artFit": "cover"
         },
         {
           "id": "FV05",
@@ -1344,7 +1294,7 @@
           "quantity": 1,
           "rarity": "soberano",
           "subtype": "",
-          "text": "Conceda +1/+1 permanentemente a todas as criaturas aliadas em campo para cada 2 magias no seu Nartvanyr.",
+          "text": "Direto: conceda +1/+1 a todas as criaturas aliadas na reserva para cada 2 magias no seu Nartvanyr. Armadilha aliada: ao ativar, conceda esse bônus a todas as criaturas aliadas nas posições de combate. Não afeta Emanação.",
           "speech": "",
           "narrative": "",
           "image": "art/virelion/FV05.jpg",
@@ -1383,7 +1333,8 @@
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Alteração aprovada em 10/10/2026: Cólera +1; Banquete custo 8 e metade das magias anteriores, arredondada para baixo; Chamado 1 + cópias anteriores no próprio Nartvanyr. Orçamento não recalculado automaticamente."
+          "budgetReview": "Alteração aprovada em 10/10/2026: Cólera +1; Banquete custo 8 e metade das magias anteriores, arredondada para baixo; Chamado 1 + cópias anteriores no próprio Nartvanyr. Orçamento não recalculado automaticamente.",
+          "concealedPrepared": true
         },
         {
           "id": "FV06",
@@ -1441,12 +1392,12 @@
           "type": "creature",
           "affinity": "fluxo",
           "cost": 3,
-          "quantity": 4,
+          "quantity": 2,
           "rarity": "lacaio",
           "subtype": "Aberração",
           "attack": 2,
           "health": 2,
-          "text": "Revelação — esta criatura e o inimigo à frente não atacam neste combate e permanecem nessas posições até o combate seguinte. Nesse combate, atacam normalmente e este efeito não se repete.",
+          "text": "Revelação — se houver inimigo à frente, ambos ficam presos nessas posições até o fim do combate seguinte. Não atacam neste combate. No seguinte, atacam normalmente e este efeito não se repete.",
           "speech": "O éter é a minha arma",
           "narrative": "*\"Sim, é um olho!\"*",
           "image": "art/virelion/FV07.jpg",
@@ -1541,7 +1492,7 @@
           "subtype": "Humano",
           "attack": 4,
           "health": 2,
-          "text": "Revelação — escolha uma posição de cada lado e vincule-as com selos enquanto Ithalion estiver vivo. A criatura inimiga revelada no selo troca de lado com o ocupante do outro selo, se houver. As criaturas agem pelo lado de chegada neste combate e depois retornam aos donos.",
+          "text": "Revelação — Vincule uma posição de cada lado com selos enquanto Ithalion viver.\nA cada combate, mova a criatura do selo inimigo para o aliado, trocando-a com o ocupante, se houver. Elas agem pelo lado de chegada e retornam aos donos ao fim do combate.",
           "speech": "Como treinaram.",
           "narrative": "",
           "image": "art/virelion/ithalion-mestre-dos-selos.png",
@@ -1588,7 +1539,7 @@
           "quantity": 2,
           "rarity": "elite",
           "subtype": "",
-          "text": "Prepare em uma posição aliada. Por 2 combates, reduza à metade o dano dos ataques inimigos à criatura nessa posição, arredondando para cima.",
+          "text": "Por 2 combates, a criatura nessa posição recebe metade ↑ do dano de ataques inimigos.",
           "speech": "O éter é a minha arma",
           "narrative": "",
           "image": "art/virelion/FV11.jpg",
@@ -1703,7 +1654,7 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Prepare em uma posição inimiga. Adormecer — a criatura revelada nela fica presa nesta posição e não ataca até o fim do próximo combate após a ativação.",
+          "text": "Adormecer — a criatura revelada nela fica presa nessa posição e não ataca durante este combate e o seguinte.",
           "speech": "",
           "narrative": "",
           "image": "art/virelion/sono-profundo.jpg",
@@ -1740,6 +1691,101 @@
               "combats": 2
             }
           ]
+        },
+        {
+          "id": "FL20",
+          "name": "Miragem Provocadora",
+          "type": "prepared_spell",
+          "affinity": "fluxo",
+          "cost": 1,
+          "rarity": "padrao",
+          "subtype": "",
+          "text": "Ao ativar, convoque uma Miragem 0/1 de Fluxo na sua posição à frente. Se não houver espaço, descarte esta magia sem efeito.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/forja-personalizada/miragem-provocadora.jpg",
+          "artZoom": 149,
+          "artX": 32,
+          "artY": 78,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 42,
+          "effects": [
+            {
+              "op": "mirage",
+              "grant_trample": false,
+              "token_affinity": "fluxo"
+            }
+          ],
+          "enemyOnly": true,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "mirage",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"mirage\",\"grant_trample\":false,\"token_affinity\":\"fluxo\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
+          "positionOnly": true,
+          "imageKind": "illustration",
+          "artStatus": "own",
+          "quantity": 1
+        },
+        {
+          "id": "R2-FV18",
+          "name": "Desvio de Força",
+          "type": "prepared_spell",
+          "affinity": "fluxo",
+          "cost": 2,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "",
+          "positionOnly": true,
+          "enemyOnly": true,
+          "text": "Após as Revelações e bônus iniciais, troque o ataque atual da criatura nessa posição com o da aliada à frente. Apenas neste combate.",
+          "effects": [
+            {
+              "op": "transfer_attack",
+              "timing": "before_attacks",
+              "duration": "combat"
+            }
+          ],
+          "image": "images/artes-20261021/R2-FV18.png",
+          "artStatus": "pending",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "contain",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "transfer_attack",
+              "timing": "trap",
+              "target": "trigger",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"transfer_attack\",\"timing\":\"before_attacks\",\"duration\":\"combat\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
         }
       ]
     },
@@ -1754,7 +1800,7 @@
           "type": "creature",
           "affinity": "ruptura",
           "cost": 1,
-          "quantity": 4,
+          "quantity": 3,
           "rarity": "lacaio",
           "subtype": "Geometro",
           "attack": 1,
@@ -2045,7 +2091,7 @@
           ],
           "budgetVersion": 3,
           "budgetReview": "Alteração aprovada em 10/10/2026: Cólera +1; Banquete custo 8 e metade das magias anteriores, arredondada para baixo; Chamado 1 + cópias anteriores no próprio Nartvanyr. Orçamento não recalculado automaticamente.",
-          "directOnly": true
+          "concealedPrepared": true
         },
         {
           "id": "RG07",
@@ -2106,7 +2152,7 @@
           "subtype": "Gnoll Guerreiro",
           "attack": 2,
           "health": 3,
-          "text": "Revelação — se outra criatura aliada em combate tiver 1 ou menos de ataque, receba +1 de ataque neste combate.",
+          "text": "Revelação — se outra criatura aliada em combate tiver 2 ou menos de ataque, receba +1 de ataque neste combate.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG08.jpg",
@@ -2128,7 +2174,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"small_ally_reveal\",\"timing\":\"revelation\",\"target\":\"self\",\"amount\":1,\"scope\":\"combat\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"small_ally_reveal\",\"timing\":\"revelation\",\"target\":\"self\",\"amount\":1,\"scope\":\"combat\",\"max_attack\":2}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -2140,7 +2186,8 @@
               "timing": "revelation",
               "target": "self",
               "amount": 1,
-              "scope": "combat"
+              "scope": "combat",
+              "max_attack": 2
             }
           ],
           "budgetVersion": 3,
@@ -2155,7 +2202,7 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Suas criaturas nas posições de combate recebem +1 de ataque no combate desta rodada.",
+          "text": "No início do combate desta rodada, suas criaturas em combate ganham +1 de ataque até ele terminar.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG09.jpg",
@@ -2204,7 +2251,7 @@
           "subtype": "Jaghut",
           "attack": 3,
           "health": 4,
-          "text": "A cada formação de combate, escolha uma criatura livre na reserva inimiga e puxe-a para a posição vazia em frente a Vultobreve, tornando-o seu oponente. Não pode puxar criaturas da Emanação.",
+          "text": "A cada formação de combate, escolha uma criatura livre na reserva inimiga e puxe-a para a posição vazia à frente de Vultobreve. Não pode puxar criaturas em Emanação.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG10.jpg",
@@ -2245,13 +2292,13 @@
           "name": "Aríete Protegido",
           "type": "creature",
           "affinity": "ruptura",
-          "cost": 3,
+          "cost": 2,
           "quantity": 1,
           "rarity": "lacaio",
           "subtype": "Veículo",
           "attack": 0,
           "health": 4,
-          "text": "Revelação — você pode pagar 1 Éter para receber +1 de ataque neste combate.",
+          "text": "Revelação — você pode pagar 1 Éter para receber +2 de ataque neste combate.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG11.jpg",
@@ -2269,11 +2316,11 @@
               "target": "self",
               "duration": "round",
               "condition": "none",
-              "amount": 1,
+              "amount": 2,
               "count": 1,
               "activationCost": 1,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"optional_reveal_attack\",\"timing\":\"revelation\",\"target\":\"self\",\"cost\":1,\"amount\":1}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"optional_reveal_attack\",\"timing\":\"revelation\",\"target\":\"self\",\"cost\":1,\"amount\":2}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -2285,7 +2332,7 @@
               "timing": "revelation",
               "target": "self",
               "cost": 1,
-              "amount": 1
+              "amount": 2
             }
           ],
           "budgetVersion": 3,
@@ -2302,7 +2349,7 @@
           "subtype": "Baluarte",
           "attack": 4,
           "health": 4,
-          "text": "Enquanto seu Patrono tiver menos da metade da vida máxima, esta criatura tem +1 de ataque.",
+          "text": "Transpassar. Se o Patrono inimigo sofreu dano na rodada anterior, esta criatura tem +1 de ataque neste combate.",
           "speech": "",
           "narrative": "",
           "image": "art/ruptura-grupo/RG12.jpg",
@@ -2315,7 +2362,22 @@
           "budgetEffects": [
             {
               "sourceIndex": 0,
-              "name": "low_patron_attack",
+              "name": "trample",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"trample\"}",
+              "effect": "custom",
+              "customPoints": 0
+            },
+            {
+              "sourceIndex": 1,
+              "name": "previous_round_patron_damage_attack",
               "timing": "turn",
               "target": "enemy",
               "duration": "round",
@@ -2324,7 +2386,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"low_patron_attack\",\"amount\":1}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"previous_round_patron_damage_attack\",\"amount\":1}",
               "effect": "custom",
               "customPoints": 0
             }
@@ -2332,7 +2394,10 @@
           "authoredBy": "Grupo Elysium",
           "effects": [
             {
-              "op": "low_patron_attack",
+              "op": "trample"
+            },
+            {
+              "op": "previous_round_patron_damage_attack",
               "amount": 1
             }
           ],
@@ -2388,6 +2453,49 @@
           ],
           "budgetVersion": 3,
           "budgetReview": "Texto do autor e esclarecimentos de 07/10/2026; sem ajuste automático de custo ou atributos."
+        },
+        {
+          "id": "R2-RG14",
+          "name": "Lançador de Machados",
+          "type": "creature",
+          "affinity": "ruptura",
+          "cost": 2,
+          "attack": 1,
+          "health": 2,
+          "quantity": 1,
+          "rarity": "padrao",
+          "subtype": "",
+          "text": "Emanação — uma vez por rodada, quando outra fonte aliada ferir o Patrono inimigo, cause 1 de dano a um inimigo aleatório.",
+          "effects": [
+            {
+              "op": "launcher_damage",
+              "timing": "emanation"
+            }
+          ],
+          "image": "images/artes-20261021/R2-RG14.png",
+          "artStatus": "pending",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "launcher_damage",
+              "timing": "emanation",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"launcher_damage\",\"timing\":\"emanation\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
         }
       ],
       "archetype": "Pressão, Tribais e fichas",
@@ -2399,13 +2507,13 @@
         "hp": 16,
         "powers": [
           {
-            "id": "convocar-carrasco",
-            "name": "Convocar Carrasco",
+            "id": "golpe-do-maioral",
+            "name": "Golpe do Maioral",
             "cost": 2,
             "limit": "round",
             "duration": "instant",
-            "image": "energy-icons/ruptura.png",
-            "text": "Convoque um Carrasco 1/1 na sua reserva."
+            "image": "images/artes-20261021/golpe-do-maioral.png",
+            "text": "Cause 1 de dano a qualquer alvo."
           },
           {
             "id": "represalia-de-eter",
@@ -2413,7 +2521,7 @@
             "cost": 4,
             "limit": "match",
             "duration": "round",
-            "image": "energy-icons/ruptura.png",
+            "image": "images/artes-20261021/represalia-de-eter.png",
             "text": "Até o fim desta rodada, sempre que qualquer jogador usar uma magia, cause ao Patrono dele dano igual ao Éter pago por ela. Inclui suas próprias magias."
           }
         ]
@@ -2444,7 +2552,7 @@
             "id": "forjar-armadura",
             "name": "Hora da Bigorna",
             "cost": 1,
-            "text": "Conceda +1 de Vida Extra ao seu Patrono. Vida Extra absorve dano antes da vida normal, sem curar nem aumentar a vida máxima.",
+            "text": "Conceda +1 de Vida Extra ao seu Patrono.",
             "image": "power-forja-potencializar.png",
             "limit": "round",
             "duration": "permanent"
@@ -2453,7 +2561,7 @@
             "id": "forjar-arma",
             "name": "Forja Eterna",
             "cost": 3,
-            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina. A arma vai para sua mão e custa 1, 3 ou 6 Éter para jogar. Equipar custa 1 Éter.",
+            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina.",
             "image": "power-forja-ultimato.png",
             "limit": "match",
             "duration": "permanent"
@@ -2472,7 +2580,7 @@
           "subtype": "axiom Sintético",
           "attack": 0,
           "health": 2,
-          "text": "Ao sobreviver a um combate em que participou, ganha +1/+1 permanentemente.",
+          "text": "Ao sobreviver a um combate em que participou, ganha +1/+1.",
           "speech": "Serei…perfeito!",
           "narrative": "Meio bonito, meio psicótico, totalmente funcional!",
           "image": "art/oficina-lyrik/sintetico-prospero.jpg",
@@ -2660,7 +2768,7 @@
           "quantity": 4,
           "rarity": "lacaio",
           "subtype": "Magia direta",
-          "text": "Conceda +1/+1 permanentemente a uma criatura aliada.",
+          "text": "Conceda +1/+1 a uma criatura aliada.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/adquirir-atualizacao.jpg",
@@ -2773,7 +2881,7 @@
           "subtype": "axiom",
           "attack": 4,
           "health": 5,
-          "text": "Na formação, escolha um modo para este combate: Assalto — +2 de ataque para esta criatura e +1 para aliados adjacentes; Escolta — +2 de vida para esta criatura e +1 para aliados adjacentes.",
+          "text": "Entrada — escolha um modo para as próximas Revelações: Assalto (+2 de ataque para si; +1 aos aliados adjacentes) ou Escolta (+2 de vida para si; +1 aos aliados adjacentes). Bônus só neste combate.",
           "speech": "Protocolo: Exterminar!",
           "narrative": "Dizem ser uma das criações secretas de Lyrik, e que para ele, é uma obra prima, e para seus inimigos, um problema!",
           "image": "art/oficina-lyrik/v-3-r-0-n-1-c-a.jpg",
@@ -2913,7 +3021,7 @@
           "cost": 1,
           "quantity": 2,
           "rarity": "padrao",
-          "text": "Troque permanentemente o ataque e a vida atuais de uma criatura à sua escolha. Sua vida máxima se torna o novo valor de vida.",
+          "text": "Troque o ataque e a vida atuais de uma criatura à sua escolha. Sua vida máxima se torna o novo valor de vida.",
           "effects": [
             {
               "op": "invert_stats",
@@ -2923,7 +3031,6 @@
           "image": "art/forja-personalizada/inversor.jpg",
           "imageKind": "illustration",
           "fontRules": 38,
-          "directOnly": true,
           "artStatus": "own",
           "artZoom": 100,
           "artX": 69,
@@ -2948,7 +3055,8 @@
               "effect": "custom",
               "customPoints": 0
             }
-          ]
+          ],
+          "concealedPrepared": true
         },
         {
           "id": "FEX05",
@@ -2969,7 +3077,6 @@
           "image": "art/forja-personalizada/esteira-de-testes.jpg",
           "imageKind": "illustration",
           "fontRules": 38,
-          "directOnly": true,
           "artStatus": "own",
           "artZoom": 124,
           "artX": 82,
@@ -2994,7 +3101,8 @@
               "effect": "custom",
               "customPoints": 0
             }
-          ]
+          ],
+          "concealedPrepared": true
         },
         {
           "id": "FEX06",
@@ -3048,21 +3156,22 @@
           "cost": 3,
           "quantity": 1,
           "rarity": "padrao",
-          "text": "Conceda +1 de vida permanentemente a uma criatura aliada. Impeça o próximo efeito de uma magia inimiga que tentaria adormecê-la, ancorá-la ou devolvê-la à mão.",
+          "text": "Conceda +1/+1 a uma criatura aliada. Ela recebe Antimagia.",
           "effects": [
             {
               "op": "rune_coating",
               "health": 1,
-              "target": "chosen_allied_creature"
+              "target": "chosen_allied_creature",
+              "attack": 1
             }
           ],
           "directOnly": true,
-          "image": "art/oficina-lyrik/reforco-divino.jpg",
+          "image": "images/artes-20261021/FEX07.png",
           "imageKind": "illustration",
           "artStatus": "pending",
           "artZoom": 100,
           "artX": 50,
-          "artY": 0,
+          "artY": 50,
           "budgetEffects": [
             {
               "sourceIndex": 0,
@@ -3075,11 +3184,12 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"rune_coating\",\"health\":1,\"target\":\"chosen_allied_creature\"}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"rune_coating\",\"health\":1,\"target\":\"chosen_allied_creature\",\"attack\":1}",
               "effect": "custom",
               "customPoints": 0
             }
-          ]
+          ],
+          "artFit": "cover"
         },
         {
           "id": "FL01",
@@ -3092,7 +3202,7 @@
           "subtype": "humano",
           "attack": 2,
           "health": 2,
-          "text": "Entrada — conceda Iniciativa a um aliado à sua escolha.",
+          "text": "Entrada — conceda Iniciativa a uma criatura aliada à sua escolha. Pode escolher esta criatura.",
           "speech": "Direto da oficina para o combate!",
           "narrative": "Ele diz que é proativo, os colegas o chamam de ansioso!",
           "image": "art/oficina-lyrik/mecanico-proativo.jpg",
@@ -3140,7 +3250,7 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "Magia direta",
-          "text": "Conceda +2/+2 permanentemente a uma criatura aliada. Compre cartas iguais à metade do ataque dela após o bônus, arredondada para baixo.",
+          "text": "Conceda +2/+2 a uma criatura aliada. Compre cartas iguais à metade ↓ do ataque dela após o bônus.",
           "effects": [
             {
               "op": "stat_buff",
@@ -3151,7 +3261,7 @@
             }
           ],
           "directOnly": true,
-          "image": "art/oficina-lyrik/reforco-divino.jpg",
+          "image": "images/artes-20261021/FEX08.png",
           "imageKind": "illustration",
           "artStatus": "pending",
           "budgetEffects": [
@@ -3170,20 +3280,24 @@
               "effect": "custom",
               "customPoints": 0
             }
-          ]
+          ],
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover"
         },
         {
           "id": "FEX09",
           "name": "Legado da Oficina",
           "type": "creature",
           "affinity": "forja",
-          "cost": 2,
+          "cost": 1,
           "attack": 1,
-          "health": 2,
+          "health": 1,
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "Criatura",
-          "text": "Último Suspiro — conceda +1/+1 permanentemente a todas as criaturas na sua mão.",
+          "text": "Último Suspiro — conceda +1/+1 a todas as criaturas na sua mão.",
           "effects": [
             {
               "op": "death_hand_stat_buff",
@@ -3191,7 +3305,7 @@
               "health": 1
             }
           ],
-          "image": "art/oficina-lyrik/anao-taverneiro.jpg",
+          "image": "images/artes-20261021/FEX09.png",
           "imageKind": "illustration",
           "artStatus": "pending",
           "budgetEffects": [
@@ -3210,9 +3324,923 @@
               "effect": "custom",
               "customPoints": 0
             }
-          ]
+          ],
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "contain"
         }
       ]
+    },
+    {
+      "id": "forja-couraca-lyrik",
+      "name": "Couraça de Lyrik",
+      "affinity": "forja",
+      "archetype": "Crescimento e máquinas",
+      "plan": "Sobreviva ao início da partida, fortaleça suas criaturas e esmague seu oponente no final do jogo",
+      "patron": {
+        "id": "P-F-LYRIK",
+        "name": "Lyrik, O Forjador",
+        "health": 16,
+        "affinities": [
+          "forja"
+        ],
+        "starts_in_play": true,
+        "counts_toward_deck": false,
+        "ability": null,
+        "text": "Seu baralho só pode conter cartas de Forja. Sua mana pode pagar os custos dessas cartas.",
+        "lore_status": "Título original de protótipo; não identifica uma divindade oficial.",
+        "image": "patrons/bigorna-desperta-nova.png",
+        "powers": [
+          {
+            "id": "forjar-armadura",
+            "name": "Hora da Bigorna",
+            "cost": 1,
+            "text": "Conceda +1 de Vida Extra ao seu Patrono.",
+            "image": "power-forja-potencializar.png",
+            "limit": "round",
+            "duration": "permanent"
+          },
+          {
+            "id": "forjar-arma",
+            "name": "Forja Eterna",
+            "cost": 3,
+            "text": "Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina.",
+            "image": "power-forja-ultimato.png",
+            "limit": "match",
+            "duration": "permanent"
+          }
+        ]
+      },
+      "cards": [
+        {
+          "id": "FL16",
+          "name": "João Bobão",
+          "type": "creature",
+          "rarity": "lacaio",
+          "affinity": "forja",
+          "cost": 1,
+          "attack": 0,
+          "health": 3,
+          "quantity": 2,
+          "text": "Provocar.",
+          "effects": [
+            {
+              "op": "taunt"
+            }
+          ],
+          "image": "art/forja-personalizada/joao-bobao.png",
+          "imageKind": "illustration",
+          "artZoom": 128,
+          "artX": 43,
+          "artY": 15,
+          "subtype": "",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "taunt",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"taunt\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "artStatus": "own",
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 36
+        },
+        {
+          "id": "FL21",
+          "name": "Rúnico Eficiente",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 2,
+          "quantity": 2,
+          "rarity": "lacaio",
+          "subtype": "Axiom",
+          "attack": 1,
+          "health": 1,
+          "text": "Entrada — compre 1 carta. Aumentos de ataque e vida concedidos a esta criatura são dobrados.",
+          "speech": "Cada melhoria rende mais.",
+          "narrative": "",
+          "image": "art/forja-personalizada/runico-eficiente.jpg",
+          "artZoom": 100,
+          "artX": 31,
+          "artY": 61,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 52,
+          "effects": [
+            {
+              "op": "draw",
+              "amount": 1,
+              "timing": "on_enter"
+            },
+            {
+              "op": "double_stat_gains"
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "draw",
+              "timing": "enter",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "draw"
+            },
+            {
+              "sourceIndex": 1,
+              "name": "double_stat_gains",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"double_stat_gains\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente.",
+          "imageKind": "illustration",
+          "artStatus": "own"
+        },
+        {
+          "id": "FL04",
+          "name": "Sintético Próspero",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 2,
+          "quantity": 2,
+          "rarity": "elite",
+          "subtype": "axiom Sintético",
+          "attack": 0,
+          "health": 2,
+          "text": "Ao sobreviver a um combate em que participou, ganha +1/+1.",
+          "speech": "Serei…perfeito!",
+          "narrative": "Meio bonito, meio psicótico, totalmente funcional!",
+          "image": "art/oficina-lyrik/sintetico-prospero.jpg",
+          "artZoom": 100,
+          "artX": 22,
+          "artY": 38,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 52,
+          "effects": [
+            {
+              "op": "survive_growth",
+              "attack": 1,
+              "health": 1
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "survive_growth",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"survive_growth\",\"attack\":1,\"health\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+        },
+        {
+          "id": "FL06",
+          "name": "Anão estudioso",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 3,
+          "quantity": 2,
+          "rarity": "padrao",
+          "subtype": "anão",
+          "attack": 2,
+          "health": 2,
+          "text": "Entrada — compre 1 carta. Emanação — a criatura aliada na primeira posição tem +1 de vida.",
+          "speech": "Cuidado com a fumaça, pequenino!",
+          "narrative": "Sim, aquilo ali é um rato, e não, ele não sabe ler!",
+          "image": "art/oficina-lyrik/anao-estudioso.jpg",
+          "artZoom": 100,
+          "artX": 19,
+          "artY": 23,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 52,
+          "effects": [
+            {
+              "op": "draw",
+              "amount": 1,
+              "timing": "on_enter"
+            },
+            {
+              "op": "lane_health_aura",
+              "amount": 1,
+              "lane": 0,
+              "timing": "emanation"
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "draw",
+              "timing": "enter",
+              "target": "owner",
+              "duration": "instant",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "draw"
+            },
+            {
+              "sourceIndex": 1,
+              "name": "Emanação: +1 de vida na posição 1",
+              "timing": "emanation",
+              "target": "fixedAlly",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "health"
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+        },
+        {
+          "id": "FL08",
+          "name": "Monge Rúnico",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 5,
+          "quantity": 1,
+          "rarity": "padrao",
+          "subtype": "axiom",
+          "attack": 3,
+          "health": 4,
+          "text": "Entrada — escolha um modo para as próximas Revelações: −2 de ataque ao inimigo à frente ou +1/+1 ao aliado à direita. Efeitos só neste combate.",
+          "speech": "Um combate? que desperdicio!",
+          "narrative": "6 mãos? ele claramente só quer se exibir!",
+          "image": "art/oficina-lyrik/monge-runico.jpg",
+          "artZoom": 120,
+          "artX": 63,
+          "artY": 21,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 46,
+          "effects": [
+            {
+              "op": "monk_choice",
+              "timing": "revelation",
+              "duration": "combat",
+              "options": [
+                {
+                  "id": "weaken",
+                  "op": "attack_modifier",
+                  "amount": -2,
+                  "target": "enemy_same_lane"
+                },
+                {
+                  "id": "buff",
+                  "op": "stat_buff",
+                  "attack": 1,
+                  "health": 1,
+                  "target": "ally_right"
+                }
+              ]
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "monk_choice",
+              "timing": "reveal",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"monk_choice\",\"timing\":\"revelation\",\"duration\":\"combat\",\"options\":[{\"id\":\"weaken\",\"op\":\"attack_modifier\",\"amount\":-2,\"target\":\"enemy_same_lane\"},{\"id\":\"buff\",\"op\":\"stat_buff\",\"attack\":1,\"health\":1,\"target\":\"ally_right\"}]}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+        },
+        {
+          "id": "FL09",
+          "name": "G.0.L.1.A.5, o Terror Náutico",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 8,
+          "quantity": 1,
+          "rarity": "elite",
+          "subtype": "Engrenauta",
+          "attack": 5,
+          "health": 10,
+          "text": "Provocar — pode escolher até duas posições inimigas adjacentes adicionais para redirecionar seus ataques contra si neste combate.",
+          "speech": "*Barulho aterrorizante*",
+          "narrative": "Se estiver em alto mar e notar um farol avermelhado… comece a escolher um deus para rezar",
+          "image": "art/oficina-lyrik/g-0-l-1-a-5-o-terror-nautico.jpg",
+          "artZoom": 105,
+          "artX": 100,
+          "artY": 66,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 52,
+          "effects": [
+            {
+              "op": "taunt",
+              "maxAdditional": 2
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "taunt",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"taunt\",\"maxAdditional\":2}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+        },
+        {
+          "id": "FL01",
+          "name": "Mecânico Proativo",
+          "type": "creature",
+          "affinity": "forja",
+          "cost": 2,
+          "quantity": 1,
+          "rarity": "lacaio",
+          "subtype": "humano",
+          "attack": 2,
+          "health": 2,
+          "text": "Entrada — conceda Iniciativa a uma criatura aliada à sua escolha. Pode escolher esta criatura.",
+          "speech": "Direto da oficina para o combate!",
+          "narrative": "Ele diz que é proativo, os colegas o chamam de ansioso!",
+          "image": "art/oficina-lyrik/mecanico-proativo.jpg",
+          "artZoom": 142,
+          "artX": 62,
+          "artY": 21,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 52,
+          "effects": [
+            {
+              "op": "grant_keyword",
+              "keyword": "initiative",
+              "timing": "on_enter",
+              "target": "chosen_allied_creature"
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "grant_keyword",
+              "timing": "enter",
+              "target": "ally",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"grant_keyword\",\"keyword\":\"initiative\",\"timing\":\"on_enter\",\"target\":\"chosen_allied_creature\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+        },
+        {
+          "id": "FL10",
+          "name": "Adquirir Atualização",
+          "type": "direct_spell",
+          "affinity": "forja",
+          "cost": 2,
+          "quantity": 3,
+          "rarity": "lacaio",
+          "subtype": "Magia direta",
+          "text": "Conceda +1/+1 a uma criatura aliada.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/forja-personalizada/adquirir-atualizacao.jpg",
+          "artZoom": 145,
+          "artX": 53,
+          "artY": 9,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 52,
+          "effects": [
+            {
+              "op": "stat_buff",
+              "attack": 1,
+              "health": 1,
+              "target": "chosen_allied_creature"
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "stat_buff",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "permanent",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "attack"
+            },
+            {
+              "sourceIndex": 0,
+              "name": "stat_buff",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "permanent",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "health"
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Ajuste aprovado em 07/10/2026: custo/efeito conferidos no motor; validar em partidas sem poderes de Patrono.",
+          "directOnly": true,
+          "imageKind": "illustration",
+          "artStatus": "own"
+        },
+        {
+          "id": "FL15",
+          "name": "Bomba Cinética",
+          "type": "direct_spell",
+          "affinity": "forja",
+          "cost": 2,
+          "quantity": 1,
+          "rarity": "lacaio",
+          "subtype": "",
+          "text": "Escolha uma criatura aliada e uma inimiga. A aliada causa dano igual ao seu ataque à inimiga.",
+          "speech": "",
+          "narrative": "",
+          "image": "art/forja-personalizada/bomba-cinetica.png",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "fontName": 43,
+          "fontSubtype": 21,
+          "fontRules": 42,
+          "effects": [
+            {
+              "op": "ally_attack_damage",
+              "target": "chosen_enemy_creature"
+            }
+          ],
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "ally_attack_damage",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"ally_attack_damage\",\"target\":\"chosen_enemy_creature\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "budgetVersion": 3,
+          "authoredBy": "Grupo Elysium",
+          "budgetReview": "Custo inicial de teste; redução permanente aprovada pelo autor. Não certifica equilíbrio.",
+          "directOnly": true
+        },
+        {
+          "id": "FL17",
+          "name": "Engenheiro Cauteloso",
+          "type": "creature",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "quantity": 1,
+          "cost": 2,
+          "attack": 1,
+          "health": 1,
+          "subtype": "humano",
+          "text": "Emanação — a criatura aliada na segunda posição tem +1 de vida. Se ela for Axiom, também tem +1 de ataque.",
+          "effects": [
+            {
+              "op": "lane_health_aura",
+              "amount": 1,
+              "lane": 1,
+              "timing": "emanation"
+            },
+            {
+              "op": "lane_attack_aura",
+              "amount": 1,
+              "lane": 1,
+              "timing": "emanation",
+              "subtypeIncludes": "axiom"
+            }
+          ],
+          "image": "art/forja-personalizada/engenheiro-cauteloso.jpg",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 56,
+          "artY": 100,
+          "fontRules": 36,
+          "authoredBy": "Grupo Elysium",
+          "budgetVersion": 3,
+          "budgetReview": "Ilustração provisória reutilizada; ataque adicional condicionado a Axiom.",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "Emanação: +1 de vida na posição 2",
+              "timing": "emanation",
+              "target": "fixedAlly",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "",
+              "effect": "health"
+            },
+            {
+              "sourceIndex": 1,
+              "name": "lane_attack_aura",
+              "timing": "emanation",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"lane_attack_aura\",\"amount\":1,\"lane\":1,\"timing\":\"emanation\",\"subtypeIncludes\":\"axiom\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "artStatus": "own",
+          "fontName": 43,
+          "fontSubtype": 21,
+          "speech": "",
+          "narrative": "Ele só não é cauteloso com os gastos no fim do mês, esse aí adora uma chorumela!"
+        },
+        {
+          "id": "FEX07",
+          "name": "Revestimento Rúnico",
+          "type": "direct_spell",
+          "affinity": "forja",
+          "cost": 3,
+          "quantity": 2,
+          "rarity": "padrao",
+          "text": "Conceda +1/+1 a uma criatura aliada. Ela recebe Antimagia.",
+          "effects": [
+            {
+              "op": "rune_coating",
+              "health": 1,
+              "target": "chosen_allied_creature",
+              "attack": 1
+            }
+          ],
+          "directOnly": true,
+          "image": "images/artes-20261021/FEX07.png",
+          "imageKind": "illustration",
+          "artStatus": "pending",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "rune_coating",
+              "timing": "direct",
+              "target": "ally",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"rune_coating\",\"health\":1,\"target\":\"chosen_allied_creature\",\"attack\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ],
+          "artFit": "cover"
+        },
+        {
+          "id": "FA01",
+          "name": "Ferreira de Couraças",
+          "quantity": 3,
+          "cost": 2,
+          "type": "creature",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "text": "Entrada — conceda 2 de armadura ao seu Patrono.",
+          "effects": [
+            {
+              "op": "gain_patron_armor",
+              "amount": 2,
+              "timing": "on_enter"
+            }
+          ],
+          "attack": 1,
+          "health": 3,
+          "image": "images/artes-20261021/FA01.png",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "gain_patron_armor",
+              "timing": "enter",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 2,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"gain_patron_armor\",\"amount\":2,\"timing\":\"on_enter\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FA02",
+          "name": "Armeiro da Oficina",
+          "quantity": 2,
+          "cost": 3,
+          "type": "creature",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "text": "Entrada — equipe seu Patrono com uma arma 1/3.",
+          "effects": [
+            {
+              "op": "create_weapon",
+              "timing": "on_enter"
+            }
+          ],
+          "attack": 2,
+          "health": 2,
+          "image": "images/artes-20261021/FA02.png",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "create_weapon",
+              "timing": "enter",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"create_weapon\",\"timing\":\"on_enter\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FA03",
+          "name": "Rebitador Especialista",
+          "quantity": 2,
+          "cost": 3,
+          "type": "creature",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "text": "Entrada — conceda +1 de ataque e +1 de durabilidade à arma do seu Patrono.",
+          "effects": [
+            {
+              "op": "upgrade_weapon",
+              "timing": "on_enter"
+            }
+          ],
+          "attack": 2,
+          "health": 3,
+          "image": "images/artes-20261021/FA03.png",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "upgrade_weapon",
+              "timing": "enter",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"upgrade_weapon\",\"timing\":\"on_enter\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FA04",
+          "name": "Disparador Blindado",
+          "quantity": 2,
+          "cost": 4,
+          "type": "creature",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "text": "Entrada — cause dano igual à armadura do seu Patrono a uma criatura inimiga.",
+          "effects": [
+            {
+              "op": "armor_damage",
+              "timing": "on_enter"
+            }
+          ],
+          "attack": 2,
+          "health": 4,
+          "image": "images/artes-20261021/FA04.png",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "armor_damage",
+              "timing": "enter",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"armor_damage\",\"timing\":\"on_enter\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FA05",
+          "name": "Guardião da Bigorna",
+          "quantity": 1,
+          "cost": 4,
+          "type": "creature",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "text": "Após sobreviver a um combate, conceda 1 de armadura ao seu Patrono.",
+          "effects": [
+            {
+              "op": "survive_patron_armor",
+              "amount": 1
+            }
+          ],
+          "attack": 2,
+          "health": 5,
+          "image": "images/artes-20261021/FA05.png",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover",
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "survive_patron_armor",
+              "timing": "turn",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 1,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"survive_patron_armor\",\"amount\":1}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        },
+        {
+          "id": "FA06",
+          "name": "Reciclagem Defensiva",
+          "quantity": 2,
+          "cost": 4,
+          "type": "spell",
+          "affinity": "forja",
+          "rarity": "padrao",
+          "text": "Conceda 2 de armadura ao seu Patrono. Compre 2 cartas.",
+          "effects": [
+            {
+              "op": "armor_draw"
+            }
+          ],
+          "image": "images/artes-20261021/FA06.png",
+          "imageKind": "illustration",
+          "artZoom": 100,
+          "artX": 50,
+          "artY": 50,
+          "artFit": "cover",
+          "concealedPrepared": true,
+          "budgetEffects": [
+            {
+              "sourceIndex": 0,
+              "name": "armor_draw",
+              "timing": "direct",
+              "target": "enemy",
+              "duration": "round",
+              "condition": "none",
+              "amount": 0,
+              "count": 1,
+              "activationCost": 0,
+              "group": "sum",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"armor_draw\"}",
+              "effect": "custom",
+              "customPoints": 0
+            }
+          ]
+        }
+      ],
+      "variantOf": "forja-oficina-lyrik",
+      "strategy": "Acumule armadura, equipe seus Combatentes e transforme sua defesa em vantagem.",
+      "prototype": true
     }
   ],
   "additionalCards": [
@@ -3372,7 +4400,7 @@
       "cost": 2,
       "quantity": 1,
       "rarity": "padrao",
-      "text": "O próximo dano que a criatura aliada alvo receber é dobrado. Depois, se sobreviver, ganha +1/+1 permanentemente.",
+      "text": "O próximo dano que a criatura aliada alvo receber é dobrado. Depois, se sobreviver, ganha +1/+1.",
       "effects": [
         {
           "op": "volatile_project",
@@ -3406,6 +4434,45 @@
           "reason": "Mecânica sem preço calibrado: {\"op\":\"volatile_project\",\"target\":\"chosen_allied_creature\"}",
           "effect": "custom",
           "customPoints": 0
+        }
+      ]
+    },
+    {
+      "id": "FV17",
+      "name": "Trégua Etérea",
+      "type": "spell",
+      "cost": 3,
+      "rarity": "padrao",
+      "directOnly": true,
+      "text": "Reduza em 2 o ataque de todas as criaturas inimigas até o fim desta rodada.",
+      "effects": [
+        {
+          "op": "area_attack_modifier",
+          "amount": -2,
+          "permanent": false,
+          "duration": "round"
+        }
+      ],
+      "image": "images/artes-20261021/FV17.png",
+      "imageKind": "illustration",
+      "artZoom": 100,
+      "artX": 50,
+      "artY": 50,
+      "artFit": "cover",
+      "budgetEffects": [
+        {
+          "sourceIndex": 0,
+          "name": "area_attack_modifier",
+          "timing": "direct",
+          "target": "area",
+          "duration": "permanent",
+          "condition": "none",
+          "amount": 2,
+          "count": 8,
+          "activationCost": 0,
+          "group": "sum",
+          "reason": "",
+          "effect": "weaken"
         }
       ]
     }

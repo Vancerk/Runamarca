@@ -1,3 +1,4 @@
+import {patronCombatant} from './patron-combat.mjs';
 import {randomUUID} from 'node:crypto';
 import './weapons-data.js';
 export const weaponOptions=globalThis.RunaWeapons.options;
@@ -29,9 +30,8 @@ export function equipWeapon(room,p,data,{emit,pushLog,attack}){
  const patronTarget=data.targetId==='patron'||data.targetId==='patron:'+p.id;
  const weapon=(p.weapons||[]).find(w=>w.uid===data.cardId&&w.durability>0),target=patronTarget&&p.patron?.hp>0?p.patron:p.reserve.find(c=>c.uid===data.targetId&&c.type==='creature'&&c.damage<c.health);
  if(!weapon||!target)throw Error('Escolha uma arma da reserva e um Combatente aliado vivo.');
- if(target.equipment)throw Error('Este Combatente já possui um equipamento.');
  if(p.mana<1)throw Error('Equipar custa 1 Éter.');
- p.mana--;p.weapons=p.weapons.filter(w=>w!==weapon);target.equipment=weapon;
+ p.mana--;if(target.equipment){target.equipment.durability=0;wearEquipment(room,p,patronTarget?patronCombatant(p):target,{emit,pushLog});}p.weapons=p.weapons.filter(w=>w!==weapon);target.equipment=weapon;
  emit(room,'equipment_equipped',{playerId:p.id,targetId:patronTarget?null:target.uid,targetPatronId:patronTarget?p.id:null,card:structuredClone(weapon),healthUpdates:patronTarget?[]:[{uid:target.uid,hp:target.health-target.damage,maxHp:target.health,attack:attack(target,room,p.formation.indexOf(target.uid))}]});pushLog(room,p.name+' equipou '+weapon.name+' em '+target.name+'.',p.id);
 }
 
@@ -44,7 +44,7 @@ export function wearEquipment(room,p,creature,{emit,pushLog}){
  const weapon=creature.equipment;if(!weapon)return null;
  weapon.durability=Math.max(0,weapon.durability-weapon.wear);
  const update={sourceId:creature.uid,cardId:weapon.uid,durability:weapon.durability,broken:weapon.durability===0};
- if(update.broken){delete creature.equipment;p.discard.push(weapon);emit?.(room,'equipment_broken',{playerId:p.id,cardId:weapon.uid,sourceId:creature.uid});pushLog(room,weapon.name+' quebrou e foi ao Nartvanyr.',p.id);}
+ if(update.broken){if(creature.type==='patron')delete p.patron.equipment;else delete creature.equipment;p.discard.push(weapon);emit?.(room,'equipment_broken',{playerId:p.id,cardId:weapon.uid,sourceId:creature.uid});pushLog(room,weapon.name+' quebrou e foi ao Nartvanyr.',p.id);}
  return update;
 }
 

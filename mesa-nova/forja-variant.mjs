@@ -9,11 +9,10 @@ export function grantPermanentStats(card,attack=0,health=0){
  const a=statGain(card,attack||0),h=statGain(card,health||0);
  card.attack+=a;card.health+=h;recordPermanentGains(card,a,h);
 }
-export function preventControl(card,casterId,op){
- if(!card?.runeCoating||card.owner===casterId||!['sleep','anchor','return_to_hand'].includes(op))return false;
- delete card.runeCoating;return true;
+export function preventControl(card,casterId,op,sourceType='spell'){
+ return Boolean(card?.runeCoating&&sourceType!=='creature');
 }
-const names={initiative:'Iniciativa',trample:'Transpassar',taunt:'Provocar',corruption:'Corrupção',runeCoating:'Revestimento Rúnico'};
+const names={initiative:'Iniciativa',trample:'Transpassar',taunt:'Provocar',corruption:'Corrupção',runeCoating:'Antimagia'};
 export function grantedEffects(card){return (card?.grantedKeywords||[]).map(op=>({op})).concat((card?.auraKeywords||[]).map(op=>({op})));}
 export function receiveDamage(card,amount){
  if(!card||amount<=0)return card;
@@ -46,5 +45,10 @@ export function keywordPresentation(card,showAura=true){
  if(card.corruption)added.add('corruption');
  if(card.runeCoating)added.add('runeCoating');
  const keywords=[...added].filter(op=>names[op]&&!original.some(e=>e.op===op)).map(op=>names[op]);
- return {text:(card.text||'')+(keywords.length?'\n'+keywords.join('. ')+'.':''),highlightKeywords:keywords};
+ let text=card.text||'';
+ if(showAura&&!card.silenced){
+  if(original.some(e=>e.op==='combat_protocol')&&['assault','escort'].includes(card.protocolMode))text=card.protocolMode==='assault'?'Revelação — Assalto: +2 de ataque para si e +1 aos aliados adjacentes. Só neste combate.':'Revelação — Escolta: +2 de vida para si e +1 aos aliados adjacentes. Só neste combate.';
+  if(original.some(e=>e.op==='monk_choice')&&['weaken','buff'].includes(card.monkMode))text=card.monkMode==='weaken'?'Revelação — Enfraquecer: reduza em 2 o ataque do inimigo à frente. Só neste combate.':'Revelação — Fortalecer: conceda +1/+1 ao aliado à direita. Só neste combate.';
+ }
+ return {text:text+(keywords.length?'\n'+keywords.join('. ')+'.':''),highlightKeywords:keywords};
 }
