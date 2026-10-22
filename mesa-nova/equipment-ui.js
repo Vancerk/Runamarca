@@ -25,7 +25,7 @@ function chooseEquipment(card){
  if(state?.spectator||state.phase!=='prep'||state.turn!==state.you)return;
  if(seat().hand.some(c=>c.uid===card.uid)){if(!affordable(card)){err('Éter insuficiente.');return;}command({type:'play',cardId:card.uid});return;}
  if(!(seat().weapons||[]).some(c=>c.uid===card.uid))return;
- const targets=seat().reserve.filter(c=>c.type==='creature'&&c.damage<c.health&&!c.equipment);if(seat().mana<1){err('Equipar custa 1 Éter.');return;}const ids=targets.map(c=>c.uid);if(seat().patron?.hp>0&&!seat().patron.equipment)ids.unshift('patron');if(!ids.length){err('Você precisa de um Combatente aliado sem equipamento.');return;}
+ const targets=seat().reserve.filter(c=>c.type==='creature'&&c.damage<c.health);if(seat().mana<1){err('Equipar custa 1 Éter.');return;}const ids=targets.map(c=>c.uid);if(seat().patron?.hp>0)ids.unshift('patron');if(!ids.length){err('Você precisa de um Combatente aliado vivo.');return;}
  showTargetPicker(card,ids,targetId=>command({type:'equip',cardId:card.uid,targetId}),'Equipar · 1 Éter');
 }
 function addEquipmentVisual(node,card){
@@ -39,12 +39,12 @@ function addEquipmentVisual(node,card){
 }
 function renderPatronWeapon(player,side){
  const avatar=$(side+'-head')?.querySelector('.patron-avatar'),weapon=player?.patron?.equipment;if(!avatar)return;
- avatar.querySelector('.patron-weapon')?.remove();if(!weapon)return;
+ bindPatronPortraitDrag(player,side,avatar);avatar.classList.toggle('patron-in-field',Boolean(player.formation?.includes('patron:'+player.id)));avatar.querySelector('.patron-weapon')?.remove();if(!weapon)return;
  const chip=RunaWeaponPresentation.token(weapon,{onOpen:event=>{event?.stopPropagation();showCard(weapon);}});chip.classList.add('patron-weapon');
  const attack=player.patron.effectiveAttack??Math.max(0,weapon.attack+(player.patron.hp<player.patron.maxHp?(weapon.woundedBonus||0):0));
  chip.querySelector('.weapon-bonus').textContent=String(attack);
  chip.setAttribute('aria-label',weapon.name+' · Ataque do Patrono: '+attack+' · Durabilidade: '+weapon.durability);
- chip.title=chip.getAttribute('aria-label');chip.onpointerdown=e=>e.stopPropagation();chip.onmouseenter=e=>showHover(weapon,e);chip.onmousemove=moveHover;chip.onmouseleave=hideHover;avatar.append(chip);updateWeaponCrack(chip,weapon.durability,weapon.maxDurability);
+ chip.title=chip.getAttribute('aria-label');if(side==='self'&&!state.spectator&&state.phase==='formation'&&!player.ready&&weapon.durability>0&&player.patron.hp>0){bindCardDrag(chip,{uid:'patron:'+player.id,type:'patron',owner:player.id},'patron');chip.onclick=e=>{e.stopPropagation();if(Date.now()<suppressClickUntil)return;choosePatronPosition(player);};chip.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();choosePatronPosition(player);}};}else chip.onpointerdown=e=>e.stopPropagation();chip.onmouseenter=e=>showHover(weapon,e);chip.onmousemove=moveHover;chip.onmouseleave=hideHover;avatar.append(chip);updateWeaponCrack(chip,weapon.durability,weapon.maxDurability);
 }
 function renderWeapons(){
  for(const [side,p] of [['self',seat()],['opponent',rival()]]){renderPatronWeapon(p,side);const reserve=$(side+'-reserve');if(!reserve||!p)continue;const weapons=p.weapons||[];if(!weapons.length)continue;const row=document.createElement('div');row.className='weapons-row';row.setAttribute('aria-label','Equipamentos na reserva');for(const weapon of weapons){const node=cardEl(weapon,{mini:true});row.append(node);}reserve.append(row);}

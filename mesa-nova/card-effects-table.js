@@ -5,7 +5,7 @@ function identityNode(uid){return [...document.querySelectorAll('#game .card')].
 function identityGeneration(){return visualGeneration+':'+(state?.combat?.id||'outside');}
 function resetCardIdentityPresentation(){cardIdentityProtocol.clear();RunaCardEffects.clear();cardIdentitySeen.clear();cardIdentityFrost.clear();cardIdentityFaults.clear();cardIdentityApplied.clear();cardIdentityCoatingsSpent.clear();}
 function identityPlay(kind,from,to,onHit=()=>{},targets=null,duration=900){return RunaCardEffects.play({kind,from,to,targets,onHit,context:audioContext,getGeneration:identityGeneration,duration});}
-function identitySpellSource(owner){return document.querySelector(owner===seat()?.id?'.own-used-spell':'.rival-used-spell')||patronDamageSource(owner);}
+function identitySpellSource(owner){return patronDamageSource(owner);}
 async function presentIdentitySpell(event,preparedTarget=null){
  if(event.echo||event.card?.uid?.endsWith('-eco'))globalThis.RunaMarikaEffects?.pages([preparedTarget||damageTarget(event.targetId)].filter(Boolean));
  let kind=RunaCardEffects.kind(event.card);if(!kind)return false;
@@ -20,11 +20,11 @@ async function presentIdentitySpell(event,preparedTarget=null){
  if(!targets.length)targets=[from];
  if(kind==='mirror'){to=document.querySelector('.lane-side[data-owner="'+owner+'"][data-lane="'+event.lane+'"]')||to;targets=[to].filter(Boolean);}
  const victim=identityCard(to?.dataset?.uid||to?.querySelector?.('.card')?.dataset.uid);
- const blocked=['anchor','sleep'].includes(kind)&&victim?.runeCoating&&victim.owner!==owner&&!cardIdentityCoatingsSpent.has(victim.uid);
+ const blocked=kind!=='coating'&&Boolean(victim?.runeCoating)&&targets.length<=1;
  if(blocked){kind='coating';targets=[to];}
  await identityPlay(kind,from,to,()=>{
   applyDamageHit(updates);if(event.sourceHealthUpdate)applyHealthUpdates([event.sourceHealthUpdate]);
-  if(blocked)cardIdentityCoatingsSpent.add(victim.uid);
+  // Continuous Antimagia is not consumed by the presentation.
   else if(preparedTarget&&['anchor','sleep','barrier'].includes(kind)&&victim){const active=cardIdentityApplied.get(victim.uid)||new Set();active.add(kind);cardIdentityApplied.set(victim.uid,active);}
   if(kind==='ice'||kind==='frost')for(const u of kind==='frost'?changed:updates)if(u.uid)cardIdentityFrost.add(u.uid);
   if(kind==='mirror'){const spawn=state.combat?.spawnedMirages?.find(x=>x.spellId===event.cardId);if(spawn&&to&&!to.querySelector('.card'))to.replaceChildren(cardEl(spawn.card,{mini:true,combat:true}));}
@@ -44,7 +44,7 @@ function syncCardIdentities(){
  const items=[];for(const p of state.players)for(const c of p.reserve||[]){const n=identityNode(c.uid);if(!n)continue;const target=()=>identityNode(c.uid),effects=c.effects||[],has=op=>effects.some(e=>e.op===op),lane=n.closest('.lane-side');
   const add=kind=>items.push({uid:c.uid,kind,target});
   if(has('initiative')||(c.grantedKeywords||[]).includes('initiative')||(c.equipment?.effects||[]).some(e=>e.op==='initiative'))add('speed');
-  const applied=cardIdentityApplied.get(c.uid);if(c.runeCoating&&!cardIdentityCoatingsSpent.has(c.uid))add('coating');if((c.anchor||applied?.has('anchor'))&&lane)add('anchor');if((c.sleep||applied?.has('sleep'))&&lane)add('sleep');if(c.corruption)add('curse');if(cardIdentityFrost.has(c.uid)&&lane)add('ice');
+  const applied=cardIdentityApplied.get(c.uid);if(c.runeCoating)add('coating');if((c.anchor||applied?.has('anchor'))&&lane)add('anchor');if((c.sleep||applied?.has('sleep'))&&lane)add('sleep');if(c.corruption)add('curse');if(cardIdentityFrost.has(c.uid)&&lane)add('ice');
   if(cardIdentityProtocol.has(c.uid)&&lane)add('veronica');if(c.auraKeywords?.includes('trample'))add('pierce');
   // Keep only a quiet edge marking for active Emanação benefits.
   if(lane&&(lane.classList.contains('lane-buffed')))add('aura');
@@ -66,7 +66,10 @@ function presentIdentityRevelation(ability){
  if(!kind)return false;
  if(kind==='veronica'&&globalThis.RunaPlatinumEntry){
   const combatId=state.combat?.id,generation=visualGeneration;
-  void RunaPlatinumEntry.empower({source,targets:targets.length?targets:[source],mode:ability.mode,context:audioContext,valid:()=>generation===visualGeneration&&combatPresentationCurrent(combatId)});
+  // Resolve current combat DOM by UID, never a cached death remnant or hand copy.
+  const combatNode=uid=>[...document.querySelectorAll('#lanes .lane-side .card')].find(n=>n.dataset.uid===uid&&!n.classList.contains('back'))||null;
+  const sourceNow=()=>combatNode(ability.sourceId),beneficiaries=(ability.healthUpdates||[]).filter(u=>u.uid).map(u=>()=>combatNode(u.uid));
+  void RunaPlatinumEntry.empower({source:sourceNow,targets:beneficiaries.length?beneficiaries:[sourceNow],mode:ability.mode,context:audioContext,valid:()=>generation===visualGeneration&&combatPresentationCurrent(combatId)});
   deferVisual(()=>{if(!combatPresentationCurrent(combatId))return;applyHealthUpdates(ability.healthUpdates);for(const u of ability.healthUpdates||[])cardIdentityProtocol.add(u.uid);syncCardIdentities();},650);return true;
  }
 
@@ -83,7 +86,7 @@ function presentIdentityAftermath(strike){
 }
 function presentIdentityNotice(event){
  if(/Iniciativa/.test(event.message||'')){identityPlay('speed',identityNode(event.sourceId),damageTarget(event.targetId));return true;}
- if(/Revestimento Rúnico impediu/.test(event.message||'')){identityPlay('coating',damageTarget(event.targetId),damageTarget(event.targetId));return true;}
+ if(/Antimagia impediu|Revestimento Rúnico impediu/.test(event.message||'')){identityPlay('coating',damageTarget(event.targetId),damageTarget(event.targetId));return true;}
  return false;
 }
 async function presentIdentitySummon(event){const c=identityCard(event.cardId),kind=/RG01/.test(c?.modelId||'')?'geometry':/RG06/.test(c?.modelId||'')?'tribal':null;if(!kind)return false;await identityPlay(kind,patronDamageSource(event.playerId),damageTarget(event.cardId)||document.getElementById(event.playerId===seat()?.id?'self-reserve':'opponent-reserve'));return true;}

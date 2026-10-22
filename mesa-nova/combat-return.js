@@ -23,7 +23,7 @@
  }
  function capture(state,previousPhase,clone){
   if(previousPhase!=='resolving')return [];
-  const snapshots=[...document.querySelectorAll('#lanes .lane-side .card')].map(node=>({uid:node.dataset.uid,rect:node.getBoundingClientRect(),node}));
+  const snapshots=[...document.querySelectorAll('#lanes .lane-side .card:not(.back)')].map(node=>({uid:node.dataset.uid,rect:node.getBoundingClientRect(),node}));
   return candidates(state,snapshots).filter(s=>s.rect.width>0&&s.rect.height>0).map(s=>({...s,face:clone(s.node)}));
  }
  function cancel(){active?.();active=null;}
@@ -44,7 +44,7 @@
     const e={...item,spec,index,target,toRect:rect,from:mid(item.rect),to:mid(rect),delay:reduced?index*35:index*spec.stagger,done:false};
     const card=document.createElement('div');card.className='combat-return-card';card.dataset.returnStyle=e.style;card.dataset.returnUid=e.uid;
     Object.assign(card.style,{left:e.from.x+'px',top:e.from.y+'px',width:item.rect.width+'px',height:item.rect.height+'px'});
-    const face=(node,className)=>{node.removeAttribute('style');node.classList.remove('selected','pending-arrival','visual-hit','snapping','dragging-source');node.classList.add(className);node.style.visibility='visible';node.setAttribute('tabindex','-1');return node;};
+    const face=(node,className)=>{node.removeAttribute('style');node.classList.remove('selected','pending-arrival','visual-hit','snapping','dragging-source');node.classList.add(className,'flight-face');node.style.visibility='visible';node.setAttribute('tabindex','-1');return node;};
     e.old=face(item.face,'return-old-face');card.append(e.old);layer.append(card);e.card=card;
     // Canvas card art is asynchronous. Copy it after its real render completes.
     Promise.resolve(target.visualReady).then(()=>{if(closed||e.done)return;e.fresh=face(clone(getTarget(e.uid)||target),'return-new-face');e.card.append(e.fresh);}).catch(()=>{});
@@ -53,7 +53,7 @@
    if(!entries.length){end();return;}
    const start=performance.now();
    const place=(e,p,scaleX,scaleY,angle=0)=>{e.card.style.transform=`translate(-50%,-50%) translate(${p.x-e.from.x}px,${p.y-e.from.y}px) rotate(${angle}deg) scale(${scaleX},${scaleY})`;};
-   const morph=(e,t)=>{e.old.style.opacity=1-t;if(e.fresh)e.fresh.style.opacity=t;};
+   const morph=(e,t)=>{e.old.style.opacity=e.fresh?1-t:1;if(e.fresh)e.fresh.style.opacity=t;};
    const emit=(e,key=e.spec.sound)=>{sound(key,{from:e.from,to:e.to,level:.65,travelSeconds:.7});};
    function tick(now){
     if(closed)return;if(!valid()){end();return;}
@@ -61,9 +61,11 @@
     for(const e of entries){
      if(e.done)continue;
      const elapsed=(now-start)*speed-e.delay;if(elapsed<0)continue;
+     // Resolve the live destination after layout/re-render, before computing scale.
+     const live=getTarget(e.uid);if(!live?.isConnected){e.done=true;e.card.remove();e.model?.destroy();e.hammerHost?.remove();reveal(e);continue;}
+     e.target=live;const destination=live.getBoundingClientRect();if(!destination.width||!destination.height){e.done=true;e.card.remove();e.model?.destroy();e.hammerHost?.remove();reveal(e);continue;}
+     e.toRect=destination;e.to=mid(destination);live.style.visibility='hidden';
      const duration=reduced?320:e.spec.duration,t=clamp(elapsed/duration),sx=e.toRect.width/e.rect.width,sy=e.toRect.height/e.rect.height;
-     // Keep the current reserve node hidden across ordinary room re-renders.
-     if(!e.target.isConnected){e.target=getTarget(e.uid);if(!e.target){e.done=true;e.card.remove();e.model?.destroy();reveal(e);continue;}e.target.style.visibility='hidden';}
      if(reduced||e.style==='gentle'){
       const v=smooth(t),p={x:mix(e.from.x,e.to.x,v),y:mix(e.from.y,e.to.y,v)};place(e,p,mix(1,sx,v),mix(1,sy,v));morph(e,smooth((t-.45)/.4));
      }else if(e.style==='forge'){
@@ -78,10 +80,8 @@
       if(elapsed>=impactAt)forgeParticles(ctx,e,(elapsed-impactAt)/1000);
      }else if(e.style==='ether'){
       if(!e.sounded){e.sounded=true;emit(e);}
-      const departure=smooth((t-.12)/.29),arrival=smooth((t-.53)/.32);
-      e.old.style.opacity=1-departure;e.old.style.maskImage=`linear-gradient(to top,transparent ${departure*100}%,#000 ${departure*100+18}%)`;
-      if(t<.5){place(e,{x:e.from.x,y:e.from.y-departure*9},1,1);if(e.fresh)e.fresh.style.opacity=0;}
-      else{place(e,{x:e.to.x,y:e.to.y+(1-arrival)*9},sx,sy);e.old.style.opacity=0;if(e.fresh){e.fresh.style.opacity=arrival;e.fresh.style.maskImage=`linear-gradient(to top,#000 ${arrival*100}%,transparent ${arrival*100+18}%)`;}}
+      const v=smooth(t),veil=Math.sin(t*Math.PI)*.68,p={x:mix(e.from.x,e.to.x,v),y:mix(e.from.y,e.to.y,v)-Math.sin(t*Math.PI)*14};
+      place(e,p,mix(1,sx,v),mix(1,sy,v));morph(e,smooth((t-.25)/.6));e.card.style.opacity=1-veil;
       etherParticles(ctx,e,t,now);
      }else if(e.style==='chain'){
       const reach=out(t/.26),v=smooth((t-.28)/.63),p={x:mix(e.from.x,e.to.x,v),y:mix(e.from.y,e.to.y,v)};
@@ -90,7 +90,7 @@
       const chainTip=t<.26?{x:mix(e.to.x,e.from.x,reach),y:mix(e.to.y,e.from.y,reach)}:p;
       chain(ctx,e.to,chainTip,t<.26?(1-reach)*32:6*Math.sin(v*Math.PI),1-smooth((t-.88)/.12),now);
      }else styles.get(e.style)?.draw?.({ctx,e,t,place,morph});
-     if(t>=1){e.done=true;e.model?.destroy();e.hammerHost?.remove();e.card.remove();reveal(e);}
+     if(t>=1){place(e,e.to,sx,sy);morph(e,1);e.card.style.opacity=1;e.done=true;e.model?.destroy();e.hammerHost?.remove();e.card.remove();reveal(e);}
     }
     if(entries.every(e=>e.done)){end();return;}frame=requestAnimationFrame(tick);
    }

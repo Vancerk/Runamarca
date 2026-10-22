@@ -2,6 +2,14 @@
 const energyNames = { ruptura: 'Ruptura', forja: 'Forja', fluxo: 'Fluxo' };
 const energyColors = { ruptura: '#bd5847', forja: '#d0a44e', fluxo: '#568fc2' };
 const energyIconIds = ['vazio', 'ruptura', 'forja', 'fluxo', 'eco', 'veu'];
+function spellModesLabel(card){
+ if(card.spellModesLabel)return card.spellModesLabel;
+ const ef=Array.isArray(card.effects)?card.effects[0]:card.effects;
+ if(card.positionOnly){const side=card.enemyOnly?'inimiga':ef?.op==='anchor'||ef?.target==='any_creature'?'livre':ef?.target==='chosen_allied_creature'||['draw','armor_draw','graveyard_stat_buff','tradition_summon','barrier'].includes(ef?.op)?'aliada':'inimiga';return 'Armadilha '+side;}
+ if(card.directOnly)return 'Direta';
+ if(card.kind==='spell'&&card.spellMode&&!('directOnly' in card)&&!('positionOnly' in card))return card.spellMode==='prepared_spell'?'Armadilha':'Direta';
+ return 'Direta / Armadilha';
+}
 const kindNames = { creature: 'Criatura', spell: 'Magia', equipment: 'Equipamento', rune: 'Essência', patron: 'Patrono' };
 
 const imageCache=new Map();
@@ -154,7 +162,7 @@ async function drawCard(canvas,card,{assets="",hideStats=false}={}){
  const affinity=card.themeEnergy||'ruptura',cx=805,cy=87;ctx.beginPath();ctx.arc(cx,cy,52.7,0,Math.PI*2);const orb=ctx.createRadialGradient(cx-17,cy-20.4,2,cx,cy,56.1);orb.addColorStop(0,energyColors[affinity]||'#bd5847');orb.addColorStop(1,{ruptura:'#702d23',forja:'#765013',fluxo:'#244e78'}[affinity]||'#702d23');ctx.fillStyle=orb;ctx.fill();ctx.strokeStyle='#f0ca82';ctx.lineWidth=5;ctx.stroke();ctx.fillStyle='#fff7dc';ctx.strokeStyle='#26160f';ctx.lineWidth=5;ctx.font='700 54.6px Georgia,serif';ctx.textAlign='center';const cost=card.kind==='patron'?'◈':String(number(card.generic,0,20));ctx.textBaseline='alphabetic';const metrics=ctx.measureText(cost),costY=cy+(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2;ctx.strokeText(cost,cx,costY);ctx.fillText(cost,cx,costY);
  const paper=ctx.createRadialGradient(450,970,10,450,995,470);paper.addColorStop(0,'#f4dfb7');paper.addColorStop(.7,'#dfbf8b');paper.addColorStop(1,'#aa7548');framedPanel(ctx,64,855,772,272,paper,20);ctx.save();bevelPath(ctx,69,860,762,262,17);ctx.clip();grain(ctx,64,855,772,272,.28);if(icons[affinity]){ctx.globalAlpha=.12;ctx.drawImage(icons[affinity],329.25,870.25,241.5,241.5);}ctx.restore();
  const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora do limite de 30 cartas.':'Escreva aqui o efeito da carta.'),layout=layoutRules(ctx,{...card,rules});let y=layout.y;ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of layout.lines){let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+layout.size+'px "EB Garamond",Georgia,serif';ctx.fillStyle=run.color||'#281b10';ctx.fillText(run.text,x,y);x+=run.width;}y+=layout.lineHeight;}
- framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#f6e5be';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.textAlign='left';ctx.font='700 25px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(kindNames[card.kind]||'Carta').toUpperCase(),25,'700 {size}px Cinzel,Georgia,serif',190),174,1174);ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();ctx.font='600 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(card.subtype||'').toUpperCase(),number(card.fontSubtype,14,38,21),'600 {size}px Cinzel,Georgia,serif',325),395,1174);
+ framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#f6e5be';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.textAlign='left';ctx.font='700 25px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(card.kind==='spell'?'Magia':card.typeLabel||kindNames[card.kind]||'Carta').toUpperCase(),25,'700 {size}px Cinzel,Georgia,serif',190),174,1174);ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();ctx.font='600 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(card.kind==='spell'?spellModesLabel(card):card.subtype||'').toUpperCase(),number(card.fontSubtype,14,38,21),'600 {size}px Cinzel,Georgia,serif',325),395,1174);
  for(const [x,y] of [[48,155],[852,155],[48,550],[852,550],[48,1004],[852,1004],[450,1216]])diamond(ctx,x,y,y===1216?15:9);
  if(['creature','equipment'].includes(card.kind)&&attackIcon)ctx.drawImage(attackIcon,5,1085,159.85,159.85);
  if(card.kind==='creature'||card.kind==='patron')drawHeart(ctx,826,1180);
@@ -170,8 +178,8 @@ async function drawCombat(canvas,card,{assets='',flat=false}={}){
  rarityFrame(ctx,card,820,35,4);
  framedPanel(ctx,40,38,820,741,{forja:'#79621d',fluxo:'#214966',ruptura:'#55251b'}[card.themeEnergy]||'#79621d',20);
  ctx.save();bevelPath(ctx,49,49,802,713,18);ctx.clip();
- if(art){const source=flat?{x:art.width*49/900,y:art.height*129/1260,w:art.width*802/900,h:art.height*713/1260}:{x:0,y:0,w:art.width,h:art.height};const scale=Math.max(802/source.w,713/source.h)*(Number(card.artZoom||100)/100),w=source.w*scale,h=source.h*scale;ctx.drawImage(art,source.x,source.y,source.w,source.h,49+(802-w)*Number(card.artX??50)/100,49+(713-h)*Number(card.artY??0)/100,w,h);}else{ctx.fillStyle='#39392d';ctx.fillRect(49,49,802,713);}
+ if(art){const source=flat?{x:art.width*49/900,y:art.height*129/1260,w:art.width*802/900,h:art.height*713/1260}:{x:0,y:0,w:art.width,h:art.height};const scale=(card.artFit==='contain'?Math.min(802/source.w,713/source.h):Math.max(802/source.w,713/source.h))*(Number(card.artZoom||100)/100),w=source.w*scale,h=source.h*scale;ctx.drawImage(art,source.x,source.y,source.w,source.h,49+(802-w)*Number(card.artX??50)/100,49+(713-h)*Number(card.artY??0)/100,w,h);}else{ctx.fillStyle='#39392d';ctx.fillRect(49,49,802,713);}
  ctx.restore();if(shield)ctx.drawImage(shield,5,653,159.85,159.85);drawHeart(ctx,826,747);
 }
-window.RunaCardVisual={drawCard,drawCombat,drawLiquidHeart,formatRulesText,richRuns,layoutRules};
+window.RunaCardVisual={spellModesLabel,drawCard,drawCombat,drawLiquidHeart,formatRulesText,richRuns,layoutRules};
 })();

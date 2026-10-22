@@ -12,7 +12,7 @@ const place=(p,c,l)=>{p.reserve.push(c);p.formation[l]=c.uid;return c;};
  for(const mode of ['missing',null])assert.throws(()=>act(room,a,{type:'monkChoice',cardId:monk.uid,mode},catalog),/válido/);
  assert.throws(()=>act(room,b,{type:'monkChoice',cardId:monk.uid,mode:'weaken'},catalog),/válido/);
  act(room,a,{type:'monkChoice',cardId:monk.uid,mode:'weaken'},catalog);assert.equal(view(room,b).players[0].reserve[0].monkMode,undefined,'Escolha secreta até a Revelação');
- room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[1].attack,3);assert.equal(enemy.attackMod,0);assert.equal(monk.monkMode,undefined);
+ room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[1].attack,3);assert.equal(enemy.attackMod,0);assert.equal(monk.monkMode,'weaken');
 }
 {
  const {room,a,b}=setup(),monk=place(a,card('FL08',a),0),ally=place(a,card('FL02',a,{damage:1}),1),enemy=place(b,card('FL09',b),0);

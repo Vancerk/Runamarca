@@ -23,8 +23,8 @@ for(const id of ['FL17']){const {room,a,b}=setup(),inc=c('RG02',a),def=c(id,b);a
 {const {room,a}=setup(),geo=c('RG01',a),track=c('RG05',a);a.reserve=[geo,track];syncTribalHealth(room);assert.equal(geo.health,1);assert.equal(tribalBonus(a,geo),0);}
 // Gnoll recebe um único +1, independentemente de haver dois aliados pequenos.
 {const {room,a,b}=setup(),units=[c('RG08',a),c('RG01',a),c('RG01',a)];a.reserve=units;combat(room,a,b,units);assert.equal(room.preClash[0].cards[0].attack,3);assert.equal(units[0].attackMod,0);combat(room,a,b,units);assert.equal(room.preClash[0].cards[0].attack,3);}
-// Cólera não vira crescimento permanente e aliados já fortalecidos não habilitam Gnoll.
-{const {room,a,b}=setup(),units=[c('RG08',a),c('RG01',a),c('RG01',a)];a.reserve=units;cast(room,a,'RG09');combat(room,a,b,units);assert.equal(room.preClash[0].cards[0].attack,3);assert.equal(b.patron.hp,93);combat(room,a,b,units);assert.equal(room.preClash[0].cards[0].attack,3);}
+// Cólera é temporária; Geometros com ataque atual 2 ainda habilitam Gnoll.
+{const {room,a,b}=setup(),units=[c('RG08',a),c('RG01',a),c('RG01',a)];a.reserve=units;cast(room,a,'RG09');combat(room,a,b,units);assert.equal(room.preClash[0].cards[0].attack,4);assert.equal(b.patron.hp,92);combat(room,a,b,units);assert.equal(room.preClash[0].cards[0].attack,3);}
 // Primeiro Chamado produz uma ficha; duas Rastreadoras fazem a ficha 3/3.
 {const {room,a}=setup(),tracks=[c('RG05',a),c('RG05',a)];a.reserve=tracks;cast(room,a,'RG06');const tokens=a.reserve.filter(c=>c.token);assert.equal(tokens.length,1);assert.ok(tokens.every(c=>c.attack===1&&c.health===3&&tribalBonus(a,c)===2));}
 // Bruxo: 4 ataques pequenos em dois combates geram 1 dano; Aríete com zero não acumula.

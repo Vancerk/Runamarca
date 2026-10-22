@@ -49,9 +49,9 @@ export function ruptureFormationAction(room,p,data,{findCreature,effects,emit,pu
  if(data.type==='revealPayment'){
   const e=effects(c).find(e=>e.op==='optional_reveal_attack');if(!e)throw Error('Esta criatura não tem esse pagamento opcional.');
   if(c.revealPaymentRound===room.round)throw Error('A escolha do Aríete já foi feita neste combate.');
-  if(data.pay){if(p.mana<e.cost)throw Error('Éter insuficiente para o bônus do Aríete.');p.mana-=e.cost;c.revealPaid=true;}
+  if(data.pay){if(p.mana<e.cost)throw Error('Éter insuficiente para o bônus do Aríete.');c.revealRequested=true;}
   c.revealPaymentRound=room.round;
-  if(data.pay){const message=`${p.name} pagou ${e.cost} Éter: ${c.name} receberá +${e.amount} de ataque na Revelação deste combate.`;emit(room,'ability_notice',{playerId:p.id,sourceId:c.uid,message});pushLog(room,message,p.id);}
+  if(data.pay){const message=`${p.name} escolheu pagar ${e.cost} Éter na Revelação: ${c.name} poderá receber +${e.amount} de ataque na Revelação deste combate.`;emit(room,'ability_notice',{playerId:p.id,sourceId:c.uid,message});pushLog(room,message,p.id);}
   return;
  }
  if(data.type==='forceOpponent'){

@@ -10,12 +10,12 @@ const combat=room=>{room.phase='resolving';resolveCombat(room);};
  const {room,a}=setup(),ally=vanilla(a,2,3),banquet=card('FV05',a);assert.equal(banquet.cost,8);a.reserve.push(ally);a.discard.push(card('FV08',a),card('FV02',a));a.hand.push(banquet);a.mana=7;assert.throws(()=>act(room,a,{type:'play',cardId:banquet.uid},catalog));assert.equal(a.mana,7);assert.ok(a.hand.includes(banquet));assert.equal(ally.attack,2);a.mana=8;act(room,a,{type:'play',cardId:banquet.uid},catalog);assert.equal(a.mana,0);assert.equal(ally.attack,3);assert.equal(ally.health,4);
 }
 {
- assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.filter(c=>c.type==='creature').reduce((n,c)=>n+c.quantity,0),15);
+ assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.filter(c=>c.type==='creature').reduce((n,c)=>n+c.quantity,0),13);
  assert.equal(deck.cards.some(c=>c.id==='FV10'),false);assert.equal(deck.cards.some(c=>c.id==='FV04'),false);assert.equal(models.find(c=>c.id==='FV10').name,'Vaelgor Dareth, O Diretor');assert.equal(models.find(c=>c.id==='FV10').effects[0].op,'adjacent_attack_buff');assert.equal(deck.cards.find(c=>c.id==='FV16').name,'Drenar Essência');
  assert.deepEqual(catalog,JSON.parse(fs.readFileSync(new URL('./criador/prototipo.json',import.meta.url))));
 }
 {
- const {room,a,b}=setup(),ally=vanilla(a,2,3),aura=card('FV04',a);a.reserve.push(ally,aura);a.emanation=[aura.uid];a.discard.push(card('FV02',a),card('FV08',a),vanilla(a),{type:'equipment'});b.discard.push(card('FV08',b));const banquet=card('FV05',a);a.hand.push(banquet);act(room,a,{type:'play',cardId:banquet.uid},catalog);assert.equal(ally.attack,3);assert.equal(ally.health,4);assert.equal(aura.attack,2);assert.equal(aura.health,2,'Emanação creatures receive the permanent bonus');
+ const {room,a,b}=setup(),ally=vanilla(a,2,3),aura=card('FV04',a);a.reserve.push(ally,aura);a.emanation=[aura.uid];a.discard.push(card('FV02',a),card('FV08',a),vanilla(a),{type:'equipment'});b.discard.push(card('FV08',b));const banquet=card('FV05',a);a.hand.push(banquet);act(room,a,{type:'play',cardId:banquet.uid},catalog);assert.equal(ally.attack,3);assert.equal(ally.health,4);assert.equal(aura.attack,1);assert.equal(aura.health,1,'Emanação não recebe o bônus do Banquete');
  assert.equal(a.discard.at(-1),banquet,'Banquete does not count itself');
 }
 {
@@ -47,7 +47,7 @@ const combat=room=>{room.phase='resolving';resolveCombat(room);};
 {
  const {room,a,b}=setup(),ithalion=place(a,card('FV15',a,{attack:0,health:30,sealChoices:{allyLane:0,enemyLane:0}}),2),ally=place(a,vanilla(a,9,20),0),victim=place(b,vanilla(b,0,1),0);place(b,vanilla(b,5,20),1);combat(room);assert.ok(b.discard.includes(victim),'A teleported casualty goes to its original owner');assert.ok(a.reserve.includes(ally));assert.equal(room.players.flatMap(p=>[...p.reserve,...p.discard]).filter(c=>c.uid===victim.uid).length,1);
 }
-console.log('Fluxo reformulado: estoque, 30 cartas, Aprendiz com marca inimiga, Banquete, Corrupção, Barreira, Auramora, Olho e selos persistentes/trocas/retorno aprovados.');
+console.log('Fluxo reformulado: estoque, 30 cartas, Aprendiz em Emanação com escolha por gatilho, Banquete, Corrupção, Barreira, Auramora, Olho e selos persistentes/trocas/retorno aprovados.');
 {
  const {room,a,b}=setup(),source=place(a,card('FV15',a,{attack:0,health:30,sealChoices:{allyLane:0,enemyLane:1}}),2),ally=place(a,vanilla(a,0,8),0),enemy=place(b,vanilla(b,0,8),1),aura=card('FV04',a,{auraLane:0});a.reserve.push(aura);a.emanation=[aura.uid];combat(room);assert.equal(room.preClash[0].cards[0].uid,enemy.uid);assert.equal(room.preClash[0].cards[0].health,9,'The arriving enemy receives the positional health aura');assert.equal(room.preClash[1].cards[1].uid,ally.uid);assert.equal(room.preClash[1].cards[1].health,8,'The departing ally loses the positional aura');assert.equal(enemy.health,8);
 }

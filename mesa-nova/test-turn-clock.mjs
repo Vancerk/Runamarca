@@ -5,7 +5,7 @@ const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url
 function setup(){const room=makeRoom('CLOCK1','A'),a=room.players[0],b=join(room,'B');Object.assign(room,{phase:'prep',round:1,first:a.id,turn:a.id,preparationsDone:0});for(const p of [a,b])Object.assign(p,{mana:10,manaMax:10,deckData:deck,patron:{hp:20,maxHp:20,powers:structuredClone(deck.patron.powers)},deck:Array.from({length:5},(_,i)=>({uid:p.id+i,name:'Compra',type:'spell',cost:1}))});return {room,a,b};}
 {
  const {room,a,b}=setup();act(room,a,{type:'patronPower',powerId:'forjar-armadura'},catalog);
- assert.equal(room.turnClock.seconds,45);const key=room.turnClock.key,end=room.turnClock.endsAt;
+ assert.equal(room.turnClock.seconds,60);const key=room.turnClock.key,end=room.turnClock.endsAt;
  assert.equal(view(room,a).turnClock.endsAt,view(room,b).turnClock.endsAt);assert.doesNotThrow(()=>structuredClone({...room,onChange:null}));
  assert.throws(()=>act(room,a,{type:'patronPower',powerId:'forjar-armadura'},catalog),/utilizado/);assert.equal(room.turnClock.key,key);assert.equal(room.turnClock.endsAt,end,'invalid or normal actions cannot renew time');
  room.turnClock.endsAt=Date.now()-1;assert.throws(()=>act(room,a,{type:'endPrep'},catalog),/tempo/);assert.equal(room.turn,b.id);assert.equal(room.preparationsDone,1);assert.equal(room.events.filter(e=>e.type==='turn_timeout').length,1);assert.notEqual(room.turnClock.key,key);
@@ -29,5 +29,5 @@ function setup(){const room=makeRoom('CLOCK1','A'),a=room.players[0],b=join(room
  const {room,a,b}=setup();let changes=0;room.onChange=()=>changes++;syncTurnClock(room,expireTurn);room.turnClock.endsAt=Date.now()+65;syncTurnClock(room,expireTurn);
  await new Promise(r=>setTimeout(r,110));assert.equal(room.turn,b.id,'server expires without any incoming request');assert.equal(changes,1);room.phase='finished';syncTurnClock(room,expireTurn);
 }
-console.log('Cronômetro: 45/25s, prazo estável, atraso rejeitado, escolhas pendentes, reconexão, encerramento sem clientes e ausência de limite na resolução aprovados.');
+console.log('Cronômetro: 60/25s, prazo estável, atraso rejeitado, escolhas pendentes, reconexão, encerramento sem clientes e ausência de limite na resolução aprovados.');
 

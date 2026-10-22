@@ -742,14 +742,15 @@
       "minIntervalMs": 100
     },
     "death_machine": {
-      "url": "audio/epidemic/d360a290-d6eb-486d-9839-72f34785d888.mp3",
+      "url": "audio/epidemic/death-machine-soft-20261021.mp3",
       "sourceId": "d360a290-d6eb-486d-9839-72f34785d888",
       "sourceUrl": "https://www.epidemicsound.com/sound-effects/tracks/d360a290-d6eb-486d-9839-72f34785d888/",
       "gain": 0.45,
       "enabled": true,
-      "duration": 5.835792,
-      "fadeOut": 0.16,
-      "minIntervalMs": 100
+      "duration": 2.1,
+      "fadeOut": 0.25,
+      "minIntervalMs": 100,
+      "processing": "Derivação local do original preservado d360a290: duração 2.1s; low-pass 3000Hz; ganho 0.65; fade de 0.75s ao final. 21/10/2026."
     },
     "entry_assembly": {
       "url": "audio/epidemic/394fa979-5757-4f42-bd1c-9747469f75d2.mp3",

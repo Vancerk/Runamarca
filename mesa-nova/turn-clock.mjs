@@ -1,6 +1,6 @@
 // Handles stay outside the room so combat snapshots remain serializable.
 const schedules = new WeakMap();
-export const TURN_SECONDS = Object.freeze({mulligan:45, prep:45, formation:25});
+export const TURN_SECONDS = Object.freeze({mulligan:45, prep:60, formation:25});
 export function mulliganClock(room, player) {
   if(room.phase!=='mulligan'||player.mulliganReady)return null;
   const startedAt=player.mulliganStartedAt??room.mulliganPresentationEndsAt;

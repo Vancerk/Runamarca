@@ -22,7 +22,7 @@ export function studyCardCost(p,card){
  return Math.max(0,card.cost-(p.study?.discount&&!['creature','equipment'].includes(card.type)?1:0));
 }
 export function studyPrepared(p){return p.prepared.flatMap(prep=>{
- if(!p.study?.sharing||!(prep.card.effects||[]).some(e=>localOps.has(e.op)||['push_right','mirage'].includes(e.op)))return [prep];
+ if(!p.study?.sharing||!(prep.card.effects||[]).some(e=>localOps.has(e.op)||['push_right','mirage','transfer_attack'].includes(e.op)))return [prep];
  const lane=adjacentLane(prep.lane,prep.sharedLane??p.study.centerNeighbor);
  return [prep,{...prep,lane,echo:true,sourcePrep:prep,card:{...prep.card,uid:prep.card.uid+'-eco'}}];
 });}
