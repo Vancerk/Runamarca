@@ -39,7 +39,7 @@ export function existingPositionSpells(room,p){
  return (p.study?.positionEffects||[]).flatMap(entry=>{
  const side=room.players.find(s=>s.id===entry.sideId),target=side?.reserve.find(c=>c.uid===entry.targetId&&c.damage<c.health);
  if(!target||!side.formation.includes(target.uid))return [];
- const effects=entry.spell.effects.filter(e=>e.op==='sleep'?Boolean(target.sleep):e.op==='anchor'?Boolean(target.anchor):e.op==='barrier'?Boolean(target.attackBarrier):e.op==='rune_coating'?Boolean(target.runeCoating):e.op==='grant_keyword'?target.grantedKeywords?.includes(e.keyword):e.op==='stat_buff'?true:e.op==='attack_modifier'?e.permanent||entry.round===room.round:false);
+ const effects=entry.spell.effects.filter(e=>e.op==='sleep'?Boolean(target.sleep):e.op==='anchor'?Boolean(target.anchor):e.op==='barrier'?Boolean(target.spectralBarrier):e.op==='rune_coating'?Boolean(target.runeCoating):e.op==='grant_keyword'?target.grantedKeywords?.includes(e.keyword):e.op==='stat_buff'?true:e.op==='attack_modifier'?e.permanent||entry.round===room.round:false);
  return effects.length?[{...entry,lane:side.formation.indexOf(target.uid),spell:{...entry.spell,effects}}]:[];
  });
 }

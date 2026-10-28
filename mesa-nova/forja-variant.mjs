@@ -12,11 +12,20 @@ export function grantPermanentStats(card,attack=0,health=0){
 export function preventControl(card,casterId,op,sourceType='spell'){
  return Boolean(card?.runeCoating&&sourceType!=='creature');
 }
-const names={initiative:'Iniciativa',trample:'Transpassar',taunt:'Provocar',corruption:'Corrupção',runeCoating:'Antimagia'};
+const names={initiative:'Iniciativa',trample:'Transpassar',taunt:'Provocar',corruption:'Corrupção',runeCoating:'Antimagia',spectralBarrier:'Barreira'};
 export function grantedEffects(card){return (card?.grantedKeywords||[]).map(op=>({op})).concat((card?.auraKeywords||[]).map(op=>({op})));}
+// A shield is one charge, not damage reduction or a duration. Consume only a
+// positive damage occurrence against a creature, before damage-based effects.
+export function consumeDamageShield(card,amount){
+ if(amount>0&&card?.type==='creature'&&card.spectralBarrier){card.spectralBarrier=false;return 0;}
+ return amount;
+}
+export const shieldState=card=>card?.type==='creature'?{spectralBarrier:Boolean(card.spectralBarrier)}:{};
 export function receiveDamage(card,amount){
  if(!card||amount<=0)return card;
- const next={...card},volatile=Boolean(next.volatileProject);
+ const next={...card};amount=consumeDamageShield(next,amount);
+ if(amount<=0)return next;
+ const volatile=Boolean(next.volatileProject);
  if(!next.firstDamageTaken&&(next.effects||[]).some(e=>e.op==='first_damage_double')){amount*=2;next.firstDamageTaken=true;}
  if(volatile){amount*=2;delete next.volatileProject;}
  const absorbed=Math.min(next.extraLife||0,amount);
@@ -44,11 +53,13 @@ export function keywordPresentation(card,showAura=true){
  const original=Array.isArray(card.effects)?card.effects:[],added=new Set([...(card.grantedKeywords||[]),...(showAura?card.auraKeywords||[]:[]),...(card.grantedTrample?['trample']:[]),...(showAura&&card.temporaryTrample?['trample']:[]),...(card.equipment?.effects||[]).map(e=>e.op)]);
  if(card.corruption)added.add('corruption');
  if(card.runeCoating)added.add('runeCoating');
+ if(card.spectralBarrier)added.add('spectralBarrier');
  const keywords=[...added].filter(op=>names[op]&&!original.some(e=>e.op===op)).map(op=>names[op]);
  let text=card.text||'';
  if(showAura&&!card.silenced){
   if(original.some(e=>e.op==='combat_protocol')&&['assault','escort'].includes(card.protocolMode))text=card.protocolMode==='assault'?'Revelação — Assalto: +2 de ataque para si e +1 aos aliados adjacentes. Só neste combate.':'Revelação — Escolta: +2 de vida para si e +1 aos aliados adjacentes. Só neste combate.';
   if(original.some(e=>e.op==='monk_choice')&&['weaken','buff'].includes(card.monkMode))text=card.monkMode==='weaken'?'Revelação — Enfraquecer: reduza em 2 o ataque do inimigo à frente. Só neste combate.':'Revelação — Fortalecer: conceda +1/+1 ao aliado à direita. Só neste combate.';
  }
+ if(card.spectralBarrier)text+='\nBarreira Espectral — Anula a próxima ocorrência de dano e se rompe. Não acumula.';
  return {text:text+(keywords.length?'\n'+keywords.join('. ')+'.':''),highlightKeywords:keywords};
 }

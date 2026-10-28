@@ -106,7 +106,7 @@
           {
             "id": "forjar-armadura",
             "name": "Hora da Bigorna",
-            "cost": 1,
+            "cost": 2,
             "text": "Conceda +1 de Vida Extra ao seu Patrono.",
             "image": "power-forja-potencializar.png",
             "limit": "round",
@@ -1069,7 +1069,7 @@
           {
             "id": "sumario-ecoante",
             "name": "Sumário Ecoante",
-            "cost": 1,
+            "cost": 2,
             "text": "Compre 1 carta.",
             "image": "patrons/sumario-ecoante.png",
             "limit": "round",
@@ -1146,7 +1146,7 @@
           "quantity": 1,
           "rarity": "elite",
           "subtype": "",
-          "text": "Prepare em uma posição. Ancoragem — prenda a criatura revelada nessa posição durante este combate e o seguinte.",
+          "text": "Prepare em uma posição. Ancoragem — prenda o combatente revelado nessa posição durante este combate e o seguinte.",
           "speech": "O éter é a minha arma",
           "narrative": "",
           "image": "art/virelion/FV02.jpg",
@@ -1182,7 +1182,8 @@
           ],
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
-          "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente."
+          "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente.",
+          "combatantTarget": true
         },
         {
           "id": "FV03",
@@ -1236,17 +1237,17 @@
         },
         {
           "id": "FV16",
-          "name": "Drenar Essência",
+          "name": "Sigilo de Aether",
           "type": "prepared_spell",
           "affinity": "fluxo",
           "cost": 2,
           "quantity": 3,
           "rarity": "padrao",
-          "subtype": "",
-          "text": "Ao ativar, empurre a criatura uma posição à direita e cause 1 de dano a ela. Se o destino estiver ocupado, não empurre; cause também 1 de dano ao ocupante. Na última posição, não há movimento.",
+          "subtype": "Armadilha",
+          "text": "Ao ativar, empurre o combatente uma posição à direita e cause 1 de dano a ele. Se o destino estiver ocupado, não empurre; cause também 1 de dano ao ocupante. Na última posição, não há movimento. Ao entrar em outra casa, ative as magias preparadas válidas nela, respeitando suas janelas.",
           "speech": "",
           "narrative": "",
-          "image": "images/artes-20261021/FV16.png",
+          "image": "images/cartas-20261022/sigilo-de-aether.jpg",
           "artZoom": 100,
           "artX": 50,
           "artY": 50,
@@ -1279,11 +1280,14 @@
           "budgetVersion": 3,
           "authoredBy": "Grupo Elysium",
           "budgetReview": "Texto visível e esclarecimentos do autor são a regra; orçamento não recalculado automaticamente.",
-          "artPending": true,
+          "artPending": false,
           "positionOnly": true,
           "enemyOnly": true,
           "imageKind": "illustration",
-          "artFit": "cover"
+          "artFit": "cover",
+          "spellModesLabel": "Armadilha inimiga",
+          "artStatus": "own",
+          "combatantTarget": true
         },
         {
           "id": "FV05",
@@ -1345,8 +1349,8 @@
           "quantity": 3,
           "rarity": "lacaio",
           "subtype": "Aberração",
-          "attack": 0,
-          "health": 6,
+          "attack": 1,
+          "health": 4,
           "text": "A primeira criatura inimiga que atacar esta criatura recebe Corrupção após o ataque.",
           "speech": "Que tal um pouco de música?",
           "narrative": "*\"Encapuzada, magra, com dedos longos demais para serem confortáveis de olhar. Fala baixo, como se estivesse sempre no meio de uma negociação com algo que não está no ambiente\"*",
@@ -1392,7 +1396,7 @@
           "type": "creature",
           "affinity": "fluxo",
           "cost": 3,
-          "quantity": 2,
+          "quantity": 1,
           "rarity": "lacaio",
           "subtype": "Aberração",
           "attack": 2,
@@ -1491,7 +1495,7 @@
           "rarity": "soberano",
           "subtype": "Humano",
           "attack": 4,
-          "health": 2,
+          "health": 3,
           "text": "Revelação — Vincule uma posição de cada lado com selos enquanto Ithalion viver.\nA cada combate, mova a criatura do selo inimigo para o aliado, trocando-a com o ocupante, se houver. Elas agem pelo lado de chegada e retornam aos donos ao fim do combate.",
           "speech": "Como treinaram.",
           "narrative": "",
@@ -1535,11 +1539,11 @@
           "name": "Barreira espectral",
           "type": "direct_spell",
           "affinity": "fluxo",
-          "cost": 3,
+          "cost": 2,
           "quantity": 2,
-          "rarity": "elite",
+          "rarity": "padrao",
           "subtype": "",
-          "text": "Por 2 combates, a criatura nessa posição recebe metade ↑ do dano de ataques inimigos.",
+          "text": "Conceda Barreira Espectral a uma criatura aliada. Anule a próxima ocorrência de dano que ela receber, então remova a barreira. Não acumula. Sem limite de duração.",
           "speech": "O éter é a minha arma",
           "narrative": "",
           "image": "art/virelion/FV11.jpg",
@@ -1552,24 +1556,23 @@
           "effects": [
             {
               "op": "barrier",
-              "target": "chosen_allied_creature",
-              "duration_combats": 2
+              "target": "chosen_allied_creature"
             }
           ],
-          "positionOnly": true,
+          "positionOnly": false,
           "budgetEffects": [
             {
               "sourceIndex": 0,
               "name": "barrier",
               "timing": "direct",
               "target": "ally",
-              "duration": "round",
+              "duration": "permanent",
               "condition": "none",
               "amount": 0,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"barrier\",\"target\":\"chosen_allied_creature\",\"duration_combats\":2}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"barrier\",\"target\":\"chosen_allied_creature\"}; escudo único até o próximo dano positivo, sem duração.",
               "effect": "custom",
               "customPoints": 0
             }
@@ -1583,11 +1586,11 @@
           "name": "Evasão Dimensional",
           "type": "direct_spell",
           "affinity": "fluxo",
-          "cost": 3,
+          "cost": 2,
           "quantity": 3,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Devolva uma criatura inimiga da reserva com 4 ou mais de ataque à mão do dono. Compre 2 cartas.",
+          "text": "Devolva uma criatura inimiga da reserva com 3 ou mais de ataque à mão do dono. Compre 1 carta.",
           "speech": "",
           "narrative": "",
           "image": "art/virelion/evasao-dimensional.jpg",
@@ -1609,7 +1612,7 @@
               "count": 1,
               "activationCost": 0,
               "group": "sum",
-              "reason": "Mecânica sem preço calibrado: {\"op\":\"return_to_hand\",\"reset\":true,\"min_attack\":4}",
+              "reason": "Mecânica sem preço calibrado: {\"op\":\"return_to_hand\",\"reset\":true,\"min_attack\":3}",
               "effect": "custom",
               "customPoints": 0
             },
@@ -1620,7 +1623,7 @@
               "target": "owner",
               "duration": "instant",
               "condition": "none",
-              "amount": 2,
+              "amount": 1,
               "count": 1,
               "activationCost": 0,
               "group": "sum",
@@ -1634,11 +1637,11 @@
             {
               "op": "return_to_hand",
               "reset": true,
-              "min_attack": 4
+              "min_attack": 3
             },
             {
               "op": "draw",
-              "amount": 2
+              "amount": 1
             }
           ],
           "reserveOnly": true,
@@ -1654,7 +1657,7 @@
           "quantity": 2,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Adormecer — a criatura revelada nela fica presa nessa posição e não ataca durante este combate e o seguinte.",
+          "text": "Adormecer — o combatente revelado nela fica presa nessa posição e não ataca durante este combate e o seguinte.",
           "speech": "",
           "narrative": "",
           "image": "art/virelion/sono-profundo.jpg",
@@ -1690,7 +1693,8 @@
               "op": "sleep",
               "combats": 2
             }
-          ]
+          ],
+          "combatantTarget": true
         },
         {
           "id": "FL20",
@@ -1700,7 +1704,7 @@
           "cost": 1,
           "rarity": "padrao",
           "subtype": "",
-          "text": "Ao ativar, convoque uma Miragem 0/1 de Fluxo na sua posição à frente. Se não houver espaço, descarte esta magia sem efeito.",
+          "text": "Ao ativar, convoque uma Miragem 0/1 de Fluxo na sua posição à frente. Ela desaparece ao fim deste combate, mesmo se sobreviver. Se não houver espaço, descarte esta magia sem efeito.",
           "speech": "",
           "narrative": "",
           "image": "art/forja-personalizada/miragem-provocadora.jpg",
@@ -1741,17 +1745,17 @@
           "positionOnly": true,
           "imageKind": "illustration",
           "artStatus": "own",
-          "quantity": 1
+          "quantity": 2
         },
         {
           "id": "R2-FV18",
-          "name": "Desvio de Força",
+          "name": "Roubo Arcano",
           "type": "prepared_spell",
           "affinity": "fluxo",
           "cost": 2,
           "quantity": 2,
-          "rarity": "padrao",
-          "subtype": "",
+          "rarity": "elite",
+          "subtype": "Armadilha",
           "positionOnly": true,
           "enemyOnly": true,
           "text": "Após as Revelações e bônus iniciais, troque o ataque atual da criatura nessa posição com o da aliada à frente. Apenas neste combate.",
@@ -1762,12 +1766,12 @@
               "duration": "combat"
             }
           ],
-          "image": "images/artes-20261021/R2-FV18.png",
-          "artStatus": "pending",
+          "image": "images/cartas-20261022/roubo-arcano.jpg",
+          "artStatus": "own",
           "imageKind": "illustration",
-          "artZoom": 100,
-          "artX": 50,
-          "artY": 50,
+          "artZoom": 158,
+          "artX": 30,
+          "artY": 15,
           "artFit": "contain",
           "budgetEffects": [
             {
@@ -1785,7 +1789,12 @@
               "effect": "custom",
               "customPoints": 0
             }
-          ]
+          ],
+          "fontName": 43,
+          "fontRules": 36,
+          "fontSubtype": 21,
+          "spellModesLabel": "Armadilha inimiga",
+          "artPending": false
         }
       ]
     },
@@ -1905,7 +1914,7 @@
           "rarity": "padrao",
           "subtype": "Umbro",
           "attack": 2,
-          "health": 2,
+          "health": 1,
           "text": "Último Suspiro — cause 1 de dano ao Patrono inimigo.",
           "speech": "",
           "narrative": "",
@@ -2551,7 +2560,7 @@
           {
             "id": "forjar-armadura",
             "name": "Hora da Bigorna",
-            "cost": 1,
+            "cost": 2,
             "text": "Conceda +1 de Vida Extra ao seu Patrono.",
             "image": "power-forja-potencializar.png",
             "limit": "round",
@@ -3355,7 +3364,7 @@
           {
             "id": "forjar-armadura",
             "name": "Hora da Bigorna",
-            "cost": 1,
+            "cost": 2,
             "text": "Conceda +1 de Vida Extra ao seu Patrono.",
             "image": "power-forja-potencializar.png",
             "limit": "round",

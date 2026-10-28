@@ -25,7 +25,7 @@ async function presentIdentitySpell(event,preparedTarget=null){
  await identityPlay(kind,from,to,()=>{
   applyDamageHit(updates);if(event.sourceHealthUpdate)applyHealthUpdates([event.sourceHealthUpdate]);
   // Continuous Antimagia is not consumed by the presentation.
-  else if(preparedTarget&&['anchor','sleep','barrier'].includes(kind)&&victim){const active=cardIdentityApplied.get(victim.uid)||new Set();active.add(kind);cardIdentityApplied.set(victim.uid,active);}
+  else if(preparedTarget&&['anchor','sleep'].includes(kind)&&victim){const active=cardIdentityApplied.get(victim.uid)||new Set();active.add(kind);cardIdentityApplied.set(victim.uid,active);}
   if(kind==='ice'||kind==='frost')for(const u of kind==='frost'?changed:updates)if(u.uid)cardIdentityFrost.add(u.uid);
   if(kind==='mirror'){const spawn=state.combat?.spawnedMirages?.find(x=>x.spellId===event.cardId);if(spawn&&to&&!to.querySelector('.card'))to.replaceChildren(cardEl(spawn.card,{mini:true,combat:true}));}
   // Attribute amplification has a second pair of runes, rather than a generic arrow.
@@ -44,7 +44,7 @@ function syncCardIdentities(){
  const items=[];for(const p of state.players)for(const c of p.reserve||[]){const n=identityNode(c.uid);if(!n)continue;const target=()=>identityNode(c.uid),effects=c.effects||[],has=op=>effects.some(e=>e.op===op),lane=n.closest('.lane-side');
   const add=kind=>items.push({uid:c.uid,kind,target});
   if(has('initiative')||(c.grantedKeywords||[]).includes('initiative')||(c.equipment?.effects||[]).some(e=>e.op==='initiative'))add('speed');
-  const applied=cardIdentityApplied.get(c.uid);if(c.runeCoating)add('coating');if((c.anchor||applied?.has('anchor'))&&lane)add('anchor');if((c.sleep||applied?.has('sleep'))&&lane)add('sleep');if(c.corruption)add('curse');if(cardIdentityFrost.has(c.uid)&&lane)add('ice');
+  const applied=cardIdentityApplied.get(c.uid);if(c.spectralBarrier)add('barrier');if(c.runeCoating)add('coating');if((c.anchor||applied?.has('anchor'))&&lane)add('anchor');if((c.sleep||applied?.has('sleep'))&&lane)add('sleep');if(c.corruption)add('curse');if(cardIdentityFrost.has(c.uid)&&lane)add('ice');
   if(cardIdentityProtocol.has(c.uid)&&lane)add('veronica');if(c.auraKeywords?.includes('trample'))add('pierce');
   // Keep only a quiet edge marking for active Emanação benefits.
   if(lane&&(lane.classList.contains('lane-buffed')))add('aura');
@@ -78,7 +78,7 @@ function presentIdentityRevelation(ability){
 }
 function presentIdentityAftermath(strike){
  for(const hit of [strike,strike.pair].filter(Boolean)){
-  const c=identityCard(hit.targetId),target=damageTarget(hit.targetId);if((c?.attackBarrier||cardIdentityApplied.get(hit.targetId)?.has('barrier'))&&hit.amount>0)identityPlay('barrier',target,target,()=>{},null,600);
+  const c=identityCard(hit.targetId),target=damageTarget(hit.targetId);if(hit.barrierPrevented)identityPlay('barrier',target,target,()=>{},null,600);
   if(c?.effects?.some(e=>e.op==='first_damage_double')&&!c.firstDamageTaken&&!cardIdentityFaults.has(c.uid)&&hit.amount>0){cardIdentityFaults.add(c.uid);identityPlay('fault',target,target,()=>{},null,650);}
   if(c?.volatileProject&&hit.amount>0)identityPlay('volatile',target,target,()=>{},null,650);
   for(const u of hit.healthUpdates||[])if(u.corruption)identityPlay('curse',damageTarget(hit.targetId),damageTarget(u.uid),()=>{syncCardIdentities();},null,650);

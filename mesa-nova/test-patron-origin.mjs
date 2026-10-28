@@ -25,7 +25,7 @@ test('origens de efeitos respeitam proprietário e Bomba mantém doador → Patr
  h.scope.showTargetPicker({uid:'friend',type:'creature'},['enemy'],()=>{});assert.equal(h.aim().source(),h.nodes.friend,'seleção da criatura mantém fonte própria');
 });
 test('poderes de Forja preservam custo/limite e os textos curtos aprovados',()=>{
- const current=JSON.parse(read('cartas.json'));const before={decks:[{patron:{powers:[{id:'forjar-armadura',cost:1,limit:'round',duration:'permanent'},{id:'forjar-arma',cost:3,limit:'match',duration:'permanent'}]}}]};
+ const current=JSON.parse(read('cartas.json'));const before={decks:[{patron:{powers:[{id:'forjar-armadura',cost:2,limit:'round',duration:'permanent'},{id:'forjar-arma',cost:3,limit:'match',duration:'permanent'}]}}]};
  const texts={'forjar-armadura':'Conceda +1 de Vida Extra ao seu Patrono.','forjar-arma':'Crie um equipamento ao longo de três preparações: custo, estrutura e lâmina.'};let count=0;
  const previous=before.decks.flatMap(d=>d.patron?.powers||[]);for(const power of current.decks.flatMap(d=>d.patron?.powers||[])){if(!texts[power.id])continue;count++;assert.equal(power.text,texts[power.id]);const old=previous.find(p=>p.id===power.id);assert.equal(power.cost,old.cost);assert.equal(power.limit,old.limit);assert.equal(power.duration,old.duration);}assert.ok(count>=2);assert.equal(read('cartas.json'),read('criador/prototipo.json'));
 });

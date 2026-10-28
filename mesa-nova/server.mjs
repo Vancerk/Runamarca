@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {createAsyncGameBotBridge} from '../bot/game-bridge/async-bridge.mjs';
 import {enableMusicClock,stopMusicClock} from './music-director.mjs';
 import {createAccessSessions} from './access-session.mjs';
 import {waitRevision} from './wait-revision.mjs';
@@ -11,13 +12,44 @@ import {act,code,easyBotAction,findPlayer,join,makeRoom,view} from './game.mjs';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
 const catalog=JSON.parse(await readFile(path.join(root,'cartas.json'),'utf8'));
+const sharedBot=await createAsyncGameBotBridge({
+ enabled:process.env.RUNAMARCA_SHARED_BOT!=='0',
+ host:{view,easyBotAction},catalog,
+ source:path.resolve(root,'../bot/runner/source'),hostSourceRoot:path.resolve(root,'..'),
+ level:process.env.RUNAMARCA_BOT_LEVEL||'intermediario',
+ style:process.env.RUNAMARCA_BOT_STYLE||'equilibrado'
+});
 const rooms=new Map();
 registerGame('runamarca',rooms);
 const accessSessions=createAccessSessions();
 const attempts=new Map();
 const accessHash='d1278d1e774f8b0c27c166302871dd40ccea755f31738a8210d70de8c44a9fe5';
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.ogg':'audio/ogg','.wav':'audio/wav'};
-function scheduleBot(room){if(room.botTimer||!room.players.some(p=>p.bot))return;room.botTimer=setTimeout(()=>{room.botTimer=null;const bot=room.players.find(p=>p.bot),next=easyBotAction(room);if(!bot||!next)return;try{act(room,bot,next,catalog);void persistMatch(room,'runamarca');scheduleBot(room);}catch(error){room.log.push({message:`Bot fácil interrompido: ${error.message}`,round:room.round,turn:room.turn,phase:room.phase});room.log=room.log.slice(-10);room.revision++;}},700);}
+function scheduleBot(room){
+ if(room.botThinking){room.botReschedule=true;return;}
+ if(room.botTimer||!room.players.some(p=>p.bot))return;
+ room.botTimer=setTimeout(async()=>{
+  room.botTimer=null;room.botThinking=true;room.botReschedule=false;
+  try{
+   const bot=room.players.find(p=>p.bot);if(!bot)return;
+   const next=await sharedBot.nextAction(room);
+   room.botQueueRetries=0;
+   if(!rooms.has(room.code)){sharedBot.clear(room);return;}
+   if(!next)return;
+   act(room,bot,next,catalog);void persistMatch(room,'runamarca');room.botReschedule=true;
+  }catch(error){
+   if(error?.code==='BOT_QUEUE_FULL'&&(room.botQueueRetries||0)<3){
+    room.botQueueRetries=(room.botQueueRetries||0)+1;room.botReschedule=true;return;
+   }
+   // Explicit fail-stop: never silently change policy or expose internal state.
+   room.log.push({message:'Bot interrompido; revisão técnica necessária.',round:room.round,turn:room.turn,phase:room.phase});
+   room.log=room.log.slice(-10);room.revision++;room.botReschedule=false;
+  }finally{
+   room.botThinking=false;
+   if(room.botReschedule&&rooms.has(room.code))scheduleBot(room);
+  }
+ },700);
+}
 function json(res,status,value){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));}
 async function payload(req){let size=0;const parts=[];for await(const part of req){size+=part.length;if(size>32_000_000)throw Error('Arquivo acima do limite de 32 MB.');parts.push(part);}try{return JSON.parse(Buffer.concat(parts).toString('utf8'));}catch{throw Error('JSON inválido.');}}
 function auth(req,room){const p=findPlayer(room,req.headers['x-player-token']);if(!p)throw Object.assign(Error('Acesso inválido.'),{code:'SEAT_INVALID'});return p;}
@@ -60,7 +92,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
         if(url.searchParams.has('revision')&&Number(url.searchParams.get('revision'))===room.revision){res.writeHead(204,{'Cache-Control':'no-store'});return res.end();}
         return json(res,200,view(room,p));
       }
-      if(operation==='act'&&req.method==='POST'){const data=await payload(req);await persistMatch(room,'runamarca');act(room,p,data,catalog);await persistMatch(room,'runamarca');scheduleBot(room);if(data.type==='leave'){if(!room.spectators.length&&room.players.every(x=>x.bot)){clearTimeout(room.botTimer);stopMusicClock(room);rooms.delete(room.code);}return json(res,200,{left:true});}return json(res,200,view(room,p));}
+      if(operation==='act'&&req.method==='POST'){const data=await payload(req);await persistMatch(room,'runamarca');act(room,p,data,catalog);await persistMatch(room,'runamarca');scheduleBot(room);if(data.type==='leave'){if(!room.spectators.length&&room.players.every(x=>x.bot)){clearTimeout(room.botTimer);sharedBot.clear(room);stopMusicClock(room);rooms.delete(room.code);}return json(res,200,{left:true});}return json(res,200,view(room,p));}
       return json(res,405,{error:'Método inválido.'});
     }
     if(req.method!=='GET')return json(res,405,{error:'Método inválido.'});

@@ -10,7 +10,7 @@
   ['gentle',{stagger:110,duration:800,sound:'place'}],
  ]);
  const energyStyles={forja:'forge',fluxo:'ether',ruptura:'chain'};
- let active=null;
+ let active=null;const returned=new Set();
  function styleFor(patron){return styles.has(patron?.returnStyle)?patron.returnStyle:energyStyles[patron?.affinity]||'gentle';}
  function candidates(state,snapshots){
   if(!state||state.phase==='resolving'||state.phase==='finished'||state.phase==='lobby')return [];
@@ -22,9 +22,20 @@
   });
  }
  function capture(state,previousPhase,clone){
-  if(previousPhase!=='resolving')return [];
+  const key=state?.lastCombat?.returnKey;
+  if(!state||state.phase==='resolving'||!previousPhase||!key&&previousPhase!=='resolving'||key&&returned.has(key))return [];
+  if(previousPhase!=='resolving'&&(!state.lastCombat?.returnAt||state.serverNow-state.lastCombat.returnAt>5000))return [];
   const snapshots=[...document.querySelectorAll('#lanes .lane-side .card:not(.back)')].map(node=>({uid:node.dataset.uid,rect:node.getBoundingClientRect(),node}));
-  return candidates(state,snapshots).filter(s=>s.rect.width>0&&s.rect.height>0).map(s=>({...s,face:clone(s.node)}));
+  // A rival/background client may miss the exact result frame. Use only public
+  // server origins; never derive a secret formation or replay an entire battle.
+  for(const item of state.lastCombat?.returnOrigins||[])if(!item.patron&&!snapshots.some(x=>x.uid===item.uid)){
+   const slot=document.querySelector('#lanes .lane-side[data-owner="'+item.owner+'"][data-lane="'+item.lane+'"]');
+   const card=state.players.flatMap(p=>p.reserve||[]).find(c=>c.uid===item.uid);
+   if(slot&&card&&typeof root.cardEl==='function')snapshots.push({uid:item.uid,rect:slot.getBoundingClientRect(),node:root.cardEl(card,{mini:true,combat:true})});
+  }
+  const result=candidates(state,snapshots).filter(s=>s.rect.width>0&&s.rect.height>0).map(s=>({...s,face:clone(s.node)}));
+  if(key){returned.add(key);if(returned.size>40)returned.delete(returned.values().next().value);}
+  return result;
  }
  function cancel(){active?.();active=null;}
  function play(items,{getTarget,clone,hide=()=>{},release=()=>{},valid=()=>true,sound=()=>{},speed=1,reduced=root.matchMedia?.('(prefers-reduced-motion: reduce)').matches}={}){

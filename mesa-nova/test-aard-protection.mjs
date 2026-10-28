@@ -28,7 +28,7 @@ for(const ownerIndex of [0,1])for(const lane of [0,1,2]){
  const {room,a,b}=setup();prep(a,b,0);combat(room);assert.equal(room.pushes.length,0);assert.equal(a.prepared.length,1,'No reveal: trap stays prepared');
 }
 {
- const {room,a,b}=setup(),x=place(b,unit(b),0);prep(a,b,0);prep(a,b,1);combat(room);assert.equal(x.damage,1,'Moving into an originally empty lane does not retrigger a prepared spell');assert.equal(a.prepared.length,1);
+ const {room,a,b}=setup(),x=place(b,unit(b),0);prep(a,b,0);prep(a,b,1);combat(room);assert.equal(x.damage,2,'V25: chegada ativa a armadilha válida na nova casa');assert.equal(a.prepared.length,0);assert.equal(a.discard.length,2);assert.equal(room.preClash[2].cards[1]?.uid,x.uid,'Duas ativações deslocam até a última casa');assert.equal(room.pushes.length,2);
 }
 for(const original of ['alive','empty','dead']){
  const {room,a,b}=setup(),taunt=place(a,card('FL16',a,{health:1}),0),killer=place(b,unit(b,1,20,{effects:[{op:'initiative'}]}),0),attacker=place(b,unit(b,4),1);a.taunts[taunt.uid]=[1];
@@ -50,7 +50,7 @@ for(const spellId of ['FV02','FV14']){
  const {room,a,b}=setup(),x=place(a,unit(a),0);cast(room,a,'FEX07',x);assert.equal(x.health,21);assert.ok(keywordPresentation(x).highlightKeywords.includes('Antimagia'));prep(b,a,0,spellId);combat(room);assert.equal(x.sleep,undefined);assert.equal(x.anchor,undefined);assert.equal(x.runeCoating,true);a.formation[0]=x.uid;prep(b,a,0,spellId);combat(room);assert.equal(x.sleep,undefined);assert.equal(x.anchor,undefined);assert.equal(x.runeCoating,true,'Antimagia bloqueia também a magia do combate seguinte');
 }
 {
- const {room,a,b}=setup(),x=card('FEX06',a);a.reserve.push(x);cast(room,a,'FEX07',x);const before=b.mana;cast(room,b,'FV13',x);assert.equal(b.mana,before-3);assert.ok(a.reserve.includes(x));assert.equal(x.runeCoating,true);assert.equal(x.persistentReturnUsed,undefined,'Blocked bounce does not spend persistence');cast(room,b,'FV13',x);assert.ok(a.reserve.includes(x));assert.equal(x.health,4);assert.equal(x.persistentReturnUsed,undefined);assert.equal(x.runeCoating,true);
+ const {room,a,b}=setup(),x=card('FEX06',a);a.reserve.push(x);cast(room,a,'FEX07',x);const before=b.mana;cast(room,b,'FV13',x);assert.equal(models.find(c=>c.id==='FV13').cost,2);assert.equal(b.mana,before-2);assert.ok(a.reserve.includes(x));assert.equal(x.runeCoating,true);assert.equal(x.persistentReturnUsed,undefined,'Blocked bounce does not spend persistence');cast(room,b,'FV13',x);assert.ok(a.reserve.includes(x));assert.equal(x.health,4);assert.equal(x.persistentReturnUsed,undefined);assert.equal(x.runeCoating,true);
 }
 {
  const {room,a,b}=setup(),x=card('FEX06',a);a.reserve.push(x);cast(room,a,'FL10',x);x.damage=2;cast(room,b,'FV13',x);assert.equal(x.attack,3);assert.equal(x.health,4);assert.equal(x.damage,0);assert.ok(a.hand.includes(x));room.turn=a.id;act(room,a,{type:'play',cardId:x.uid},catalog);cast(room,b,'FV13',x);assert.equal(x.attack,2);assert.equal(x.health,3,'Bonus retention only happens once per physical card');
