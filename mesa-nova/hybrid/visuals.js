@@ -10,7 +10,7 @@ export function flattenFace(copy){
  for(const name of ['onclick','ondblclick','onpointerdown','onmouseenter','onmousemove','onmouseleave','onfocus','onblur'])copy[name]=null;
  return copy;
 }
-export function geometry(node){return window.RunaHybrid?.pose?.(node)||elementQuad(node);}
+export function geometry(node){return window.RunaGeometry?.pose(node)||elementQuad(node);}
 export function handPose(node){const r=node.getBoundingClientRect(),s=getComputedStyle(node),w=parseFloat(s.width),h=parseFloat(s.height),angle=parseFloat(s.getPropertyValue('--hybrid-fan-angle'))||0;return {x:r.x+r.width/2,y:r.y+r.height/2,w,h,angle};}
 export function cardCopyAt(source,pose){const copy=flattenFace(cloneVisual(source));copy.classList.add('hybrid-motion-face');Object.assign(copy.style,{width:pose.w+'px',height:pose.h+'px',transformOrigin:'0 0',transform:'matrix3d('+matrix(pose.quad,pose.w,pose.h).join(',')+')'});flightPortal().append(copy);return copy;}
 export function currentQuad(node,w,h){const m=new DOMMatrixReadOnly(getComputedStyle(node).transform);return [[0,0],[w,0],[w,h],[0,h]].map(([x,y])=>{const p=m.transformPoint(new DOMPoint(x,y));return {x:p.x/p.w,y:p.y/p.w};});}

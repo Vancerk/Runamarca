@@ -9,7 +9,7 @@
 (function(root){
  let active=0,serial=0;const flights=new Map(),listeners=new Set(),history=[];
  const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
- const box=n=>{const r=n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height};};
+ const box=n=>{const r=root.RunaGeometry?.rect(n)||n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height};};
  const inside=p=>{const m=12;return {x:Math.min(innerWidth-m,Math.max(m,p.x)),y:Math.min(innerHeight-m,Math.max(m,p.y))};};
  const emit=()=>{for(const f of listeners)try{f(active);}catch{}};
  function signal(node){if(!node?.isConnected)return;node.classList.remove('grave-arrival');void node.offsetWidth;node.classList.add('grave-arrival');setTimeout(()=>node.classList.remove('grave-arrival'),reduced()?400:720);}

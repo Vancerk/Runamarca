@@ -33,5 +33,6 @@
   return fallback(payload);
  }
  root.RunaPresentation={register,update,ensureGeometry,play,
+  clone(source,copy){for(const adapter of adapters.values())adapter.clone?.(source,copy);},
   get stats(){return {updates,layouts,measurements,depth,adapters:[...adapters.keys()]};}};
 })(globalThis);

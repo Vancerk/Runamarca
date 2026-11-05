@@ -4,7 +4,7 @@ import path from 'node:path';
 const dir=path.resolve(process.argv[3]||'prototype-qa/simplificacao-etapa2-20261105'),mode=process.argv[2]||'arrivals';
 fs.mkdirSync(dir,{recursive:true});
 const env={...process.env,QA_BASE:'http://127.0.0.1:3095',PROTOTYPE_PORT:'3095',QA_BROWSER:process.env.QA_BROWSER||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',RUNAMARCA_FEEDBACK_DIR:path.join(dir,'store')};
-const cases={transfers:['scripts/presentation-stage2-transfers.mjs',dir+'/transfers'],arrivals:['scripts/presentation-stage2-arrivals.mjs',dir+'/arrivals'],motion:['scripts/hybrid9-motion.mjs'],interaction:['scripts/hybrid10-interaction.mjs'],comparison:['scripts/presentation-stage2-compare.mjs',dir+'/comparison']};
+const cases={geometry:['scripts/presentation-geometry-qa.mjs',dir+'/geometry'],transfers:['scripts/presentation-stage2-transfers.mjs',dir+'/transfers'],arrivals:['scripts/presentation-stage2-arrivals.mjs',dir+'/arrivals'],motion:['scripts/hybrid9-motion.mjs'],interaction:['scripts/hybrid10-interaction.mjs'],comparison:['scripts/presentation-stage2-compare.mjs',dir+'/comparison']};
 if(!cases[mode])throw Error('Unknown QA mode');
 const server=spawn(process.execPath,['--experimental-vm-modules','scripts/board-prototype-server.mjs'],{env,windowsHide:true,stdio:['ignore','pipe','pipe']});
 const log=fs.createWriteStream(path.join(dir,'server-'+mode+'.log'));server.stdout.pipe(log);server.stderr.pipe(log);
