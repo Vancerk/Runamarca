@@ -13,7 +13,7 @@ test('entrada pública e aliases servem a mesa 3D, preservando acesso e convites
   const denied=await fetch(base+route,{redirect:'manual'});assert.equal(denied.status,302);assert.equal(denied.headers.get('location'),'/runamarca/access');
  }
  const headers={cookie:createTestAccess({headers:{host}},'/runamarca')};
- const expected=fs.readFileSync(new URL('../mesa-nova/hybrid/index.html',import.meta.url),'utf8');
+ const expected=fs.readFileSync(new URL('../mesa-nova/index.html',import.meta.url),'utf8');
  for(const route of ['/runamarca/','/runamarca/index.html','/runamarca/hybrid/','/runamarca/hybrid/index.html']){
   const page=await fetch(base+route,{headers});assert.equal(page.status,200);assert.equal(await page.text(),expected);assert.equal(page.headers.get('cache-control'),'no-cache');
  }

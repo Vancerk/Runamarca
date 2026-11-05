@@ -9,7 +9,8 @@ tmp/account-preview.mjs
 torre/runtime/
 torre/backend/data/
 escudo/dev/.dados/
-prototype-qa/**/*.png
+# Generated local QA evidence; reproducible runners are versioned in scripts/.
+prototype-qa/
 
 # S6: local feedback store (RUNAMARCA_FEEDBACK_DIR default)
 .runamarca-feedback/

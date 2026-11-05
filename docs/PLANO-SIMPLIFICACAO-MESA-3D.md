@@ -2,7 +2,7 @@
 
 Preparado em 05/11/2026. Fonte: pedido do dono para publicar a versão atual e depois planejar a simplificação; leitura do código da candidata `324d2d7dd52a271224a43ddaa0cb7649773866be`, no [PR #13](https://github.com/Vancerk/Runamarca/pull/13).
 
-**Estado em 05/11/2026:** etapa 1 implementada; etapa 2 concluída em três blocos dependentes (compras/retornos, abertura/transferências, baixas/redistribuição). Etapas 3 a 5 autorizadas em sequência pelo dono; a próxima é a fonte compartilhada de coordenadas. O PR #13 está integrado em `main` (confirmado pela API do GitHub); este trabalho não verificou o deploy no Render. Os PRs #14 e #15 continuam como rascunhos. O dono retirou a exigência de aprovação por outra conta; continua valendo o fluxo por PR. As comparações destas refatorações são locais, contra seus commits anteriores.
+**Estado em 05/11/2026:** as cinco etapas estão implementadas e a integração final passou, incluindo a partida completa com bot e feedback. O PR #13 da versão V26 foi integrado em `main` (confirmado pela API do GitHub). As simplificações permanecem em PRs dependentes, sem merge ou publicação nesta rodada. O primeiro PR agora aponta para `main`, pois sua base de publicação já foi integrada. Este trabalho não verificou o deploy no Render. O dono autorizou executar todos os blocos em sequência, sem nova parada de aprovação entre eles.
 
 ## Resultado pretendido
 
@@ -88,8 +88,20 @@ O ensaio local recente de 20 reconstruções, em Full HD/DPR 1, mediu `render()`
 
 Cada etapa deve comparar a mesma cena com e sem a mudança e registrar o custo por revisão, o intervalo entre quadros e a latência até a interação voltar. Uma redução de linhas, módulos ou tempo médio não basta se surgirem pausas maiores, texto borrado ou cartas invisíveis. Primeiro fixar a referência em partida real; só então definir metas de desempenho com números representativos.
 
-## Próximo bloco
+## Entregas e integração
 
-A etapa 1 removeu as substituições de `render`, `attackSource` e `attackTarget`. O primeiro bloco da **etapa 2** reuniu compras e Evasão/retorno à mão em um responsável por chegada e trava (`APRESENTACAO-ETAPA-2-CHEGADAS.md`). O segundo bloco migra a confirmação da abertura e as transferências entre zonas, retirando também as substituições de `animateOpeningToHand` e `animateTransfer` (`APRESENTACAO-ETAPA-2-TRANSFERENCIAS.md`).
+| Etapa | Entrega | PR |
+|---|---|---|
+| 1 | Ordem explícita da apresentação e geometria antes dos golpes | [#14](https://github.com/Vancerk/Runamarca/pull/14) |
+| 2 | Compras/retornos, abertura/transferências, baixas/redistribuição por partida e UID | [#15](https://github.com/Vancerk/Runamarca/pull/15), [#16](https://github.com/Vancerk/Runamarca/pull/16), [#17](https://github.com/Vancerk/Runamarca/pull/17) |
+| 3 | Coordenadas compartilhadas para interação, cartas e efeitos | [#18](https://github.com/Vancerk/Runamarca/pull/18) |
+| 4 | Fila cancelável e atualização das regiões que mudaram | [#19](https://github.com/Vancerk/Runamarca/pull/19) |
+| 5 | Entrada 3D única, retirada das substituições globais e recuperação de WebGL | [#20](https://github.com/Vancerk/Runamarca/pull/20) |
 
-Próximo bloco: **baixas e redistribuição dos vizinhos**. Migrar os consumidores restantes de `movingCards` e os controles de movimento correspondentes, preservando os instantes de dano, Registro, morte, arcos e retorno. As rotinas 3D de compra, Evasão e devolução do mulligan ainda substituem funções de animação; a retirada dessas substituições remanescentes também precisa ser acompanhada. Não declarar a etapa 2 inteira concluída antes disso. Cada bloco mantém PR e reversão próprios.
+Relatos: [etapa 2 — baixas](APRESENTACAO-ETAPA-2-BAIXAS.md), [etapa 3](APRESENTACAO-ETAPA-3-GEOMETRIA.md), [etapa 4](APRESENTACAO-ETAPA-4-ATUALIZACOES.md) e [etapa 5](APRESENTACAO-ETAPA-5-ENTRADA-RECUPERACAO.md).
+
+Na comparação da etapa 4, reconstruções por revisão caíram de duas para uma. A mediana de `render()` passou de 73,5 para 49,0 ms em 1920×1080 e de 83,1 para 47,1 ms em 1366×768. São medidas locais da mesma cena, não garantia de 60 FPS em partida inteira.
+
+Os PRs devem ser integrados na ordem #14 → #15 → #16 → #17 → #18 → #19 → #20. Depois de cada merge, o próximo precisa ter `main` como base para seguir a cadeia; não integrar uma etapa posterior diretamente descartando as anteriores. Como cada PR depende do anterior, reverter uma base exige também retirar ou reverter seus dependentes. A base visual V26 continua disponível no commit `324d2d7`.
+
+O próximo marco é revisar e integrar a cadeia, depois realizar uma publicação separada. A validação final teve 41/41 comandos da suíte ampla, 36/36 da comparação visual e geométrica, 25/25 da recuperação WebGL, 18/18 de autenticação e 13/13 da partida real com bot e feedback. A simplificação não remove o banco `pg`, os controles HTML nem as faces canvas que continuam tendo consumidores. Não iniciou novo trabalho de celular e não bloqueou usuários móveis.

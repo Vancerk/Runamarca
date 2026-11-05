@@ -21,7 +21,27 @@ import './emana-read.js';
 const game=document.getElementById('game'),canvas=document.createElement('canvas');canvas.className='hybrid-canvas';canvas.setAttribute('aria-hidden','true');game.prepend(canvas);
 // Formation addendum B: veil over the WebGL decoration during the focus (above the canvas, below every DOM layer).
 const veil=document.createElementNS('http://www.w3.org/2000/svg','svg');veil.setAttribute('class','hybrid-focus-veil');veil.setAttribute('aria-hidden','true');veil.innerHTML='<path fill-rule="evenodd"/>';canvas.after(veil);let focusApi=null,focusMetrics=null,lastDeckQuads={};const focusShifted=new Set();const focusValue=()=>focusApi?.value||0;
-const toolbar=document.createElement('div');toolbar.className='hybrid-toolbar';toolbar.innerHTML='<span>Mesa híbrida · suave</span>';document.body.append(toolbar);
+const recovery=document.createElement('section');recovery.className='table-recovery';recovery.hidden=true;recovery.setAttribute('role','alert');
+recovery.innerHTML='<h2>A mesa 3D foi interrompida</h2><p>Seu lugar na partida continua reservado. Tentando recuperar a imagem…</p><button type="button">Tentar novamente</button><button type="button">Recarregar</button>';
+document.body.append(recovery);const recoveryText=recovery.querySelector('p'),[retryButton,reloadButton]=recovery.querySelectorAll('button');
+let recoveryTimer=0,recoveryFocus=null,recoveries=0,recovering=false,contextRecovery=null,contextInvalidated=false;
+retryButton.onclick=retryScene;reloadButton.onclick=()=>location.reload();
+function updateRecovery(){recovery.hidden=!failed||game.hidden;}
+function createRenderer(){
+ renderer=new Renderer(canvas,{shadowSize:RELIEF.shadowMap,shadowKeep:RELIEF.shadowKeep,edgeShade:RELIEF.edgeShade});
+ contextRecovery=renderer.gl.getExtension('WEBGL_lose_context');
+ props=createProps({unproject,screen,redraw:()=>{if(!active||failed||game.hidden)return;renderer.shadowDirty=true;renderer.draw(vp,eye);}});
+}
+function retryScene(){
+ clearTimeout(recoveryTimer);recoveryTimer=0;if(!failed)return;
+ if(renderer?.gl.isContextLost()){contextRecovery?.restoreContext();recoveryText.textContent='Aguardando o navegador recuperar a imagem. Você também pode recarregar.';return;}
+ try{
+  recovering=true;
+  props?.dispose();props=null;renderer?.dispose({contextLost:contextInvalidated});cardPlanes.restore();createRenderer();contextInvalidated=false;
+  failed=false;dirty=true;lastSignature='';settledViewport='';invalidateFit();canvas.style.display='';document.body.classList.remove('hybrid-unavailable');
+  syncNow();if(failed)return;recoveries++;updateRecovery();if(recoveryFocus?.isConnected)recoveryFocus.focus({preventScroll:true});
+ }catch(error){showRecovery(error.message,false);}finally{recovering=false;}
+}
 // Camera, field, panels, Emanation, deck and relief parameters come from config.js.
 // Revision 12: tilt (from the vertical) and FOV are read once here and shared by
 // camera(), unproject() and every projection below.
@@ -171,18 +191,27 @@ function buildStable(){
    settlementFrame=requestAnimationFrame(settle);return;
   }
   settlementFrame=0;invalidateFit();
-  try{build();lastSignature=signature();}catch(error){fallback(error.message);}
+  try{build();lastSignature=signature();}catch(error){showRecovery(error.message);}
   finally{game.classList.remove('hybrid-fitting');initialFit=false;}
  }
  settlementFrame=requestAnimationFrame(()=>{settlementFrame=requestAnimationFrame(settle);});
 }
-function schedule(force=false){dirty||=force;if(frame)return;frame=requestAnimationFrame(()=>{frame=0;const s=signature();if(dirty||s!==lastSignature){try{buildStable();lastSignature=signature();}catch(e){fallback(e.message);}}});}
-function fallback(reason){failed=true;active=false;props?.dispose();props=null;cardPlanes.restore();for(const node of projectedPanels)node.style.removeProperty('transform');for(const node of document.querySelectorAll('.reserve-camp')){node.style.removeProperty('zoom');node.style.removeProperty('width');node.style.removeProperty('max-width');}document.body.classList.remove('hybrid-active');for(const n of modified){for(const p of ['left','top','width','height','transform'])n.style.removeProperty(p);}canvas.style.display='none';toolbar.querySelector('span').textContent='Visual 2D restaurado';toolbar.classList.add('hybrid-fallback');toolbar.title=reason;try{positionCombatEmanations();}catch{}}
-const legacyEmanations=layoutCombatEmanations;layoutCombatEmanations=function(){if(!failed&&!game.hidden){schedule(true);return;}legacyEmanations();};
-try{renderer=new Renderer(canvas,{shadowSize:RELIEF.shadowMap,shadowKeep:RELIEF.shadowKeep,edgeShade:RELIEF.edgeShade});props=createProps({unproject,screen,redraw:()=>{if(!active||failed||game.hidden)return;renderer.shadowDirty=true;renderer.draw(vp,eye);}});document.body.classList.add('hybrid-active');tableObserver=new MutationObserver(()=>schedule(true));tableObserver.observe(game,{childList:true,subtree:true});new MutationObserver(()=>schedule(true)).observe(game,{attributes:true,attributeFilter:['hidden']});const rowStyle=row=>(row.getAttribute('style')||'').replace(/--camp-overlap:[^;]*;?/,'');for(const row of document.querySelectorAll('.reserve-camp .card-row')){let style=rowStyle(row);new MutationObserver(()=>{const next=rowStyle(row);if(next!==style){style=next;schedule(true);}}).observe(row,{attributes:true,attributeFilter:['style']});}new ResizeObserver(()=>schedule(true)).observe(document.querySelector('#game>.table'));document.getElementById('camp-log')?.addEventListener('toggle',()=>schedule(true));{const log=document.getElementById('camp-log');if(log)new MutationObserver(()=>syncNow()).observe(log,{attributes:true,attributeFilter:['open']});installRegistro({trigger:()=>logTrigger&&!failed?logTrigger:null});}document.fonts?.ready.then(()=>schedule(true));addEventListener('resize',()=>document.querySelector('.platinum-protocol-scene')?syncNow():schedule(true));addEventListener('scroll',()=>schedule(),{passive:true});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();fallback('Contexto WebGL interrompido');});schedule(true);}catch(e){fallback(e.message);}
-window.RunaHybrid={get ready(){return active;},get stats(){return {...lastMetrics,builds,active,failed,mode:'gentle',cameraTiltDegrees,cameraTiltFrom:'vertical',cameraEye:eye?[...eye]:null,cameraFovDegrees:cameraFov*180/Math.PI,cameraDistance,lamp:renderer?.lamp?[...renderer.lamp]:null,shadow:renderer?.shadowInfo||null,get webglError(){return renderer?renderer.checkWebglError():0;}};},clearWebglError(){return renderer?renderer.clearWebglError():0;},get faces(){return cardPlanes.diagnostics;},get slabs(){return active&&!failed?[...cardPlanes.slabs]:[];},get anchors(){return anchors.map(({id,screen,world,node})=>{const r=rect(node),q=panelQuads.get(node),expected=q?{x:(Math.min(...q.map(p=>p.x))+Math.max(...q.map(p=>p.x)))/2,y:(Math.min(...q.map(p=>p.y))+Math.max(...q.map(p=>p.y)))/2}:screen;return {id,world,projected:expected,surfaceCenter:screen,projectionKind:q?'surface-bounds':'center',actual:{x:r.cx,y:r.cy},error:Math.hypot(r.cx-expected.x,r.cy-expected.y)};});},zone:node=>zones.get(node)?.map(p=>({x:p.x,y:p.y})),fogZone:node=>{const q=zones.get(node);if(!q)return;const p=q.map(v=>unproject(v.x,v.y,.14)),c=p.reduce((a,v)=>V.add(a,v),[0,0,0]).map(v=>v/4);return p.map(v=>screen(V.add(c,V.scale(V.sub(v,c),1.1))));},get scene(){return sceneMetrics;},overlayTransform:quad=>'matrix3d('+matrix(quad,384,192).join(',')+')',get occluders(){return occluders.map(q=>q.map(p=>({x:p.x,y:p.y})));},get decoration(){return 'wax-drop';},sync:()=>schedule(true)};
+function schedule(force=false){dirty||=force;if(frame)return;frame=requestAnimationFrame(()=>{frame=0;const s=signature();if(dirty||s!==lastSignature){try{buildStable();lastSignature=signature();}catch(e){showRecovery(e.message);}}});}
+function showRecovery(reason,automatic=true){
+ automatic=automatic&&!recovering;
+ const first=!failed;failed=true;active=false;cancelAnimationFrame(frame);frame=0;cancelAnimationFrame(settlementFrame);settlementFrame=0;
+ props?.dispose();props=null;canvas.style.display='none';veil.style.display='none';
+ document.body.classList.add('hybrid-unavailable');document.body.classList.add('hybrid-active');updateRecovery();
+ recoveryText.textContent=automatic?'Seu lugar na partida continua reservado. Tentando recuperar a imagem…':'Não foi possível recuperar a imagem. Tente novamente ou recarregue a página.';
+ if(first){recoveryFocus=document.activeElement;if(!game.hidden)retryButton.focus({preventScroll:true});}
+ // One automatic attempt per interruption; a manual retry never loops.
+ if(automatic&&!recoveryTimer)recoveryTimer=setTimeout(retryScene,800);
+}
+RunaPresentation.register('emanation-layout',{animations:{'emanation-layout':()=>{if(!failed&&!game.hidden)schedule(true);}}});
+try{document.body.classList.add('hybrid-active');tableObserver=new MutationObserver(()=>schedule(true));tableObserver.observe(game,{childList:true,subtree:true});new MutationObserver(()=>{updateRecovery();schedule(true);}).observe(game,{attributes:true,attributeFilter:['hidden']});const rowStyle=row=>(row.getAttribute('style')||'').replace(/--camp-overlap:[^;]*;?/,'');for(const row of document.querySelectorAll('.reserve-camp .card-row')){let style=rowStyle(row);new MutationObserver(()=>{const next=rowStyle(row);if(next!==style){style=next;schedule(true);}}).observe(row,{attributes:true,attributeFilter:['style']});}new ResizeObserver(()=>schedule(true)).observe(document.querySelector('#game>.table'));document.getElementById('camp-log')?.addEventListener('toggle',()=>schedule(true));{const log=document.getElementById('camp-log');if(log)new MutationObserver(()=>syncNow()).observe(log,{attributes:true,attributeFilter:['open']});installRegistro({trigger:()=>logTrigger&&!failed?logTrigger:null});}document.fonts?.ready.then(()=>schedule(true));addEventListener('resize',()=>document.querySelector('.platinum-protocol-scene')?syncNow():schedule(true));addEventListener('scroll',()=>schedule(),{passive:true});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextInvalidated=true;showRecovery('Contexto WebGL interrompido');});canvas.addEventListener('webglcontextrestored',retryScene);createRenderer();schedule(true);}catch(e){showRecovery(e.message);}
+window.RunaHybrid={get ready(){return active;},get recovery(){return {unavailable:failed,attempts:recoveries,visible:!recovery.hidden};},get stats(){return {...lastMetrics,builds,active,failed,mode:'gentle',cameraTiltDegrees,cameraTiltFrom:'vertical',cameraEye:eye?[...eye]:null,cameraFovDegrees:cameraFov*180/Math.PI,cameraDistance,lamp:renderer?.lamp?[...renderer.lamp]:null,shadow:renderer?.shadowInfo||null,get webglError(){return renderer?renderer.checkWebglError():0;}};},clearWebglError(){return renderer?renderer.clearWebglError():0;},get faces(){return cardPlanes.diagnostics;},get slabs(){return active&&!failed?[...cardPlanes.slabs]:[];},get anchors(){return anchors.map(({id,screen,world,node})=>{const r=rect(node),q=panelQuads.get(node),expected=q?{x:(Math.min(...q.map(p=>p.x))+Math.max(...q.map(p=>p.x)))/2,y:(Math.min(...q.map(p=>p.y))+Math.max(...q.map(p=>p.y)))/2}:screen;return {id,world,projected:expected,surfaceCenter:screen,projectionKind:q?'surface-bounds':'center',actual:{x:r.cx,y:r.cy},error:Math.hypot(r.cx-expected.x,r.cy-expected.y)};});},zone:node=>zones.get(node)?.map(p=>({x:p.x,y:p.y})),fogZone:node=>{const q=zones.get(node);if(!q)return;const p=q.map(v=>unproject(v.x,v.y,.14)),c=p.reduce((a,v)=>V.add(a,v),[0,0,0]).map(v=>v/4);return p.map(v=>screen(V.add(c,V.scale(V.sub(v,c),1.1))));},get scene(){return sceneMetrics;},overlayTransform:quad=>'matrix3d('+matrix(quad,384,192).join(',')+')',get occluders(){return occluders.map(q=>q.map(p=>({x:p.x,y:p.y})));},get decoration(){return 'wax-drop';},sync:()=>schedule(true)};
 
-function syncNow(){if(failed||game.hidden)return;cancelAnimationFrame(frame);frame=0;try{buildStable();lastSignature=signature();}catch(error){fallback(error.message);}}
+function syncNow(){if(failed||game.hidden)return;cancelAnimationFrame(frame);frame=0;try{buildStable();lastSignature=signature();}catch(error){showRecovery(error.message);}}
 const projectedPose=node=>{const r=cardPlanes.records.get(node);return r?{quad:r.quad.map(p=>({x:p.x,y:p.y})),w:r.cssW,h:r.cssH}:elementQuad(node);};
 // Geometry is an explicit presentation boundary, including strikes started by the visual clock.
 const ensureGeometry=()=>{if(!failed&&!game.hidden&&renderer&&(dirty||signature()!==lastSignature))syncNow();};

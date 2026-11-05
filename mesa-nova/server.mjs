@@ -95,7 +95,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
     if(routePath==='/criador'){res.writeHead(302,{Location:`${base}/criador/`});res.end();return;}
     // V26: one public table. Keep shared DOM/canvas modules; serve the 3D entry
     // at the canonical URL so access, room invitations and bookmarks stay valid.
-    const assetPath=['/','/index.html','/hybrid/'].includes(routePath)?'/hybrid/index.html':routePath==='/criador/'?'/criador/index.html':routePath;
+    const assetPath=['/','/index.html','/hybrid/','/hybrid/index.html'].includes(routePath)?'/index.html':routePath==='/criador/'?'/criador/index.html':routePath;
     const rel=decodeURIComponent(assetPath).replace(/^\/+/, '')||'index.html';const file=path.resolve(root,rel);
     if(!file.startsWith(root+path.sep)||!types[path.extname(file)])return json(res,404,{error:'Não encontrado.'});
     try{const content=await readFile(file);res.writeHead(200,{'Content-Type':types[path.extname(file)],'Cache-Control':'no-cache','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(content);}catch{return json(res,404,{error:'Não encontrado.'});}

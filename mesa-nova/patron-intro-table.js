@@ -10,7 +10,7 @@ function schedulePatronIntro(){
  try{sessionStorage.setItem(storageKey,'seen');}catch{}
  document.body.classList.add('patron-intro-active');
  const players=state.players.map(p=>({id:p.id,name:p.name,patron:{...p.patron}})),firstId=state.first,selfId=seat()?.id,capture=globalThis.RunaDeckCarousel?.takeCapture();
- visualQueue=visualQueue.catch(()=>{}).then(async()=>{
+ visualQueue.enqueue(async()=>{
   if(generation!==visualGeneration||controller.signal.aborted)return;
   try{
    const options={players,firstId,selfId,matchKey:key,base:gameBase,getAudioContext:()=>audioContext,signal:controller.signal,getHome:id=>$(id===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card')};

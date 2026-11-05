@@ -13,7 +13,7 @@ const rotZ=a=>{const c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,s,0,
 const chain=(...m)=>m.reduce((a,b)=>multiply(a,b));
 const overlaps=(a,b,pad=0)=>a.x<b.x+b.w+pad&&a.x+a.w+pad>b.x&&a.y<b.y+b.h+pad&&a.y+a.h+pad>b.y;
 // Everything that can receive game input, show HUD or act as a drop zone.
-const OBSTACLES='#game button,#game a,#game .card,#game .player-band,#game .reserve-camp,#game .board,#game .lane-side,#game .deck-stack,#self-deck,#opponent-deck,#hand,#opponent-hand,#game .camp-log,#game .nartvanyr,#center-actions,#selection-panel:not([hidden]),.camp-utilities>*,.hybrid-toolbar.hybrid-fallback';
+const OBSTACLES='#game button,#game a,#game .card,#game .player-band,#game .reserve-camp,#game .board,#game .lane-side,#game .deck-stack,#self-deck,#opponent-deck,#hand,#opponent-hand,#game .camp-log,#game .nartvanyr,#center-actions,#selection-panel:not([hidden]),.camp-utilities>*,.table-recovery';
 
 function armillaryParts(){
  const base=new Geometry();base.cylinder(0,0,0,.52,.09,darkGold,3,28);base.cylinder(0,.09,0,.4,.05,gold,3,28);base.cylinder(0,.14,0,.07,.42,gold,3,12);base.cylinder(0,.56,0,.14,.05,gold,3,16);base.sphere(0,.9,0,.27,globe,3,18,10);base.cylinder(0,.62,0,.025,.56,steel,3,8);

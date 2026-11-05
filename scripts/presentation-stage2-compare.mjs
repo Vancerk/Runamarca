@@ -23,12 +23,12 @@ try{
    const url=new URL(route.request().url());if(url.hostname!=='127.0.0.1')return route.abort();
    const file=decodeURIComponent(url.pathname).replace(/^\/runamarca\//,'');
    if(condition==='before'&&Object.hasOwn(baseline,file)&&baseline[file]===null)return route.fulfill({status:404,body:'Absent in the baseline'});
-   let bytes=condition==='before'?baseline[file]:changed.includes(file)?fs.readFileSync('mesa-nova/'+file):null;
+   let bytes=condition==='before'?baseline[file]:changed.includes(file)&&fs.existsSync('mesa-nova/'+file)?fs.readFileSync('mesa-nova/'+file):null;
    if(file==='app.js'){
     bytes=bytes||fs.readFileSync('mesa-nova/app.js');
-    bytes=Buffer.concat([bytes,Buffer.from('\nwindow.__initialFunctions={render,attackSource,attackTarget,animateTransfer,animateOpeningToHand};\n')]);
+    bytes=Buffer.concat([bytes,Buffer.from('\nwindow.__initialFunctions={render,attackSource,attackTarget,animateTransfer,animateOpeningToHand,command,cardEl,cloneVisual,showHover,moveHover,hideHover,applyDamageHit,heavyCombatImpact,contact:RunaMotion.contact,strikeFrames:RunaMotion.strikeFrames,drawCard:RunaCardVisual.drawCard,drawCombat:RunaCardVisual.drawCombat};\n')]);
    }
-   if(bytes){served[file]=createHash('sha256').update(bytes).digest('hex');return route.fulfill({status:200,contentType:file.endsWith('.html')?'text/html':'text/javascript',body:bytes});}
+   if(bytes){served[file]=createHash('sha256').update(bytes).digest('hex');return route.fulfill({status:200,contentType:file.endsWith('.html')?'text/html':file.endsWith('.css')?'text/css':'text/javascript',body:bytes});}
    return route.continue();
   });
   const page=await context.newPage();page.on('pageerror',e=>H.errors.push(condition+':'+e.message));
@@ -36,6 +36,8 @@ try{
   const {room,a,b}=scenes.get(width);room.matchId='stage2-stable';room.phase='prep';a.ready=false;b.ready=false;
   const paint=async()=>{await page.evaluate(s=>{state=s;serverClockOffset=Date.now()-s.serverNow;render();},view(room,a));await page.evaluate(()=>Promise.all([document.fonts.ready,...[...document.querySelectorAll('#game .card')].map(n=>n.visualReady)]));await stable();};
   await paint();
+  const styles=await page.evaluate(()=>[...document.querySelectorAll('link[rel="stylesheet"]')].filter(n=>new URL(n.href).origin===location.origin).map(n=>({file:new URL(n.href).pathname,applied:!!n.sheet&&n.sheet.cssRules.length>0})));
+  H.check(`${width} ${condition}: all local stylesheets are applied`,styles.length>0&&styles.every(s=>s.applied),styles);
   const startPositions=await page.evaluate(positions);
   const metrics=await page.evaluate(async()=>{
    const calls=[],intervals=[];let previous=performance.now();
@@ -45,7 +47,7 @@ try{
     await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);
     calls.push({ms,sync,settled:RunaHybrid.stats.builds-before});
    }
-   return {calls,intervals,stats:window.RunaPresentation?.stats||null,identity:{render:render===__initialFunctions.render,source:attackSource===__initialFunctions.attackSource,target:attackTarget===__initialFunctions.attackTarget,transfer:animateTransfer===__initialFunctions.animateTransfer,opening:animateOpeningToHand===__initialFunctions.animateOpeningToHand},hybrid:RunaHybrid.stats};
+   return {calls,intervals,stats:window.RunaPresentation?.stats||null,identity:{render:render===__initialFunctions.render,source:attackSource===__initialFunctions.attackSource,target:attackTarget===__initialFunctions.attackTarget,transfer:animateTransfer===__initialFunctions.animateTransfer,opening:animateOpeningToHand===__initialFunctions.animateOpeningToHand,explicit:['command','cardEl','cloneVisual','showHover','moveHover','hideHover','applyDamageHit','heavyCombatImpact'].every(k=>window[k]===__initialFunctions[k]),contact:RunaMotion.contact===__initialFunctions.contact,strike:RunaMotion.strikeFrames===__initialFunctions.strikeFrames,draw:RunaCardVisual.drawCard===__initialFunctions.drawCard&&RunaCardVisual.drawCombat===__initialFunctions.drawCombat},hybrid:RunaHybrid.stats};
   });
   H.check(`${width} ${condition}: 3D scene remains active`,metrics.hybrid.active&&!metrics.hybrid.failed,metrics.hybrid.failed);
   if(condition==='after')H.check(`${width}: render, strikes, opening and transfer functions are never replaced`,Object.values(metrics.identity).every(Boolean),metrics.identity);
@@ -85,10 +87,10 @@ try{
    H.check(`${width} ${key}: same elements and projected geometry (≤ 1 CSS px)`,identities&&max<=1,{elements:left.length,max,identities});
   }
  }
- // Internal legacy fixture only. This is not a new public 2D route.
+ // The canonical document and the historical alias now serve the same 3D entry.
  const context=await browser.newContext({viewport:{width:1920,height:1080}});
- await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='127.0.0.1')return route.abort();if(u.pathname==='/runamarca/qa-native.html')return route.fulfill({contentType:'text/html',body:fs.readFileSync('mesa-nova/index.html')});return route.continue();});
- const page=await context.newPage();page.on('pageerror',e=>H.errors.push('shared-client:'+e.message));await page.goto(base+'/runamarca/qa-native.html');await page.waitForFunction(()=>window.RunaPresentation&&typeof render==='function');const {room,a}=captureTable();await page.evaluate(s=>{state=s;render();},view(room,a));
- H.check('shared client renders without the 3D adapter',await page.evaluate(()=>!document.getElementById('game').hidden&&RunaPresentation.stats.updates>0&&!RunaPresentation.stats.adapters.includes('hybrid-scene')));
+ await context.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
+ const page=await context.newPage();page.on('pageerror',e=>H.errors.push('canonical:'+e.message));await page.goto(base+'/runamarca/');await page.waitForFunction(()=>window.RunaHybridHand);const {room,a}=captureTable();await page.evaluate(s=>{state=s;render();},view(room,a));await page.waitForFunction(()=>RunaHybrid.ready);
+ H.check('canonical entry renders the same 3D scene',await page.evaluate(()=>!document.getElementById('game').hidden&&RunaHybrid.ready&&RunaPresentation.stats.adapters.includes('hybrid-scene')));
  await context.close();H.check('no page errors',H.errors.length===0,H.errors);
 }finally{await browser.close();finish(out,'presentation-stage2',H,{report});}

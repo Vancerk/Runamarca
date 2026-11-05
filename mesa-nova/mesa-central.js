@@ -97,7 +97,7 @@ const emanationZones=['opponent','self'].map(side=>{
  emanationBoard.append(zone);return {side,holder,zone};
 });
 let emanationFrame=0;
-function layoutCombatEmanations(){
+function layoutCombatEmanations(){const draw=()=>{
   const lanes=[...document.querySelectorAll('#lanes>.lane')];if(lanes.length!==3)return;
   const boardRect=emanationBoard.getBoundingClientRect();
   for(const [slot,column] of emanationColumns.entries()){
@@ -114,7 +114,7 @@ function layoutCombatEmanations(){
    child.dataset.emanationSlot=String(slot+1);
   }
   if(typeof renderTargetLinks==='function'&&state)renderTargetLinks();
-}
+};return globalThis.RunaPresentation?RunaPresentation.play('emanation-layout',null,draw):draw();}
 function positionCombatEmanations(){cancelAnimationFrame(emanationFrame);emanationFrame=requestAnimationFrame(layoutCombatEmanations);}
 const emanationResize=new ResizeObserver(positionCombatEmanations);emanationResize.observe(document.getElementById('lanes'));
 for(const {holder} of emanationZones)new MutationObserver(positionCombatEmanations).observe(holder,{childList:true});

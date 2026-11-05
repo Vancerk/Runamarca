@@ -1,8 +1,6 @@
 import {layoutHands} from './fan-layout.js';
 import {HYBRID} from './config.js';
 // Complete native card: no substitute titles, frame or rules.
-const nativeShowHover=showHover,nativeMoveHover=moveHover,nativeHideHover=hideHover;
-for(const name of ['drawCard','drawCombat']){const draw=RunaCardVisual[name];RunaCardVisual[name]=function(canvas,...args){const ink=canvas.getContext('2d');ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';return draw(canvas,...args);};}
 const records=new Map();let source=null,hoverRAF=0,sampleRAF=0,sampleBatches=0,lastBatchMs=0,supersampling=2;
 function paint(node,record){
  const canvas=node.querySelector('.card-art-canvas');if(!canvas?.width||!record.sourceReady)return;
@@ -75,11 +73,11 @@ function placeHover(){hoverRAF=0;const holder=document.getElementById('hover-pre
  holder.style.transform=`translate3d(${x}px,${y}px,0) scale(${k})`;holder.dataset.previewScale=String(k*z);holder.dataset.cardZoom=String(z);concealSource(source);
  dismissCoveredReading();if(source&&introSource===source){introSource=null;growFromSource(holder,r,k,z);}}
 function queueHover(){if(!hoverRAF)hoverRAF=requestAnimationFrame(placeHover);}
-showHover=function(card,event){
+function projectedShowHover({card,event},fallback){
  const previous=source,next=[...hand.children].find(n=>n.dataset.uid===card.uid)||null;
  if(readingDismissed&&next&&document.activeElement!==next)return;
  source=next;
- nativeShowHover(card,event);
+ fallback();
  preview.classList.toggle('hybrid-hand-preview',Boolean(source));
  if(!source||preview.hidden){
   concealSource(null);
@@ -90,8 +88,8 @@ showHover=function(card,event){
  if(source!==previous||hiddenSource!==source)introSource=source;
  queueHover();
 };
-moveHover=function(event){if(source?.isConnected&&!document.getElementById('hover-preview').hidden){queueHover();return;}nativeMoveHover(event);};
-hideHover=function(event){
+function projectedMoveHover({event},fallback){if(source?.isConnected&&!document.getElementById('hover-preview').hidden){queueHover();return;}fallback();};
+function projectedHideHover({event},fallback){
  // Replacing the focused button dispatches blur inside renderHand. Ordinary
  // blur (Tab, a dialog or another control) must still close the consultation.
  if(event?.type==='blur'&&event.target===replacingSource)return;
@@ -100,28 +98,28 @@ hideHover=function(event){
  hoverRAF=0;source=null;introSource=null;checkPointerAfterRender=false;
  concealSource(null);
  preview.classList.remove('hybrid-hand-preview');
- nativeHideHover();
+ fallback();
 };
-const nativeRenderHand=renderHand;
-renderHand=function(player){
- if(state?.phase!=='resolving')strikeFaces=[];
- const previous=source;
- if(!previous?.isConnected)return nativeRenderHand(player);
- const hadFocus=document.activeElement===previous;
- replacingSource=previous;
- try{nativeRenderHand(player);}finally{replacingSource=null;}
- if(source!==previous)return; // A draw or another interaction dismissed the preview.
- const replacement=[...hand.children].find(node=>node.dataset.uid===previous.dataset.uid);
- if(!replacement){hideHover();return;}
- // Same physical card after a room update: anchor the open reading to its new
- // button before paint. Only entering a different card should replay the intro.
- source=replacement;
- if(introSource===previous)introSource=replacement;
- concealSource(replacement);
- checkPointerAfterRender=!hadFocus&&pointerX!==null;
- if(hadFocus&&document.activeElement===document.body)replacement.focus({preventScroll:true});
- queueHover();
-};
+RunaPresentation.register('hand-reading',{
+ beforePart(kind){
+  if(kind!=='hand')return;
+  if(state?.phase!=='resolving')strikeFaces=[];
+  const previous=source;if(!previous?.isConnected)return;
+  replacingSource=previous;return {previous,hadFocus:document.activeElement===previous};
+ },
+ afterPart(kind,player,before){
+  if(kind!=='hand')return;replacingSource=null;if(!before)return;
+  const {previous,hadFocus}=before;if(source!==previous)return;
+  const replacement=[...hand.children].find(node=>node.dataset.uid===previous.dataset.uid);
+  if(!replacement){hideHover();return;}
+  source=replacement;if(introSource===previous)introSource=replacement;concealSource(replacement);
+  checkPointerAfterRender=!hadFocus&&pointerX!==null;
+  if(hadFocus&&document.activeElement===document.body)replacement.focus({preventScroll:true});
+  queueHover();
+ }
+});
 // A hidden source that leaves the hand (render, drag, draw) is never left transparent.
 new MutationObserver(()=>{if(hiddenSource&&(!hiddenSource.isConnected||hiddenSource.parentElement!==hand))concealSource(null);}).observe(hand,{childList:true});
 window.RunaHybridHand={get stats(){return {cards:records.size,activeSource:!!source,concealed:hiddenSource?.dataset.uid||null,intros,ratios:[...records.values()].map(r=>r.ratio),sampleBatches,lastBatchMs,supersampling,identity:'native-complete'};},resample:schedule,setSupersampling(value){supersampling=Math.max(1,Math.min(4,Number(value)||2));schedule();}};
+
+RunaPresentation.register('hand-hover',{animations:{showHover:projectedShowHover,moveHover:projectedMoveHover,hideHover:projectedHideHover}});

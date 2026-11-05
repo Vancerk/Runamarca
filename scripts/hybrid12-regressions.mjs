@@ -11,8 +11,8 @@
 //     sem rebuild ocioso.
 //  5. Legibilidade: recortes com texto (ações, Registro, Emanação, reserva, símbolos) não
 //     escurecem nem perdem contraste em relação ao "before" (mesmo estado, mesma DPR).
-//  6. Fallback WebGL: perda de contexto restaura o 2D sem reiniciar a partida, sem faces,
-//     corpos, máscaras ou comandos.
+//  6. Recuperação WebGL: perda de contexto oculta a mesa e restaura o 3D na mesma
+//     partida, sem expor a entrada 2D nem enviar comandos.
 // Uso: HYBRID_QA_OUT=<pasta> node scripts/hybrid12-regressions.mjs
 // Owner's accepted overhead baseline; config.js itself is a browser module.
 const DEFAULT_TILT=0;
@@ -62,11 +62,13 @@ try{
   const drift=(x,y)=>{const keys=new Set([...Object.keys(x),...Object.keys(y)]);let max=0,missing=[];for(const k of keys){if(!x[k]||!y[k]){missing.push(k);continue;}max=Math.max(max,Math.hypot(x[k][0]-y[k][0],x[k][1]-y[k][1]));}return {max,missing};},da=drift(s0.a,s1.a),df=drift(s0.f,s1.f);rec.rerender={anchors:da,faces:df,slabsSame:JSON.stringify(s0.s)===JSON.stringify(s1.s)};
   check(`${id}: re-rendering the same state moves no anchor (≤ .1 px) nor face inside its card (≤ .35 px), same bodies`,da.max<=.1&&!da.missing.length&&df.max<=.35&&!df.missing.length&&rec.rerender.slabsSame,rec.rerender);
   check(`${id}: no scene rebuild while idle`,b1-b0<=1,{b0,b1});
-  // 6. WebGL fallback (one viewport per seat is enough; the 2D route is shared).
+  // 6. Recovery keeps the current match and blocks the unavailable graphics surface.
   if(w===1920&&h===900){await page.mouse.move(4,h-4);await page.evaluate(()=>window.hideHover?.());await page.waitForTimeout(200);const before=await page.evaluate(()=>({match:state.matchId,round:state.round,cards:document.querySelectorAll('#game .card[data-uid]').length}));
-   await page.evaluate(()=>document.querySelector('.hybrid-canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext());await page.waitForTimeout(500);
-   const f=await page.evaluate(()=>({failed:RunaHybrid.stats.failed,toolbar:document.querySelector('.hybrid-toolbar span')?.textContent,canvas:getComputedStyle(document.querySelector('.hybrid-canvas')).display,faces:document.querySelectorAll('.hybrid-card-face').length,slabs:RunaHybrid.slabs.length,active:document.body.classList.contains('hybrid-active'),masks:document.querySelectorAll('.platinum-actor-masked').length,match:state.matchId,round:state.round,cards:document.querySelectorAll('#game .card[data-uid]').length,hit:[...document.querySelectorAll('.lane-side')].length===6&&[...document.querySelectorAll('.lane-side')].every(n=>{const r=n.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('.lane-side')===n;})}));rec.fallback={before,after:f};
-   check(`${id}: WebGL context loss restores the 2D table without restarting the match`,f.failed&&f.toolbar==='Visual 2D restaurado'&&f.canvas==='none'&&!f.active&&f.faces===0&&f.slabs===0&&f.masks===0&&f.match===before.match&&f.round===before.round&&f.cards===before.cards&&f.hit,rec.fallback);}
+   await page.evaluate(()=>document.querySelector('.hybrid-canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext());await page.waitForFunction(()=>RunaHybrid.recovery.visible);
+   const interrupted=await page.evaluate(()=>({failed:RunaHybrid.stats.failed,hidden:getComputedStyle(document.querySelector('#lanes')).visibility==='hidden',canvas:getComputedStyle(document.querySelector('.hybrid-canvas')).display,recovery:RunaHybrid.recovery.visible}));
+   await page.waitForFunction(()=>RunaHybrid.ready,null,{timeout:15000});await frames(page,4);
+   const restored=await page.evaluate(()=>({failed:RunaHybrid.stats.failed,recovery:RunaHybrid.recovery.visible,error:RunaHybrid.stats.webglError,active:document.body.classList.contains('hybrid-active'),faces:document.querySelectorAll('.hybrid-card-face').length,match:state.matchId,round:state.round,cards:document.querySelectorAll('#game .card[data-uid]').length,hit:[...document.querySelectorAll('.lane-side')].length===6&&[...document.querySelectorAll('.lane-side')].every(n=>{const r=n.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('.lane-side')===n;})}));rec.recovery={before,interrupted,restored};
+   check(`${id}: WebGL interruption restores the same 3D match without exposing 2D`,interrupted.failed&&interrupted.hidden&&interrupted.canvas==='none'&&interrupted.recovery&&!restored.failed&&!restored.recovery&&restored.error===0&&restored.active&&restored.faces>0&&restored.match===before.match&&restored.round===before.round&&restored.cards===before.cards&&restored.hit,rec.recovery);}
   check(`${id}: presentation sends no gameplay command`,commands===0,commands);
   await context.close();}
  // 3b. Contact shadow under the near combat card and the near deck, from pixels.
