@@ -96,12 +96,12 @@ Cada etapa deve comparar a mesma cena com e sem a mudança e registrar o custo p
 | 2 | Compras/retornos, abertura/transferências, baixas/redistribuição por partida e UID | [#15](https://github.com/Vancerk/Runamarca/pull/15), [#16](https://github.com/Vancerk/Runamarca/pull/16), [#17](https://github.com/Vancerk/Runamarca/pull/17) |
 | 3 | Coordenadas compartilhadas para interação, cartas e efeitos | [#18](https://github.com/Vancerk/Runamarca/pull/18) |
 | 4 | Fila cancelável e atualização das regiões que mudaram | [#19](https://github.com/Vancerk/Runamarca/pull/19) |
-| 5 | Entrada 3D única, retirada das substituições globais e recuperação de WebGL | Branch `codex/simplificar-entrada-recuperacao`, depende do #19 |
+| 5 | Entrada 3D única, retirada das substituições globais e recuperação de WebGL | [#20](https://github.com/Vancerk/Runamarca/pull/20) |
 
 Relatos: [etapa 2 — baixas](APRESENTACAO-ETAPA-2-BAIXAS.md), [etapa 3](APRESENTACAO-ETAPA-3-GEOMETRIA.md), [etapa 4](APRESENTACAO-ETAPA-4-ATUALIZACOES.md) e [etapa 5](APRESENTACAO-ETAPA-5-ENTRADA-RECUPERACAO.md).
 
 Na comparação da etapa 4, reconstruções por revisão caíram de duas para uma. A mediana de `render()` passou de 73,5 para 49,0 ms em 1920×1080 e de 83,1 para 47,1 ms em 1366×768. São medidas locais da mesma cena, não garantia de 60 FPS em partida inteira.
 
-Os PRs devem ser integrados na ordem #14 → #15 → #16 → #17 → #18 → #19 → etapa 5. Depois de cada merge, o próximo precisa ter `main` como base para seguir a cadeia; não integrar uma etapa posterior diretamente descartando as anteriores. Como cada PR depende do anterior, reverter uma base exige também retirar ou reverter seus dependentes. A base visual V26 continua disponível no commit `324d2d7`.
+Os PRs devem ser integrados na ordem #14 → #15 → #16 → #17 → #18 → #19 → #20. Depois de cada merge, o próximo precisa ter `main` como base para seguir a cadeia; não integrar uma etapa posterior diretamente descartando as anteriores. Como cada PR depende do anterior, reverter uma base exige também retirar ou reverter seus dependentes. A base visual V26 continua disponível no commit `324d2d7`.
 
 O próximo marco é revisar e integrar a cadeia, depois realizar uma publicação separada. A validação final teve 41/41 comandos da suíte ampla, 36/36 da comparação visual e geométrica, 25/25 da recuperação WebGL, 18/18 de autenticação e 13/13 da partida real com bot e feedback. A simplificação não remove o banco `pg`, os controles HTML nem as faces canvas que continuam tendo consumidores. Não iniciou novo trabalho de celular e não bloqueou usuários móveis.

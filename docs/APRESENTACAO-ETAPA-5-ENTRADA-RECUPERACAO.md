@@ -1,6 +1,6 @@
 # Etapa 5 — entrada única e recuperação 3D
 
-05/11/2026. Base local: `0df6696` (etapa 4). Integração final das cinco etapas de simplificação autorizadas pelo dono.
+05/11/2026. Base local: `0df6696` (etapa 4). Implementação validada: `e71c530`, no [PR #20](https://github.com/Vancerk/Runamarca/pull/20), dependente do #19. Integração final das cinco etapas de simplificação autorizadas pelo dono.
 
 ## Mudança
 
