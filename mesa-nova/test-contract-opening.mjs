@@ -11,7 +11,7 @@ function fixture({skip=false,hold=false}={}){
   RunaPatronIntro:{play:async()=>calls.push('dialogue'),cancel:()=>calls.push('cancel-dialogue')},
   RunaContractOpening:{cancel:()=>{},play:async opts=>{calls.push('contract');if(hold)await new Promise(resolve=>{release=resolve;opts.signal.addEventListener('abort',resolve,{once:true});});if(!skip&&!opts.signal.aborted)opts.onReveal();}},
   RunaDeckCarousel:{takeCapture:()=>null}
- });vm.runInContext(code,c);return {c,calls,classes,release:()=>release?.()};
+ });vm.runInContext(readFileSync(new URL('./presentation-lifecycle.js',import.meta.url),'utf8'),c);c.visualQueue=c.RunaPresentation.createQueue();vm.runInContext(code,c);return {c,calls,classes,release:()=>release?.()};
 }
 test('room refreshes queue only one contract before dialogue and release the mulligan',async()=>{
  const f=fixture({hold:true});f.c.schedulePatronIntro();await settle();

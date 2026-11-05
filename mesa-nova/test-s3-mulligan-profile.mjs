@@ -58,7 +58,7 @@ function presentation(){
  const c={played:[],console,serverClockOffset:0,visualGeneration:0,visualMatchKey:null,lastVisualId:0,visualBooted:false,matchEffectsEnded:false,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:[],handOrder:[],lastBattleStep:'',autoMulliganKey:'',selected:null,pendingSnap:null,state:null,
   document:{querySelectorAll:()=>[]},$:()=>null,resetDamagePresentation(){},clearTableEffects(){},syncAttackDisplay(){},syncHealthDisplay(){},renderBoard(){},speechBubble(){},setTimeout};
  for(const name of new Set([...code.matchAll(/\b(\w+)\.clear\(\)/g)].map(m=>m[1])))if(!['mulliganReplacementsDue','openingReplacementDraws'].includes(name))c[name]=new Set();
- vm.createContext(c);installArrivals(c);vm.runInContext(code+'\nthis.marks=openingReplacementDraws;this.mark=replacementMark;',c);
+ vm.createContext(c);vm.runInContext(fs.readFileSync(new URL('presentation-lifecycle.js',import.meta.url),'utf8'),c);c.visualQueue=c.RunaPresentation.createQueue();c.noticeQueue=c.RunaPresentation.createQueue();installArrivals(c);vm.runInContext(code+'\nthis.marks=openingReplacementDraws;this.mark=replacementMark;',c);
  // Same consumption as animateEvent's draw branch (asserted against the source below).
  c.animateEvent=async(event,generation)=>{if(event.type==='draw')c.played.push({room:c.state.code,id:event.id,opening:c.marks.delete(c.mark(generation,event.id))});};
  return c;
@@ -73,7 +73,7 @@ test('S3: animateEvent consumes the generation-bound mark and every invalidation
 
 for(const invalidation of ['resetVisualSession','recoverVisualGap','finishMatchPresentation'])test(`S3: replacements interrupted by ${invalidation} never leak into another room with coinciding ids`,async()=>{
  const c=presentation(),first=match('S3MUL1');c.state=roomView(first.room,first.a);c.resetVisualSession();c.queueEvents();// boot
- let hold;c.visualQueue=new Promise(r=>hold=r);// replacements stay queued
+ let hold;const gate=new Promise(r=>hold=r);c.visualQueue.enqueue(()=>gate);// replacements stay queued
  act(first.room,first.a,{type:'mulligan',cardIds:first.a.hand.slice(0,3).map(x=>x.uid)},catalog);c.state=roomView(first.room,first.a);c.queueEvents();
  assert.equal(c.marks.size,3,'replacements tagged while pending');
  if(invalidation==='recoverVisualGap'){c.state={...c.state,eventsFrom:c.lastVisualId+5};c.recoverVisualGap();}else if(invalidation==='finishMatchPresentation')c.finishMatchPresentation();
@@ -90,7 +90,7 @@ for(const invalidation of ['resetVisualSession','recoverVisualGap','finishMatchP
 
 test('S3: phase changing before the real queue drains keeps the replacement profile only for replacements',async()=>{
  const c=presentation(),{room,a,b}=match();c.state=roomView(room,a);c.resetVisualSession();c.queueEvents();
- let hold;c.visualQueue=new Promise(r=>hold=r);act(room,a,{type:'mulligan',cardIds:a.hand.map(x=>x.uid)},catalog);c.state=roomView(room,a);c.queueEvents();
+ let hold;const gate=new Promise(r=>hold=r);c.visualQueue.enqueue(()=>gate);act(room,a,{type:'mulligan',cardIds:a.hand.map(x=>x.uid)},catalog);c.state=roomView(room,a);c.queueEvents();
  const mark=lastId(room);act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);c.state=roomView(room,a);assert.equal(c.state.phase,'prep');c.queueEvents();
  hold();await drain(c);
  const prep=new Set(since(room,mark).filter(e=>e.type==='draw').map(e=>e.id));assert.ok(prep.size>=1);

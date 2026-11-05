@@ -102,26 +102,24 @@ hideHover=function(event){
  preview.classList.remove('hybrid-hand-preview');
  nativeHideHover();
 };
-const nativeRenderHand=renderHand;
-renderHand=function(player){
- if(state?.phase!=='resolving')strikeFaces=[];
- const previous=source;
- if(!previous?.isConnected)return nativeRenderHand(player);
- const hadFocus=document.activeElement===previous;
- replacingSource=previous;
- try{nativeRenderHand(player);}finally{replacingSource=null;}
- if(source!==previous)return; // A draw or another interaction dismissed the preview.
- const replacement=[...hand.children].find(node=>node.dataset.uid===previous.dataset.uid);
- if(!replacement){hideHover();return;}
- // Same physical card after a room update: anchor the open reading to its new
- // button before paint. Only entering a different card should replay the intro.
- source=replacement;
- if(introSource===previous)introSource=replacement;
- concealSource(replacement);
- checkPointerAfterRender=!hadFocus&&pointerX!==null;
- if(hadFocus&&document.activeElement===document.body)replacement.focus({preventScroll:true});
- queueHover();
-};
+RunaPresentation.register('hand-reading',{
+ beforePart(kind){
+  if(kind!=='hand')return;
+  if(state?.phase!=='resolving')strikeFaces=[];
+  const previous=source;if(!previous?.isConnected)return;
+  replacingSource=previous;return {previous,hadFocus:document.activeElement===previous};
+ },
+ afterPart(kind,player,before){
+  if(kind!=='hand')return;replacingSource=null;if(!before)return;
+  const {previous,hadFocus}=before;if(source!==previous)return;
+  const replacement=[...hand.children].find(node=>node.dataset.uid===previous.dataset.uid);
+  if(!replacement){hideHover();return;}
+  source=replacement;if(introSource===previous)introSource=replacement;concealSource(replacement);
+  checkPointerAfterRender=!hadFocus&&pointerX!==null;
+  if(hadFocus&&document.activeElement===document.body)replacement.focus({preventScroll:true});
+  queueHover();
+ }
+});
 // A hidden source that leaves the hand (render, drag, draw) is never left transparent.
 new MutationObserver(()=>{if(hiddenSource&&(!hiddenSource.isConnected||hiddenSource.parentElement!==hand))concealSource(null);}).observe(hand,{childList:true});
 window.RunaHybridHand={get stats(){return {cards:records.size,activeSource:!!source,concealed:hiddenSource?.dataset.uid||null,intros,ratios:[...records.values()].map(r=>r.ratio),sampleBatches,lastBatchMs,supersampling,identity:'native-complete'};},resample:schedule,setSupersampling(value){supersampling=Math.max(1,Math.min(4,Number(value)||2));schedule();}};

@@ -20,10 +20,10 @@ test('persistent card effects stop on victory/draw and cannot be recreated by po
 
 function finaleFixture(winner='a'){
  const calls=[],c={state:{code:'ABC123',matchId:'one',round:4,phase:'finished',winner,players:[{id:'a'},{id:'b'}]},finaleKey:'',finaleGeneration:0,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),finishMatchPresentation:()=>calls.push('clear'),animateFinale:w=>calls.push(w?'result':'draw'),document:{querySelector:()=>null},err:e=>{throw e;}};
- vm.createContext(c);vm.runInContext(between(app,'function scheduleFinale(){','async function animateFinale('),c);return {c,calls};
+ vm.createContext(c);vm.runInContext(read('presentation-lifecycle.js'),c);c.visualQueue=c.RunaPresentation.createQueue();vm.runInContext(between(app,'function scheduleFinale(){','async function animateFinale('),c);return {c,calls};
 }
 test('victory cleanup waits for the final spell and runs only once before the result',async()=>{
- const {c,calls}=finaleFixture();let finish;c.visualQueue=new Promise(r=>finish=r);
+ const {c,calls}=finaleFixture();let finish;const gate=new Promise(r=>finish=r);c.visualQueue.enqueue(()=>gate);
  c.scheduleFinale();await Promise.resolve();assert.deepEqual(calls,[]);
  finish();await c.visualQueue;assert.deepEqual(calls,['clear','result']);
  c.scheduleFinale();await c.visualQueue;assert.deepEqual(calls,['clear','result']);
@@ -32,7 +32,7 @@ test('a draw releases all match effects before presenting a neutral result, once
  const {c,calls}=finaleFixture(null);c.scheduleFinale();await c.visualQueue;c.scheduleFinale();await c.visualQueue;assert.deepEqual(calls,['clear','draw']);
 });
 test('a pending old result cannot clean or cover a new match',async()=>{
- const {c,calls}=finaleFixture();let finish;c.visualQueue=new Promise(r=>finish=r);
+ const {c,calls}=finaleFixture();let finish;const gate=new Promise(r=>finish=r);c.visualQueue.enqueue(()=>gate);
  c.scheduleFinale();c.state.phase='lobby';c.scheduleFinale();c.state.phase='prep';c.state.matchId='two';finish();await c.visualQueue;assert.deepEqual(calls,[]);
 });
 test('prepared spell cannot resume its effects after a terminal update while reading the card',async()=>{
