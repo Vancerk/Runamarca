@@ -152,7 +152,7 @@ function rarityFrame(ctx,card,height,radius,line){
 async function drawCard(canvas,card,{assets="",hideStats=false}={}){
  await prepareFonts();
  const [art,loadedIcons,attackIcon]=await Promise.all([img(card.art),Promise.all(energyIconIds.map(id=>img(assets+'energy-icons/'+id+'.png'))),img(assets+'attack-shield.png')]);
- const icons=Object.fromEntries(energyIconIds.map((id,i)=>[id,loadedIcons[i]])),ctx=canvas.getContext('2d');ctx.setTransform(canvas.width/900,0,0,canvas.height/1260,0,0);ctx.clearRect(0,0,900,1260);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.globalAlpha=1;ctx.shadowBlur=0;
+ const icons=Object.fromEntries(energyIconIds.map((id,i)=>[id,loadedIcons[i]])),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.setTransform(canvas.width/900,0,0,canvas.height/1260,0,0);ctx.clearRect(0,0,900,1260);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.globalAlpha=1;ctx.shadowBlur=0;
  rarityFrame(ctx,card,1260,25,3);
  const wine=ctx.createLinearGradient(40,40,850,1210);const palette={ruptura:['#55251b','#2a1210','#63281d','#26100f'],forja:['#89701f','#493e18','#ac8b2d','#4b401b'],fluxo:['#214966','#102332','#2d5f7c','#0b1c29']}[card.themeEnergy]||['#55251b','#2a1210','#63281d','#26100f'];palette.forEach((color,i)=>wine.addColorStop([0,.4,.7,1][i],color));framedPanel(ctx,40,35,820,1180,wine,25);grain(ctx,46,40,808,1170,.2);
  const artHeight=card.reader?600:713;
@@ -181,7 +181,7 @@ async function drawCard(canvas,card,{assets="",hideStats=false}={}){
 
 async function drawCombat(canvas,card,{assets='',flat=false}={}){
  const [art,shield]=await Promise.all([img(card.art),img(assets+'attack-shield.png')]);
- const ctx=canvas.getContext('2d');ctx.setTransform(canvas.width/900,0,0,canvas.height/820,0,0);ctx.clearRect(0,0,900,820);
+ const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.setTransform(canvas.width/900,0,0,canvas.height/820,0,0);ctx.clearRect(0,0,900,820);
  rarityFrame(ctx,card,820,35,4);
  framedPanel(ctx,40,38,820,741,{forja:'#79621d',fluxo:'#214966',ruptura:'#55251b'}[card.themeEnergy]||'#79621d',20);
  ctx.save();bevelPath(ctx,49,49,802,713,18);ctx.clip();

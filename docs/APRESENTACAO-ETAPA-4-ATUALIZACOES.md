@@ -19,6 +19,8 @@ Edge, DPR 1, mesma cena e 20 atualizações por condição. Evidência: `prototy
 
 O intervalo do ciclo de atualização, incluindo dois quadros de estabilização, caiu de 119,7/136,2 ms (mediana/p95) para 61,2/69,7 ms em Full HD; em 1366, de 122,6/128,6 para 59,6/61,2 ms. Isso não é a taxa de quadros de uma partida inteira. Durante a compra, o intervalo típico ficou em aproximadamente 5,6 ms nas duas condições; o maior intervalo isolado caiu de 133,4 para 83,4 ms em Full HD e para 77,7 ms em 1366. Ainda existem reconstruções e tarefas longas: não há promessa de 60 FPS contínuos.
 
+Nas duas compras medidas por condição, a API de tarefas longas registrou 2 entradas antes e 2 depois em Full HD, com maior duração de 91 → 52 ms. Em 1366, foram 3 → 2 entradas, com máximo de 96 → 52 ms. A amostra é pequena; os valores brutos ficam no JSON, incluindo uma entrada de 49 ms arredondada pelo navegador.
+
 ## Validação
 
 - Comparação geométrica e continuidade: 32/32.

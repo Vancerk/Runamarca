@@ -59,6 +59,8 @@
   draw();regions.set(node,key);return true;
  }
  root.RunaPresentation={register,update,ensureGeometry,play,createQueue,renderPart,memo,
+  notify(kind,payload){for(const adapter of adapters.values())adapter.notify?.(kind,payload);},
+  decorate(kind,value,payload){for(const adapter of adapters.values())value=adapter.decorate?.(kind,value,payload)??value;return value;},
   clone(source,copy){for(const adapter of adapters.values())adapter.clone?.(source,copy);},
   get stats(){return {updates,layouts,measurements,depth,adapters:[...adapters.keys()]};}};
 })(globalThis);
