@@ -17,7 +17,7 @@ export function installFlights({sync,lifecycle}){
  function cancelAll(){for(const e of entries){e.cancelled=true;for(const a of e.animations)a.cancel();e.node?.remove();}entries.clear();tokens.clear();for(const uid of pending)if(liveHand().has(uid))revealArrival(uid);pending.clear();inserted.clear();markWaiting();layoutHands();updateLock();}
  const nativeCommand=command;
  command=function(data,...args){if((tokens.size||pending.size)&&data?.cardId&&seat()?.hand?.some(c=>c.uid===data.cardId))return Promise.resolve();return nativeCommand.call(this,data,...args);};
- lifecycle.addHook({before(){if(session!==key()){cancelAll();session=key();}},afterNative(){if(!paused)for(const uid of pendingArrival)if(liveHand().has(uid))pending.add(uid);cleanupPending();},after:updateLock});
+ lifecycle.addHook({before(){if(session!==key()){cancelAll();session=key();}},afterContent(){if(!paused)for(const uid of pendingArrival)if(liveHand().has(uid))pending.add(uid);cleanupPending();},after:updateLock});
  const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
  const duration=ms=>reduce()?Math.max(30,ms*.15):ms;
  const valid=e=>!e.cancelled&&!paused&&e.generation===visualGeneration&&e.session===key()&&e.width===innerWidth&&e.height===innerHeight&&e.scroll===scrollY;

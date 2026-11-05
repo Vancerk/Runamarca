@@ -184,12 +184,8 @@ window.RunaHybrid={get ready(){return active;},get stats(){return {...lastMetric
 
 function syncNow(){if(failed||game.hidden)return;cancelAnimationFrame(frame);frame=0;try{buildStable();lastSignature=signature();}catch(error){fallback(error.message);}}
 window.RunaHybrid.pose=node=>{const r=cardPlanes.records.get(node);return r?{quad:r.quad.map(p=>({x:p.x,y:p.y})),w:r.cssW,h:r.cssH}:elementQuad(node);};
-const lifecycle=installLifecycle({sync:syncNow});focusApi=installFocus({sync:syncNow,lifecycle});
-// V4 item 19: a combat step re-renders the board and starts its strike in the same task, before the scheduled build
-// has placed the new lane nodes on their projected sockets, so the strike measured raw DOM boxes: both copies of a
-// duel started at the same unplaced point and never moved, other strikes started ~160 px off their card. The
-// strike helpers now place the table synchronously first when it changed since the last build.
-const placeBeforeStrike=()=>{if(!failed&&!game.hidden&&renderer&&(dirty||signature()!==lastSignature))syncNow();};
-for(const name of ['attackSource','attackTarget']){const native=globalThis[name];if(typeof native==='function')globalThis[name]=function(...args){placeBeforeStrike();return native.apply(this,args);};}
+// Geometry is an explicit presentation boundary, including strikes started by the visual clock.
+const ensureGeometry=()=>{if(!failed&&!game.hidden&&renderer&&(dirty||signature()!==lastSignature))syncNow();};
+const lifecycle=installLifecycle({sync:syncNow,ensureGeometry});focusApi=installFocus({sync:syncNow,lifecycle});
 installFlights({sync:syncNow,lifecycle});
 installImpacts();

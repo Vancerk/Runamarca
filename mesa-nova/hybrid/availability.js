@@ -27,7 +27,7 @@ new MutationObserver(queue).observe(hand,{attributes:true,attributeFilter:['iner
 new MutationObserver(refresh).observe(preview,{childList:true,attributes:true,attributeFilter:['class','hidden']});
 for(const d of document.querySelectorAll('dialog'))new MutationObserver(queue).observe(d,{attributes:true,attributeFilter:['open']});
 const nativeCommand=command;command=function(...args){const result=nativeCommand.apply(this,args);queue();Promise.resolve(result).finally(queue);return result;};
-const nativeRender=render;render=function(...args){const value=nativeRender.apply(this,args);refresh();return value;};
+RunaPresentation.register('availability',{after:refresh});
 if(globalThis.RunaTargeting){for(const name of ['start','cancel']){const fn=RunaTargeting[name];if(typeof fn==='function')RunaTargeting[name]=function(...args){const value=fn.apply(this,args);queue();return value;};}}
 addEventListener('pointerup',queue,true);addEventListener('keyup',queue,true);
 window.RunaHybridAvailability={refresh,playBlocked,playable,hasDestination};

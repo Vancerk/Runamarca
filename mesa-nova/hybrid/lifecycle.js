@@ -2,8 +2,8 @@ import {layoutHands} from './fan-layout.js';
 import {matrix} from './card-plane.js';
 import {geometry,cardCopyAt,currentQuad} from './visuals.js';
 // The game remains authoritative. Ghosts only bridge old/new public DOM poses.
-export function installLifecycle({sync}){
- const nativeRender=render,hooks=[],motions=new Map();let renders=0,session='',serial=0;
+export function installLifecycle({sync,ensureGeometry}){
+ const hooks=[],motions=new Map();let renders=0,session='',serial=0;
  const current=uid=>[...document.querySelectorAll('#game .card')].find(n=>n.dataset.uid===uid);
  const key=()=>state?[state.code,state.matchId,state.you].join(':'):'';
  function clear(){for(const m of motions.values()){m.animation.cancel();m.copy.remove();}motions.clear();}
@@ -21,12 +21,19 @@ export function installLifecycle({sync}){
  }
  function reflow(before,after){const oldIds=before.map(p=>p.uid).sort().join('|'),newIds=after.map(p=>p.uid).sort().join('|');if(oldIds===newIds)return;for(const to of after){const from=before.find(p=>p.uid===to.uid);if(from)move(from,to);}}
  function handTransition(change){const before=capture('#hand>.hand-card');change();layoutHands();const after=capture('#hand>.hand-card');for(const to of after){const from=before.find(p=>p.uid===to.uid);if(from)move(from,to,300);}hideMotionTargets();sync();}
- render=function(...args){
-  if(key()!==session){clear();session=key();}
-  const reserve=capture('.reserve-camp .card-row>.card'),hand=capture('#hand>.hand-card');hooks.forEach(h=>h.before?.());
-  const value=nativeRender.apply(this,args);hooks.forEach(h=>h.afterNative?.());layoutHands();hideMotionTargets();sync();
-  reflow(reserve,capture('.reserve-camp .card-row>.card'));reflow(hand,capture('#hand>.hand-card'));hideMotionTargets();if(motions.size)sync();hooks.forEach(h=>h.after?.());renders++;return value;
- };
+ RunaPresentation.register('hybrid-scene',{
+  capture(){
+   if(key()!==session){clear();session=key();}
+   const reserve=capture('.reserve-camp .card-row>.card'),hand=capture('#hand>.hand-card');hooks.forEach(h=>h.before?.());
+   return {reserve,hand};
+  },
+  layout({reserve,hand}){
+   hooks.forEach(h=>h.afterContent?.());layoutHands();hideMotionTargets();sync();
+   reflow(reserve,capture('.reserve-camp .card-row>.card'));reflow(hand,capture('#hand>.hand-card'));hideMotionTargets();if(motions.size)sync();
+  },
+  after(){ensureGeometry();hooks.forEach(h=>h.after?.());renders++;},
+  ensureGeometry,
+ });
  // Revision 12: motionUids lists the UIDs whose neighbour-motion copy is on screen now
  // (the copy itself carries no data-uid), so QA can count every visible face per UID.
  const api={addHook:h=>hooks.push(h),handTransition,clear,sync,get stats(){return {renders,atomicProjection:true,movingNeighbors:motions.size,motionUids:[...motions].filter(([,m])=>m.copy.isConnected).map(([uid])=>uid)};}};
