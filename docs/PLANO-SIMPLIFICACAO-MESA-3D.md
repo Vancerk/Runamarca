@@ -2,7 +2,7 @@
 
 Preparado em 05/11/2026. Fonte: pedido do dono para publicar a versão atual e depois planejar a simplificação; leitura do código da candidata `324d2d7dd52a271224a43ddaa0cb7649773866be`, no [PR #13](https://github.com/Vancerk/Runamarca/pull/13).
 
-**Estado em 05/11/2026:** etapa 1 implementada e validada localmente na branch `codex/simplificar-apresentacao-etapa1`, baseada na candidata congelada `324d2d7`. O dono autorizou o início da simplificação enquanto o PR #13 ainda aguarda a aprovação obrigatória por outra conta; por isso o trabalho ficou em um checkout separado, sem alterar a candidata de publicação. A comparação é local, não com a versão publicada. Etapas 2 a 5 ainda não iniciadas. Resultados em `docs/APRESENTACAO-ETAPA-1.md` do checkout `../runamarca-simplificacao-etapa1`.
+**Estado em 05/11/2026:** etapa 1 implementada; etapa 2 com os blocos de compras/retornos e abertura/transferências implementados em branches dependentes. Baixas e redistribuição ainda serão migradas; etapas 3 a 5 não começaram. O PR #13 está integrado em `main` (confirmado pela API do GitHub); este trabalho não verificou o deploy no Render. Os PRs #14 e #15 continuam como rascunhos. O dono retirou a exigência de aprovação por outra conta; continua valendo o fluxo por PR. As comparações destas refatorações são locais, contra seus commits anteriores.
 
 ## Resultado pretendido
 
@@ -10,7 +10,9 @@ Ter uma única experiência pública de mesa 3D, com responsabilidades claras pa
 
 Isso não exige desenhar todos os textos e botões em WebGL. HTML, canvas e WebGL podem continuar juntos: textos, controles acessíveis e interação no navegador; volume, materiais e sombras na cena. A simplificação será da ligação entre esses componentes. `pg`, usado pelo banco, não faz parte do problema visual e não será removido por esse motivo.
 
-## O que existe hoje, conferido no código
+## O que existia na candidata de referência
+
+Este inventário descreve `324d2d7`, antes da simplificação. Os itens migrados e a situação atual estão nos relatos de cada etapa; não são pendências repetidas.
 
 | Dependência atual | Consequência e evidência |
 |---|---|
@@ -88,4 +90,6 @@ Cada etapa deve comparar a mesma cena com e sem a mudança e registrar o custo p
 
 ## Próximo bloco
 
-A etapa 1 passou em 44 verificações de Node e 261 de navegador. Removeu as substituições de `render`, `attackSource` e `attackTarget`; manteve as posições medidas e a contagem de reconstruções, sem ganho de desempenho declarado. O primeiro bloco da **etapa 2** também foi concluído localmente: compras e Evasão/retorno à mão compartilham um responsável por chegada e trava, com 66 verificações Node e 215 de navegador aprovadas. Ver `APRESENTACAO-ETAPA-2-CHEGADAS.md`. Próximo bloco: concluir a migração da abertura e das transferências, antes de baixas e redistribuição. A publicação segue no fluxo separado de aprovação do PR #13; cada refatoração tem PR dependente próprio.
+A etapa 1 removeu as substituições de `render`, `attackSource` e `attackTarget`. O primeiro bloco da **etapa 2** reuniu compras e Evasão/retorno à mão em um responsável por chegada e trava (`APRESENTACAO-ETAPA-2-CHEGADAS.md`). O segundo bloco migra a confirmação da abertura e as transferências entre zonas, retirando também as substituições de `animateOpeningToHand` e `animateTransfer` (`APRESENTACAO-ETAPA-2-TRANSFERENCIAS.md`).
+
+Próximo bloco: **baixas e redistribuição dos vizinhos**. Migrar os consumidores restantes de `movingCards` e os controles de movimento correspondentes, preservando os instantes de dano, Registro, morte, arcos e retorno. As rotinas 3D de compra, Evasão e devolução do mulligan ainda substituem funções de animação; a retirada dessas substituições remanescentes também precisa ser acompanhada. Não declarar a etapa 2 inteira concluída antes disso. Cada bloco mantém PR e reversão próprios.
