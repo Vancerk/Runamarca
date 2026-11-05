@@ -155,7 +155,7 @@
   }
   ctx.translate(b.x,b.y);ctx.rotate(angle);ctx.shadowColor='#0009';ctx.shadowBlur=4;ctx.shadowOffsetY=4;ctx.strokeStyle='#c4b7a4';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(5,0);ctx.bezierCurveTo(20,-17,20,17,5,10);ctx.stroke();ctx.fillStyle='#e7d3b0';ctx.beginPath();ctx.moveTo(5,10);ctx.lineTo(10,3);ctx.lineTo(11,13);ctx.fill();ctx.restore();
  }
- root.RunaCombatReturn={capture,candidates,styleFor,play,cancel,
+ root.RunaCombatReturn={capture,candidates,styleFor,play:(items,options={})=>root.RunaPresentation?root.RunaPresentation.play('reserveReturn',{items,options},p=>play(p.items,p.options)):play(items,options),cancel,
   registerStyle(name,definition){styles.set(name,definition);}};
  root.addEventListener?.('pagehide',cancel);
 })(globalThis);

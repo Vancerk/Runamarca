@@ -29,7 +29,7 @@
   for(const adapter of adapters.values())adapter.ensureGeometry?.();
  }
  function play(kind,payload,fallback){
-  for(const adapter of adapters.values())if(adapter.animations?.[kind]&&adapter.active?.()!==false)return adapter.animations[kind](payload);
+  for(const adapter of adapters.values())if(adapter.animations?.[kind]&&adapter.active?.()!==false)return adapter.animations[kind](payload,fallback);
   return fallback(payload);
  }
  root.RunaPresentation={register,update,ensureGeometry,play,

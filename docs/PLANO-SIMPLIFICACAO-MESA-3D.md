@@ -2,7 +2,7 @@
 
 Preparado em 05/11/2026. Fonte: pedido do dono para publicar a versão atual e depois planejar a simplificação; leitura do código da candidata `324d2d7dd52a271224a43ddaa0cb7649773866be`, no [PR #13](https://github.com/Vancerk/Runamarca/pull/13).
 
-**Estado em 05/11/2026:** etapa 1 implementada; etapa 2 com os blocos de compras/retornos e abertura/transferências implementados em branches dependentes. Baixas e redistribuição ainda serão migradas; etapas 3 a 5 não começaram. O PR #13 está integrado em `main` (confirmado pela API do GitHub); este trabalho não verificou o deploy no Render. Os PRs #14 e #15 continuam como rascunhos. O dono retirou a exigência de aprovação por outra conta; continua valendo o fluxo por PR. As comparações destas refatorações são locais, contra seus commits anteriores.
+**Estado em 05/11/2026:** etapa 1 implementada; etapa 2 concluída em três blocos dependentes (compras/retornos, abertura/transferências, baixas/redistribuição). Etapas 3 a 5 autorizadas em sequência pelo dono; a próxima é a fonte compartilhada de coordenadas. O PR #13 está integrado em `main` (confirmado pela API do GitHub); este trabalho não verificou o deploy no Render. Os PRs #14 e #15 continuam como rascunhos. O dono retirou a exigência de aprovação por outra conta; continua valendo o fluxo por PR. As comparações destas refatorações são locais, contra seus commits anteriores.
 
 ## Resultado pretendido
 
