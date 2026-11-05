@@ -1,3 +1,4 @@
+import {installArrivals} from './test-card-arrivals-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -57,7 +58,7 @@ function presentation(){
  const c={played:[],console,serverClockOffset:0,visualGeneration:0,visualMatchKey:null,lastVisualId:0,visualBooted:false,matchEffectsEnded:false,visualQueue:Promise.resolve(),noticeQueue:Promise.resolve(),pendingArrival:[],handOrder:[],lastBattleStep:'',autoMulliganKey:'',selected:null,pendingSnap:null,state:null,
   document:{querySelectorAll:()=>[]},$:()=>null,resetDamagePresentation(){},clearTableEffects(){},syncAttackDisplay(){},syncHealthDisplay(){},renderBoard(){},speechBubble(){},setTimeout};
  for(const name of new Set([...code.matchAll(/\b(\w+)\.clear\(\)/g)].map(m=>m[1])))if(!['mulliganReplacementsDue','openingReplacementDraws'].includes(name))c[name]=new Set();
- vm.createContext(c);vm.runInContext(code+'\nthis.marks=openingReplacementDraws;this.mark=replacementMark;',c);
+ vm.createContext(c);installArrivals(c);vm.runInContext(code+'\nthis.marks=openingReplacementDraws;this.mark=replacementMark;',c);
  // Same consumption as animateEvent's draw branch (asserted against the source below).
  c.animateEvent=async(event,generation)=>{if(event.type==='draw')c.played.push({room:c.state.code,id:event.id,opening:c.marks.delete(c.mark(generation,event.id))});};
  return c;

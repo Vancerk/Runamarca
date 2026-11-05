@@ -88,4 +88,4 @@ Cada etapa deve comparar a mesma cena com e sem a mudança e registrar o custo p
 
 ## Próximo bloco
 
-A etapa 1 passou em 44 verificações de Node e 261 de navegador. Removeu as substituições de `render`, `attackSource` e `attackTarget`; manteve as posições medidas e a contagem de reconstruções, sem ganho de desempenho declarado. Depois de revisar/integrar esse bloco, seguir para a **etapa 2**, começando por compra e Evasão/retorno à mão. A publicação segue no fluxo separado de aprovação do PR #13.
+A etapa 1 passou em 44 verificações de Node e 261 de navegador. Removeu as substituições de `render`, `attackSource` e `attackTarget`; manteve as posições medidas e a contagem de reconstruções, sem ganho de desempenho declarado. O primeiro bloco da **etapa 2** também foi concluído localmente: compras e Evasão/retorno à mão compartilham um responsável por chegada e trava, com 66 verificações Node e 215 de navegador aprovadas. Ver `APRESENTACAO-ETAPA-2-CHEGADAS.md`. Próximo bloco: concluir a migração da abertura e das transferências, antes de baixas e redistribuição. A publicação segue no fluxo separado de aprovação do PR #13; cada refatoração tem PR dependente próprio.
