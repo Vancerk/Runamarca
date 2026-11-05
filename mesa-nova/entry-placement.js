@@ -35,7 +35,7 @@ async function beginEntryPlacement(data,dropRect){
    if(ids){const target=await entryPlacementTarget(entry,ids,title);if(!target||!pendingEntryValid(entry))return;entry.data.targetId=target;}
   }
   if(!pendingEntryValid(entry))return;
-  const rect=entry.node?.getBoundingClientRect()||dropRect;entry.committed=true;cleanup();movingCards.add(card.uid);for(const n of document.querySelectorAll('#hand .card'))if(n.dataset.uid===card.uid)n.style.visibility='hidden';try{return await command(entry.data,rect,true);}finally{finishVisual(card.uid);}
+  const rect=entry.node?.getBoundingClientRect()||dropRect;entry.committed=true;cleanup();for(const n of document.querySelectorAll('#hand .card'))if(n.dataset.uid===card.uid)n.style.visibility='hidden';return await command(entry.data,rect,true);
  }finally{cleanup();}
 }
 function showCreaturePlacementMenu(card){

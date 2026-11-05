@@ -50,6 +50,15 @@ test('shared client remains usable with no 3D geometry adapter',()=>{
  assert.equal(applied,true);assert.equal(api.stats.updates,1);assert.equal(api.stats.measurements,1);
 });
 
+test('animation adapters are explicit and fallback is used when the scene is inactive',async()=>{
+ const {api}=fixture();let active=true,calls=[];
+ const off=api.register('flights',{active:()=>active,animations:{transfer:p=>{calls.push(p.uid);return Promise.resolve('3d');}}});
+ const fallback=()=>{calls.push('fallback');return 'shared';};
+ assert.equal(await api.play('transfer',{uid:'card'},fallback),'3d');
+ active=false;assert.equal(api.play('transfer',{},fallback),'shared');active=true;off();
+ assert.equal(api.play('transfer',{},fallback),'shared');assert.deepEqual(calls,['card','fallback','fallback']);
+});
+
 test('an unfinished visual effect does not delay the next state update',async()=>{
  const {api}=fixture(),seen=[];let finish;
  const animation=new Promise(resolve=>{finish=resolve;});

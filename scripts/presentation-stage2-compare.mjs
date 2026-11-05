@@ -1,13 +1,13 @@
-// Compare the frozen V26 candidate with stage 2 through loopback only.
+// Compare a frozen predecessor with stage 2 through loopback only.
 import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {harness,finish,launch,captureTable,view} from './hybrid12-lib.mjs';
 const out=process.argv[2]||'prototype-qa/simplificacao-etapa2-20261105/comparison',H=harness(out),report=[];
-const base=process.env.QA_BASE||'http://127.0.0.1:3095',revision='b290d19d4b1c1f68adfc8944dab8f6093c35a078';
-const changed=['app.js','damage-presentation.js','hybrid/lifecycle.js','hybrid/flights.js','hybrid/bridge.js','hybrid/availability.js','music-table.js','index.html','hybrid/index.html'];
-const baseline=Object.fromEntries(changed.map(file=>[file,execFileSync('git',['show',revision+':mesa-nova/'+file],{maxBuffer:4<<20})]));
+const base=process.env.QA_BASE||'http://127.0.0.1:3095',revision=process.env.QA_COMPARE_REVISION||'b290d19d4b1c1f68adfc8944dab8f6093c35a078';
+const changed=execFileSync('git',['diff','--name-only',revision,'--','mesa-nova']).toString().trim().split(/\r?\n/).filter(Boolean).map(p=>p.slice('mesa-nova/'.length));
+const baseline=Object.fromEntries(changed.map(file=>{let bytes=null;try{bytes=execFileSync('git',['show',revision+':mesa-nova/'+file],{maxBuffer:4<<20,stdio:['ignore','pipe','ignore']});}catch{}return [file,bytes];}));
 const summary=values=>{const sorted=[...values].sort((a,b)=>a-b);return {median:sorted[Math.floor(sorted.length/2)],p95:sorted[Math.min(sorted.length-1,Math.ceil(sorted.length*.95)-1)],max:sorted.at(-1)};};
 const stable=()=>new Promise(resolve=>setTimeout(resolve,650));
 function positions(){
@@ -22,10 +22,11 @@ try{
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url());if(url.hostname!=='127.0.0.1')return route.abort();
    const file=decodeURIComponent(url.pathname).replace(/^\/runamarca\//,'');
-   let bytes=condition==='before'?baseline[file]:null;
+   if(condition==='before'&&Object.hasOwn(baseline,file)&&baseline[file]===null)return route.fulfill({status:404,body:'Absent in the baseline'});
+   let bytes=condition==='before'?baseline[file]:changed.includes(file)?fs.readFileSync('mesa-nova/'+file):null;
    if(file==='app.js'){
     bytes=bytes||fs.readFileSync('mesa-nova/app.js');
-    bytes=Buffer.concat([bytes,Buffer.from('\nwindow.__initialFunctions={render,attackSource,attackTarget};\n')]);
+    bytes=Buffer.concat([bytes,Buffer.from('\nwindow.__initialFunctions={render,attackSource,attackTarget,animateTransfer,animateOpeningToHand};\n')]);
    }
    if(bytes){served[file]=createHash('sha256').update(bytes).digest('hex');return route.fulfill({status:200,contentType:file.endsWith('.html')?'text/html':'text/javascript',body:bytes});}
    return route.continue();
@@ -44,10 +45,10 @@ try{
     await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);
     calls.push({ms,sync,settled:RunaHybrid.stats.builds-before});
    }
-   return {calls,intervals,stats:window.RunaPresentation?.stats||null,identity:{render:render===__initialFunctions.render,source:attackSource===__initialFunctions.attackSource,target:attackTarget===__initialFunctions.attackTarget},hybrid:RunaHybrid.stats};
+   return {calls,intervals,stats:window.RunaPresentation?.stats||null,identity:{render:render===__initialFunctions.render,source:attackSource===__initialFunctions.attackSource,target:attackTarget===__initialFunctions.attackTarget,transfer:animateTransfer===__initialFunctions.animateTransfer,opening:animateOpeningToHand===__initialFunctions.animateOpeningToHand},hybrid:RunaHybrid.stats};
   });
   H.check(`${width} ${condition}: 3D scene remains active`,metrics.hybrid.active&&!metrics.hybrid.failed,metrics.hybrid.failed);
-  if(condition==='after')H.check(`${width}: render and strike functions are never replaced`,Object.values(metrics.identity).every(Boolean),metrics.identity);
+  if(condition==='after')H.check(`${width}: render, strikes, opening and transfer functions are never replaced`,Object.values(metrics.identity).every(Boolean),metrics.identity);
   await page.screenshot({path:path.join(out,`${width}-${condition}-prep.png`)});
   const draws=[];
   for(let i=0;i<2;i++)draws.push(await page.evaluate(async()=>{
@@ -72,7 +73,7 @@ try{
   H.check(`${width} ${condition}: leaving releases focus and hides the board`,await page.evaluate(()=>document.getElementById('game').hidden&&RunaHybridFocus.value===0));
   room.matchId='stage2-next';room.phase='prep';a.ready=false;await paint();
   H.check(`${width} ${condition}: a new match restores the scene`,await page.evaluate(()=>!document.getElementById('game').hidden&&RunaHybrid.ready&&!RunaHybrid.stats.failed));
-  const row={condition,viewport,served,startPositions,formationPositions,metrics,draws,summary:{renderMs:summary(metrics.calls.map(c=>c.ms)),synchronousBuilds:summary(metrics.calls.map(c=>c.sync)),settledBuilds:summary(metrics.calls.map(c=>c.settled))}};report.push(row);
+  const row={condition,revision,viewport,served,startPositions,formationPositions,metrics,draws,summary:{renderMs:summary(metrics.calls.map(c=>c.ms)),synchronousBuilds:summary(metrics.calls.map(c=>c.sync)),settledBuilds:summary(metrics.calls.map(c=>c.settled))}};report.push(row);
   fs.writeFileSync(path.join(out,'comparison.json'),JSON.stringify(report,null,2));await context.close();
  }
  for(const width of [1920,1366]){
