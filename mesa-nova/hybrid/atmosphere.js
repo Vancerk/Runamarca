@@ -104,13 +104,13 @@
   if(root.RunaHybrid?.ready&&root.RunaPrototypeFog){
    prototypeFog??=root.RunaPrototypeFog.create({seed:42});
    for(const f of rects){
-    const quad=root.RunaHybrid.fogZone(f.node);if(!quad)continue;
+    const quad=root.RunaGeometry.fogZone(f.node);if(!quad)continue;
     // The server's staged public DOM, not the visual wipe, unlocks each face.
     const lane=Number(f.node.dataset.lane)||0,threshold=(lane+.5)/3;
     const fade=reveal?clamp((progress-threshold)/.11):0;if(fade>=1){const tile=tiles.get(f.key);if(tile)tile.hidden=true;continue;}
     let tile=tiles.get(f.key);if(!tile){tile=document.createElement('canvas');tile.className='hybrid-fog-tile';tile.width=384;tile.height=192;tile.setAttribute('aria-hidden','true');document.body.append(tile);tiles.set(f.key,tile);}tile.hidden=false;
     const ti=tile.getContext('2d');ti.clearRect(0,0,384,192);prototypeFog.draw(ti,time+f.seed,[{x:22,y:20,w:340,h:152}],{w:384,h:192});
-    ti.save();ti.globalCompositeOperation='destination-in';ti.drawImage(edge,0,0);ti.restore();const transform=root.RunaHybrid.overlayTransform(quad),inverse=new DOMMatrix(transform).inverse();ti.save();ti.globalCompositeOperation='destination-out';for(const q of root.RunaHybrid.occluders){ti.beginPath();q.forEach((p,i)=>{const local=new DOMPoint(p.x,p.y,0,1).matrixTransform(inverse);if(i)ti.lineTo(local.x/local.w,local.y/local.w);else ti.moveTo(local.x/local.w,local.y/local.w);});ti.closePath();ti.fill();}ti.restore();tile.style.transform=transform;tile.style.opacity=String(1-fade);
+    ti.save();ti.globalCompositeOperation='destination-in';ti.drawImage(edge,0,0);ti.restore();const transform=root.RunaHybrid.overlayTransform(quad),inverse=new DOMMatrix(transform).inverse();ti.save();ti.globalCompositeOperation='destination-out';for(const q of root.RunaGeometry.occluders()){ti.beginPath();q.forEach((p,i)=>{const local=new DOMPoint(p.x,p.y,0,1).matrixTransform(inverse);if(i)ti.lineTo(local.x/local.w,local.y/local.w);else ti.moveTo(local.x/local.w,local.y/local.w);});ti.closePath();ti.fill();}ti.restore();tile.style.transform=transform;tile.style.opacity=String(1-fade);
     tile.dataset.lane=String(lane);tile.dataset.fade=String(fade);
 
    }

@@ -49,3 +49,51 @@ test('release listeners observe the settled state and can unsubscribe',()=>{
  a.reserve('card');const flight=a.begin('draw',{uid:'card',arrival:true,lock:true});a.finish(flight);
  assert.deepEqual(states.at(-1),['release',false]);const count=states.length;off();a.reset();assert.equal(states.length,count);
 });
+
+test('a transfer owns a UID across zones, without reserving a private hand arrival',()=>{
+ const a=owner(),t=a.begin('transfer',{uid:'card',moving:true});
+ assert.equal(a.moving('card'),true);assert.equal(a.has('card'),false);assert.equal(a.blocked,false);
+ assert.equal(a.begin('transfer',{uid:'card',moving:true}),null);
+ assert.equal(a.begin('return',{uid:'card',arrival:true}),null);
+ a.retain(new Set());a.release('card');assert.equal(a.current(t),true,'hand cleanup cannot cancel a field transfer');
+ assert.equal(a.insert(t),false);a.finish(t);assert.equal(a.moving('card'),false);
+});
+
+test('cancelled transfer cannot expose a newer transfer of the same UID',()=>{
+ const a=owner(),old=a.begin('transfer',{uid:'same',moving:true});a.reset();
+ const next=a.begin('transfer',{uid:'same',moving:true});
+ assert.equal(a.finish(old),false);assert.equal(a.moving('same'),true);assert.equal(a.current(next),true);
+ a.finish(next);assert.equal(a.moving('same'),false);
+});
+
+test('opening completion waits for the owner, and cancellation releases waiting draws',async()=>{
+ const a=owner(),opening=a.begin('opening-to-hand',{lock:true});let done=false;
+ const wait=a.waitFor('opening-to-hand').then(()=>done=true);await Promise.resolve();assert.equal(done,false);
+ const transfer=a.begin('transfer',{uid:'opening-card',moving:true});a.finish(transfer);
+ await Promise.resolve();assert.equal(done,false);a.finish(opening);await wait;assert.equal(done,true);
+ a.begin('opening-to-hand',{lock:true});const cancelled=a.waitFor('opening-to-hand');a.reset();
+ a.begin('opening-to-hand',{lock:true});await cancelled;assert.equal(a.blocked,true,'old wait ends without releasing the new batch');
+});
+
+test('a combat movement supersedes reflow, disposes its resources once and owns the UID',()=>{
+ const a=owner(),old=a.begin('reflow',{uid:'unit',moving:true});let removed=0;
+ a.own(old,()=>removed++);
+ const combat=a.begin('combat',{uid:'unit',moving:true,replace:true});
+ assert.equal(removed,1);assert.equal(a.current(old),false);assert.equal(a.moveTicket('unit'),combat);
+ assert.equal(a.finish(old),false);assert.equal(a.moving('unit'),true);
+ a.own(combat,()=>removed++);a.reset('next');a.finish(combat);assert.equal(removed,2);
+});
+
+test('resizing cancels hand motion without ending a casualty arc that follows its destination',()=>{
+ const a=owner(),death=a.begin('casualty',{uid:'dead',moving:true}),move=a.begin('transfer',{uid:'hand',moving:true});
+ let cleaned=0;a.own(move,()=>cleaned++);
+ assert.deepEqual(Array.from(a.cancelKinds(['transfer','reflow'])),['hand']);
+ assert.equal(cleaned,1);assert.equal(a.current(death),true);assert.equal(a.current(move),false);
+});
+
+test('playing a settling neighbour takes ownership without waiting for its reflow',()=>{
+ const a=owner(),old=a.begin('reflow',{uid:'unit',moving:true});let removed=0;a.own(old,()=>removed++);
+ const transfer=a.begin('transfer',{uid:'unit',moving:true});assert.ok(transfer);assert.equal(removed,1);
+ assert.equal(a.finish(old),false);assert.equal(a.moveTicket('unit'),transfer);
+ assert.equal(a.begin('transfer',{uid:'unit',moving:true}),null,'a second action cannot supersede the real transfer');
+});

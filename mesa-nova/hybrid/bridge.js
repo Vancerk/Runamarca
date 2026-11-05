@@ -155,7 +155,7 @@ function build(){if(failed||game.hidden||!renderer){if(game.hidden){canvas.style
  layoutRivalHand();updateVeil();renderer.setMeshes([{geo:g},...(props?props.build():[])]);lastMetrics=renderer.draw(vp,eye);
  // renderBoard can replace the marked cards without changing the root zoom.
  // Resolve their UIDs again after the new nodes have their final projected poses.
- window.RunaCardEffects?.reposition?.();window.RunaPlatinumEntry?.refreshProtocol?.();lastMetrics.bridgeMs=performance.now()-started;builds++;active=true;dirty=false;/* The synchronous projection already handled pending DOM changes. Do not
+ window.RunaCardEffects?.reposition?.();window.RunaPlatinumEntry?.refreshProtocol?.();lastMetrics.bridgeMs=performance.now()-started;builds++;RunaGeometry.changed();active=true;dirty=false;/* The synchronous projection already handled pending DOM changes. Do not
  rebuild it again for the face wrappers it just created. Later async paints still notify. */tableObserver?.takeRecords();}
 function signature(){if(game.hidden)return 'hidden';const ids=['lanes','self-reserve','opponent-reserve','self-head','opponent-head','center-actions','self-deck','opponent-deck'];return [innerWidth,innerHeight,scrollY,...ids.map(id=>{const n=document.getElementById(id);if(!n)return '';const r=rect(n);return [r.x,r.y,r.w,r.h,n.children.length].map(v=>Math.round(v*10)/10).join(',');})].join('|');}
 let settledViewport='',settlementFrame=0,initialFit=true;
@@ -183,9 +183,11 @@ try{renderer=new Renderer(canvas,{shadowSize:RELIEF.shadowMap,shadowKeep:RELIEF.
 window.RunaHybrid={get ready(){return active;},get stats(){return {...lastMetrics,builds,active,failed,mode:'gentle',cameraTiltDegrees,cameraTiltFrom:'vertical',cameraEye:eye?[...eye]:null,cameraFovDegrees:cameraFov*180/Math.PI,cameraDistance,lamp:renderer?.lamp?[...renderer.lamp]:null,shadow:renderer?.shadowInfo||null,get webglError(){return renderer?renderer.checkWebglError():0;}};},clearWebglError(){return renderer?renderer.clearWebglError():0;},get faces(){return cardPlanes.diagnostics;},get slabs(){return active&&!failed?[...cardPlanes.slabs]:[];},get anchors(){return anchors.map(({id,screen,world,node})=>{const r=rect(node),q=panelQuads.get(node),expected=q?{x:(Math.min(...q.map(p=>p.x))+Math.max(...q.map(p=>p.x)))/2,y:(Math.min(...q.map(p=>p.y))+Math.max(...q.map(p=>p.y)))/2}:screen;return {id,world,projected:expected,surfaceCenter:screen,projectionKind:q?'surface-bounds':'center',actual:{x:r.cx,y:r.cy},error:Math.hypot(r.cx-expected.x,r.cy-expected.y)};});},zone:node=>zones.get(node)?.map(p=>({x:p.x,y:p.y})),fogZone:node=>{const q=zones.get(node);if(!q)return;const p=q.map(v=>unproject(v.x,v.y,.14)),c=p.reduce((a,v)=>V.add(a,v),[0,0,0]).map(v=>v/4);return p.map(v=>screen(V.add(c,V.scale(V.sub(v,c),1.1))));},get scene(){return sceneMetrics;},overlayTransform:quad=>'matrix3d('+matrix(quad,384,192).join(',')+')',get occluders(){return occluders.map(q=>q.map(p=>({x:p.x,y:p.y})));},get decoration(){return 'wax-drop';},sync:()=>schedule(true)};
 
 function syncNow(){if(failed||game.hidden)return;cancelAnimationFrame(frame);frame=0;try{buildStable();lastSignature=signature();}catch(error){fallback(error.message);}}
-window.RunaHybrid.pose=node=>{const r=cardPlanes.records.get(node);return r?{quad:r.quad.map(p=>({x:p.x,y:p.y})),w:r.cssW,h:r.cssH}:elementQuad(node);};
+const projectedPose=node=>{const r=cardPlanes.records.get(node);return r?{quad:r.quad.map(p=>({x:p.x,y:p.y})),w:r.cssW,h:r.cssH}:elementQuad(node);};
 // Geometry is an explicit presentation boundary, including strikes started by the visual clock.
 const ensureGeometry=()=>{if(!failed&&!game.hidden&&renderer&&(dirty||signature()!==lastSignature))syncNow();};
+RunaGeometry.install({pose:node=>failed?elementQuad(node):projectedPose(node),zone:node=>zones.get(node),fogZone:node=>RunaHybrid.fogZone(node),occluders:()=>occluders,field:()=>failed?null:sceneMetrics.field,ensure:ensureGeometry});
+window.RunaHybrid.pose=node=>RunaGeometry.pose(node); // Diagnostic compatibility; production effects use RunaGeometry.
 const lifecycle=installLifecycle({sync:syncNow,ensureGeometry});focusApi=installFocus({sync:syncNow,lifecycle});
 installFlights({sync:syncNow,lifecycle});
 installImpacts();

@@ -6,7 +6,7 @@ import {HYBRID} from './config.js';
 // Presentation only: no speculative play, draw or cost is sent to the server.
 export function installFlights({sync,lifecycle}){
  const entries=new Set(),history=[],arrivals=RunaCardArrivals;
- let paused=false,opening=Promise.resolve(),openingBusy=false;
+ let paused=false;
  const row=document.getElementById('hand'),grid=document.getElementById('mulligan-cards'),controls=document.getElementById('mulligan-controls'),lock=document.createElement('div');
  lock.className='hybrid-draw-lock';lock.hidden=true;lock.setAttribute('aria-label','Comprando carta');document.body.append(lock);
  const key=()=>state?[state.code,state.matchId,state.you].join(':'):'';
@@ -14,14 +14,14 @@ export function installFlights({sync,lifecycle}){
  function updateLock(){const busy=arrivals.blocked;row.inert=busy;grid.inert=busy;controls.inert=busy;row.setAttribute('aria-busy',String(busy));lock.hidden=!busy;const r=row.getBoundingClientRect();lock.style.height=Math.max(0,innerHeight-r.top+12)+'px';}
  function markWaiting(){for(const parent of [row,grid])for(const node of parent.querySelectorAll('.card')){node.classList.toggle('pending-arrival',arrivals.has(node.dataset.uid));if(parent===row)node.toggleAttribute('data-hybrid-waiting',arrivals.waiting(node.dataset.uid));}}
  function cleanupPending(){arrivals.retain(liveHand());markWaiting();updateLock();}
- function stopEntries(){for(const e of entries){e.cancelled=true;for(const a of e.animations)a.cancel();e.node?.remove();}entries.clear();}
- function cancelAll(){const ids=arrivals.pending;arrivals.reset();for(const uid of ids)if(liveHand().has(uid))revealArrival(uid);markWaiting();layoutHands();updateLock();}
+ function stopEntries(){for(const e of entries){e.cancelled=true;for(const a of e.animations)a.cancel();e.node?.remove();e.arriving?.remove();}entries.clear();}
+ function cancelAll(){const ids=arrivals.pending,moved=arrivals.cancelKinds(['draw','rival-draw','return','mulligan-return','opening-to-hand','transfer','reflow']);stopEntries();for(const uid of moved)finishVisual(uid);for(const uid of ids){arrivals.release(uid);if(liveHand().has(uid))revealArrival(uid);}markWaiting();layoutHands();updateLock();}
  arrivals.subscribe(type=>{if(type==='reset')stopEntries();markWaiting();if(type==='release')layoutHands();updateLock();});
  lifecycle.addHook({afterContent(){if(paused)cancelAll();else cleanupPending();},after:updateLock});
  const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
  const duration=ms=>reduce()?Math.max(30,ms*.15):ms;
  const valid=e=>!e.cancelled&&arrivals.current(e.ticket)&&!paused&&e.generation===visualGeneration&&e.session===key()&&e.width===innerWidth&&e.height===innerHeight&&e.scroll===scrollY;
- function begin(kind,mine=false,uid=null){const ticket=arrivals.begin(kind,{uid,arrival:mine&&!!uid,lock:mine}),e={ticket,id:ticket?.id,kind,mine,uid,generation:visualGeneration,session:key(),width:innerWidth,height:innerHeight,scroll:scrollY,cancelled:!ticket,animations:new Set(),stage:'start'};if(ticket)entries.add(e);return e;}
+ function begin(kind,mine=false,uid=null,externalTicket){const ticket=externalTicket||arrivals.begin(kind,{uid,arrival:mine&&!!uid,lock:mine}),e={ticket,external:!!externalTicket,id:ticket?.id,kind,mine,uid,generation:visualGeneration,session:key(),width:innerWidth,height:innerHeight,scroll:scrollY,cancelled:!ticket,animations:new Set(),stage:'start'};if(ticket)entries.add(e);return e;}
  function stage(e,value,pose){e.stage=value;history.push({id:e.id,kind:e.kind,mine:e.mine,profile:e.profile||null,stage:value,time:performance.now(),pose:pose?{...pose}:null});if(history.length>180)history.shift();}
  // Revision 10 draw rhythm, compared frame by frame with the local reference video
  // (own draw ≈13.10–15.08 s): the back rises, flips quickly while still travelling,
@@ -50,11 +50,9 @@ export function installFlights({sync,lifecycle}){
  const transform=(c,p)=>`translate3d(${p.x-c.w/2}px,${p.y-c.h/2}px,0) rotate(${p.angle||0}deg) scale(${p.w/c.w},${p.h/c.h})`;
  const frame=(c,p,extra={})=>({transform:transform(c,p),...extra});
  function readPose(){const vw=document.documentElement.clientWidth,freeH=Math.max(130,innerHeight-(window.RunaHybridFan?.stats.own?.visible||90)-48),w=Math.min((innerWidth<=600?260:Math.max(210,Math.min(300,innerWidth*.19)))*HYBRID.visualScale,vw-32,freeH/1.4),h=w*1.4;return {x:innerWidth<=600?vw/2:Math.min(vw-w/2-24,vw*.85),y:Math.min(innerHeight-(window.RunaHybridFan?.stats.own?.visible||90)-h/2-24,Math.max(h/2+20,innerHeight*.45)),w,h,angle:0};}
- function finish(e){e.node?.remove();for(const a of e.animations)a.cancel();entries.delete(e);const owned=arrivals.finish(e.ticket);if(owned&&e.mine&&e.uid&&e.generation===visualGeneration&&e.session===key()&&liveHand().has(e.uid))revealArrival(e.uid);cleanupPending();}
+ function finish(e){e.node?.remove();e.arriving?.remove();for(const a of e.animations)a.cancel();entries.delete(e);const owned=!e.external&&arrivals.finish(e.ticket);if(owned&&e.mine&&e.uid&&e.generation===visualGeneration&&e.session===key()&&liveHand().has(e.uid))revealArrival(e.uid);cleanupPending();}
 
- const nativeReturn=presentReturn;
- presentReturn=async function(event){
-  if(!document.body.classList.contains('hybrid-active'))return nativeReturn(event);
+ async function returnToHand(event){
   const mine=!state?.spectator&&event.playerId===state?.you,e=begin('return',mine,event.returnedId);if(!e.ticket)return;const saved=damageSnapshots.get(event.cardId);
   const remnant=damageRemnants.get(event.cardId);let fullFace;
   if(mine){hideHover();updateLock();}
@@ -78,11 +76,11 @@ export function installFlights({sync,lifecycle}){
   }finally{remnant?.remove();if(damageRemnants.get(event.cardId)===remnant)damageRemnants.delete(event.cardId);finish(e);sync();}
  };
 
- animateDraw=async function(uid,mine=true,options={}){
+ async function draw({uid,mine=true,options={}}){
   // Not named 'opening': that name is the pending confirmed-hand transfer below.
   const openingDeal=options?.presentation==='opening',P=openingDeal?OPENING_DRAW:DRAW,e=begin(mine?'draw':'rival-draw',mine,uid);if(!e.ticket)return;e.profile=openingDeal?'opening':'normal';if(mine){hideHover();cleanupDrag();RunaTargeting?.cancel('draw');updateLock();}
   try{
-   if(openingBusy)await opening;if(!valid(e))return;
+   await arrivals.waitFor('opening-to-hand');if(!valid(e))return;
    let target=destination(uid,mine),from=deck(mine);if(!target||!from)return;
    if(mine)await ready(target);if(!valid(e))return;
    const card=mine?seat()?.hand?.find(c=>c.uid===uid):null,read=readPose(),c=carrier(e,read.w,read.h,makeBack()),start=rectPose(from);c.n.style.transform=transform(c,start);stage(e,'deck',start);sound('draw',0,{from:start,to:read,travelSeconds:.32});
@@ -107,41 +105,39 @@ export function installFlights({sync,lifecycle}){
   }finally{finish(e);}
  };
 
- animateMulliganReturn=async function(event){
+ async function mulliganReturn(event){
   const cards=mulliganDepartures.get(event.id)||[];mulliganDepartures.delete(event.id);const e=begin('mulligan-return',true);updateLock();
   try{const endBox=deck(true);if(!endBox)return;const end=rectPose(endBox);stage(e,'deck-target',end);
    await Promise.all(cards.map(async(item,i)=>{if(!item.rect?.width)return;const c=carrier({...e,node:null},84,117.6,makeBack());const from=rectPose(item.rect);c.n.style.transform=transform(c,from);try{await animate(e,c.n,[frame(c,from,{opacity:1}),frame(c,end,{opacity:.1})],duration(460),i*55);}finally{c.n.remove();}}));stage(e,'land',end);
   }finally{finish(e);}
  };
 
- const nativeOpening=animateOpeningToHand;
- animateOpeningToHand=async function(cards){
-  const e=begin('opening-to-hand',true);updateLock();let release;openingBusy=true;opening=new Promise(r=>release=r);const ownOpening=opening;
-  try{await new Promise(requestAnimationFrame);layoutHands();sync();if(valid(e))await nativeOpening(cards);}finally{if(e.generation===visualGeneration)for(const item of cards)finishVisual(item.uid);if(opening===ownOpening)openingBusy=false;release();finish(e);}
- };
-
- animateTransfer=async function({uid,copy,rect,card,duration:customDuration,delay=0,destination:selector=null}){
-  const e=begin('transfer',false);e.uid=uid;let arriving;
+ async function transfer({uid,copy,rect,card,ticket,duration:customDuration,delay=0,destination:selector=null}){
+  const e=begin('transfer',false,uid,ticket);let arriving;
   try{
    if(!rect?.width||!rect.height)return;
    const original=copy.hybridFlightSource,b=original?.bounds,same=b&&Math.abs(b.x-rect.x)<2&&Math.abs(b.y-rect.y)<2&&Math.abs(b.width-rect.width)<2;
    const from=same?original:{quad:rectQuad(rect),w:rect.width,h:rect.height};
    // command() already hid this UID. Keep the departing face at its captured
    // pose while the replacement DOM, art and projection become ready.
-   if(movingCards.has(uid))e.node=cardCopyAt(copy,from);
+   if(arrivals.current(ticket))e.node=cardCopyAt(copy,from);
    await Promise.race([copy?.visualReady,pause(1600)]);await new Promise(requestAnimationFrame);layoutHands();sync();
    const target=selector?document.querySelector(selector):tableCard(uid);if(!target||!valid(e))return;
    await ready(target);if(!valid(e)||!box(target))return;
    const to=geometry(target),departing=e.node||cardCopyAt(copy,from);e.node=departing;
-   arriving=cardCopyAt(target,to);arriving.style.opacity='0';movingCards.add(uid);target.style.visibility='hidden';arrivals.release(uid);document.querySelectorAll('.release-ghost').forEach(n=>n.remove());
+   arriving=cardCopyAt(target,to);e.arriving=arriving;arriving.style.opacity='0';target.style.visibility='hidden';document.querySelectorAll('.release-ghost').forEach(n=>n.remove());
    const ms=duration(customDuration??(650+weightOf(card)*120));stage(e,'from',{x:from.quad.reduce((s,p)=>s+p.x,0)/4,y:from.quad.reduce((s,p)=>s+p.y,0)/4});
    const m=(q,w,h)=>'matrix3d('+matrix(q,w,h).join(',')+')';
    await Promise.all([
     animate(e,departing,[{transform:m(from.quad,from.w,from.h),opacity:1},{transform:m(to.quad,from.w,from.h),opacity:0}],ms,delay),
     animate(e,arriving,[{transform:m(from.quad,to.w,to.h),opacity:0},{transform:m(to.quad,to.w,to.h),opacity:1}],ms,delay)
    ]);stage(e,'land',{x:to.quad.reduce((s,p)=>s+p.x,0)/4,y:to.quad.reduce((s,p)=>s+p.y,0)/4});if(valid(e))sound('place');
-  }finally{arriving?.remove();copy?.remove();if(e.generation===visualGeneration)finishVisual(uid);finish(e);}
- };
+  }finally{arriving?.remove();copy?.remove();finish(e);}
+ }
+ RunaPresentation.register('hybrid-transfers',{
+  active:()=>document.body.classList.contains('hybrid-active'),
+  animations:{transfer,draw,return:returnToHand,mulliganReturn,async openingLayout(){await new Promise(requestAnimationFrame);layoutHands();sync();}},
+ });
 
  const cancelReason=()=>{paused=document.hidden;cancelAll();};
  addEventListener('blur',()=>{paused=true;cancelAll();});addEventListener('focus',()=>paused=false);document.addEventListener('visibilitychange',cancelReason);addEventListener('pagehide',cancelAll);

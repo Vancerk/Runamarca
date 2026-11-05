@@ -28,6 +28,11 @@
   measurements++;
   for(const adapter of adapters.values())adapter.ensureGeometry?.();
  }
- root.RunaPresentation={register,update,ensureGeometry,
+ function play(kind,payload,fallback){
+  for(const adapter of adapters.values())if(adapter.animations?.[kind]&&adapter.active?.()!==false)return adapter.animations[kind](payload,fallback);
+  return fallback(payload);
+ }
+ root.RunaPresentation={register,update,ensureGeometry,play,
+  clone(source,copy){for(const adapter of adapters.values())adapter.clone?.(source,copy);},
   get stats(){return {updates,layouts,measurements,depth,adapters:[...adapters.keys()]};}};
 })(globalThis);

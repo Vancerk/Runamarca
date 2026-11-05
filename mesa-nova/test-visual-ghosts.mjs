@@ -41,10 +41,10 @@ function appFunction(name,next){const start=app.indexOf('function '+name+'('),en
  vm.runInContext(appFunction('combatPresentationCurrent')+'\n'+appFunction('finishVisual')+'\n'+appFunction('visualCard')+'\n'+appFunction('animateLaneClash','async function animateDirectedStrike('),ctx);
  const clash=ctx.animateLaneClash({cards:[{uid:'left',owner:'a',attack:2,health:2},{uid:'right',owner:'b',attack:2,health:2}],healthUpdates:[{uid:'left',hp:0},{uid:'right',hp:0}]});
  assert.equal(layer.children.length,2);assert.equal(layer.children[0].dataset.combatId,'combat-1');ctx.state.phase='prep';release();await clash;
- assert.ok(layer.children.every(n=>!n.isConnected),'a late attack must remove its copies instead of registering corpses in the next round');assert.equal(ctx.deadVisuals.size,0);assert.equal(ctx.movingCards.size,0);
+ assert.ok(layer.children.every(n=>!n.isConnected),'a late attack must remove its copies instead of registering corpses in the next round');assert.equal(ctx.deadVisuals.size,0);assert.equal(ctx.RunaCardArrivals.stats.moving.length,0);
 }
 {
- const {ctx,layer}=fixture([],[new Node('victim',2)]),attacker=new Node('victim',2);attacker.dataset.combatId='battle';layer.append(attacker);ctx.movingCards.add('victim');ctx.document.querySelectorAll=s=>s==='#visual-layer .visual-card'?[attacker]:[];
+ const {ctx,layer}=fixture([],[new Node('victim',2)]),attacker=new Node('victim',2);attacker.dataset.combatId='battle';layer.append(attacker);ctx.RunaCardArrivals.trackNode(ctx.RunaCardArrivals.begin('combat',{uid:'victim',moving:true}),attacker);ctx.document.querySelectorAll=s=>s==='#visual-layer .visual-card'?[attacker]:[];
  ctx.state.phase='resolving';ctx.state.combat={id:'battle'};
  ctx.finishDamageVictim({uid:'victim',hp:0});assert.equal(layer.children.length,1,'a lethal secondary effect must reuse the attacking copy instead of making another');assert.ok(vm.runInContext("visuallyDefeated.has('victim')",ctx));
  assert.equal(attacker.isConnected,true,'a creature killed before its next action remains red on the battlefield');assert.ok(attacker.classes.has('visual-dead'));
@@ -52,7 +52,7 @@ function appFunction(name,next){const start=app.indexOf('function '+name+'('),en
  vm.runInContext(appFunction('animateCasualties','async function animateBanquet('),ctx);ctx.animateCasualties({casualties:[{uid:'victim',owner:'b'}]});assert.equal(attacker.isConnected,false,'a flagged casualty still removes its registered attack copy');assert.equal(ctx.deadVisuals.size,0);
 }
 {
- const {ctx,layer}=fixture([]),copy=new Node('old-combat');copy.dataset.combatId='old';layer.append(copy);ctx.movingCards.add('old-combat');ctx.document.querySelectorAll=s=>s==='#visual-layer [data-combat-id]'?layer.children.filter(n=>n.isConnected&&n.dataset.combatId):[];
- vm.runInContext(appFunction('finishVisual')+'\n'+appFunction('tickCombat',"let finaleKey="),ctx);ctx.tickCombat();assert.equal(copy.isConnected,false,'combat exit removes unregistered animation copies too');assert.equal(ctx.movingCards.size,0);
+ const {ctx,layer}=fixture([]),copy=new Node('old-combat');copy.dataset.combatId='old';layer.append(copy);ctx.RunaCardArrivals.trackNode(ctx.RunaCardArrivals.begin('combat',{uid:'old-combat',moving:true}),copy);ctx.document.querySelectorAll=s=>s==='#visual-layer [data-combat-id]'?layer.children.filter(n=>n.isConnected&&n.dataset.combatId):[];
+ vm.runInContext(appFunction('finishVisual')+'\n'+appFunction('tickCombat',"let finaleKey="),ctx);ctx.tickCombat();assert.equal(copy.isConnected,false,'combat exit removes unregistered animation copies too');assert.equal(ctx.RunaCardArrivals.stats.moving.length,0);
 }
 console.log('Ciclo do combate: ataque atrasado não deixa cadáver, morte durante ataque não duplica, saída do combate limpa cópias órfãs.');
