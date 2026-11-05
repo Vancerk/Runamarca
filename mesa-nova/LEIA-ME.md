@@ -10,11 +10,11 @@ Entre com o código de acesso. Crie uma sala e use Copiar convite para convidar 
 
 ## Regras atuais
 
-1. Há cinco decks prontos: Caçada de Fronteira (Ruptura), Selos de Virelion (Fluxo), Juramento de Aço (Forja), Oficina de Lyrik (Forja) e Ecos de Virelion (Fluxo). Os três primeiros têm 24 cartas; os dois novos, 30. O limite geral é 30, sem contar o Patrono.
+1. Há cinco decks prontos, todos com 30 cartas: Oficina de Lyrik (Forja), Ecos de Virelion (Fluxo), Ruptura do Grupo (Ruptura), Oficina Experimental (Forja) e Couraça de Lyrik (Forja). O deck tem exatamente 30 cartas, sem contar o Patrono.
 2. Bronze/Lacaio: até 4 cópias por modelo; Prata/Padrão: 3; Ouro/Elite: 2; Platina/Soberano: 1. São limites por carta, não por número de modelos da raridade.
 3. Patronos começam com 16 de vida. A moeda define o primeiro jogador na rodada 1; a ordem se inverte a cada nova rodada.
 4. Cada jogador recebe 5 cartas e pode realizar **uma** troca inicial. Cartas devolvidas são embaralhadas antes da reposição e podem voltar. Ao esgotar a troca, a interface apresenta a mão nova e confirma automaticamente. Mão máxima: 9 cartas; excedentes vão ao Nartvanyr.
-5. No início de cada preparação, o máximo de mana sobe 1 até 10, a mana se recupera e o jogador compra 1 carta. Sem cartas no deck, cada compra causa fadiga: 1, 2, 4, 8… Compras de um mesmo grupo de magias preparadas resolvem antes da decisão de vitória; se ambos caírem nesse grupo, ocorre empate. Usos diretos encerram ao atingir a condição de vitória.
+5. No início de cada preparação, o máximo de mana sobe 1 até 10, a mana se recupera e o jogador compra 1 carta. Sem cartas no deck, cada compra causa fadiga crescente ao próprio Patrono: 1, 2, 3, 4… Compras de um mesmo grupo de magias preparadas resolvem antes da decisão de vitória; se ambos caírem nesse grupo, ocorre empate. Usos diretos encerram ao atingir a condição de vitória.
 6. Criaturas entram na reserva. Ela comporta 8 criaturas **fora** da Emanação, que comporta outras 2. Da mão à Emanação paga-se apenas o custo da carta; mover entre as duas zonas custa 1 mana.
 7. Ao terminar as duas preparações, ambos decidem sobre combate. Um voto a favor inicia a formação secreta; dois votos contra avançam a rodada. Cada jogador distribui até três criaturas e confirma. Não é possível reiniciar uma partida em andamento.
 8. Magias de posição, Revelações e ataques resolvem nessa ordem. Ataques comuns trocam dano simultaneamente, mesmo com animações em sequência. Iniciativa causa dano antes de um rival sem Iniciativa; um derrotado não revida. Posição sem defensor recebe dano no Patrono.

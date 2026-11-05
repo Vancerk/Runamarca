@@ -53,7 +53,9 @@ assert.equal(room.combat.timeline.at(-1).kind,'result','descarte visual vem depo
 assert.ok(room.combat.casualties.some(c=>c.uid===apprentice.uid),'animação identifica criatura eliminada por magia');
 assert.equal(room.combat.timeline.find(step=>step.kind==='magic'&&step.spell.cardId===trap.uid).spell.healthUpdates.find(update=>update.uid===apprentice.uid).hp,0,'o impacto da armadilha atualiza a vida para zero antes do confronto');
 
-assert.equal(room.phase,'resolving');assert.equal(view(room,b).players.find(p=>p.id===a.id).formation[0],hunter.uid,'cartas são reveladas na animação');
+// Revelação progressiva (progressive-reveal.mjs): a posição rival só é enviada quando a revelação a alcança.
+const revealStep=room.combat.timeline[0],viewAt=ms=>{const now=Date.now;Date.now=()=>room.combat.startedAt+ms;try{return view(room,b).players.find(p=>p.id===a.id).formation[0];}finally{Date.now=now;}};
+assert.equal(room.phase,'resolving');assert.equal(revealStep.kind,'reveal');assert.equal(viewAt(0),null,'antes da revelação a posição rival continua secreta');assert.equal(viewAt(revealStep.duration),hunter.uid,'cartas são reveladas na animação');
 await new Promise(resolve=>setTimeout(resolve,room.combat.duration+80));
 assert.equal(b.patron.hp,12,'armadilha derrota defensor, bônus aliado eleva ataque de 2 a 4');
 assert.equal(room.round,2);assert.equal(room.phase,'prep');assert.equal(a.reserve.length,1);assert.equal(b.reserve.length,0);

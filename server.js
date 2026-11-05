@@ -9,6 +9,7 @@ import { handleAccounts, validMutationOrigin } from './accounts.mjs';
 import {handleFlowResult} from './torre/fluxo-solicitado.mjs';
 import { handleTorre, startFlowTest } from './torre/integracao.mjs';
 import { handleEscudo } from './escudo/integracao.mjs';
+import { runamarcaVersion } from './runamarca-version.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(await readFile(path.join(here, 'public', 'decks', 'catalog.json'), 'utf8'));
@@ -633,6 +634,7 @@ export const server = http.createServer(async (req, res) => {
     if (await handleEscudo(req, res, url)) return;
     if (await handleAccounts(req, res, url)) return;
     if (req.method === 'GET' && url.pathname === '/health') { send(res, 200, { ok: true }); return; }
+    if (req.method === 'GET' && url.pathname === '/api/runamarca/version') { send(res, 200, runamarcaVersion()); return; }
     if (req.method === 'GET' && url.pathname === '/runamarca') { res.writeHead(308, { location: `/runamarca/${url.search}`, 'cache-control': 'no-store' }); res.end(); return; }
     if (url.pathname.startsWith('/runamarca/')) { await handleNewGame(req, res, url, '/runamarca'); return; }
     if (await handleDice(req, res, url)) return;

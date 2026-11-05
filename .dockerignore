@@ -3,6 +3,8 @@ node_modules
 runtime/
 test
 README.md
+prototype-qa/
+.runamarca-feedback/
 
 torre/runtime/
 torre/backend/data/

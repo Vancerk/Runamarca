@@ -1,0 +1,508 @@
+{
+  "note": "Marcos do Git e versões. O endpoint /api/runamarca/version identifica o commit efetivamente executado no servidor.",
+  "milestones": [
+    {
+      "version": "V25",
+      "commit": "d1420a6",
+      "date": "2026-10-28",
+      "description": "Base explicitamente nomeada V25 no Git."
+    },
+    {
+      "version": "V26 em desenvolvimento",
+      "date": "2026-11-01",
+      "description": "Numeração escolhida pelo dono. Mesa híbrida r12 e revisão de UI; validação pendente."
+    },
+    {
+      "version": "V26",
+      "date": "2026-11-05",
+      "description": "Publicação autorizada da mesa 3D, revisões visuais, bot, Registro e questionário. Commit confirmado pelo endpoint de versão."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "e92e62849328afb6ee83880eb155863d185ac19e",
+      "date": "2026-09-26",
+      "description": "Add files via upload"
+    },
+    {
+      "commit": "f88c2688b0f4ec3062fcd63b01b985095d90497c",
+      "date": "2026-09-26",
+      "description": "Adicionar arquivos completos do RunaMarca"
+    },
+    {
+      "commit": "c1ae2ce6d632eaa5f2f9de1271875679807b99ca",
+      "date": "2026-09-26",
+      "description": "Atualizar RunaMarca e adicionar Jogos Elysium"
+    },
+    {
+      "commit": "522720a1a37a704bfba2af906a7cee0cf356b725",
+      "date": "2026-09-26",
+      "description": "Criar entrada direta por convite para as mesas"
+    },
+    {
+      "commit": "aadcce69e4c8ecf87071404170d31bf4382d1c79",
+      "date": "2026-09-26",
+      "description": "Revisar regras e insígnias do Seis Ossos"
+    },
+    {
+      "commit": "fcf31038b95744090b2ae1755883438abd863dfe",
+      "date": "2026-09-26",
+      "description": "Adicionar arquibancada e cronica detalhada ao Seis Ossos"
+    },
+    {
+      "commit": "4a4fc1a4937da620bd5124e7c4a39bd674148b03",
+      "date": "2026-09-27",
+      "description": "Refine Seis Ossos dice animation and audio"
+    },
+    {
+      "commit": "7be295e8648202c3aae97bfd34afad7c8169c012",
+      "date": "2026-09-27",
+      "description": "Atualiza editor e reorganiza mesa RunaMarca"
+    },
+    {
+      "commit": "4fe43b436191f6dbecf6081993f448cf832a5d03",
+      "date": "2026-09-29",
+      "description": "Publicar novo RunaMarca com acesso protegido e fluxo de combate corrigido"
+    },
+    {
+      "commit": "8568ca6739f169b596e1ea161c9f1569fddab1e5",
+      "date": "2026-09-29",
+      "description": "Incluir mesa nova na imagem Docker e no pacote"
+    },
+    {
+      "commit": "a4d859b4906d80e0c8da7f0c780be6a0a3c97f12",
+      "date": "2026-09-29",
+      "description": "Evoluir RunaMarca com espectadores, efeitos visuais e decks por raridade"
+    },
+    {
+      "commit": "d9462a0a1a1890c3f5ac507431a399d1049e7aa0",
+      "date": "2026-09-30",
+      "description": "Atualiza abertura, mesa e efeitos do novo RunaMarca"
+    },
+    {
+      "commit": "4a3a83a42c6ac588dd44bc0efeff7124dbc1beb4",
+      "date": "2026-09-30",
+      "description": "Refina mesa e concentra controles na coluna esquerda"
+    },
+    {
+      "commit": "6ed944c15f7b417094398211095516c4cdb977b0",
+      "date": "2026-09-30",
+      "description": "Centraliza ações e anima choques do RunaMarca"
+    },
+    {
+      "commit": "c3ea1403b3db49093065174a2e4b11639276d172",
+      "date": "2026-09-30",
+      "description": "Ajusta patronos, mana e formação do RunaMarca"
+    },
+    {
+      "commit": "59ef892f3a4cbaf689ace25ee95a763127664ffe",
+      "date": "2026-09-30",
+      "description": "Corrige animações de cartas e organiza registro por turno"
+    },
+    {
+      "commit": "756a80549b72a27350f5a8ef692448c7b4422294",
+      "date": "2026-09-30",
+      "description": "Integra contas Discord, perfis PostgreSQL e inventario administrado"
+    },
+    {
+      "commit": "1b8a041f225e0d4ad50f4a0844f5e567c7f90319",
+      "date": "2026-09-30",
+      "description": "Corrige formação, sorteio e animações da mesa RunaMarca"
+    },
+    {
+      "commit": "a886448455555b3094bd4105e8a88f8eafa96fd8",
+      "date": "2026-10-01",
+      "description": "Integra criador de decks com moldura Elysium"
+    },
+    {
+      "commit": "e5ba6a2d08ffa6fc8db19fd934ba972664d46c5b",
+      "date": "2026-10-01",
+      "description": "Corrige movimentos e efeitos de combate e ajusta criador"
+    },
+    {
+      "commit": "5466cf1085b74cf184d7addb2d22c46354fcb4ee",
+      "date": "2026-10-01",
+      "description": "Ajusta retorno de mana e feedback visual e substitui sons por foley"
+    },
+    {
+      "commit": "362e3b43e0f45df665a137bdf4c82b2d2dd6d3fe",
+      "date": "2026-10-01",
+      "description": "Preserva escolhas de emanacao e ajusta espacos de combate"
+    },
+    {
+      "commit": "8f243d439fac589638873465d760ed16adc0a9a1",
+      "date": "2026-10-01",
+      "description": "Sincroniza bonus de ataque e simplifica posicoes de combate"
+    },
+    {
+      "commit": "6bed4d13ba5f5c8a4eb2d4979011d9c2c0a62139",
+      "date": "2026-10-01",
+      "description": "Destaca formacao secreta e protege animacao de compra rival"
+    },
+    {
+      "commit": "73e38ddd2d90d610544a21b4d9213f875e6d2477",
+      "date": "2026-10-02",
+      "description": "Adiciona alvos visuais de emanacao e confirma mao sem trocas"
+    },
+    {
+      "commit": "cf8794f02fa28b548738848db1269dc4b556c689",
+      "date": "2026-10-02",
+      "description": "Atualiza insignias do Seis Ossos: remove Troca e revisa Rei dos Passaros"
+    },
+    {
+      "commit": "21c887f3a73e7266245f1dd865f9a37216b40498",
+      "date": "2026-10-02",
+      "description": "Fix opening hand flights, target trails and persistent card attribute colors"
+    },
+    {
+      "commit": "45fec1826566187c9d56ae8c51411645b7bb63f9",
+      "date": "2026-10-02",
+      "description": "Repair hand flights and targeting; synchronize effects and add patron capture finale"
+    },
+    {
+      "commit": "82d4d94fe0103fbe3635d71d6aa579004889d1dc",
+      "date": "2026-10-02",
+      "description": "Fix target direction, live health and returned spells; refine creator mana and energy watermark"
+    },
+    {
+      "commit": "7dd30c36ce17717923d644e8717e2b49e80a792a",
+      "date": "2026-10-03",
+      "description": "Apply approved card creator icon sizes and centered attributes"
+    },
+    {
+      "commit": "09bffaf379509f006233a748bb07389f2c10ceba",
+      "date": "2026-10-03",
+      "description": "Update RunaMarca card visuals, combat flow and point-based decks"
+    },
+    {
+      "commit": "5ed21365239373b0f67154a4c44e60edd45e9293",
+      "date": "2026-10-03",
+      "description": "Fix card stat alignment, combat morph and capture impact"
+    },
+    {
+      "commit": "8bdf0cda95f7f5415f95a6b1a0da6301f6c4cf86",
+      "date": "2026-10-03",
+      "description": "Keep animated card numbers centered inside their icons"
+    },
+    {
+      "commit": "786b38aaf7d6230d2149c31b725e45b33ce0fc72",
+      "date": "2026-10-03",
+      "description": "Corrige fluidez do arrastar e amplia leitura das cartas"
+    },
+    {
+      "commit": "02ccb4cffdebc92c1c98e5ada5180c9bea05c9d4",
+      "date": "2026-10-04",
+      "description": "Restaura pergaminho bege na area de texto das cartas"
+    },
+    {
+      "commit": "89faca8e5b632e2785941a75a44834ccd9507ea5",
+      "date": "2026-10-04",
+      "description": "Aplica acabamento metalico por raridade nas cartas"
+    },
+    {
+      "commit": "8ec2286d5d9e20ceaa78292c4c0fc00058beb89f",
+      "date": "2026-10-04",
+      "description": "Ajusta brilho da prata e da platina nas cartas"
+    },
+    {
+      "commit": "cc9cb07a771e2845658aadd143e1005125003ca6",
+      "date": "2026-10-04",
+      "description": "Realca tons furta-cor e reduz brilho da platina"
+    },
+    {
+      "commit": "236dfcf7a6749e1783e6059ab8f5434a87697bb9",
+      "date": "2026-10-04",
+      "description": "Aumenta brilho da platina e escurece bronze"
+    },
+    {
+      "commit": "a5fb9f0d4e9827b3909faf9c8bdb5d0290a5f441",
+      "date": "2026-10-04",
+      "description": "Implementa coracao liquido fadiga exponencial e novos limites de decks"
+    },
+    {
+      "commit": "fde940d329bfed6c3fe82319e68e92af65d05046",
+      "date": "2026-10-04",
+      "description": "Adiciona fala narrativa e glossario no zoom das cartas"
+    },
+    {
+      "commit": "5efffb69de72ed430e7d7e22bb57e493cd65e84e",
+      "date": "2026-10-04",
+      "description": "Adiciona decks autorais e corrige confrontos e interface"
+    },
+    {
+      "commit": "eaac74075a2dbe30f51ab38692f738d3b1eea7cd",
+      "date": "2026-10-04",
+      "description": "Fix RunaMarca feedback and evaluate new decks in 20 matches"
+    },
+    {
+      "commit": "1501beff160ded84b7861230014b58ab0d7d1edf",
+      "date": "2026-10-04",
+      "description": "Rebalance Oficina de Lyrik and add frost and damage spells"
+    },
+    {
+      "commit": "03f31c4a283a9c7ac789eef006ccd4b8232fd6a8",
+      "date": "2026-10-04",
+      "description": "Adjust Oficina stats and costs and record paired balance tests"
+    },
+    {
+      "commit": "ddb7c285514756a712aa004ce45d2392bd1c9699",
+      "date": "2026-10-04",
+      "description": "Add Fluxo return and sleep control cards with locked positions and balance report"
+    },
+    {
+      "commit": "ac1786ba10d1a9440193ea9c91fc41f85095e2fd",
+      "date": "2026-10-04",
+      "description": "Fix card speech and target effects, refresh Forja roster and card presentation"
+    },
+    {
+      "commit": "c2ea47e22d36fa8e472f619c9dbb2b4fb460ab09",
+      "date": "2026-10-05",
+      "description": "Fix RunaMarca audit failures and add regression coverage"
+    },
+    {
+      "commit": "7d792fe346b2d06e1fde6d1da372ab0d0f14eb76",
+      "date": "2026-10-05",
+      "description": "Fix opening card arrivals and authoritative combat animation targets"
+    },
+    {
+      "commit": "9fa72c1a390f7c5bd978d98fda79e6729e7f8d81",
+      "date": "2026-10-05",
+      "description": "Corrige tipografia das cartas e recompra na troca inicial"
+    },
+    {
+      "commit": "5b42c877e597d651122d5d226a2752b23ebc6618",
+      "date": "2026-10-05",
+      "description": "Atualiza Oficina de Lyrik e estabiliza portador visual dos ataques"
+    },
+    {
+      "commit": "7e06c8f3ba6cf99434a5c9466d047cb39a0cac76",
+      "date": "2026-10-05",
+      "description": "Mantém decks do grupo e corrige alvos visuais, fala e seleção"
+    },
+    {
+      "commit": "8e2e85c8dff77dbe4fc70d6383ada58c9d3db98c",
+      "date": "2026-10-05",
+      "description": "Improve target picker size, modal zoom and card text clarity"
+    },
+    {
+      "commit": "cb8562feb4dca8fbc0041353080cf8463e8753b9",
+      "date": "2026-10-06",
+      "description": "Allow optional taunt, add slingshot combat motion and deck review"
+    },
+    {
+      "commit": "eba9b9f308b4903301e2a38df4cff3bef4fbd5a5",
+      "date": "2026-10-07",
+      "description": "Integrate Ruptura deck, Forja protocols and central patron layout"
+    },
+    {
+      "commit": "ced0db853aa78b2a4884572d0800ab5a1cd01f5d",
+      "date": "2026-10-07",
+      "description": "Integrate admin-only Torre de Comando into Jogos Elysium with Neon persistence"
+    },
+    {
+      "commit": "dc63ea95d872b66172ff1e7bc53e25de18bfe183",
+      "date": "2026-10-07",
+      "description": "Await persisted Discord decisions and add admin report delivery test"
+    },
+    {
+      "commit": "16b880e7c313d579973c1f970d76d27d96901fd9",
+      "date": "2026-10-07",
+      "description": "Run authorized one-time report flow test and respect Discord rate limits"
+    },
+    {
+      "commit": "2d0e885f8abea25904d3afe6bb64283061b2e571",
+      "date": "2026-10-07",
+      "description": "Run authorized visual campaign with one normal report per hexagon"
+    },
+    {
+      "commit": "91fdd35bb8bdecdd7ba5b16aa7b9be7515fec673",
+      "date": "2026-10-07",
+      "description": "Separate signed account quotas and register Mestre Reverso"
+    },
+    {
+      "commit": "76f750b639508d09f4ab3d92dbc625511b1010c3",
+      "date": "2026-10-07",
+      "description": "Register Ravena and Ddrodo and run authorized sixty-report master test"
+    },
+    {
+      "commit": "f2aef425d66993fc2cc975f64f051de2df03cef1",
+      "date": "2026-10-07",
+      "description": "Allow public Tower reports while preserving authenticated administration"
+    },
+    {
+      "commit": "850e22cb8cf32af2d504b61116d066e64241d301",
+      "date": "2026-10-10",
+      "description": "Publish current Runamarca decks, forge equipment, effects and accessible deck creator"
+    },
+    {
+      "commit": "971f9c71c9262a8252e4b61aa32b4eca7d1157f9",
+      "date": "2026-10-11",
+      "description": "Update Runamarca cards, balance, patron introductions and forge effects"
+    },
+    {
+      "commit": "d20166a9b41a4d0334533da69eaabf93119a3c1e",
+      "date": "2026-10-13",
+      "description": "Add private author decision access and optional blocked-DM channel notice"
+    },
+    {
+      "commit": "fe00f7fd7f4c96a31a37262cebb913afc991f81d",
+      "date": "2026-10-14",
+      "description": "Escudo do Mestre em /escudo/ (fase 1)"
+    },
+    {
+      "commit": "34870ff8f3371f8916923e6e33c636df94abcaf7",
+      "date": "2026-10-14",
+      "description": "Ignora os dados da demonstração local do Escudo"
+    },
+    {
+      "commit": "c96f5a34c981397b381463bbc2c98e082c084b8d",
+      "date": "2026-10-14",
+      "description": "Merge pull request #1 from leafarotiv-max/escudo-do-mestre"
+    },
+    {
+      "commit": "84580a7162b2b7f5a08e548a99fcabcbd5b7b292",
+      "date": "2026-10-14",
+      "description": "Escudo: lista própria de mestres (escudo/mestres.json)"
+    },
+    {
+      "commit": "00651851a61031189ea2f6c662d1c3282486ef24",
+      "date": "2026-10-14",
+      "description": "Escudo: lê também escudo/mestres.json na lista de mestres"
+    },
+    {
+      "commit": "482d97d6d2dae6b0042db827541c94281dac4928",
+      "date": "2026-10-14",
+      "description": "Escudo: teste da lista própria de mestres"
+    },
+    {
+      "commit": "81a9af0add1732c48e1ccec2623c7293b89697ac",
+      "date": "2026-10-14",
+      "description": "Escudo: documenta a lista própria de mestres"
+    },
+    {
+      "commit": "49d2484add92e707d6e08dc409d1ef2240f46f5b",
+      "date": "2026-10-14",
+      "description": "Allow additional Torre administrators through dedicated Discord allowlist"
+    },
+    {
+      "commit": "d530938a19124eec7e2d5a0d666dd988f0e4471b",
+      "date": "2026-10-14",
+      "description": "Merge pull request #3 from Vancerk/codex/torre-administradores"
+    },
+    {
+      "commit": "16da4437cd5494df26d6fec4fec28cc96e33bb0e",
+      "date": "2026-10-14",
+      "description": "Add files via upload"
+    },
+    {
+      "commit": "c285f6df02c40f18f46a0df52084dd8cd7931ce8",
+      "date": "2026-10-14",
+      "description": "Merge pull request #4 from Vancerk/leafarotiv-max-patch-1"
+    },
+    {
+      "commit": "4ac9e01fc261a63e281cb9ad68600804f8db56f6",
+      "date": "2026-10-14",
+      "description": "Escudo: atalhos de mestre na barra de conta e exemplo aleatório de NPC"
+    },
+    {
+      "commit": "95b716d83073b1d76175f6b552e97349f8c72b24",
+      "date": "2026-10-14",
+      "description": "Remove mestre-atalhos.js (substituído pela barra de conta)"
+    },
+    {
+      "commit": "0b93c02f9e2d544d39dc70637a019034d8423439",
+      "date": "2026-10-15",
+      "description": "Merge pull request #2 from Vancerk/escudo-mestres"
+    },
+    {
+      "commit": "24d758f1c0da0bb00feba98ac086207a04d0d85e",
+      "date": "2026-10-15",
+      "description": "Preserve saved NPC sheets and fix master navigation"
+    },
+    {
+      "commit": "43f1ccbf823d7c687e2a378ac60ca40d30952a12",
+      "date": "2026-10-15",
+      "description": "Merge pull request #6 from Vancerk/codex/escudo-layout-revisao"
+    },
+    {
+      "commit": "cf8140218e37fc0a57451f3a5c954d5f3e1c5168",
+      "date": "2026-10-18",
+      "description": "Atualiza Runamarca com polimento visual, trilhas, vozes e bancada de entradas"
+    },
+    {
+      "commit": "b250359fcd993ff3969c5742b03152309ca34c57",
+      "date": "2026-10-18",
+      "description": "Integra main preservando Escudo, Torre e suas validacoes"
+    },
+    {
+      "commit": "bca18a09304a62cfbdb756f8da4f48ebb6be7cb4",
+      "date": "2026-10-18",
+      "description": "Atualiza regressao da abertura para verificar limpeza de efeitos"
+    },
+    {
+      "commit": "08518509e58a3ba96162558986c57bec02a03fb6",
+      "date": "2026-10-18",
+      "description": "Merge pull request #8 from Vancerk/codex/runamarca-polimento-audio-20261018"
+    },
+    {
+      "commit": "cfef78e1f3ce16ca71827bd4ab1cd71d47109439",
+      "date": "2026-10-19",
+      "description": "Atualiza vida, fadiga, Grimorio e polimento da mesa"
+    },
+    {
+      "commit": "79d800bcef16c68259c38d9f7cae5c9e36a97e16",
+      "date": "2026-10-19",
+      "description": "Merge pull request #10 from Vancerk/codex/grimorio-vida-fadiga-20261019"
+    },
+    {
+      "commit": "7ff1720b7e2954cf70f10c208db8bfe455930e83",
+      "date": "2026-10-21",
+      "description": "Publica regras e polimento aprovados do RunaMarca e valida retorno OAuth"
+    },
+    {
+      "commit": "55ec5563219470ab239d9c6b96d9ce6e3f4d2975",
+      "date": "2026-10-21",
+      "description": "Mantem na release somente regressoes novas verificadas e autocontidas"
+    },
+    {
+      "commit": "f8481101d5dbf136b07659a28a3b908493ade655",
+      "date": "2026-10-21",
+      "description": "Merge pull request #11 from Vancerk/codex/publicar-runamarca-20261021"
+    },
+    {
+      "commit": "d1420a66e4bb431c8ceb374cc527b41a3c76506d",
+      "date": "2026-10-28",
+      "description": "Update RunaMarca V25 and integrate corrected shared training pilot"
+    },
+    {
+      "commit": "f32be61c3f8b45b8da1e3c6f32726878c16864f8",
+      "date": "2026-10-30",
+      "description": "Salva protótipo do tabuleiro híbrido até a revisão 9"
+    },
+    {
+      "commit": "923c3fc2f81b6c23eb69455385ec4e56e6569183",
+      "date": "2026-10-30",
+      "description": "Ignora capturas PNG de QA do protótipo"
+    },
+    {
+      "commit": "a54d16fe4e68359d332baf1085f784e4796e5402",
+      "date": "2026-10-30",
+      "description": "Exige deck de exatamente 30 cartas e alinha regras do catálogo"
+    },
+    {
+      "commit": "49e747ea1fe3af19a06a3897c5bb2a535985dbe4",
+      "date": "2026-10-30",
+      "description": "WIP: commit de segurança das revisões 10, 11 e 12 da mesa híbrida"
+    },
+    {
+      "commit": "88ad7b5eaf0e86bc807f193224d8d29af1c7f5ef",
+      "date": "2026-10-31",
+      "description": "WIP: commit de segurança da revisão 12 retomada (QA, suíte e pacote de revisão)"
+    },
+    {
+      "commit": "d7a29cd2605b1a7ed777ae97c8b7fe26eba55e3f",
+      "date": "2026-10-31",
+      "description": "WIP: commit de segurança da revisão de UI do dono (rodada 1 interrompida)"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+ <defs>
+  <linearGradient id="leather" x2="1" y2="1"><stop stop-color="#67452c"/><stop offset=".4" stop-color="#382d26"/><stop offset="1" stop-color="#181713"/></linearGradient>
+  <linearGradient id="paper" x2=".8" y2="1"><stop stop-color="#bd9e68"/><stop offset=".45" stop-color="#dfc48d"/><stop offset="1" stop-color="#886a43"/></linearGradient>
+  <linearGradient id="bronze"><stop stop-color="#362619"/><stop offset=".25" stop-color="#ad8250"/><stop offset=".5" stop-color="#66472c"/><stop offset=".7" stop-color="#c19960"/><stop offset="1" stop-color="#3c2a1b"/></linearGradient>
+  <radialGradient id="light"><stop stop-color="#ffb14f" stop-opacity=".25"/><stop offset=".45" stop-color="#e9973a" stop-opacity=".08"/><stop offset="1" stop-color="#d47b28" stop-opacity="0"/></radialGradient>
+  <linearGradient id="wax"><stop stop-color="#92734a"/><stop offset=".4" stop-color="#ead3a0"/><stop offset=".8" stop-color="#c6a873"/><stop offset="1" stop-color="#80603a"/></linearGradient>
+  <radialGradient id="flame"><stop stop-color="#fff7d1"/><stop offset=".5" stop-color="#ffdc81"/><stop offset="1" stop-color="#e9872b" stop-opacity=".8"/></radialGradient>
+  <filter id="shadow" x="-.5" y="-.5" width="2" height="2"><feDropShadow dx="10" dy="15" stdDeviation="9" flood-color="#080603" flood-opacity=".65"/></filter>
+  <pattern id="pages" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#9a835d"/><path d="M0 1H6M0 4H6" stroke="#584934" stroke-width=".7"/></pattern>
+  <g id="book">
+   <path d="M0 0H145L152 15V205L8 211 0 200Z" fill="#17130e"/>
+   <path d="M11 15H145V200H11" fill="url(#pages)"/>
+   <rect x="-4" y="-5" width="147" height="198" rx="5" fill="url(#leather)" stroke="#9a7041" stroke-width="2"/>
+   <rect x="8" y="8" width="120" height="169" rx="3" fill="none" stroke="#b38b4f" stroke-opacity=".55"/>
+   <path d="M5 28H22M5 156H22M6 42V140M132 22V160" stroke="#bf985c" stroke-width="3" opacity=".5"/>
+   <path d="M67 51L94 94 67 138 40 94Z M67 65L84 94 67 123 50 94Z" fill="none" stroke="#aa8650" stroke-width="2"/>
+   <circle cx="67" cy="94" r="11" fill="none" stroke="#b69458"/>
+   <path d="M-4-5H20V193H-4Z" fill="#160e0980"/>
+   <path d="M24 193V225L34 217 43 225V193" fill="#733528"/>
+  </g>
+  <g id="candle">
+   <ellipse cy="145" rx="48" ry="16" fill="url(#bronze)" stroke="#be9560" stroke-opacity=".4"/>
+   <path d="M-31 137Q-13 123-10 97H10Q13 123 31 137Z" fill="url(#bronze)"/>
+   <ellipse cy="95" rx="29" ry="10" fill="url(#bronze)"/>
+   <path d="M-17 0Q0-7 17 0V91Q0 100-17 91Z" fill="url(#wax)" stroke="#7c603b"/>
+   <ellipse rx="17" ry="6" fill="#d2b985"/><ellipse rx="7" ry="3" fill="#665033"/>
+   <path d="M-13 2V29Q-10 38-6 29V7M8 4V19Q12 25 14 16" fill="#e5cea0"/>
+   <path d="M0 0L2-10" stroke="#302217" stroke-width="2"/>
+   <path d="M1-9C-15-16-5-32 4-45 3-28 17-17 1-9" fill="url(#flame)"/>
+  </g>
+ </defs>
+ <ellipse cx="1750" cy="155" rx="550" ry="470" fill="url(#light)"/>
+ <ellipse cx="90" cy="855" rx="360" ry="340" fill="url(#light)" opacity=".55"/>
+ <g filter="url(#shadow)" opacity=".9">
+  <g transform="translate(13 75) rotate(-12 75 95) skewY(6)"><use href="#book"/></g>
+  <g transform="translate(-58 240) rotate(-25 75 95) scale(.85)"><use href="#book"/></g>
+  <g transform="translate(1780 65) rotate(8)"><use href="#candle"/></g>
+  <g transform="translate(1865 190) scale(.75)"><use href="#candle"/></g>
+  <g transform="translate(51 838) rotate(-13)">
+   <path d="M0 0Q65-9 142 0L157 130Q82 118 8 136Z" fill="url(#paper)" stroke="#6e5030"/>
+   <path d="M18 26L119 20M20 38L127 32M22 50L103 45M24 62L131 56M26 76L120 70M28 87L132 82" stroke="#6e5735" opacity=".38"/>
+   <circle cx="113" cy="107" r="12" fill="#763b2b"/><path d="M107 103L118 110M116 101L110 112" stroke="#b86c48"/>
+  </g>
+  <g transform="translate(1805 847) rotate(15) scale(.9)"><use href="#book"/></g>
+  <g transform="translate(1774 745) rotate(-16)"><ellipse rx="43" ry="28" fill="url(#bronze)"/><ellipse rx="34" ry="20" fill="#30251b" stroke="#b28c55"/><path d="M-19 0H19M0-12V12M-12-8L12 8M12-8L-12 8" stroke="#b59661"/><circle r="5" fill="#d0ac6d"/></g>
+ </g>
+</svg>

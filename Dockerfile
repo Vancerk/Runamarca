@@ -2,11 +2,12 @@ FROM node:24-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && apk add --no-cache python3
-COPY server.js dice-game.js accounts.mjs read-cache.mjs ./
+COPY server.js dice-game.js accounts.mjs read-cache.mjs runamarca-version.mjs ./
 COPY public ./public
 COPY mesa-nova ./mesa-nova
+COPY bot ./bot
 COPY torre ./torre
 COPY escudo ./escudo
 ENV PORT=3000
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "--experimental-vm-modules", "server.js"]

@@ -1,5 +1,5 @@
 import {absorbPatronDamage} from './equipment.mjs';
-import {receiveDamage} from './forja-variant.mjs';
+import {receiveDamage,shieldState} from './forja-variant.mjs';
 const alive=c=>c&&c.type==='creature'&&c.damage<c.health;
 export function resetCombatTriggers(room){
  delete room.rulesRng;
@@ -30,10 +30,10 @@ export function dealPatronDamage(room,target,amount,{ownerId=null,sourceId=null,
  for(const source of sources){
   const targets=[{patron:target},...target.formation.map(id=>target.reserve.find(c=>c.uid===id)).filter(c=>alive(c)&&!target.emanation.includes(c.uid)).map(creature=>({creature}))];
   const chosen=targets[Math.floor(nextRandom(room)*targets.length)];
-  let updates,targetId;
+  let updates,targetId,barrierPrevented=false;
   if(chosen.patron){dealPatronDamage(room,target,1,{ownerId:owner.id,sourceId:source.uid,kind:'launcher',emit});targetId='patron:'+target.id;updates=[{patronId:target.id,hp:target.patron.hp,maxHp:target.patron.maxHp,extraLife:target.patron.extraLife||0}];}
-  else{const c=chosen.creature;Object.assign(c,receiveDamage(c,1));targetId=c.uid;updates=[{uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,extraLife:c.extraLife||0}];}
-  emit?.(room,'launcher_damage',{playerId:owner.id,sourceId:source.uid,targetId,targetPatronId:chosen.patron?target.id:null,amount:1,op:'damage',originId:sourceId,originKind:kind,healthUpdates:updates});
+  else{const c=chosen.creature;barrierPrevented=Boolean(c.spectralBarrier);Object.assign(c,receiveDamage(c,1));targetId=c.uid;updates=[{uid:c.uid,...shieldState(c),hp:Math.max(0,c.health-c.damage),maxHp:c.health,extraLife:c.extraLife||0}];}
+  emit?.(room,'launcher_damage',{playerId:owner.id,sourceId:source.uid,targetId,targetPatronId:chosen.patron?target.id:null,amount:barrierPrevented?0:1,requestedAmount:1,barrierPrevented,op:'damage',originId:sourceId,originKind:kind,healthUpdates:updates});
  }
  return result;
 }
@@ -54,9 +54,16 @@ export function resolveFirstSpellShot(room,p,data,{emit,pushLog,applyDamage,remo
  if(data.cardId!==shot.source.uid)throw Error('Resolva o disparo pendente da primeira magia.');
  const enemy=room.players.find(q=>q!==p),target=enemy.reserve.find(c=>c.uid===data.targetId&&alive(c));
  if(!target)throw Error('Escolha uma criatura inimiga viva; Patrono não é alvo da Aprendiz.');
- p.apprenticeQueue.shift();const beforeHealth=Math.max(0,target.health-target.damage);applyDamage(room,target,shot.amount);
+ p.apprenticeQueue.shift();const barrierPrevented=Boolean(shot.amount>0&&target.spectralBarrier),beforeHealth=Math.max(0,target.health-target.damage);applyDamage(room,target,shot.amount);
  emit(room,'apprentice_target',{playerId:p.id,sourceId:shot.source.uid,targetId:target.uid,name:shot.source.name});
- emit(room,'apprentice_damage',{playerId:p.id,sourceId:shot.source.uid,targetId:target.uid,targetModel:target.modelId,name:shot.source.name,amount:shot.amount,damageDealt:Math.max(0,beforeHealth-Math.max(0,target.health-target.damage)),killed:!alive(target),op:'damage',healthUpdates:[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0,attack:attack(target,room,enemy.formation.indexOf(target.uid))}]});
- pushLog(room,`${shot.source.name} causou ${shot.amount} de dano pela primeira magia da rodada.`,p.id);
+ emit(room,'apprentice_damage',{playerId:p.id,sourceId:shot.source.uid,targetId:target.uid,targetModel:target.modelId,name:shot.source.name,amount:barrierPrevented?0:shot.amount,requestedAmount:shot.amount,barrierPrevented,damageDealt:Math.max(0,beforeHealth-Math.max(0,target.health-target.damage)),killed:!alive(target),op:'damage',healthUpdates:[{uid:target.uid,...shieldState(target),hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0,attack:attack(target,room,enemy.formation.indexOf(target.uid))}]});
+ pushLog(room,`${shot.source.name} causou ${barrierPrevented?0:shot.amount} de dano pela primeira magia da rodada.`,p.id);
  removeDead(room);checkWin(room);pendingFirstSpellShots(room,p);return true;
+}
+
+export function skipFirstSpellShot(room,p,data){
+ const shot=pendingFirstSpellShots(room,p)[0];
+ if(data.round!==room.round||!shot||data.cardId!==shot.source.uid)throw Error('Este disparo da Aprendiz não está mais pendente.');
+ // Declining consumes exactly this shot; the paid spell and first-spell stamp remain.
+ p.apprenticeQueue.shift();
 }

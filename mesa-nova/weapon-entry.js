@@ -2,7 +2,7 @@
 (function(root){
  'use strict';const scenes=new Set(),clamp=t=>Math.max(0,Math.min(1,t));
  function clear(){for(const scene of [...scenes])scene.cancel();}
- async function play({weapon,from,to,context=null,keepAtTarget=true,onArrive=()=>{},onInspect=null,elapsedMs=0,elapsedTime=null,valid=()=>true}={}){
+ async function play({weapon,from,to,context=null,keepAtTarget=true,onArrive=()=>{},onDepart=()=>{},onInspect=null,elapsedMs=0,elapsedTime=null,valid=()=>true}={}){
   if(!valid())return;
   const a=from?.getBoundingClientRect(),b=to?.getBoundingClientRect();if(!a?.width||!b?.width)return;
   const kind=root.RunaWeaponPresentation.kindFor(weapon),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,duration=reduced?850:kind==='dagger'?2500:kind==='hammer'?3300:3500,land=reduced?.22:kind==='dagger'?.32:kind==='hammer'?.34:.36,depart=land+(reduced?.07:.10),arrive=reduced?.7:kind==='dagger'?.68:kind==='hammer'?.78:.80;
@@ -20,7 +20,7 @@
   const shadow=node('i','wa-weapon-shadow',bx,by+Math.min(40,b.height*.32));animate(shadow,[{opacity:0,transform:'translate(-50%,-50%) scale(2.5)'},{opacity:.55,transform:'translate(-50%,-50%) scale(.7)',offset:land},{opacity:.25,offset:arrive},{opacity:0}]);
   const contactRatio=kind==='hammer'?.9:.965,weaponTop=by+40-weaponH*contactRatio;
   const sprite=node('div','wa-thrown-weapon',bx,weaponTop);sprite.innerHTML=root.RunaWeaponPresentation.art(kind);sprite.style.width=weaponW+'px';sprite.style.height=weaponH+'px';
-  const dx=ax-bx,dy=ay-(weaponTop+weaponH/2),lift=reduced?0:Math.min(170,travel*.32),spin=kind==='dagger'?540:kind==='hammer'?-65:20;
+  const dx=ax-bx,dy=ay-(weaponTop+weaponH/2),lift=reduced?0:Math.min(170,travel*.32),spin=(kind==='dagger'?540:kind==='hammer'?-65:20)*dir;
   const travelFrames=Array.from({length:13},(_,i)=>{const t=i/12,u=kind==='hammer'?t*t:t,scale=.35+.65*u+Math.sin(Math.PI*u)*.42;return {opacity:Math.min(1,t*5),transform:`translate(calc(-50% + ${dx*(1-u)}px),${dy*(1-u)-4*lift*u*(1-u)}px) rotate(${spin*(1-u)}deg) scale(${scale})`,offset:land*t};});
   travelFrames.push({opacity:1,transform:'translate(-50%,0) rotate(-3deg) scale(1)',offset:land+.05},{opacity:1,transform:'translate(-50%,0) rotate(0deg) scale(1)',offset:arrive-.04},{opacity:0,transform:'translate(-18%,28px) rotate(-28deg) scale(.32)',offset:Math.min(.97,arrive+.15)},{opacity:0,transform:'translate(-18%,28px) rotate(-28deg) scale(.32)',offset:1});
   if(reduced)for(const f of travelFrames)f.transform='translate(-50%,0) scale(1)';
@@ -32,7 +32,7 @@
    const shock=node('i','wa-impact-wave',bx,by+36);animate(shock,[{opacity:0,transform:'translate(-50%,-50%) scale(.2)'},{opacity:1,offset:.04},{opacity:0,transform:'translate(-50%,-50%) scale(2.5)'}],land,.25);
    for(let i=0;i<4;i++){const smoke=node('i','wa-smoke',bx+(i-1.5)*28,by+20);animate(smoke,[{opacity:0,transform:'translate(-50%,-50%) scale(.3)'},{opacity:.4,offset:.2},{opacity:0,transform:`translate(${(i-1.5)*35}px,-95px) scale(1.6)`}],land+i*.01,.42);}
   }
-  const width=Math.min(a.width*1.08,b.width*.65),height=Math.min(a.height*1.05,b.height*.95),px=bx-width/2,py=by-height/2;
+  const width=b.width,height=b.height,px=bx-width/2,py=by-height/2;
   const patron=node('div','wa-patron',px,py);patron.style.width=width+'px';patron.style.height=height+'px';const image=from.querySelector('img');if(image){const img=document.createElement('img');img.src=image.src;img.alt='';patron.append(img);}else patron.style.backgroundImage=getComputedStyle(from).backgroundImage;
   const badge=root.RunaWeaponPresentation.token(weapon,{onOpen:onInspect});if(!onInspect){badge.tabIndex=-1;badge.removeAttribute('role');}patron.append(badge);animate(badge,[{opacity:0,transform:'translateY(-50%) scale(.5)'},{opacity:1,transform:'translateY(-50%) scale(1)'}],arrive,.17);
   const hp=from.parentElement?.querySelector('.patron-hp-value')?.textContent||from.dataset.hp;if(hp){const n=document.createElement('b');n.className='wa-patron-health';n.textContent=hp;patron.append(n);}

@@ -1,0 +1,30 @@
+{
+  "schema": 2,
+  "identity": "V25 local board prototype; apprentice cancellation and progressive disclosure; base d1420a6",
+  "hashes": {
+    "mesa-nova/armor-variant.mjs": "e548cc5e25110cd1343eeb0a5c6be06a13b8fa1aed839b53cbb53fd9a41fb463",
+    "mesa-nova/cartas.json": "b7334af5fc4938b669afc0a11a93f2518cc77220ff9980a2da8dd1003b6b47f6",
+    "mesa-nova/combat-effects.mjs": "a85f17fd6d030f4a87617ecbb043acff390b8041522d8b53ce008b018947745a",
+    "mesa-nova/combat-triggers.mjs": "7f1b8fad3d8e77989d1c9d8818946292af2139c280497fe6e51969c192ceeacc",
+    "mesa-nova/dom-powers.mjs": "93d1a4254e753fdbcd26ea5c64b2c4c3d90bbb0bd6cf9c360a8f2f733079c4eb",
+    "mesa-nova/equipment.mjs": "8c9f11cb257b60f148d7a346aecaa01d6cf51aad2574caf970d2df18d176cbd2",
+    "mesa-nova/fluxo-effects.mjs": "5bc45642af4371281e8ecc996c561b92f1db81e853f177e7c230fa85df74cc46",
+    "mesa-nova/fluxo-studies.mjs": "16e2d40aba94db63c45d315c4af37c4ec32dd3f2688173c99a0fe8ebdea67fc2",
+    "mesa-nova/forja-effects.mjs": "daa4fa7ea1af8623169ef86df233d932351ef05db578c20f09aa1d80a1fd0bd2",
+    "mesa-nova/forja-variant.mjs": "571418f02a6a8e103b43c0f2a65157e346f121a2b019b4793593183beed95445",
+    "mesa-nova/hand-buff-presentation.mjs": "ada8ce644566901d39b77978eba422fa25f4edb1e32627d051927c2e535bc283",
+    "mesa-nova/music-catalog.json": "3d9bc811c7cb7ac083325488e1e7767452a582e77c46fd7c43c9ac92248a1d4e",
+    "mesa-nova/music-director.mjs": "b5f5ed0b5ff12ce1014f5a2b697135d46a7042ae48016d195e50cec461ed24a6",
+    "mesa-nova/patron-bindings.mjs": "d58aed82eb37bec7177c0fd13907809714778d7697e854475e3d6a7a2f325031",
+    "mesa-nova/patron-combat.mjs": "0fe553d8a17e0ed0677a71d94ee8a7ddc89b97d434319d33ef4b5556cfb2a230",
+    "mesa-nova/patron-powers.mjs": "6ba3290f248925c8b00bc24015a32d439f66afe2c37739f9d242f62931384d4d",
+    "mesa-nova/prepared-transfer.mjs": "5b335928a914464d8c1b8e20ebbe38c5c2ec8017ca44eac7ee97284bf2cbb67e",
+    "mesa-nova/ruptura-effects.mjs": "18a426c713a4c77da15f0de2a95a6dda446dee0b95270da19662736d99c3bf13",
+    "mesa-nova/silence-effects.mjs": "3072bedb9b50f50bde581b8d4966045b8f80be85b4f838888390ec2c68ced7f3",
+    "mesa-nova/study-selection.mjs": "33ac6913abfdc2a5809ffb3dbb1dba30f89b2dfafdadf3472c3e22bf999b0ade",
+    "mesa-nova/turn-clock.mjs": "0222749fd3c72296329a13fb9d705724025df5c73042c9069a87d2536d76d9b8",
+    "mesa-nova/weapons-data.js": "4196f9cbf71130476a93c58a6293117535f96cb863300fd92766f252d0adfab8",
+    "mesa-nova/game.mjs": "0ac0d8ca5cc1bdd42d4b997631b301f130cb571c5a75d95812c0e7ac8eaa0644",
+    "mesa-nova/progressive-reveal.mjs": "88987b3fc57b6fe0931cc317238b8d5efc5eb90b361036f86a9970e54a13a79a"
+  }
+}

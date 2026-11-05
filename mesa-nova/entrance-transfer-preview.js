@@ -1,4 +1,4 @@
-// Generated from app.js animateTransfer. Refresh with tmp/build-golias-mix3.py.
+// Generated from app.js animateTransfer. Keep this rehearsal identical to production.
 async function animateTransfer({uid,copy,rect,card,duration:customDuration,delay=0,destination=null}){
  const generation=visualGeneration;let arrival=null,flight=null;
  try{
@@ -13,7 +13,7 @@ async function animateTransfer({uid,copy,rect,card,duration:customDuration,delay
   flight=make(copy,rect.width,rect.height);
   document.querySelectorAll('.release-ghost').forEach(node=>node.remove());
   const duration=customDuration??(720+weightOf(card)*180),options={duration,delay,easing:'cubic-bezier(.22,.65,.22,1)',fill:'both'};
-  const oldScale=end.width/rect.width,newScale=rect.width/end.width;
+  const oldScale=end.width/rect.width,newScale=rect.width/end.width;if(oldScale>1.01)flight.classList.add('flight-grows');
   if(!changesFace){
    const animation=flight.animate([{transform:'translate(0,0) scale(1)'},{transform:'translate('+dx+'px,'+dy+'px) scale('+oldScale+')'}],options);await settleAnimation(animation,duration+delay);
    if(generation===visualGeneration)sound('place');return;

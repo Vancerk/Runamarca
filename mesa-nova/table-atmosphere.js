@@ -2,7 +2,7 @@
 (function(root){
  'use strict';
  const clamp=t=>Math.max(0,Math.min(1,t));
- let canvas=null,ink=null,raf=0,session='',phase='',fields=[],reveal=null;
+ let canvas=null,ink=null,raf=0,session='',phase='',fields=[],reveal=null,prototypeFog=null;
  // Reuse soft brushes instead of rebuilding dozens of gradients on every frame.
  const brushes=new Map();
  function ensure(){if(canvas?.isConnected)return;canvas=document.createElement('canvas');canvas.className='formation-fog-canvas';canvas.setAttribute('aria-hidden','true');document.body.append(canvas);ink=canvas.getContext('2d');}
@@ -34,6 +34,21 @@
  function cloud(ctx,x,y,rx,ry,alpha,color,angle=0){ctx.save();ctx.globalAlpha*=alpha;ctx.translate(x,y);if(angle)ctx.rotate(angle);ctx.drawImage(brush(color),-rx,-ry,rx*2,ry*2);ctx.restore();}
  function fog(rect,seed,time){
   const w=rect.width,h=rect.height,cx=rect.left+w/2,cy=rect.top+h/2;
+  if(document.body.classList.contains('board-prototype')){
+   // Broad billows with shaded bases; the original reveal flame stays intact.
+   cloud(ink,cx,cy+h*.13,w*.62,h*.48,.85,'58,81,91');
+   for(let i=0;i<12;i++){
+    const t=time*.25+seed+i*2.39996;
+    const x=cx+Math.sin(i*2.39996+t*.18)*w*.29;
+    const y=cy+Math.cos(i*1.71+t*.5)*h*.20;
+    cloud(ink,x,y,Math.min(70,w*(.26+i%3*.035)),h*(.34+i%3*.045),.72,i%3?'157,178,185':'205,214,214',Math.sin(t)*.12);
+   }
+   for(let i=0;i<4;i++){
+    const t=time*.35+seed+i*1.9;
+    cloud(ink,cx+Math.sin(t)*w*.32,cy+h*.28+Math.cos(t)*h*.05,w*.32,h*.12,.36,'170,193,200',Math.sin(t)*.15);
+   }
+   return;
+  }
   // Paint directly in viewport space: the slot is an anchor, never a clipping box.
   for(let i=0;i<8;i++){
    const t=time*.38+seed+i*2.39996,x=rect.left+w*(.18+i*.09)+Math.sin(t)*9,y=cy+Math.sin(t*.83)*h*.14;
@@ -81,7 +96,7 @@
   const progress=reveal?clamp((now-reveal.frameStart)/reveal.duration):0;
   if(reveal&&progress>=1){stop();return;}
   const left=Math.min(...rects.map(f=>f.rect.left))-64,right=Math.max(...rects.map(f=>f.rect.right))+64,cut=reveal?left+(right-left)*progress:null;
-  for(const f of rects)fog(f.rect,f.seed,time);
+  if(document.body.classList.contains('board-prototype')&&root.RunaPrototypeFog){prototypeFog??=root.RunaPrototypeFog.create({seed:42});prototypeFog.draw(ink,time,rects.map(f=>({x:f.rect.left,y:f.rect.top,w:f.rect.width,h:f.rect.height})),{w:innerWidth,h:innerHeight},cut??-Infinity);}else for(const f of rects)fog(f.rect,f.seed,time);
   if(reveal){
    const g=ink.createLinearGradient(cut-21,0,cut+23,0);g.addColorStop(0,'transparent');g.addColorStop(1,'#fff');ink.globalCompositeOperation='destination-in';ink.fillStyle=g;ink.fillRect(0,0,innerWidth,innerHeight);ink.globalCompositeOperation='source-over';
   }

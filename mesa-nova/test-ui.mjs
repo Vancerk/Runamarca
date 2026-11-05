@@ -34,13 +34,20 @@ const arrivals={pendingArrival:[]};vm.createContext(arrivals);vm.runInContext(ex
 // Target selection retains hover zoom for both sides and hides it before submitting.
 {
  const nodes=new Map(),highlight=new Set();let hovered,chosen,hidden=0;
- const node=()=>({children:[],classList:{add(){},remove(){}},append(c){this.children.push(c);},replaceChildren(){this.children=[];},getBoundingClientRect:()=>({right:200,top:100,height:200}),setAttribute(){}});
- const dialog=node();dialog.open=false;dialog.showModal=()=>dialog.open=true;dialog.close=()=>dialog.open=false;
+ // The picker now owns close/contextmenu listeners. Model their lifecycle,
+ // including close delivery, instead of an inert object that cannot be a dialog.
+ const node=()=>({children:[],listeners:new Map(),classList:{add(){},remove(){}},append(c){this.children.push(c);},replaceChildren(){this.children=[];},getBoundingClientRect:()=>({right:200,top:100,height:200}),setAttribute(){},addEventListener(type,fn){if(!this.listeners.has(type))this.listeners.set(type,new Set());this.listeners.get(type).add(fn);},removeEventListener(type,fn){this.listeners.get(type)?.delete(fn);},dispatchEvent(event){for(const fn of [...this.listeners.get(event.type)||[]])fn(event);}});
+ const dialog=node();dialog.open=false;dialog.showModal=()=>dialog.open=true;dialog.close=()=>{if(!dialog.open)return;dialog.open=false;dialog.dispatchEvent({type:'close'});};
  const content=node();nodes.set('target-picker',dialog);nodes.set('target-picker-content',content);
  const picker={seat:()=>({hand:[]}),state:{players:[{reserve:[{uid:'ally',health:1,damage:0},{uid:'enemy',health:1,damage:0}]}]},$:id=>nodes.get(id),hideHover:()=>hidden++,showHover:c=>hovered=c.uid,moveHover(){},cardEl:node,text(){},tableCard:uid=>({classList:{add:()=>highlight.add(uid),remove:()=>highlight.delete(uid)}}),document:{createElement:node,querySelectorAll:()=>[]}};
  vm.createContext(picker);vm.runInContext(extract('function showTargetPicker','function chooseEmanationTarget'),picker);
  picker.showTargetPicker({},['ally','enemy'],uid=>{chosen=uid;});
  const [ally,enemy]=content.children[0].children;ally.onmouseenter({});assert.equal(hovered,'ally');assert.ok(highlight.has('ally'));ally.onmouseleave();assert.ok(!highlight.has('ally'));enemy.onfocus();assert.equal(hovered,'enemy');enemy.onclick();assert.equal(chosen,'enemy');assert.equal(dialog.open,false);assert.equal(hidden,4);
+ assert.equal(dialog.listeners.get('close').size,0);assert.equal(dialog.listeners.get('contextmenu').size,0);
+ let cancelled=0;const onCancel=()=>cancelled++;
+ picker.showTargetPicker({},['ally'],()=>{throw Error('Cancelling cannot choose a target');},'Choose',null,onCancel);
+ dialog.dispatchEvent({type:'contextmenu',preventDefault(){}});assert.equal(dialog.open,false);assert.equal(cancelled,1);assert.equal(dialog.listeners.get('close').size,0);assert.equal(dialog.listeners.get('contextmenu').size,0);
+ picker.showTargetPicker({},['ally'],()=>{},'Choose',null,onCancel);dialog.close();dialog.close();assert.equal(cancelled,2,'Each dialog cancellation is delivered once');assert.equal(dialog.listeners.get('close').size,0);assert.equal(dialog.listeners.get('contextmenu').size,0);
 }
 // Text fitting changes font size instead of horizontally stretching its glyphs.
 {

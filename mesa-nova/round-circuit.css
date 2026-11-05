@@ -1,0 +1,33 @@
+/* S5: round circuit (indicator). Unlit parts stay visible: dark, no glow. */
+.round-circuit{display:flex;flex-direction:column;align-items:center;gap:2px;margin:0 auto 8px;pointer-events:none;user-select:none}
+.round-circuit-label{font:700 13px Georgia,serif;letter-spacing:.04em;color:#f6dfad}
+.round-circuit svg{display:block;width:132px;height:60px;max-width:100%;overflow:visible}
+.round-circuit .rc-path{fill:none;stroke:#4a3d30;stroke-width:3;stroke-linecap:round}
+.round-circuit .rc-light{stroke:#00000088;stroke-width:1.5}
+.round-circuit .rc-ally{fill:#1d2a38}.round-circuit .rc-rival{fill:#3a1d1d}.round-circuit .rc-combat{fill:#3a1d1d}
+.round-circuit .rc-combat-symbol{font:13px system-ui;fill:#8a7a66}
+/* Preparation: only the active player's light and path. */
+.round-circuit[data-active="ally"] .rc-ally{fill:#5fb7ff;filter:drop-shadow(0 0 5px #5fb7ff)}
+.round-circuit[data-active="ally"] .rc-path-ally{stroke:#5fb7ff;filter:drop-shadow(0 0 3px #5fb7ffaa)}
+.round-circuit[data-active="rival"] .rc-rival{fill:#ff5a4d;filter:drop-shadow(0 0 5px #ff5a4d)}
+.round-circuit[data-active="rival"] .rc-path-rival{stroke:#ff5a4d;filter:drop-shadow(0 0 3px #ff5a4daa)}
+/* Combat (engine 'resolving'): player lights off, energy runs on both paths, combat light on. */
+.round-circuit[data-active="combat"] .rc-path{stroke:#ff8a5c;stroke-dasharray:7 9;animation:rc-energy .7s linear infinite;filter:drop-shadow(0 0 3px #ff5a4daa)}
+.round-circuit[data-active="combat"] .rc-combat{fill:#ff3b2f;filter:drop-shadow(0 0 7px #ff3b2f)}
+.round-circuit[data-active="combat"] .rc-combat-symbol{fill:#fff3d6}
+@keyframes rc-energy{to{stroke-dashoffset:-16}}
+@media(prefers-reduced-motion:reduce){.round-circuit[data-active="combat"] .rc-path{animation:none}}
+@media(max-width:600px){.round-circuit{margin-bottom:4px}.round-circuit-label{font-size:11px}.round-circuit svg{width:96px;height:44px}}
+
+/* S5: structured confrontation entries in the Registro. */
+.combat-record .cr-entry{margin:3px 0;line-height:1.35}.combat-record .cr-clash,.combat-record .cr-strike{color:#f6dfad}.combat-record .cr-effect{color:#b8daea}.combat-record .cr-pending{color:#c7b28e;font-style:italic}
+/* Formation addendum B: caption under the circuit while its combat light is red (formation / combat). */
+.round-circuit-state{font:600 11px Georgia,serif;letter-spacing:.03em;color:#ffb39a;text-align:center;line-height:1.2}
+.round-circuit[data-stage="formation"] .round-circuit-state{color:#f3c9b9}
+.round-circuit-state[hidden]{display:none}
+@media(max-width:600px){.round-circuit-state{font-size:10px}}
+/* V3 (items 12 and 14): letters in the player lights and the turn caption with a direction, so the turn reads without
+   colour. Lit: dark letter on the lit light; unlit: muted letter on the dark light. */
+.round-circuit .rc-light-tag{font:700 10px Georgia,serif;fill:#8f8272;pointer-events:none}
+.round-circuit[data-active="ally"] .rc-tag-ally,.round-circuit[data-active="rival"] .rc-tag-rival{fill:#120d09}
+.round-circuit-state[data-turn="ally"]{color:#9fd6ff}.round-circuit-state[data-turn="rival"]{color:#ffa497}

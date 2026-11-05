@@ -36,10 +36,10 @@
   height:auto;
   aspect-ratio:5 / 7;
   box-shadow:0 22px 25px -10px #000b,0 4px 9px #0007;
-  animation:opening-card-float 5.4s ease-in-out infinite;
+  animation:none;
   animation-delay:var(--float-delay,0s);
   transition:transform .22s ease,box-shadow .22s ease;
-  will-change:translate;
+  will-change:auto;
 }
 #mulligan-overlay .card.opening-card:hover {transform:translateY(-9px) scale(1.035);z-index:2}
 #mulligan-overlay .card.opening-card.selected {
@@ -54,8 +54,13 @@
 #mulligan-overlay #mulligan-controls {flex-wrap:wrap;gap:12px;margin:12px auto 0}
 #mulligan-overlay #mulligan-controls button {border-radius:7px;padding:13px 22px;min-width:205px;box-shadow:0 7px 18px #0004}
 #mulligan-overlay #mulligan-controls button:disabled {opacity:.45}
+/* S3: the whole scene is out of focus — every #game layer (hybrid WebGL canvas,
+   Emanation, decorations) plus body-level atmosphere. The selection and its
+   flights live outside #game (#mulligan-overlay, #visual-layer) and stay sharp. */
+body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>*,
 body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>.table,
-body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>.rail {filter:blur(8px) brightness(.75)}
+body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>.rail,
+body:has(#mulligan-overlay:not([hidden])):has(#game.is-obscured)>.formation-fog-canvas {filter:blur(8px) brightness(.75)}
 body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>.room-sidebar {filter:blur(8px) brightness(.75);z-index:auto;pointer-events:none}
 @keyframes opening-card-float {0%,100%{translate:0 3px}50%{translate:0 -5px}}
 @media(max-width:650px) {

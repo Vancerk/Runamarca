@@ -32,8 +32,8 @@ test('alvo perde validade durante a mira e estado novo cancela a ação',()=>{
  h.api.start({source,targets:()=>choices,confirm:()=>spent++,valid:()=>valid});h.point(target);h.frame();choices=[];h.frame();assert.ok(!target.classes.has('aim-legal'));h.api.release({clientX:120,clientY:120});assert.equal(spent,0);
  h.api.start({source,targets:()=>[{id:'old',node:target}],confirm:()=>spent++,valid:()=>valid});valid=false;h.frame();assert.equal(h.api.active(),false);assert.equal(spent,0);
 });
-test('lista acessível é alternativa explícita, sem confirmação antecipada',()=>{
- const h=harness();let listed=0,spent=0;h.api.start({source:new h.Node('card'),targets:()=>[],confirm:()=>spent++,fallback:()=>listed++});h.body.children[1].children[1].onclick();assert.equal(listed,1);assert.equal(spent,0);assert.equal(h.api.active(),false);
+test('S4: mira oferece só rótulo e Cancelar, sem lista; cancelar não confirma',()=>{
+ const h=harness();let spent=0,cancelled=0;h.api.start({source:new h.Node('card'),targets:()=>[],confirm:()=>spent++,onCancel:()=>cancelled++});const tools=h.body.children[1];assert.equal(tools.children.length,2);assert.ok(tools.children.every(n=>!/lista/i.test(n.textContent||'')));tools.children[1].onclick();assert.equal(spent,0);assert.equal(cancelled,1);assert.equal(h.api.active(),false);
 });
 test('origem DOM acompanha scroll/resize e cancela se o retrato desaparecer',()=>{
  const h=harness(),source=new h.Node('portrait'),target=new h.Node('card');h.api.start({source:()=>source,targets:()=>[{id:'t',node:target}],confirm(){}});h.frame();
@@ -47,11 +47,11 @@ test('alvos públicos respeitam lados, vida, Emanação e limiar sem ler mão ri
  const state={players:[a,b]},card={reserveOnly:true,effects:[{min_attack:2}]};assert.deepEqual(Array.from(h.api.creatureIds(state,'a',card,'enemy')),['valid']);assert.deepEqual(Array.from(h.api.creatureIds(state,'b',{effects:[]},'friendly')),['low','valid','emana']);
  assert.ok(h.api.creatureIds(state,'a',{effects:[]},'any').includes('patron:b'));assert.ok(!h.api.creatureIds(state,'a',{effects:[]},'any-creature').some(x=>x.startsWith('patron:')));
 });
-test('cancelamento notifica colocação pendente uma vez; confirmar e abrir lista não cancelam a jogada',()=>{
- const h=harness(),source=new h.Node('card'),target=new h.Node('card');let cancelled=0,confirmed=0,listed=0;
- const options={source,targets:()=>[{id:'target',node:target}],onCancel:()=>cancelled++,confirm:()=>confirmed++,fallback:()=>listed++};
+test('cancelamento notifica colocação pendente uma vez; confirmar não cancela a jogada',()=>{
+ const h=harness(),source=new h.Node('card'),target=new h.Node('card');let cancelled=0,confirmed=0;
+ const options={source,targets:()=>[{id:'target',node:target}],onCancel:()=>cancelled++,confirm:()=>confirmed++};
  h.api.start(options);h.api.cancel();h.api.cancel();assert.equal(cancelled,1);
  h.api.start(options);h.point(target);h.api.release({clientX:130,clientY:140});assert.equal(confirmed,1);assert.equal(cancelled,1);
- h.api.start(options);const tools=h.body.children.at(-1);tools.children[1].onclick();assert.equal(listed,1);assert.equal(cancelled,1);
- h.api.start({...options,valid:()=>false});h.frame();assert.equal(cancelled,2);
+ h.api.start(options);const tools=h.body.children.at(-1);assert.equal(tools.children.length,2);tools.children[1].onclick();assert.equal(cancelled,2);
+ h.api.start({...options,valid:()=>false});h.frame();assert.equal(cancelled,3);
 });
