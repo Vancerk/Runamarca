@@ -36,7 +36,7 @@ try{
   await page.evaluate(()=>{window.startConfirm=performance.now();window.confirmDone=false;window.confirmPromise=command({type:'confirmMulligan'}).finally(()=>confirmDone=true);});
   await page.waitForFunction(()=>RunaCardArrivals.stats.moving.length===5);
   H.check(width+': cinco transferências têm donos distintos e a mão fica bloqueada',await page.evaluate(ids=>{
-   const t=RunaCardArrivals.stats.active.filter(x=>x.kind==='transfer');return t.length===5&&new Set(t.map(x=>x.uid)).size===5&&ids.every(id=>RunaCardArrivals.moving(id))&&document.getElementById('hand').inert&&!movingCards.size;
+   const t=RunaCardArrivals.stats.active.filter(x=>x.kind==='transfer');return t.length===5&&new Set(t.map(x=>x.uid)).size===5&&ids.every(id=>RunaCardArrivals.moving(id))&&document.getElementById('hand').inert&&typeof movingCards==='undefined';
   },ids));
   // Simulate state refreshes during the opening; rendering may not release a UID.
   await page.evaluate(()=>{window.confirmRenders=setInterval(()=>{if(confirmDone){clearInterval(confirmRenders);return;}render();},180);});
@@ -64,7 +64,7 @@ try{
     await dragReserve(page,data.cardId);
     await page.waitForFunction(uid=>seat().reserve.some(c=>c.uid===uid),data.cardId);await settle(page);
    }else await send(page,data);
-   const result=await page.evaluate(({uid,selector})=>({found:[...document.querySelectorAll(selector+' [data-uid]')].some(n=>n.dataset.uid===uid&&getComputedStyle(n).visibility!=='hidden'),moving:[...movingCards],owner:RunaCardArrivals.stats,ghosts:document.querySelectorAll('.hybrid-motion-face,.hybrid-flight-carrier').length}),{uid:data.cardId,selector:destination});
+   const result=await page.evaluate(({uid,selector})=>({found:[...document.querySelectorAll(selector+' [data-uid]')].some(n=>n.dataset.uid===uid&&getComputedStyle(n).visibility!=='hidden'),moving:RunaCardArrivals.stats.moving,owner:RunaCardArrivals.stats,ghosts:document.querySelectorAll('.hybrid-motion-face,.hybrid-flight-carrier').length}),{uid:data.cardId,selector:destination});
    H.check(name+': destino visível, sem espera duplicada',result.found&&!result.moving.length&&!result.owner.active.length&&!result.ghosts,result);
   }
   room.phase='formation';await paint(page,view(room,a));
@@ -111,8 +111,8 @@ try{
    await page.evaluate(()=>{RunaCardArrivals.finish(newTicket);finishVisual(newTicket.uid);});
   }else if(mode==='paint-delay'){
    await page.waitForTimeout(700);
-   const held=await page.evaluate(uid=>({held:document.querySelectorAll('.hybrid-motion-face').length,hidden:getComputedStyle(tableCard(uid)).visibility==='hidden',legacy:movingCards.size}),c.uid);
-   H.check('pintura atrasada mantém a face de origem e oculta o destino',held.held===1&&held.hidden&&held.legacy===0,held);
+   const held=await page.evaluate(uid=>({held:document.querySelectorAll('.hybrid-motion-face').length,hidden:getComputedStyle(tableCard(uid)).visibility==='hidden',moving:RunaCardArrivals.stats.moving.length}),c.uid);
+   H.check('pintura atrasada mantém a face de origem e oculta o destino',held.held===1&&held.hidden&&held.moving===1,held);
    await page.evaluate(()=>releaseTransferPaint());
   }else if(mode==='blur'){await page.evaluate(()=>{dispatchEvent(new Event('blur'));releaseTransferPaint();});}
   else if(mode==='resize'){await page.setViewportSize({width:1440,height:900});await page.evaluate(()=>releaseTransferPaint());}

@@ -74,3 +74,26 @@ test('opening completion waits for the owner, and cancellation releases waiting 
  a.begin('opening-to-hand',{lock:true});const cancelled=a.waitFor('opening-to-hand');a.reset();
  a.begin('opening-to-hand',{lock:true});await cancelled;assert.equal(a.blocked,true,'old wait ends without releasing the new batch');
 });
+
+test('a combat movement supersedes reflow, disposes its resources once and owns the UID',()=>{
+ const a=owner(),old=a.begin('reflow',{uid:'unit',moving:true});let removed=0;
+ a.own(old,()=>removed++);
+ const combat=a.begin('combat',{uid:'unit',moving:true,replace:true});
+ assert.equal(removed,1);assert.equal(a.current(old),false);assert.equal(a.moveTicket('unit'),combat);
+ assert.equal(a.finish(old),false);assert.equal(a.moving('unit'),true);
+ a.own(combat,()=>removed++);a.reset('next');a.finish(combat);assert.equal(removed,2);
+});
+
+test('resizing cancels hand motion without ending a casualty arc that follows its destination',()=>{
+ const a=owner(),death=a.begin('casualty',{uid:'dead',moving:true}),move=a.begin('transfer',{uid:'hand',moving:true});
+ let cleaned=0;a.own(move,()=>cleaned++);
+ assert.deepEqual(Array.from(a.cancelKinds(['transfer','reflow'])),['hand']);
+ assert.equal(cleaned,1);assert.equal(a.current(death),true);assert.equal(a.current(move),false);
+});
+
+test('playing a settling neighbour takes ownership without waiting for its reflow',()=>{
+ const a=owner(),old=a.begin('reflow',{uid:'unit',moving:true});let removed=0;a.own(old,()=>removed++);
+ const transfer=a.begin('transfer',{uid:'unit',moving:true});assert.ok(transfer);assert.equal(removed,1);
+ assert.equal(a.finish(old),false);assert.equal(a.moveTicket('unit'),transfer);
+ assert.equal(a.begin('transfer',{uid:'unit',moving:true}),null,'a second action cannot supersede the real transfer');
+});

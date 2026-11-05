@@ -20,7 +20,7 @@ const layers=()=>{const f=n=>n?getComputedStyle(n).filter:null,chain=n=>{const l
 // inert regions and RunaHybridFlights.stats; native: #visual-layer flights; both: app arrival state.
 const leftovers=()=>{const s=globalThis.RunaHybridFlights?.stats;return {carriers:document.querySelectorAll('.hybrid-flight-carrier').length,faces:document.querySelectorAll('.hybrid-motion-face').length,lock:document.querySelectorAll('.hybrid-draw-lock:not([hidden])').length,
  waiting:document.querySelectorAll('[data-hybrid-waiting]').length,inert:['hand','mulligan-cards','mulligan-controls'].filter(id=>document.getElementById(id)?.inert),statsLocked:s?.locked??null,statsPending:s?.pending??null,statsActive:s?.active?.length??null,
- visualLayer:document.getElementById('visual-layer')?.childElementCount??0,pendingArrival:typeof RunaCardArrivals!=='undefined'?RunaCardArrivals.pending.length:null,moving:typeof movingCards!=='undefined'?movingCards.size:null};};
+ visualLayer:document.getElementById('visual-layer')?.childElementCount??0,pendingArrival:typeof RunaCardArrivals!=='undefined'?RunaCardArrivals.pending.length:null,moving:typeof RunaCardArrivals!=='undefined'?RunaCardArrivals.stats.moving.length:null};};
 const busy=l=>l.carriers+l.faces+l.lock+l.waiting+l.inert.length+(l.statsPending||0)+(l.statsActive||0)+l.visualLayer+(l.moving||0)>0||!!l.statsLocked;
 const drawsOf=async(page,from)=>page.evaluate(n=>window.__draws.slice(n),from);
 const batch=list=>list.length?{cards:list.length,profiles:[...new Set(list.map(d=>d.presentation))],perCardMs:list.map(d=>d.ms),meanMs:Math.round(list.reduce((s,d)=>s+d.ms,0)/list.length),spanMs:Math.round(Math.max(...list.map(d=>d.end))-Math.min(...list.map(d=>d.start))),phases:[...new Set(list.map(d=>d.phase))]}:{cards:0};

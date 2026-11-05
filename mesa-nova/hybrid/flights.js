@@ -15,7 +15,7 @@ export function installFlights({sync,lifecycle}){
  function markWaiting(){for(const parent of [row,grid])for(const node of parent.querySelectorAll('.card')){node.classList.toggle('pending-arrival',arrivals.has(node.dataset.uid));if(parent===row)node.toggleAttribute('data-hybrid-waiting',arrivals.waiting(node.dataset.uid));}}
  function cleanupPending(){arrivals.retain(liveHand());markWaiting();updateLock();}
  function stopEntries(){for(const e of entries){e.cancelled=true;for(const a of e.animations)a.cancel();e.node?.remove();e.arriving?.remove();}entries.clear();}
- function cancelAll(){const ids=arrivals.pending;arrivals.reset();for(const uid of ids)if(liveHand().has(uid))revealArrival(uid);markWaiting();layoutHands();updateLock();}
+ function cancelAll(){const ids=arrivals.pending,moved=arrivals.cancelKinds(['draw','rival-draw','return','mulligan-return','opening-to-hand','transfer','reflow']);stopEntries();for(const uid of moved)finishVisual(uid);for(const uid of ids){arrivals.release(uid);if(liveHand().has(uid))revealArrival(uid);}markWaiting();layoutHands();updateLock();}
  arrivals.subscribe(type=>{if(type==='reset')stopEntries();markWaiting();if(type==='release')layoutHands();updateLock();});
  lifecycle.addHook({afterContent(){if(paused)cancelAll();else cleanupPending();},after:updateLock});
  const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -52,9 +52,7 @@ export function installFlights({sync,lifecycle}){
  function readPose(){const vw=document.documentElement.clientWidth,freeH=Math.max(130,innerHeight-(window.RunaHybridFan?.stats.own?.visible||90)-48),w=Math.min((innerWidth<=600?260:Math.max(210,Math.min(300,innerWidth*.19)))*HYBRID.visualScale,vw-32,freeH/1.4),h=w*1.4;return {x:innerWidth<=600?vw/2:Math.min(vw-w/2-24,vw*.85),y:Math.min(innerHeight-(window.RunaHybridFan?.stats.own?.visible||90)-h/2-24,Math.max(h/2+20,innerHeight*.45)),w,h,angle:0};}
  function finish(e){e.node?.remove();e.arriving?.remove();for(const a of e.animations)a.cancel();entries.delete(e);const owned=!e.external&&arrivals.finish(e.ticket);if(owned&&e.mine&&e.uid&&e.generation===visualGeneration&&e.session===key()&&liveHand().has(e.uid))revealArrival(e.uid);cleanupPending();}
 
- const nativeReturn=presentReturn;
- presentReturn=async function(event){
-  if(!document.body.classList.contains('hybrid-active'))return nativeReturn(event);
+ async function returnToHand(event){
   const mine=!state?.spectator&&event.playerId===state?.you,e=begin('return',mine,event.returnedId);if(!e.ticket)return;const saved=damageSnapshots.get(event.cardId);
   const remnant=damageRemnants.get(event.cardId);let fullFace;
   if(mine){hideHover();updateLock();}
@@ -78,7 +76,7 @@ export function installFlights({sync,lifecycle}){
   }finally{remnant?.remove();if(damageRemnants.get(event.cardId)===remnant)damageRemnants.delete(event.cardId);finish(e);sync();}
  };
 
- animateDraw=async function(uid,mine=true,options={}){
+ async function draw({uid,mine=true,options={}}){
   // Not named 'opening': that name is the pending confirmed-hand transfer below.
   const openingDeal=options?.presentation==='opening',P=openingDeal?OPENING_DRAW:DRAW,e=begin(mine?'draw':'rival-draw',mine,uid);if(!e.ticket)return;e.profile=openingDeal?'opening':'normal';if(mine){hideHover();cleanupDrag();RunaTargeting?.cancel('draw');updateLock();}
   try{
@@ -107,7 +105,7 @@ export function installFlights({sync,lifecycle}){
   }finally{finish(e);}
  };
 
- animateMulliganReturn=async function(event){
+ async function mulliganReturn(event){
   const cards=mulliganDepartures.get(event.id)||[];mulliganDepartures.delete(event.id);const e=begin('mulligan-return',true);updateLock();
   try{const endBox=deck(true);if(!endBox)return;const end=rectPose(endBox);stage(e,'deck-target',end);
    await Promise.all(cards.map(async(item,i)=>{if(!item.rect?.width)return;const c=carrier({...e,node:null},84,117.6,makeBack());const from=rectPose(item.rect);c.n.style.transform=transform(c,from);try{await animate(e,c.n,[frame(c,from,{opacity:1}),frame(c,end,{opacity:.1})],duration(460),i*55);}finally{c.n.remove();}}));stage(e,'land',end);
@@ -138,7 +136,7 @@ export function installFlights({sync,lifecycle}){
  }
  RunaPresentation.register('hybrid-transfers',{
   active:()=>document.body.classList.contains('hybrid-active'),
-  animations:{transfer,async openingLayout(){await new Promise(requestAnimationFrame);layoutHands();sync();}},
+  animations:{transfer,draw,return:returnToHand,mulliganReturn,async openingLayout(){await new Promise(requestAnimationFrame);layoutHands();sync();}},
  });
 
  const cancelReason=()=>{paused=document.hidden;cancelAll();};
