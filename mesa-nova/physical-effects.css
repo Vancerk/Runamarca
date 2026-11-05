@@ -1,0 +1,16 @@
+.coin-toss.coin-volume{position:fixed;left:50%;top:45%;width:208px;height:208px;margin:-104px;perspective:1000px;transform:none;animation:none;filter:none;background:none;border:0;box-shadow:none;overflow:visible}
+.coin-solid{position:absolute;inset:0;transform-style:preserve-3d;animation:coin-solid-toss 2.4s cubic-bezier(.3,.6,.3,1) both}
+.coin-cap{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;background:#a67930;border:3px solid #efcc83;box-shadow:inset 0 0 0 2px #6b451c,inset 0 0 0 5px #f8df95,inset 2px 3px 6px #fff2bd99,inset -3px -4px 6px #563111;overflow:hidden}
+.coin-cap>canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;pointer-events:none}
+.coin-cap::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(110deg,transparent 17%,#fffbe159 28%,transparent 39%,#21110020 68%,#fff1b133);mix-blend-mode:soft-light;pointer-events:none}
+.coin-cap-front{transform:translateZ(11px)}.coin-cap-back{transform:rotateY(180deg) translateZ(11px)}
+.coin-edge{position:absolute;left:calc(50% - 3.6px);top:calc(50% - 11px);width:7.2px;height:22px;background:linear-gradient(0deg,#f1d382 0 8%,#926022 10% 20%,#dcb260 30% 72%,#80501b 80% 90%,#edca79 94%),repeating-linear-gradient(90deg,#4b2d11 0 1px,#d7ad57 1px 3px);background-blend-mode:multiply;transform:rotateZ(var(--edge-angle)) translateY(-102px) rotateX(90deg);backface-visibility:visible;filter:brightness(var(--edge-light))}
+.coin-ground-shadow{position:absolute;left:-16px;right:-16px;top:165px;height:50px;border-radius:50%;background:radial-gradient(ellipse,#000a 0%,#10090470 35%,transparent 72%);filter:blur(6px);animation:coin-shadow-toss 2.4s ease both}
+@keyframes coin-solid-toss{0%{transform:translateY(130px) rotateX(65deg) rotateY(-12deg) scale(.6);opacity:0}12%{opacity:1}46%{transform:translateY(-100px) rotateX(420deg) rotateY(990deg) scale(1.1)}82%{transform:translateY(0) rotateX(740deg) rotateY(1786deg) rotateZ(-8deg)}92%{transform:translateY(-8px) rotateX(746deg) rotateY(1796deg) rotateZ(-8deg)}100%{transform:translateY(0) rotateX(740deg) rotateY(1786deg) rotateZ(-8deg)}}
+@keyframes coin-shadow-toss{0%,100%{transform:translateX(14px) scale(1);opacity:.85}46%{transform:translateX(28px) scale(.65);opacity:.24}}
+.burned-draw{position:fixed;pointer-events:none;z-index:115;transform-origin:center;filter:drop-shadow(0 12px 14px #0008)}
+.burned-draw-face{width:100%!important;height:100%!important;transform:none!important;animation:none!important;transition:none!important}
+.burned-draw.burning::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,transparent 5%,#ff7a00cc 25%,#ffe89d 29%,transparent 35%);mix-blend-mode:screen;animation:card-ember .36s ease-in both;pointer-events:none}
+@keyframes card-ember{from{clip-path:inset(75% 0 0);transform:translateY(40%)}to{clip-path:inset(0);transform:translateY(-55%);opacity:0}}
+.burn-arrived{box-shadow:inset 0 0 18px #e98835!important}
+@media(prefers-reduced-motion:reduce){.coin-solid,.coin-ground-shadow{animation:none}.coin-solid{transform:rotateY(0) rotateX(12deg)}.burned-draw.burning::after{display:none}}

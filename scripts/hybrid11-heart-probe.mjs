@@ -1,0 +1,9 @@
+// Revisão 11: inspeção do coração nativo exibido na face compacta da Emanação.
+import {createRequire} from 'node:module';import {setup,card,view} from '../mesa-nova/r1-fixtures.mjs';
+const require=createRequire(import.meta.url),{chromium}=require('C:/Users/vanxf/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {room,a,b}=setup();for(const p of [a,b]){const es=[card('FV03',p),card('RG13',p)];p.reserve=[...es];p.emanation=es.map(c=>c.uid);p.hand=[];}
+const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+try{const page=await browser.newPage({viewport:{width:1920,height:900}});await page.goto('http://127.0.0.1:3086/runamarca/hybrid/index.html');await page.waitForFunction(()=>typeof render==='function'&&window.RunaHybridHand);
+ await page.evaluate(s=>{state=s;serverClockOffset=Date.now()-s.serverNow;render();},view(room,a));await page.waitForFunction(()=>RunaHybrid?.ready);await page.waitForTimeout(600);
+ console.log(JSON.stringify(await page.evaluate(()=>{const n=document.querySelector('#self-emana .hybrid-emana-card'),svg=n.querySelector('.card-stats-svg'),t=svg.querySelector('.health-value'),c=n.querySelector('.health-liquid'),cs=getComputedStyle(svg),ts=getComputedStyle(t);return {svg:svg.getBoundingClientRect().toJSON(),style:svg.getAttribute('style'),display:cs.display,vis:cs.visibility,opacity:cs.opacity,z:cs.zIndex,text:t.getBoundingClientRect().toJSON(),fill:ts.fill,font:ts.font,tvis:ts.visibility,tdisp:ts.display,topacity:ts.opacity,content:t.textContent,canvas:c.getBoundingClientRect().toJSON(),hitAtText:document.elementFromPoint(t.getBoundingClientRect().x+3,t.getBoundingClientRect().y+3)?.className?.baseVal??document.elementFromPoint(t.getBoundingClientRect().x+3,t.getBoundingClientRect().y+3)?.className};})));
+}finally{await browser.close();}

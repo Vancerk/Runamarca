@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import {setup,card,unit,cast,act,view,catalog} from '../mesa-nova/r1-fixtures.mjs';
+const results=[];
+function check(name,fn){fn();results.push({name,pass:true});}
+const {room,a,b}=setup(),enemy=unit(b);b.reserve.push(enemy);
+const source=card('FV03',a);cast(room,a,source,{mode:'emanate'});
+const spell=card('FV02',a);cast(room,a,spell,{mode:'lane',lane:0,targetSide:b.id});
+check('confirmed hidden prepared spell remains private in opponent view',()=>{const p=view(room,b).players.find(p=>p.id===b.id).prepared[0];assert.equal(p.hidden,true);assert.equal(p.card,null);});
+check('shot is required by current server rules',()=>{assert.equal(a.apprenticeQueue.length,1);assert.throws(()=>act(room,a,{type:'endPrep'},catalog),/Aprendiz/);});
+act(room,a,{type:'unprepare',cardId:spell.uid},catalog);
+check('returning prepared spell does not undo first-spell trigger',()=>{assert.ok(a.hand.includes(spell));assert.equal(a.apprenticeQueue.length,1);assert.equal(a.firstSpellRound,room.round);});
+check('opponent does not receive private pending sources',()=>{assert.deepEqual(view(room,b).players.find(p=>p.id===a.id).pendingApprenticeSources,[]);});
+act(room,a,{type:'apprenticeTarget',cardId:source.uid,targetId:enemy.uid},catalog);
+check('confirming shot clears queue and permits continuation',()=>{assert.equal(a.apprenticeQueue.length,0);act(room,a,{type:'endPrep'},catalog);});
+const text=fs.readFileSync('mesa-nova/app.js','utf8'),fn=text.slice(text.indexOf('function promptApprenticeTarget()'),text.indexOf('function chooseEmanationTarget'));
+let starts=0,active=false;
+const ctx={commandBusy:false,pendingSpellConfirmation:null,RunaTargeting:{active:()=>active},state:{phase:'prep',turn:'a',you:'a'},seat:()=>({pendingApprenticeTargets:['s'],reserve:[{uid:'s'}]}),rival:()=>({reserve:[{uid:'e',damage:0,health:1}]}),$:()=>({open:false}),showTargetPicker:()=>{starts++;active=true},command:()=>{}};
+vm.createContext(ctx);vm.runInContext(fn,ctx);
+check('render refresh preserves active aiming arrow',()=>{for(let i=0;i<10;i++)ctx.promptApprenticeTarget();assert.equal(starts,1);});
+fs.writeFileSync('prototype-qa/apprentice-diagnosis.json',JSON.stringify(results,null,2));console.log(JSON.stringify({passed:results.length,results}));

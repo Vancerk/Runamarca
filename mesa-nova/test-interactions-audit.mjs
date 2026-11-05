@@ -38,6 +38,6 @@ console.log('Auditoria de interações: Incursora, Rastreadoras, Gnoll, Cólera,
 for(const power of [2,3,4]){
  const {room,a,b}=setup(),brux=c('RG13',a),attacker=c('RG12',a,{attack:power,health:20,effects:[]}),defender=c('RG11',b,{attack:0,health:20,effects:[]}),barrier=c('FV11',b);
  a.reserve=[brux,attacker];a.emanation=[brux.uid];b.reserve=[defender];b.prepared=[{card:barrier,caster:b.id,targetSide:b.id,lane:0}];combat(room,a,b,[attacker],[defender]);
- assert.equal(defender.damage,Math.ceil(power/2));assert.equal(b.patron.retaliation||0,power<=2?1:0,'Retaliação usa ataque antes da redução da Barreira');
+ assert.equal(defender.damage,0,'V25 Barrier consumes one charge to prevent first damage');assert.equal(defender.spectralBarrier,false);assert.equal(b.patron.retaliation||0,power<=2?1:0,'Retaliação usa ataque antes da redução da Barreira');
 }
 console.log('Retaliação e Barreira: ataque 2 acumula; ataques 3 e 4 não acumulam, mesmo causando apenas 2 de dano.');

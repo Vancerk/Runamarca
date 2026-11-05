@@ -17,8 +17,11 @@ test('Last Breath emits exact permanent gains, with hand identities private for 
 for(const directed of [false,true])test('combat schedules hand bonus after lethal '+(directed?'strike':'clash')+'; preview and resolution share one presentation identity',()=>{
  const {room,a,b,spectator}=setup();room.phase='formation';const source=card('FEX09',a),normal=card('FL17',a),attacker=card('FL03',b,{attack:10,health:10,effects:directed?[{op:'initiative'}]:[]});a.reserve=[source];a.formation[0]=source.uid;a.hand=[normal];b.reserve=[attacker];b.formation[0]=attacker.uid;
  const original=setTimeout;let finish;try{globalThis.setTimeout=fn=>{finish=fn;return 0;};act(room,a,{type:'ready'},catalog);act(room,b,{type:'ready'},catalog);}finally{globalThis.setTimeout=original;}
- const timeline=view(room,a).combat.timeline,index=timeline.findIndex(s=>s.kind==='hand_buff'),buff=timeline[index].buff;assert.ok(index>0);assert.equal(timeline[index-1].kind,directed?'strike':'clash');assert.equal(timeline[index-1].lane,0);assert.equal(buff.targets[0].uid,normal.uid);assert.equal(normal.attack,1,'simulation cannot mutate the real hand');
- for(const viewer of [b,spectator])assert.equal(view(room,viewer).combat.timeline[index].buff.targets,undefined);
+ // Progressive reveal: future combat steps are only sent once the reveal step has finished.
+ const at=(ms,viewer)=>{const now=Date.now;Date.now=()=>room.combat.startedAt+ms;try{return view(room,viewer).combat;}finally{Date.now=now;}},revealed=room.combat.timeline[0].duration;
+ assert.equal(at(0,a).timeline.some(s=>s.kind==='hand_buff'),false,'hand bonus stays unsent while positions are secret');
+ const timeline=at(revealed,a).timeline,index=timeline.findIndex(s=>s.kind==='hand_buff'),buff=timeline[index].buff;assert.ok(index>0);assert.equal(timeline[index-1].kind,directed?'strike':'clash');assert.equal(timeline[index-1].lane,0);assert.equal(buff.targets[0].uid,normal.uid);assert.equal(normal.attack,1,'simulation cannot mutate the real hand');
+ for(const viewer of [b,spectator])assert.equal(at(revealed,viewer).timeline[index].buff.targets,undefined);
  finish();assert.equal(normal.attack,2);assert.equal(room.events.find(e=>e.type==='hand_buff').buffId,buff.buffId);
 });
 test('simultaneous Last Breaths are ordered after a spell and before later combat steps',()=>{

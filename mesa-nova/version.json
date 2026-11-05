@@ -1,0 +1,10 @@
+{
+  "version": "26.0.0",
+  "label": "V26",
+  "channel": "release",
+  "releasedAt": "2026-11-05",
+  "startedAt": "2026-11-01",
+  "base": "V25 (d1420a6)",
+  "interface": "Mesa 3D · revisão visual de 04/11/2026",
+  "note": "Publicação autorizada pelo dono. Código exato identificado pelo commit; persistem as limitações de desempenho documentadas."
+}

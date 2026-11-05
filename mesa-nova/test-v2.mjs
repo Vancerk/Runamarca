@@ -7,7 +7,7 @@ import {act,easyBotAction,join,makeRoom,view} from './game.mjs';
 const catalog=JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'../test/fixtures/legacy-catalog.json'),'utf8'));
 const limit={lacaio:4,padrao:3,elite:2,soberano:1};
 for(const deck of catalog.decks){
-  assert.ok(deck.cards.reduce((total,card)=>total+card.quantity,0)<=30);
+  assert.equal(deck.cards.reduce((total,card)=>total+card.quantity,0),30);
   for(const card of deck.cards)assert.ok(card.quantity<=limit[card.rarity],`${card.id}: raridade inválida`);
 }
 assert.ok(catalog.decks.find(d=>d.affinity==='forja').cards.filter(c=>c.type==='creature').every(c=>c.effects.length),'Forja precisa de habilidades nas criaturas');
@@ -20,8 +20,8 @@ assert.throws(()=>act(room,watcher,{type:'deck',deckId:'ruptura-cacada'},catalog
 act(room,a,{type:'deck',deckId:'ruptura-cacada'},catalog);
 act(room,b,{type:'deck',deckId:'fluxo-selos'},catalog);
 [a,b]=[room.players.find(p=>p.id===room.first),room.players.find(p=>p.id!==room.first)];assert.equal(room.first,room.coinWinner);
-assert.equal(a.deck.length+a.hand.length,24);
-assert.equal(b.deck.length+b.hand.length,24);
+assert.equal(a.deck.length+a.hand.length,30);
+assert.equal(b.deck.length+b.hand.length,30);
 assert.equal(view(room,watcher).players.every(p=>p.hand===undefined),true,'espectador não vê mãos');
 assert.equal(room.phase,'mulligan');
 assert.throws(()=>act(room,room.players.find(p=>p.id===room.coinWinner),{type:'first',playerId:b.id},catalog),/automática/,'ordem não muda após a escolha');

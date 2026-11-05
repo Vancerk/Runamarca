@@ -23,7 +23,7 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a}=setup();const source=place(a,card('FL03',a,{attack:1,health:20,effects:[{op:'attack_modifier',amount:1,timing:'revelation',target:'self'},{op:'attack_modifier',amount:2,timing:'revelation',target:'self'}]}),0);room.phase='resolving';resolveCombat(room);assert.equal(room.preClash[0].cards[0].attack,4);assert.equal(room.revelationsApplied.length,2);
 }
 {
- const {room,a,b}=setup();const source=place(a,card('FL16',a),0),spell=card('FV11',a);a.prepared.push({card:spell,targetSide:a.id,lane:0});place(b,card('FL05',b),0);room.phase='resolving';resolveCombat(room);const dead=a.discard.find(c=>c.uid===source.uid);assert.equal(dead.health,3);assert.equal(dead.temporaryHealth,undefined);assert.ok(dead.damage>=dead.health);
+ const {room,a,b}=setup();const source=place(a,card('FL16',a),0),spell=card('FV11',a);a.prepared.push({card:spell,targetSide:a.id,lane:0});place(b,card('FL05',b),0);room.phase='resolving';resolveCombat(room);assert.ok(a.reserve.includes(source));assert.ok(!a.discard.includes(source));assert.equal(source.health,3);assert.equal(source.temporaryHealth,undefined);assert.equal(source.damage,0);assert.equal(source.spectralBarrier,false,'Barreira impede o dano positivo e consome o escudo');
 }
 {
  const {room,a,b}=setup();const c=place(b,card('FL02',b,{damage:1,health:20}),0),spell=card('FL13',a);a.prepared.push({card:spell,targetSide:b.id,lane:0});room.phase='resolving';resolveCombat(room);const displayed=room.spellHealthUpdates[0].targets.find(t=>t.uid===c.uid).attack,actual=room.preClash[0].cards[1].attack;assert.equal(displayed,1);assert.equal(actual,1);

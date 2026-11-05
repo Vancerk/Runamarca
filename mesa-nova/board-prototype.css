@@ -1,0 +1,264 @@
+/* Local visual prototype. Gameplay nodes and coordinate space stay unchanged. */
+body.board-prototype{--gold:#d8ad62;--ink:#f8e5be;--muted:#c7b28e;background:#25170f}
+.board-prototype #game.camp-layout>.table{position:relative}
+.board-prototype #game.camp-layout .upper-zone{margin-bottom:12px}
+.board-prototype #game.camp-layout .lower-zone{margin-top:12px}
+.board-prototype #game.camp-layout>.table{background:radial-gradient(ellipse at 50% 30%,#a45c242b,transparent 65%),repeating-linear-gradient(1deg,#140c0755 0 2px,transparent 3px 11px,#b77e3f17 12px 13px,transparent 14px 27px),repeating-linear-gradient(0deg,#26160d 0 118px,#c28b4540 119px,#120b07 122px,#56351f 125px,#382114 240px);padding:8px 12px 20px;isolation:isolate}
+.board-prototype .opponent-hand-zone{background:none;border:0;box-shadow:none;height:86px;min-height:86px}
+.board-prototype .opponent-hand-zone::before,.board-prototype .opponent-hand-zone::after{content:none}
+.board-prototype .camp-layout .opponent-hand-zone #opponent-hand{width:calc(100% - 150px);max-width:960px;overflow:visible;padding:10px 24px 0}
+.board-prototype .camp-layout .rival-hand-back{width:76px;height:106px;border:1px solid #d3a652;border-radius:6px;transform:translateY(calc(-24px + var(--fan-rise))) rotate(var(--fan-angle));box-shadow:0 6px 9px #000b}
+.board-prototype #game.camp-layout .player-band{width:min(720px,100%);align-self:center;height:98px;min-height:98px;background:linear-gradient(100deg,#1c130f,#302116 50%,#1c130f);border:2px solid #b88742;border-radius:18px 5px 18px 5px;box-shadow:inset 0 0 0 3px #29180e,inset 0 0 0 4px #c5934566,0 5px 10px #0009;margin:2px 0;z-index:8}
+.board-prototype .camp-layout .player-band .fighter:before{content:none}
+.board-prototype .camp-layout .player-band .band-left{padding:0;position:static}
+.board-prototype .camp-layout .band-left .band-identity{display:block;position:absolute;left:24px;top:22px;transform:none;width:calc(50% - 74px);max-width:none}
+.board-prototype .band-identity .patron-info strong{font:600 15px Georgia,serif;color:#f9e6be}
+.board-prototype .band-identity .patron-info .muted{display:none!important}
+.board-prototype .camp-layout .player-band .fighter>.patron-ether{top:68%;right:calc(100% + 20px);background:none;border:0;box-shadow:none}
+.board-prototype .camp-layout .player-band .patron-avatar{width:76px;height:88px}
+.board-prototype .patron-avatar .patron-card{border-radius:50%;border:2px solid #d5aa5c}
+.board-prototype .camp-layout .player-band .patron-equipment{left:calc(100% + 28px)}
+.board-prototype .camp-layout .reserve-camp{align-self:center;width:min(720px,100%);max-width:720px!important;height:90px;min-height:90px;padding:22px 20px 6px;border:2px solid #ac7d3f;border-radius:5px 5px 15px 15px;background:linear-gradient(0deg,#291a11e8,#58351fdd);box-shadow:inset 0 0 0 3px #281a11,inset 0 0 0 4px #c5934544,0 5px 9px #0007;z-index:6}
+.board-prototype .camp-layout .reserve-camp::before,.board-prototype .camp-layout .reserve-camp::after{content:none}
+.board-prototype .camp-layout .reserve-camp .card-row{min-height:58px;gap:12px}
+.board-prototype .camp-layout .reserve-camp .card.mini.combat-card{width:68px;flex-basis:68px}
+.board-prototype .camp-layout .reserve-camp>.zone-head{font:600 10px Georgia,serif;letter-spacing:.12em;top:5px;color:#f1d299}
+.board-prototype .camp-marker{display:none}
+.board-prototype .camp-layout .camp-log{left:8px;top:3px;width:72px;font-size:10px}
+.board-prototype .camp-layout .camp-log[open]{width:min(310px,calc(100vw - 42px))}
+.board-prototype #game.camp-layout .board{border:0;background:none;box-shadow:none;margin:12px 0 14px;padding:18px 8px 24px;min-height:330px;grid-template-columns:118px minmax(0,1fr) 118px!important;column-gap:16px;isolation:isolate}
+/* A recessed trapezoid and a bowed near edge create depth without distorting HUD,
+   hit targets, drag coordinates or hidden-card presentation. */
+.board-prototype #game.camp-layout .board:before{content:'';position:absolute;inset:0 130px 8px;transform:none;clip-path:polygon(4% 0,96% 0,100% 94%,97% 100%,3% 100%,0 94%);border-radius:18px 18px 48% 48% / 16px 16px 18px 18px;background:repeating-linear-gradient(45deg,transparent 0 18px,#d6af6610 19px,transparent 20px 38px),repeating-linear-gradient(-45deg,transparent 0 18px,#d6af6608 19px,transparent 20px 38px),radial-gradient(ellipse at 50% 15%,#14606c,#083944 65%,#04272e);box-shadow:inset 0 0 0 3px #bd8f49,inset 0 0 0 7px #062f36,inset 0 0 35px 12px #001b22;z-index:-1;pointer-events:none}
+.board-prototype #game.camp-layout .board:after{content:'';position:absolute;left:132px;right:132px;bottom:0;height:18px;border-radius:0 0 50% 50%;border-bottom:5px solid #92622e;background:linear-gradient(#092d31,#061e22);box-shadow:0 9px 12px #0009;z-index:-2;pointer-events:none}
+.board-prototype #game.camp-layout .board>.lanes,.board-prototype #game.camp-layout .lanes>.lane{height:284px;min-height:284px}
+.board-prototype #game.camp-layout .lane{border:0;background:none;box-shadow:none;padding:4px 0}
+.board-prototype #game.camp-layout .lane::before{content:none}
+.board-prototype #game.camp-layout .lane-side{position:relative;margin:4px 27px;border:1px solid #c6a15b77;border-radius:7px;background:#07303a5c;box-shadow:inset 0 0 0 3px #072e3444}
+.board-prototype #game.camp-layout .lane-side:first-child{margin-left:34px;margin-right:34px}
+.board-prototype .lane-side:before{content:'✦';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#b69b5659;font:36px Georgia,serif;pointer-events:none}
+.board-prototype .lane-side .drop-label{z-index:1;background:#062c32b0;border-color:#a8884055;font-size:10px;min-width:0;max-width:100%}
+.board-prototype #game.camp-layout .lane-side .card.mini.combat-card{width:112px;flex-basis:112px;z-index:2}
+.board-prototype .camp-layout .emanation-column{border:0;background:none;box-shadow:none}
+.board-prototype .camp-layout .emanation-column>b{display:none}
+.board-prototype .emanation-column>span{background:#102e2b;border:1px solid #ad8c48;color:#ecd19c;border-radius:3px;font-size:9px;left:-12px;right:-12px}
+.board-prototype .camp-layout .combat-emanation .emana-empty{border:1px solid #bd9c55;border-radius:10px;background:radial-gradient(ellipse,#53714977,#132f2d);box-shadow:inset 0 0 0 3px #16322a!important}
+.board-prototype .camp-layout .combat-emanation .emana-empty:after{content:'☀';color:#d1aa5b88}
+.board-prototype #game.camp-layout .nartvanyr{border:2px solid #b98945;border-radius:10px;background:linear-gradient(90deg,#24170f,#49301d,#24170f);box-shadow:inset 0 0 0 3px #20140d,0 5px 10px #0008;min-height:280px}
+.board-prototype #game.camp-layout .board>.center-actions{border:1px solid #bd9655;border-radius:9px;background:linear-gradient(#352418,#1e160f);box-shadow:0 5px 10px #0008;color:#f6dfad;font-size:12px;padding:12px 6px}
+.board-prototype .center-actions .notice{background:none;border:0;padding:0;margin-bottom:10px}
+.board-prototype .center-actions button{background:linear-gradient(#e6c88e,#b88c48);color:#281b10;border-color:#f0d69d;font-weight:700}
+.board-prototype .camp-layout .hand-zone{background:none;border:0;height:188px;min-height:188px}
+.board-prototype #game.camp-layout .hand-zone #hand{height:174px}
+.board-prototype .camp-layout .hand-card{width:120px;flex-basis:120px}
+.board-prototype .camp-utilities{left:10px;top:12px}
+.board-prototype #game.camp-layout .board>#center-actions{transform:none!important}
+.board-prototype #game.camp-layout .player-band.upper-zone{margin-bottom:14px}
+.board-prototype #game.camp-layout .player-band.lower-zone{margin-top:14px}
+@media(max-width:900px){
+ .board-prototype #game.camp-layout>.table{padding:8px 6px 16px}
+ .board-prototype #game.camp-layout .board{grid-template-columns:86px minmax(0,1fr) 86px!important;gap:8px;padding-inline:2px}
+ .board-prototype #game.camp-layout .board:before{left:91px;right:91px}
+ .board-prototype #game.camp-layout .board:after{left:94px;right:94px}
+ .board-prototype #game.camp-layout .lane-side{margin-inline:18px}
+ .board-prototype #game.camp-layout .lane-side:first-child{margin-inline:22px}
+ .board-prototype #game.camp-layout .lane-side .card.mini.combat-card{width:84px;flex-basis:84px}
+ .board-prototype .camp-layout .player-band .patron-equipment{left:calc(100% + 14px)}
+ .board-prototype .camp-layout .player-band .fighter>.patron-ether{right:calc(100% + 12px)}
+}
+
+/* Compact, stable composition: the slots never depend on hand count or hover. */
+.board-prototype #game.camp-layout>.table{background:radial-gradient(ellipse at 50% 40%,#93663c22,transparent 70%),repeating-linear-gradient(3deg,#38271d 0 2px,#402d20 3px 7px,#35251b 8px 9px,#463021 10px 28px);}
+.board-prototype .camp-layout .reserve-camp{border-color:#8f653c;border-bottom:7px solid #a07140;border-radius:5px;background:repeating-linear-gradient(2deg,#0000 0 5px,#b4874e16 6px,#0000 8px 17px),linear-gradient(#21170f,#4a301e 78%,#694326);box-shadow:inset 7px 0 8px #0008,inset -7px 0 8px #0008,inset 0 6px 10px #000b,0 3px 0 #392215,0 7px 7px #0007}
+.board-prototype #game.camp-layout .board:before{clip-path:polygon(8% 0,92% 0,100% 92%,97% 100%,3% 100%,0 92%);background:repeating-linear-gradient(80deg,#ffffff03 0 1px,transparent 2px 5px),radial-gradient(ellipse at 50% 0,#286877,#0a414b 62%,#042a32);}
+.board-prototype .camp-layout .hand-zone,.board-prototype .camp-layout .hand-zone:has(.card:hover,.card:focus-visible){height:188px;min-height:188px;transition:none}
+@media(min-width:901px){
+ .board-prototype #game.camp-layout>.table{padding:6px 12px 28px;justify-content:center}
+ .board-prototype .camp-layout .opponent-hand-zone{height:62px;min-height:62px}
+ .board-prototype .camp-layout .rival-hand-back{width:64px;height:90px;transform:translateY(calc(-32px + var(--fan-rise)*.5)) rotate(calc(var(--fan-angle)*.6))}
+ .board-prototype #game.camp-layout .player-band{width:560px;height:78px;min-height:78px;margin:2px 0!important;padding:0 12px}
+ .board-prototype .camp-layout .player-band .fighter{height:76px}
+ .board-prototype .camp-layout .player-band .patron-avatar{width:64px;height:74px}
+ .board-prototype .camp-layout .band-left .band-identity{left:28px;top:12px;width:calc(50% - 66px)}
+ .board-prototype .band-identity .patron-info strong{font-size:13px}
+ .board-prototype .camp-layout .player-band .fighter>.patron-ether{top:67%;right:calc(100% + 9px)}
+ .board-prototype .camp-layout .player-band .patron-equipment{left:calc(100% + 9px)}
+ .board-prototype .camp-layout .reserve-camp{height:78px;min-height:78px;padding-top:18px;width:660px}
+ .board-prototype .camp-layout .reserve-camp .card-row{min-height:50px}
+ .board-prototype #game.camp-layout .board{width:min(1420px,100%);align-self:center;min-height:290px;height:290px;margin:6px 0 8px;padding:14px 8px 16px}
+ .board-prototype #game.camp-layout .board>.lanes,.board-prototype #game.camp-layout .lanes>.lane{height:260px;min-height:260px}
+ .board-prototype #game.camp-layout .board>.nartvanyr{min-height:250px}
+ .board-prototype .camp-layout .hand-zone,.board-prototype .camp-layout .hand-zone:has(.card:hover,.card:focus-visible){height:160px;min-height:160px}
+ .board-prototype #game.camp-layout .hand-zone #hand{height:150px}
+ .board-prototype .camp-layout .hand-card{width:108px;flex-basis:108px}
+}
+@media(max-width:600px){.board-prototype .camp-layout .hand-zone,.board-prototype .camp-layout .hand-zone:has(.card:hover,.card:focus-visible){height:172px;min-height:172px}}
+@media(max-width:600px){
+ .board-prototype .camp-layout .opponent-hand-zone{height:100px;min-height:100px;padding-top:24px}
+ .board-prototype .camp-layout .opponent-hand-zone #opponent-hand{width:calc(100% - 50px);padding-inline:8px;margin-right:28px}
+ .board-prototype .camp-layout .rival-hand-back{width:54px;height:76px;transform:translateY(calc(-12px + var(--fan-rise))) rotate(calc(var(--fan-angle)*.45))}
+ .board-prototype .camp-layout .opponent-hand-zone #opponent-deck-mount{right:1px;top:40px;width:30px;height:43px}
+ .board-prototype .opponent-hand-zone .deck-stack{width:28px;height:40px}
+ .board-prototype #game.camp-layout .player-band{height:100px;min-height:100px;grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr)}
+ .board-prototype .camp-layout .player-band .fighter{width:70px;grid-template-columns:70px;height:84px}
+ .board-prototype .camp-layout .player-band .patron-avatar{width:64px;height:76px}
+ .board-prototype .camp-layout .band-left .band-identity{left:9px;top:12px;width:calc(50% - 48px)}
+ .board-prototype .band-identity .patron-info strong{font-size:11px}
+ .board-prototype .camp-layout .player-band .fighter>.patron-ether{top:72%;right:calc(100% + 5px);width:84px}
+ .board-prototype .camp-layout .player-band .patron-equipment{left:calc(100% + 5px);max-width:100px}
+ .board-prototype .camp-layout .player-band .patron-equipment .patron-powers{gap:3.45px}
+ .board-prototype .camp-layout .player-band .patron-power-wrap{min-width:38px}
+ .board-prototype .camp-layout .player-band .patron-power-wrap>.patron-power{width:38px;height:38px;min-height:38px;flex-basis:38px}
+ .board-prototype .camp-layout .reserve-camp{padding-inline:10px;height:86px;min-height:86px}
+ .board-prototype .camp-layout .reserve-camp .card.mini.combat-card{width:60px;flex-basis:60px}
+ .board-prototype .camp-layout .reserve-camp>.zone-head{font-size:9px}
+ .board-prototype #game.camp-layout .board{grid-template-columns:minmax(0,1fr) 94px!important;gap:18px 8px;padding:18px 4px 8px}
+ .board-prototype #game.camp-layout .board:before{inset:0 0 auto;height:300px;clip-path:polygon(4% 0,96% 0,100% 96%,96% 100%,4% 100%,0 96%)}
+ .board-prototype #game.camp-layout .board:after{left:4px;right:4px;top:289px;bottom:auto}
+ .board-prototype #game.camp-layout .board>.lanes{grid-column:1/-1;grid-row:1}
+ .board-prototype #game.camp-layout .lane-side{margin-inline:10px}
+ .board-prototype #game.camp-layout .lane-side:first-child{margin-inline:14px}
+ .board-prototype #game.camp-layout .lane-side .card.mini.combat-card{width:64px;flex-basis:64px}
+ .board-prototype #game.camp-layout .board>.nartvanyr{min-height:96px}
+ .board-prototype #game.camp-layout .nartvanyr button{min-height:55px}
+ .board-prototype #game.camp-layout .board>.center-actions{font-size:10px;padding:6px}
+ .board-prototype #game.camp-layout .board>.center-actions{grid-column:2!important;grid-row:2!important}
+ .board-prototype #game.camp-layout .board>.nartvanyr{grid-column:1!important;grid-row:2!important}
+ .board-prototype .camp-layout .hand-zone{padding-inline:32px 52px;height:172px;min-height:172px}
+ .board-prototype .camp-layout .hand-card{width:102px;flex-basis:102px}
+ .board-prototype .camp-layout .hand-zone #self-deck-mount{right:4px;width:36px}
+ .board-prototype .hand-zone .deck-stack{width:34px;height:48px}
+ .board-prototype .camp-utilities{top:0;left:0}
+ .board-prototype .camp-menu-trigger{min-height:28px;font-size:11px}
+}
+
+/* Revision 4: coordinate-aligned engraved zones, compact identity and safe shelves. */
+.board-prototype #game.camp-layout .lane-side{border:0;background:none;box-shadow:none}
+.board-prototype #game.camp-layout .lane-side:before{content:none}
+.board-prototype #game.camp-layout .lane{position:relative}
+.board-prototype #game.camp-layout .lane:before{content:attr(data-symbol);position:absolute;inset:0;display:grid;place-items:center;font:40px Georgia,serif;color:#dcc18b70;text-shadow:0 2px 2px #001a20;pointer-events:none}
+.board-prototype #game.camp-layout .lane:after{content:'';position:absolute;inset:7px 12px;border:1px solid #c6a15b44;clip-path:polygon(7% 0,93% 0,100% 100%,0 100%);background:linear-gradient(90deg,#c6a15b18,transparent 1%,transparent 99%,#c6a15b18);pointer-events:none;z-index:-1}
+.board-prototype .camp-layout .reserve-camp{height:98px;min-height:98px;width:min(700px,100%);padding:20px 20px 12px}
+.board-prototype .camp-layout .reserve-camp .card-row{min-height:58px;height:58px;align-items:center}
+.board-prototype .camp-layout .reserve-camp .card.mini.combat-card{width:64px;flex-basis:64px}
+.board-prototype .camp-layout .board>.camp-log{left:8px;top:10px;width:118px;font-size:10px}
+.board-prototype .camp-layout .board>.camp-log[open]{width:min(290px,calc(100vw - 32px))}
+.board-prototype .history-action{display:flex;align-items:center;gap:9px;border-bottom:1px solid #a8874933;padding:6px 0;font-size:11px;line-height:1.35}
+.board-prototype .history-card{flex:0 0 34px;width:34px;height:46px;display:grid;place-items:center;background:#3c291d;border:1px solid #a88749;border-radius:3px;color:#c7a267;overflow:hidden}
+.board-prototype .history-card img{width:100%;height:100%;object-fit:cover}
+@media(min-width:901px){
+ .board-prototype #game.camp-layout .player-band{width:480px;height:64px;min-height:64px}
+ .board-prototype .camp-layout .player-band .fighter{height:62px}
+ .board-prototype .camp-layout .player-band .patron-avatar{width:56px;height:64px}
+ .board-prototype .camp-layout .band-left .band-identity{left:15px;top:7px;width:calc(50% - 56px)}
+ .board-prototype .band-identity .patron-info strong{font-size:12px}
+ .board-prototype .camp-layout .player-band .fighter>.patron-ether{top:68%;right:calc(100% + 2px)}
+ .board-prototype .camp-layout .player-band .patron-equipment{left:calc(100% + 2px)}
+ .board-prototype .camp-layout .opponent-hand-zone{height:76px;min-height:76px}
+ .board-prototype .camp-layout .hand-zone,.board-prototype .camp-layout .hand-zone:has(.card:hover,.card:focus-visible){height:154px;min-height:154px}
+ .board-prototype #game.camp-layout .board{min-height:270px;height:270px}
+ .board-prototype #game.camp-layout .board>.lanes,.board-prototype #game.camp-layout .lanes>.lane{height:240px;min-height:240px}
+ .board-prototype #game.camp-layout .board>.nartvanyr{margin-top:32px;min-height:198px}
+}
+@media(max-width:600px){
+ .board-prototype .camp-layout .board>.camp-log{top:324px;left:4px;width:calc(100% - 110px)}
+ .board-prototype #game.camp-layout .board>.nartvanyr{margin-top:36px}
+}
+
+
+/* Revision 5: environment based on the parent's inspected visual references. */
+.board-prototype #game.camp-layout>.table{
+ background-image:url('prototype-table-ambience.svg'),radial-gradient(ellipse at 91% 12%,#efb86b25,transparent 50%),radial-gradient(ellipse at 50% 42%,transparent 32%,#100c0a85 100%),url('prototype-wood.svg');
+ background-size:100% 100%,100% 100%,100% 100%,960px 360px;
+ background-repeat:no-repeat,no-repeat,no-repeat,repeat;
+ box-shadow:inset 0 0 90px 28px #120b0799;
+}
+.board-prototype #game.camp-layout .board:before{
+ background:repeating-linear-gradient(0deg,#ffffff04 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,#001b1d18 0 1px,transparent 1px 3px),radial-gradient(ellipse at 82% 8%,#356a66,#144a49 45%,#092f32 90%);
+ box-shadow:inset 0 0 0 2px #ae874a,inset 0 0 0 6px #172d29,inset 0 0 0 7px #b28c4d66,inset 0 14px 35px #001b21aa,inset -8px -10px 24px #041b2080;
+}
+.board-prototype #game.camp-layout .board:after{background:linear-gradient(#49351d,#172824 40%,#0b1918);border-bottom-color:#936b36;box-shadow:4px 10px 12px #0c0908aa}
+.board-prototype .camp-layout .reserve-camp{
+ background-image:linear-gradient(#100d0be8,#37261abe 55%,#62432655),url('prototype-wood.svg');background-size:auto,680px 240px;
+ border-color:#906638;border-bottom-color:#b38a51;box-shadow:inset 6px 3px 9px #000a,inset -5px 0 9px #0006,inset 0 -2px 3px #edc47c33,3px 7px 9px #140c098c;
+}
+.board-prototype #game.camp-layout .player-band{background:linear-gradient(105deg,#2a2019,#191611 55%,#30231a);border-color:#9e7a43;box-shadow:inset 0 1px 0 #dfbd743b,inset 0 0 0 3px #1b1712,3px 5px 8px #130c098c}
+.board-prototype #game.camp-layout .nartvanyr,.board-prototype #game.camp-layout .board>.center-actions{background:linear-gradient(110deg,#38291ce8,#1b1914f2);border-color:#a17e46;box-shadow:3px 5px 9px #130c0999,inset 0 1px #d7b17433}
+.board-prototype .lane-side>.card{filter:drop-shadow(4px 7px 4px #00151785)}
+.board-prototype #game.camp-layout .combat-emanation .emana-empty{background:radial-gradient(ellipse at 70% 10%,#587b5940,#12393670);border-color:#b79a5a77;box-shadow:inset 0 0 0 2px #14342b55!important}
+@media(max-width:1200px){.board-prototype #game.camp-layout>.table{background-image:radial-gradient(ellipse at 95% 10%,#c5914920,transparent 60%),radial-gradient(ellipse at center,transparent,#160e0980),url('prototype-wood.svg');background-size:100% 100%,100% 100%,960px 360px;background-repeat:no-repeat,no-repeat,repeat}}
+/* Revision 6: approved concept, corrected resource cap and arched patron plaques. */
+.board-prototype .patron-avatar .patron-card{border-radius:48% 48% 5px 5px / 37% 37% 5px 5px!important;border:2px solid #d4b26c;background:#1d211b;box-shadow:inset 0 0 0 2px #2d2518,2px 5px 6px #0d0b09aa!important}
+.board-prototype .patron-avatar .patron-socket{border-radius:48% 48% 5px 5px / 37% 37% 5px 5px!important;background:linear-gradient(125deg,#edcc86,#76532b 35%,#312317 64%,#ab8142);inset:-4px;box-shadow:2px 4px 5px #130d08aa}
+.board-prototype .camp-layout .patron-ether .ether-points{grid-template-columns:repeat(5,13px);gap:3px;margin-top:3px}
+.board-prototype .camp-layout .patron-ether .ether-point{width:13px;height:13px;box-sizing:border-box}
+.board-prototype .camp-layout .patron-ether .ether-point.locked{border:1px solid #947c4c66;background:radial-gradient(ellipse at 35% 25%,#3f382a,#161712);box-shadow:inset 0 1px 3px #000b;opacity:.75}
+.board-prototype .camp-layout .combat-emanation .emana-empty:after{content:'✦';font:30px/1 Georgia,serif;color:#ccb677a8;text-shadow:0 1px 1px #001f22,0 0 6px #c0ba6c33}
+.board-prototype .reserve-camp .camp-marker,.board-prototype .reserve-camp:before,.board-prototype .reserve-camp:after{display:none!important}
+
+/* All combat cards and engraved sectors share one modest camera plane.
+   DOM hit regions transform with their contents; HUD remains upright. */
+.board-prototype #game.camp-layout .board:before{clip-path:polygon(2.5% 0,97.5% 0,100% 96%,98% 100%,2% 100%,0 96%);border-radius:12px 12px 24px 24px / 12px 12px 15px 15px}
+.board-prototype #game.camp-layout .lane-side:after{content:'';position:absolute;inset:5px 9px;pointer-events:none;border:1px solid #c5ad6c38;border-radius:9px;box-shadow:inset 0 1px 2px #00191e66;z-index:-1}
+.board-prototype #game.camp-layout .lane:after{content:none}
+.board-prototype .lane-side>.card{filter:drop-shadow(-3px 5px 3px #00151785)}
+.board-prototype #game.camp-layout .player-band{border-radius:9px;background:linear-gradient(105deg,#211a14,#171711 55%,#3c2d1b);box-shadow:inset 0 1px #dfbd7440,inset 0 0 0 3px #1b1712,-3px 5px 7px #130c0999}
+.board-prototype .camp-layout .reserve-camp{border-radius:5px 5px 9px 9px;border-bottom-width:6px;box-shadow:inset 5px 3px 9px #000a,inset -5px 0 9px #0006,inset 0 -2px 3px #edc47c33,-3px 6px 7px #140c098c}
+.board-prototype .patron-power:focus-visible,.board-prototype .center-actions button:focus-visible{outline:2px solid #f9dfa4;outline-offset:4px}
+@media(min-width:901px){
+ .board-prototype #game.camp-layout .board>.lanes{transform:perspective(1500px) rotateX(11deg);transform-origin:50% 50%;transform-style:preserve-3d}
+ .board-prototype #game.camp-layout .player-band{height:72px;min-height:72px}
+ .board-prototype #game.camp-layout .player-band .fighter{height:70px}
+ .board-prototype .camp-layout .player-band .patron-avatar{width:64px;height:72px}
+ .board-prototype .camp-layout .band-left .band-identity{top:9px}
+ .board-prototype .camp-layout .player-band .fighter>.patron-ether{top:68%;right:calc(100% + 6px)}
+ .board-prototype .camp-layout .player-band .patron-equipment{left:calc(100% + 8px)}
+}
+@media(min-width:901px) and (max-height:820px){
+ .board-prototype #game.camp-layout>.table{padding:4px 10px 8px}
+ .board-prototype #game.camp-layout .player-band{height:56px;min-height:56px}
+ .board-prototype #game.camp-layout .player-band .fighter{height:54px}
+ .board-prototype .camp-layout .player-band .patron-avatar{width:50px;height:56px}
+ .board-prototype .camp-layout .band-left .band-identity{top:4px}
+ .board-prototype .camp-layout .patron-ether .ether-point{width:11px;height:11px}
+ .board-prototype .camp-layout .patron-ether .ether-points{grid-template-columns:repeat(5,11px);gap:2px}
+ .board-prototype .camp-layout .reserve-camp{height:74px;min-height:74px;padding:13px 16px 6px}
+ .board-prototype .camp-layout .reserve-camp .card-row{height:48px;min-height:48px}
+ .board-prototype .camp-layout .reserve-camp .card.mini.combat-card{width:50px;flex-basis:50px}
+ .board-prototype .camp-layout .reserve-camp>.zone-head{font-size:8px;top:1px}
+ .board-prototype #game.camp-layout .board{height:222px;min-height:222px;margin:5px 0 6px;padding:10px 8px 12px}
+ .board-prototype #game.camp-layout .board>.lanes,.board-prototype #game.camp-layout .lanes>.lane{height:200px;min-height:200px}
+ .board-prototype #game.camp-layout .lane-side .card.mini.combat-card{width:94px;flex-basis:94px}
+ .board-prototype #game.camp-layout .board>.nartvanyr{margin-top:28px;min-height:168px}
+ .board-prototype .camp-layout .opponent-hand-zone{height:56px;min-height:56px}
+ .board-prototype .camp-layout .rival-hand-back{width:54px;height:76px;transform:translateY(calc(-28px + var(--fan-rise)*.4)) rotate(calc(var(--fan-angle)*.5))}
+ .board-prototype .camp-layout .hand-zone,.board-prototype .camp-layout .hand-zone:has(.card:hover,.card:focus-visible){height:120px;min-height:120px}
+ .board-prototype #game.camp-layout .hand-zone #hand{height:120px}
+ .board-prototype .camp-layout .hand-card{width:98px;flex-basis:98px}
+}
+
+/* Quiet raster environment; all interactive elements remain native DOM. */
+.board-prototype #game.camp-layout>.table{background-image:linear-gradient(#130c0726,#130c0738),url('prototype-environment-v6.png');background-size:100% 100%,cover;background-position:center;background-repeat:no-repeat;box-shadow:inset 0 0 65px #0d090666}
+@media(max-width:1200px){.board-prototype #game.camp-layout>.table{background-image:linear-gradient(#130c074d,#130c074d),url('prototype-environment-v6.png');background-size:100% 100%,auto 100%;background-position:center}}
+
+.board-prototype .camp-layout .reserve-camp{background-image:linear-gradient(#0b0908ed,#382518bb 80%,#77512666),url('prototype-environment-v6.png');background-size:auto,1920px auto;background-position:center}
+@media(min-width:901px) and (min-height:821px){
+ .board-prototype .camp-layout .reserve-camp{height:90px;min-height:90px;padding:16px 20px 8px}
+ .board-prototype .camp-layout .reserve-camp>.zone-head{top:2px}
+}
+@media(min-width:901px){.board-prototype .camp-layout .opponent-hand-zone #opponent-deck-mount{right:calc(50% - 510px);top:12px}}
+@media(min-width:901px) and (max-height:820px){
+ .board-prototype .camp-layout .reserve-camp{height:70px;min-height:70px;padding:12px 16px 6px}
+ .board-prototype .camp-layout .reserve-camp .card-row{height:42px;min-height:42px}
+ .board-prototype .camp-layout .reserve-camp .card.mini.combat-card{width:46px;flex-basis:46px}
+ .board-prototype #game.camp-layout .board{height:202px;min-height:202px}
+ .board-prototype #game.camp-layout .board>.lanes,.board-prototype #game.camp-layout .lanes>.lane{height:180px;min-height:180px}
+ .board-prototype .camp-layout .combat-emanation .emana-empty,.board-prototype .camp-layout .combat-emanation .card.mini{width:64px!important;height:78px!important}
+ .board-prototype #game.camp-layout .board>.nartvanyr{min-height:148px}
+ .board-prototype .camp-layout .hand-card{width:94px;flex-basis:94px}
+}
+@media(min-width:901px) and (max-height:820px){.board-prototype .camp-layout .hand-card{width:86px;flex-basis:86px}}
+/* Flatten descendants into the shared plane so native hit-testing reaches slots. */
+.board-prototype #game.camp-layout .board>.lanes{transform-style:flat}
+.board-prototype #game.camp-layout .lane-side{z-index:1}
+@media(min-width:901px){.board-prototype .camp-layout .opponent-hand-zone #opponent-deck-mount{right:calc(50% - 410px)}}

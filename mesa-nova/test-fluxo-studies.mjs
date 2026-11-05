@@ -11,7 +11,7 @@ const advance=(room,p,extra={})=>act(room,p,{type:'patronPower',powerId:'estudos
  act(room,a,{type:'mulligan',cardIds:a.hand.slice(0,2).map(c=>c.uid)},catalog);assert.equal(a.study.seenIds.length,5);act(room,a,{type:'confirmMulligan'},catalog);assert.deepEqual(new Set(a.study.seenIds),new Set(a.hand.map(c=>c.studyOriginalId)));act(room,b,{type:'confirmMulligan'},catalog);assert.ok(a.study.seenIds.length===5||a.study.seenIds.length===6);
 }
 {
- const {room,a,b}=setup();const count=a.deck.length;act(room,a,{type:'patronPower',powerId:'sumario-ecoante'},catalog);assert.equal(a.mana,9);assert.equal(a.hand.length,1);assert.equal(a.deck.length,count-1);assert.equal(a.study.seenIds.length,1);assert.throws(()=>act(room,a,{type:'patronPower',powerId:'sumario-ecoante'},catalog),/utilizado/);
+ const {room,a,b}=setup();const count=a.deck.length;act(room,a,{type:'patronPower',powerId:'sumario-ecoante'},catalog);assert.equal(deck.patron.powers.find(p=>p.id==='sumario-ecoante').cost,2);assert.equal(a.mana,8);assert.equal(a.hand.length,1);assert.equal(a.deck.length,count-1);assert.equal(a.study.seenIds.length,1);assert.throws(()=>act(room,a,{type:'patronPower',powerId:'sumario-ecoante'},catalog),/utilizado/);
  const first=a.hand[0];seeStudyCard(a,first);assert.equal(a.study.seenIds.length,1);seeStudyCard(a,{uid:randomUUID(),modelId:first.modelId});assert.equal(a.study.seenIds.length,1);
  room.round++;a.hand=Array(9).fill(null).map(()=>spell(a,[]));act(room,a,{type:'patronPower',powerId:'sumario-ecoante'},catalog);assert.equal(a.study.seenIds.length,2);assert.equal(a.discard.length,1);
  assert.equal(view(room,b).players.find(p=>p.id===a.id).study.originalCards,undefined);

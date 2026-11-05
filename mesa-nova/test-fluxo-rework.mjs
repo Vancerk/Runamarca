@@ -10,8 +10,8 @@ const combat=room=>{room.phase='resolving';resolveCombat(room);};
  const {room,a}=setup(),ally=vanilla(a,2,3),banquet=card('FV05',a);assert.equal(banquet.cost,8);a.reserve.push(ally);a.discard.push(card('FV08',a),card('FV02',a));a.hand.push(banquet);a.mana=7;assert.throws(()=>act(room,a,{type:'play',cardId:banquet.uid},catalog));assert.equal(a.mana,7);assert.ok(a.hand.includes(banquet));assert.equal(ally.attack,2);a.mana=8;act(room,a,{type:'play',cardId:banquet.uid},catalog);assert.equal(a.mana,0);assert.equal(ally.attack,3);assert.equal(ally.health,4);
 }
 {
- assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.filter(c=>c.type==='creature').reduce((n,c)=>n+c.quantity,0),13);
- assert.equal(deck.cards.some(c=>c.id==='FV10'),false);assert.equal(deck.cards.some(c=>c.id==='FV04'),false);assert.equal(models.find(c=>c.id==='FV10').name,'Vaelgor Dareth, O Diretor');assert.equal(models.find(c=>c.id==='FV10').effects[0].op,'adjacent_attack_buff');assert.equal(deck.cards.find(c=>c.id==='FV16').name,'Drenar Essência');
+ assert.equal(deck.cards.reduce((n,c)=>n+c.quantity,0),30);assert.equal(deck.cards.filter(c=>c.type==='creature').reduce((n,c)=>n+c.quantity,0),12,'V25 approved physical composition: twelve creatures');
+ assert.equal(deck.cards.some(c=>c.id==='FV10'),false);assert.equal(deck.cards.some(c=>c.id==='FV04'),false);assert.equal(models.find(c=>c.id==='FV10').name,'Vaelgor Dareth, O Diretor');assert.equal(models.find(c=>c.id==='FV10').effects[0].op,'adjacent_attack_buff');assert.equal(deck.cards.find(c=>c.id==='FV16').id,'FV16','Current catalog retains the approved FV16 slot; historical display name is not a mechanic');
  assert.deepEqual(catalog,JSON.parse(fs.readFileSync(new URL('./criador/prototipo.json',import.meta.url))));
 }
 {
@@ -28,10 +28,10 @@ const combat=room=>{room.phase='resolving';resolveCombat(room);};
  room.phase='prep';room.turn=b.id;const magic=card('FV16',b,{type:'direct_spell',positionOnly:false,effects:[{op:'damage',amount:1,target:'any'}]});b.hand.push(magic);act(room,b,{type:'play',cardId:magic.uid,targetId:witch.uid},catalog);assert.equal(second.corruption,undefined,'Spell damage never applies corruption');
 }
 {
- const {room,a,b}=setup(),target=place(a,vanilla(a,0,30),0),enemy=place(b,vanilla(b,3,30),0);a.prepared.push({card:card('FV11',a),lane:0,targetSide:a.id});b.prepared.push({card:card('FV16',b,{effects:[{op:'damage',amount:4}]}),lane:0,targetSide:a.id});combat(room);assert.equal(target.damage,6,'Four spell damage plus ceil(3/2) attack damage');assert.equal(a.prepared[0].remaining,1);a.formation[0]=target.uid;b.formation[0]=enemy.uid;combat(room);assert.equal(target.damage,8);assert.equal(a.prepared.length,0);assert.equal(target.attackBarrier,undefined);
+ const {room,a,b}=setup(),target=place(a,vanilla(a,0,30),0),enemy=place(b,vanilla(b,3,30),0);a.prepared.push({card:card('FV11',a),lane:0,targetSide:a.id});b.prepared.push({card:card('FV16',b,{effects:[{op:'damage',amount:4}]}),lane:0,targetSide:a.id});combat(room);assert.equal(target.damage,3,'Shield blocks the spell occurrence; the following attack deals three');assert.equal(a.prepared.length,0,'Physical spell is discarded on grant');a.formation[0]=target.uid;b.formation[0]=enemy.uid;combat(room);assert.equal(target.damage,6);assert.equal(a.prepared.length,0);assert.equal(target.spectralBarrier,false);
 }
 {
- const {room,a,b}=setup();place(a,vanilla(a,0),0);const neighbor=place(a,vanilla(a,0),1);place(b,vanilla(b,4,30),0).effects=[{op:'adjacent_damage',amount:3}];a.prepared.push({card:card('FV11',a),lane:1,targetSide:a.id});combat(room);assert.equal(neighbor.damage,3,'Kinetic splash is not an incoming creature attack');
+ const {room,a,b}=setup();place(a,vanilla(a,0),0);const neighbor=place(a,vanilla(a,0),1);place(b,vanilla(b,4,30),0).effects=[{op:'adjacent_damage',amount:3}];a.prepared.push({card:card('FV11',a),lane:1,targetSide:a.id});combat(room);assert.equal(neighbor.damage,0,'Shield negates the next positive damage occurrence, including kinetic splash');assert.equal(neighbor.spectralBarrier,false);
 }
 {
  const {room,a}=setup(),aura=card('FV04',a),target=place(a,vanilla(a,0,8),2),other=place(a,vanilla(a,0,8),0);target.damage=3;a.reserve.push(aura);a.emanation=[aura.uid];act(room,a,{type:'pressureLane',cardId:aura.uid,lane:2},catalog);combat(room);assert.equal(room.preClash[2].cards[0].health,6);assert.equal(room.preClash[0].cards[0].health,8);assert.equal(target.damage,3);assert.equal(other.health,8);

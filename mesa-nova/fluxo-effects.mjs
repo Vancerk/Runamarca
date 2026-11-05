@@ -1,4 +1,5 @@
-import {clearProtocolHealth} from './forja-effects.mjs';
+import {decayPatronBindings} from './patron-bindings.mjs';
+import {clearProtocolHealth,expireMirages} from './forja-effects.mjs';
 export function spellBuff(card,round,permanent=false){card.spellBuff=permanent?'permanent':round;}
 export function retainAnchors(p){p.formation=[0,1,2].map(lane=>p.reserve.find(c=>((c.sleep?.remaining>0&&c.sleep.lane===lane)||(c.anchor?.remaining>0&&c.anchor.lane===lane))&&c.damage<c.health)?.uid||null);}
 // Corruption reacts to completed attacks, never spell or splash damage.
@@ -43,11 +44,14 @@ export function restoreTeleportOwners(room){
  }
  pruneSeals(room);
 }
-export function finishFields(room){
+export function finishFields(room,helpers={}){
+ expireMirages(room,helpers);
+ if(room.lastCombat){room.lastCombat.returnOrigins=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{
+  const c=p.reserve.find(c=>c.uid===uid);return c&&c.damage<c.health?[{uid,owner:p.id,lane}]:uid==='patron:'+p.id&&p.patron.hp>0?[{uid,owner:p.id,lane,patron:true}]:[];
+ }));room.lastCombat.returnKey=room.combat?.id||room.code+':'+room.combatCount;room.lastCombat.returnAt=Date.now();}
  for(const p of room.players){
-  p.formation=p.formation.map(uid=>uid==='patron:'+p.id?null:uid);
+  p.formation=p.formation.map(uid=>uid==='patron:'+p.id?null:uid);decayPatronBindings(room,p);
   for(const c of p.reserve){clearProtocolHealth(c);delete c.temporaryTrample;delete c.attackBarrier;if(c.temporaryHealth){c.health-=c.temporaryHealth;c.damage=Math.max(0,c.damage-Math.min(c.temporaryHealth,Math.max(0,c.damage-(c.temporaryDamageBefore||0))));delete c.temporaryHealth;delete c.temporaryDamageBefore;}if(c.sleep&&room.combatCount>=c.sleep.setAt&&--c.sleep.remaining<=0)delete c.sleep;if(c.anchor&&room.combatCount>=c.anchor.setAt&&--c.anchor.remaining<=0)delete c.anchor;}
-  p.prepared=p.prepared.filter(prep=>{if(!prep.card.effects?.some(e=>e.op==='barrier')||prep.lastCombat!==room.combatCount)return true;if(--prep.remaining>0)return true;p.discard.push(prep.card);return false;});
  }
  restoreTeleportOwners(room);
 }

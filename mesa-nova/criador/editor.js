@@ -517,7 +517,7 @@ function exportProject(){
 }
 function exportDeck(){
  const cards=project.filter(card=>card.kind!=='patron'),total=cards.reduce((sum,card)=>sum+Number(card.quantity),0);
- if(!cards.length||!Number.isInteger(total)||total>30)return status('O deck deve ter de 1 a 30 cartas, sem contar o Patrono.',true);
+ if(total!==30)return status('O deck deve ter exatamente 30 cartas, sem contar o Patrono.',true);
  for(const card of project){const invalid=validateDesign(card);if(invalid)return status(card.name+': '+invalid[0],true);}
  exportProject();
 }

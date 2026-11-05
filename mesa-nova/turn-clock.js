@@ -12,7 +12,7 @@
  }
  function frame(time){raf=0;mount();const scale=Math.min(2,devicePixelRatio||1),w=innerWidth,h=innerHeight;
   if(canvas.width!==Math.round(w*scale)||canvas.height!==Math.round(h*scale)){canvas.width=Math.round(w*scale);canvas.height=Math.round(h*scale);}ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,w,h);
-  const s=typeof state!=='undefined'?state:null,clock=s?.turnClock;
+  let drawing=false;const s=typeof state!=='undefined'?state:null,clock=s?.turnClock;
   if(s?.code!==currentRoom){currentRoom=s?.code;current=null;explosions=[];}
   const visible=!!clock&&clock.phase!=='mulligan'&&clock.phase===s.phase&&!document.getElementById('game')?.hidden;
   const serverNow=Date.now()-(typeof serverClockOffset==='undefined'?0:serverClockOffset);
@@ -20,9 +20,9 @@
   if(visible){
    if(current?.key!==clock.key){lastSecond=-1;stopFuse();}current=clock;
    const remaining=Math.max(0,(clock.endsAt-serverNow)/1000),box=document.getElementById('phase-actions'),button=box?.querySelector('button:last-child'),board=document.querySelector('#game .board'),lanes=document.getElementById('lanes');
-   if(button&&board&&lanes){const r=button.getBoundingClientRect(),l=lanes.getBoundingClientRect(),b=board.getBoundingClientRect(),panel=document.getElementById('center-actions'),middle=b.top+b.height/2,previous=Number.parseFloat(panel?.style.getPropertyValue('--turn-control-offset'))||0,offset=middle-(r.top+r.height/2-previous);if(panel&&Math.abs(offset-previous)>.1)panel.style.setProperty('--turn-control-offset',offset+'px');point={x:r.left+3,y:middle};
-    badge.hidden=false;badge.textContent=Math.ceil(remaining)+'s';badge.style.left=(r.left+r.width/2)+'px';badge.style.top=(r.bottom+17)+'px';badge.classList.toggle('urgent',remaining<=10);badge.title=clock.phase==='formation'?'Tempo para confirmar o combate':'Tempo de preparação';
-    if(remaining<=10){const start=Math.min(l.left+10,point.x-55),end=point.x,progress=Math.min(1,Math.max(0,1-remaining/10)),front=start+(end-start)*progress;
+   if(button&&board&&lanes){const r=button.getBoundingClientRect(),l=lanes.getBoundingClientRect(),b=board.getBoundingClientRect(),panel=document.getElementById('center-actions'),anchored=document.body.classList.contains('board-prototype'),middle=root.RunaHybrid?.scene?.field?.quad?.reduce((sum,p)=>sum+p.y,0)/4||(anchored?l.top+l.height/2:b.top+b.height/2),previous=Number.parseFloat(panel?.style.getPropertyValue('--turn-control-offset'))||0,offset=anchored?0:middle-(r.top+r.height/2-previous);if(panel&&Math.abs(offset-previous)>.1)panel.style.setProperty('--turn-control-offset',offset+'px');point={x:r.left+3,y:middle};
+    badge.hidden=true;if(lastSecond!==Math.ceil(remaining)){lastSecond=Math.ceil(remaining);badge.textContent=lastSecond+'s';}badge.style.left=(r.left+r.width/2)+'px';badge.style.top=(r.bottom+17)+'px';badge.classList.toggle('urgent',remaining<=10);badge.title=clock.phase==='formation'?'Tempo para confirmar o combate':'Tempo de preparação';
+    if(remaining<=10){drawing=true;const start=Math.min(root.RunaHybrid?.scene?.field?.quad?.[0]?.x+10||l.left+10,point.x-55),end=point.x,progress=Math.min(1,Math.max(0,1-remaining/10)),front=start+(end-start)*progress;
      const path=(a,z)=>{ctx.beginPath();ctx.moveTo(a,point.y);ctx.lineTo(z,point.y);ctx.stroke();};
      ctx.lineCap='round';ctx.lineWidth=8.75;ctx.strokeStyle='#261611';path(front,end);ctx.lineWidth=5.625;ctx.strokeStyle='#967043';path(front,end);ctx.lineWidth=2.125;ctx.strokeStyle='#c6a271';ctx.setLineDash([3,4]);path(front,end);ctx.setLineDash([]);ctx.lineWidth=2.5;ctx.strokeStyle='#38211a';path(start,front);
      const fy=point.y,glow=ctx.createRadialGradient(front,fy,0,front,fy,23);glow.addColorStop(0,'#fff0aa');glow.addColorStop(.2,'#ffc35b');glow.addColorStop(.5,'#ee6a1a88');glow.addColorStop(1,'#ee6a1a00');ctx.fillStyle=glow;ctx.fillRect(front-23,fy-23,46,46);
@@ -38,9 +38,9 @@
   }
   // The rope belongs to the table: erase it beneath every visible card, including
   // floating/dragged copies whose stacking context differs from the board's.
-  if(visible||explosions.length){
+  if(drawing||explosions.length){
    ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle='#000';ctx.beginPath();
-   for(const node of document.querySelectorAll('.card,.patron-card,.card-flight,.drag-preview,.used-spell,.combat-return-card,.grimoire-floating-card')){
+   for(const node of document.querySelectorAll('.card,.patron-card,.card-flight,.drag-preview,.used-spell,.combat-return-card,.grimoire-floating-card,.emanation-column>span')){
     const r=node.getBoundingClientRect();if(!r.width||!r.height||getComputedStyle(node).visibility==='hidden'||node.closest('[hidden]'))continue;
     ctx.roundRect(r.left-2,r.top-2,r.width+4,r.height+4,Math.min(7,r.width*.06));
    }
@@ -48,6 +48,6 @@
   }
  }
  function sync(){const s=typeof state==='undefined'?null:state;if(!s||['lobby','finished'].includes(s.phase)){root.RunaTurnClock.clear();return;}if(!raf)raf=requestAnimationFrame(frame);}
- root.RunaTurnClock={sync,burst,clear(){stopFuse();document.getElementById('center-actions')?.style.removeProperty('--turn-control-offset');current=null;explosions=[];if(raf)cancelAnimationFrame(raf);raf=0;if(canvas)ctx.clearRect(0,0,canvas.width,canvas.height);if(badge)badge.hidden=true;}};
+ root.RunaTurnClock={sync,burst,get position(){return point&&{...point};},clear(){stopFuse();document.getElementById('center-actions')?.style.removeProperty('--turn-control-offset');current=null;explosions=[];if(raf)cancelAnimationFrame(raf);raf=0;if(canvas)ctx.clearRect(0,0,canvas.width,canvas.height);if(badge)badge.hidden=true;}};
  setInterval(sync,250);document.addEventListener('visibilitychange',sync);
 })(globalThis);

@@ -31,3 +31,7 @@ Execute `npm test`: inclui servidor, contas, orçamento, regras do RunaMarca, ap
 - [Mesa anterior: instruções históricas](README-LEGADO.md)
 
 As rotas e o material antigo permanecem para compatibilidade; seus sistemas de Runas e compra manual não são as regras atuais de /runamarca/.
+
+## Protótipo local da mesa híbrida
+
+Camada visual WebGL sobre a mesa atual, sem outro motor nem mudanças de regra. Para executar: `ABRIR-PROTOTIPO.cmd` ou `node --experimental-vm-modules scripts/board-prototype-server.mjs` (Node ≥ 24, só em 127.0.0.1:3086). Abra http://127.0.0.1:3086/runamarca/hybrid/index.html e recarregue com Ctrl+F5 (revisão atual: `hybrid-12`, câmera a 5° da vertical). Os parâmetros visuais (como o ângulo da câmera, `CAMERA_TILT_DEGREES`) ficam em `mesa-nova/hybrid/config.js`. Guia, medições e limitações estão em [mesa-nova/hybrid/README.md](mesa-nova/hybrid/README.md), e as evidências, em `prototype-qa/`.

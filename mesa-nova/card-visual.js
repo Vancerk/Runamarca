@@ -14,7 +14,7 @@ const kindNames = { creature: 'Criatura', spell: 'Magia', equipment: 'Equipament
 
 const imageCache=new Map();
 let fontsReady;
-function prepareFonts(){return fontsReady??=(document.fonts?Promise.all(['700 43px Cinzel','600 32px "EB Garamond"','italic 600 32px "EB Garamond"'].map(font=>document.fonts.load(font))).catch(()=>{}):Promise.resolve());}
+function prepareFonts(){return fontsReady??=(document.fonts?Promise.all(['600 32px "DM Sans"','700 32px "DM Sans"','700 43px Cinzel','600 32px "EB Garamond"','italic 600 32px "EB Garamond"'].map(font=>document.fonts.load(font))).catch(()=>{}):Promise.resolve());}
 function fitLabel(ctx,label,size,family,width){
  while(size>8){ctx.font=family.replace('{size}',size);if(ctx.measureText(label).width<=width)break;size-=.5;}
  return label;
@@ -55,8 +55,8 @@ function richRuns(text, allItalic = false) {
   if (part) runs.push({ text: part, italic });
   return runs.flatMap(run=>run.text.split(mechanicPattern).map((text,index)=>({text,italic:run.italic||index%2===1})).filter(part=>part.text));
 }
-function wrapRichLines(ctx, runs, width, size) {
-  const font = italic => `${italic ? 'italic ' : ''}600 ${size}px "EB Garamond",Georgia,serif`;
+function wrapRichLines(ctx, runs, width, size, family='"EB Garamond",Georgia,serif') {
+  const font = italic => `${italic ? 'italic ' : ''}600 ${size}px ${family}`;
   const lines = [[]]; let used = 0;
   const nextLine = () => { lines.push([]); used = 0; };
   const append = (text, italic, measured, color) => {
@@ -88,14 +88,15 @@ function wrapRichLines(ctx, runs, width, size) {
   return lines;
 }
 function layoutRules(ctx,card,{width=650,top=884,bottom=1097}={}){
+ const family=card.reader?'"DM Sans",Arial,sans-serif':'"EB Garamond",Georgia,serif';
  const highlighted=new Set(card.highlightKeywords||[]);const runs=richRuns(card.rules||'',Boolean(card.rulesItalic)).map(run=>({...run,color:highlighted.has(run.text.trim().replace(/[.]$/,''))?'#17678b':undefined}));let size=card.autoFitRules?52:number(card.fontRules,16,52,31),lines,lineHeight,ascent,descent,total;
  do{
-  lines=wrapRichLines(ctx,runs,width,size);lineHeight=size*1.2;ascent=0;descent=0;
-  for(const line of lines)for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+size+'px "EB Garamond",Georgia,serif';const m=ctx.measureText(run.text);ascent=Math.max(ascent,m.actualBoundingBoxAscent??size*.85);descent=Math.max(descent,m.actualBoundingBoxDescent??size*.25);}
+  lines=wrapRichLines(ctx,runs,width,size,family);lineHeight=size*1.2;ascent=0;descent=0;
+  for(const line of lines)for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+size+'px '+family;const m=ctx.measureText(run.text);ascent=Math.max(ascent,m.actualBoundingBoxAscent??size*.85);descent=Math.max(descent,m.actualBoundingBoxDescent??size*.25);}
   total=ascent+descent+Math.max(0,lines.length-1)*lineHeight;
   if(total<=bottom-top||size<=1)break;size--;
  }while(true);
- return {size,lines,lineHeight,y:top+(bottom-top-total)/2+ascent,total,fits:total<=bottom-top};
+ return {size,family,lines,lineHeight,y:top+(bottom-top-total)/2+ascent,total,fits:total<=bottom-top};
 }
 
 let grainTexture=null;
@@ -154,21 +155,27 @@ async function drawCard(canvas,card,{assets="",hideStats=false}={}){
  const icons=Object.fromEntries(energyIconIds.map((id,i)=>[id,loadedIcons[i]])),ctx=canvas.getContext('2d');ctx.setTransform(canvas.width/900,0,0,canvas.height/1260,0,0);ctx.clearRect(0,0,900,1260);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.globalAlpha=1;ctx.shadowBlur=0;
  rarityFrame(ctx,card,1260,25,3);
  const wine=ctx.createLinearGradient(40,40,850,1210);const palette={ruptura:['#55251b','#2a1210','#63281d','#26100f'],forja:['#89701f','#493e18','#ac8b2d','#4b401b'],fluxo:['#214966','#102332','#2d5f7c','#0b1c29']}[card.themeEnergy]||['#55251b','#2a1210','#63281d','#26100f'];palette.forEach((color,i)=>wine.addColorStop([0,.4,.7,1][i],color));framedPanel(ctx,40,35,820,1180,wine,25);grain(ctx,46,40,808,1170,.2);
+ const artHeight=card.reader?600:713;
  // Broad illustration with chamfered gold edges, matching the supplied reference.
- ctx.save();bevelPath(ctx,49,129,802,713,18);ctx.clip();ctx.fillStyle='#201812';ctx.fillRect(49,129,802,713);if(art){const zoom=number(card.artZoom,100,230,100)/100,scale=(card.artFit==='contain'?Math.min(802/art.width,713/art.height):Math.max(802/art.width,713/art.height))*zoom,w=art.width*scale,h=art.height*scale;ctx.drawImage(art,49+(802-w)*number(card.artX,0,100,50)/100,129+(713-h)*number(card.artY,0,100,50)/100,w,h);}else{const g=ctx.createRadialGradient(450,420,20,450,480,560);g.addColorStop(0,'#766448');g.addColorStop(1,'#1b2324');ctx.fillStyle=g;ctx.fillRect(49,129,802,713);ctx.textAlign='center';ctx.fillStyle='#dcc296';ctx.font='110px Georgia';ctx.fillText('◈',450,450);ctx.font='24px Cinzel,Georgia';ctx.fillText('INSIRA SUA ILUSTRAÇÃO',450,520);}ctx.restore();bevelPath(ctx,49,129,802,713,18);ctx.strokeStyle='#26190f';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#cda466';ctx.lineWidth=3;ctx.stroke();
+ ctx.save();bevelPath(ctx,49,129,802,artHeight,18);ctx.clip();ctx.fillStyle='#201812';ctx.fillRect(49,129,802,artHeight);if(art){const zoom=number(card.artZoom,100,230,100)/100,scale=(card.artFit==='contain'?Math.min(802/art.width,artHeight/art.height):Math.max(802/art.width,artHeight/art.height))*zoom,w=art.width*scale,h=art.height*scale;ctx.drawImage(art,49+(802-w)*number(card.artX,0,100,50)/100,129+(artHeight-h)*number(card.artY,0,100,50)/100,w,h);}else{const g=ctx.createRadialGradient(450,420,20,450,480,560);g.addColorStop(0,'#766448');g.addColorStop(1,'#1b2324');ctx.fillStyle=g;ctx.fillRect(49,129,802,artHeight);ctx.textAlign='center';ctx.fillStyle='#dcc296';ctx.font='110px Georgia';ctx.fillText('◈',450,450);ctx.font='24px Cinzel,Georgia';ctx.fillText('INSIRA SUA ILUSTRAÇÃO',450,520);}ctx.restore();bevelPath(ctx,49,129,802,artHeight,18);ctx.strokeStyle='#26190f';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#cda466';ctx.lineWidth=3;ctx.stroke();
  framedPanel(ctx,49,49,802,76,wine,15);grain(ctx,55,55,790,64,.18);
- let titleSize=number(card.fontName,24,72,43);const title=card.name||'Nova carta';do{ctx.font='700 '+titleSize+'px Cinzel,Georgia,serif';if(ctx.measureText(title).width<660||titleSize<=24)break;titleSize--;}while(true);ctx.fillStyle='#fff1d2';ctx.textAlign='left';ctx.textBaseline='middle';ctx.shadowColor='#000';ctx.shadowBlur=5;fitLabel(ctx,title,titleSize,'700 {size}px Cinzel,Georgia,serif',660);ctx.fillText(title,76,88);ctx.shadowBlur=0;
+ let titleSize=number(card.fontName,30,72,53);const title=card.name||'Nova carta';do{ctx.font='700 '+titleSize+'px "DM Sans",Arial,sans-serif';if(ctx.measureText(title).width<660||titleSize<=24)break;titleSize--;}while(true);ctx.fillStyle='#fff1d2';ctx.textAlign='left';ctx.textBaseline='middle';ctx.shadowColor='#000';ctx.shadowBlur=0;fitLabel(ctx,title,titleSize,'700 {size}px "DM Sans",Arial,sans-serif',660);ctx.fillText(title,76,88);ctx.shadowBlur=0;
  // Cost set into a gold medallion, instead of a detached label.
- const affinity=card.themeEnergy||'ruptura',cx=805,cy=87;ctx.beginPath();ctx.arc(cx,cy,52.7,0,Math.PI*2);const orb=ctx.createRadialGradient(cx-17,cy-20.4,2,cx,cy,56.1);orb.addColorStop(0,energyColors[affinity]||'#bd5847');orb.addColorStop(1,{ruptura:'#702d23',forja:'#765013',fluxo:'#244e78'}[affinity]||'#702d23');ctx.fillStyle=orb;ctx.fill();ctx.strokeStyle='#f0ca82';ctx.lineWidth=5;ctx.stroke();ctx.fillStyle='#fff7dc';ctx.strokeStyle='#26160f';ctx.lineWidth=5;ctx.font='700 54.6px Georgia,serif';ctx.textAlign='center';const cost=card.kind==='patron'?'◈':String(number(card.generic,0,20));ctx.textBaseline='alphabetic';const metrics=ctx.measureText(cost),costY=cy+(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2;ctx.strokeText(cost,cx,costY);ctx.fillText(cost,cx,costY);
- const paper=ctx.createRadialGradient(450,970,10,450,995,470);paper.addColorStop(0,'#f4dfb7');paper.addColorStop(.7,'#dfbf8b');paper.addColorStop(1,'#aa7548');framedPanel(ctx,64,855,772,272,paper,20);ctx.save();bevelPath(ctx,69,860,762,262,17);ctx.clip();grain(ctx,64,855,772,272,.28);if(icons[affinity]){ctx.globalAlpha=.12;ctx.drawImage(icons[affinity],329.25,870.25,241.5,241.5);}ctx.restore();
- const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora do limite de 30 cartas.':'Escreva aqui o efeito da carta.'),layout=layoutRules(ctx,{...card,rules});let y=layout.y;ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of layout.lines){let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+layout.size+'px "EB Garamond",Georgia,serif';ctx.fillStyle=run.color||'#281b10';ctx.fillText(run.text,x,y);x+=run.width;}y+=layout.lineHeight;}
- framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#f6e5be';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.textAlign='left';ctx.font='700 25px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(card.kind==='spell'?'Magia':card.typeLabel||kindNames[card.kind]||'Carta').toUpperCase(),25,'700 {size}px Cinzel,Georgia,serif',190),174,1174);ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();ctx.font='600 '+number(card.fontSubtype,14,38,21)+'px Cinzel,Georgia,serif';ctx.fillText(fitLabel(ctx,(card.kind==='spell'?spellModesLabel(card):card.subtype||'').toUpperCase(),number(card.fontSubtype,14,38,21),'600 {size}px Cinzel,Georgia,serif',325),395,1174);
+ const affinity=card.themeEnergy||'ruptura',cx=805,cy=87;ctx.beginPath();ctx.arc(cx,cy,52.7,0,Math.PI*2);const orb=ctx.createRadialGradient(cx-17,cy-20.4,2,cx,cy,56.1);orb.addColorStop(0,energyColors[affinity]||'#bd5847');orb.addColorStop(1,{ruptura:'#702d23',forja:'#765013',fluxo:'#244e78'}[affinity]||'#702d23');ctx.fillStyle=orb;ctx.fill();ctx.strokeStyle='#f0ca82';ctx.lineWidth=5;ctx.stroke();ctx.fillStyle='#fff7dc';ctx.strokeStyle='#26160f';ctx.lineWidth=5;ctx.font='700 66px "DM Sans",Arial,sans-serif';ctx.textAlign='center';const cost=card.kind==='patron'?'◈':String(number(card.generic,0,20));ctx.textBaseline='alphabetic';const metrics=ctx.measureText(cost),costY=cy+(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2;ctx.strokeText(cost,cx,costY);ctx.fillText(cost,cx,costY);
+ const paperTop=card.reader?742:855,paperHeight=1127-paperTop;
+ const paper=ctx.createRadialGradient(450,970,10,450,995,470);paper.addColorStop(0,'#f4dfb7');paper.addColorStop(.7,'#dfbf8b');paper.addColorStop(1,'#aa7548');framedPanel(ctx,64,paperTop,772,paperHeight,paper,20);ctx.save();bevelPath(ctx,69,paperTop+5,762,paperHeight-10,17);ctx.clip();grain(ctx,64,paperTop,772,paperHeight,card.reader?.06:.18);if(icons[affinity]&&!card.reader){ctx.globalAlpha=.12;ctx.drawImage(icons[affinity],329.25,870.25,241.5,241.5);}ctx.restore();
+ const rules=card.rules||(card.kind==='patron'?'Seu deck usa cartas de '+(energyNames[affinity]||affinity)+'.\nComeça em jogo, fora do limite de 30 cartas.':'Escreva aqui o efeito da carta.'),layout=layoutRules(ctx,{...card,rules},card.reader?{width:698,top:paperTop+28,bottom:1097}:undefined);let y=layout.y;ctx.fillStyle='#281b10';ctx.textAlign='left';ctx.textBaseline='alphabetic';for(const line of layout.lines){let x=450-line.reduce((sum,run)=>sum+run.width,0)/2;for(const run of line){ctx.font=(run.italic?'italic ':'')+'600 '+layout.size+'px '+layout.family;ctx.fillStyle=run.color||'#281b10';ctx.fillText(run.text,x,y);x+=run.width;}y+=layout.lineHeight;}
+ // Solid strokes at reading sizes; the descriptive paragraph above is unchanged.
+ framedPanel(ctx,150,1142,600,62,wine,12);ctx.fillStyle='#fff1d2';ctx.textAlign='left';ctx.textBaseline='middle';
+ ctx.fillText(fitLabel(ctx,(card.kind==='spell'?'Magia':card.typeLabel||kindNames[card.kind]||'Carta'),34,'700 {size}px "DM Sans",Arial,sans-serif',190),174,1174);
+ ctx.strokeStyle='#cda46699';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(374,1155);ctx.lineTo(374,1191);ctx.stroke();
+ ctx.fillText(fitLabel(ctx,(card.kind==='spell'?spellModesLabel(card):card.subtype||''),number(card.fontSubtype,31,38,34),'600 {size}px "DM Sans",Arial,sans-serif',325),395,1174);
  for(const [x,y] of [[48,155],[852,155],[48,550],[852,550],[48,1004],[852,1004],[450,1216]])diamond(ctx,x,y,y===1216?15:9);
  if(['creature','equipment'].includes(card.kind)&&attackIcon)ctx.drawImage(attackIcon,5,1085,159.85,159.85);
  if(card.kind==='creature'||card.kind==='patron')drawHeart(ctx,826,1180);
  if(card.kind==='equipment')drawArmorShield(ctx,826,1180);
  ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.font='700 64px "EB Garamond",Georgia,serif';ctx.fillStyle='#fff9df';ctx.strokeStyle='#14231e';ctx.lineWidth=5;
- const stats=hideStats?[]:card.kind==='equipment'?[[String('+'+card.power),83.3,1172,78],[card.durability,826,1177.12,94]]:card.kind==='creature'?[[card.power,83.3,1172,78],[card.health,826,1177.12,94]]:card.kind==='patron'?[[card.patronHealth||20,826,1177.12,94]]:[];for(const [value,x,centerY,maxWidth] of stats){const label=String(value);let fontSize=51.2;do{ctx.font='700 '+fontSize+'px "EB Garamond",Georgia,serif';if(ctx.measureText(label).width<=maxWidth)break;fontSize--;}while(fontSize>30);ctx.textAlign='left';const metric=ctx.measureText(label),baseline=centerY+(metric.actualBoundingBoxAscent-metric.actualBoundingBoxDescent)/2,originX=x+(metric.actualBoundingBoxLeft-metric.actualBoundingBoxRight)/2;ctx.strokeText(label,originX,baseline);ctx.fillText(label,originX,baseline);}ctx.textAlign='left';
+ const stats=hideStats?[]:card.kind==='equipment'?[[String('+'+card.power),83.3,1172,78],[card.durability,826,1177.12,94]]:card.kind==='creature'?[[card.power,83.3,1172,78],[card.health,826,1177.12,94]]:card.kind==='patron'?[[card.patronHealth||20,826,1177.12,94]]:[];for(const [value,x,centerY,maxWidth] of stats){const label=String(value);let fontSize=72;do{ctx.font='700 '+fontSize+'px "DM Sans",Arial,sans-serif';if(ctx.measureText(label).width<=maxWidth)break;fontSize--;}while(fontSize>30);ctx.textAlign='left';const metric=ctx.measureText(label),baseline=centerY+(metric.actualBoundingBoxAscent-metric.actualBoundingBoxDescent)/2,originX=x+(metric.actualBoundingBoxLeft-metric.actualBoundingBoxRight)/2;ctx.strokeText(label,originX,baseline);ctx.fillText(label,originX,baseline);}ctx.textAlign='left';
 }
 
 

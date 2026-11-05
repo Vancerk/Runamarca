@@ -10,7 +10,7 @@
   ['gentle',{stagger:110,duration:800,sound:'place'}],
  ]);
  const energyStyles={forja:'forge',fluxo:'ether',ruptura:'chain'};
- let active=null;
+ let active=null;const returned=new Set();
  function styleFor(patron){return styles.has(patron?.returnStyle)?patron.returnStyle:energyStyles[patron?.affinity]||'gentle';}
  function candidates(state,snapshots){
   if(!state||state.phase==='resolving'||state.phase==='finished'||state.phase==='lobby')return [];
@@ -22,12 +22,32 @@
   });
  }
  function capture(state,previousPhase,clone){
-  if(previousPhase!=='resolving')return [];
+  const key=state?.lastCombat?.returnKey;
+  if(!state||state.phase==='resolving'||!previousPhase||!key&&previousPhase!=='resolving'||key&&returned.has(key))return [];
+  if(previousPhase!=='resolving'&&(!state.lastCombat?.returnAt||state.serverNow-state.lastCombat.returnAt>5000))return [];
   const snapshots=[...document.querySelectorAll('#lanes .lane-side .card:not(.back)')].map(node=>({uid:node.dataset.uid,rect:node.getBoundingClientRect(),node}));
-  return candidates(state,snapshots).filter(s=>s.rect.width>0&&s.rect.height>0).map(s=>({...s,face:clone(s.node)}));
+  // A rival/background client may miss the exact result frame. Use only public
+  // server origins; never derive a secret formation or replay an entire battle.
+  for(const item of state.lastCombat?.returnOrigins||[])if(!item.patron&&!snapshots.some(x=>x.uid===item.uid)){
+   const slot=document.querySelector('#lanes .lane-side[data-owner="'+item.owner+'"][data-lane="'+item.lane+'"]');
+   const card=state.players.flatMap(p=>p.reserve||[]).find(c=>c.uid===item.uid);
+   if(slot&&card&&typeof root.cardEl==='function')snapshots.push({uid:item.uid,rect:slot.getBoundingClientRect(),node:root.cardEl(card,{mini:true,combat:true})});
+  }
+  const result=candidates(state,snapshots).filter(s=>s.rect.width>0&&s.rect.height>0).map(s=>({...s,face:clone(s.node)}));
+  if(key){returned.add(key);if(returned.size>40)returned.delete(returned.values().next().value);}
+  return result;
  }
  function cancel(){active?.();active=null;}
- function play(items,{getTarget,clone,hide=()=>{},release=()=>{},valid=()=>true,sound=()=>{},speed=1,reduced=root.matchMedia?.('(prefers-reduced-motion: reduce)').matches}={}){
+ // UI-owner revision: each face keeps its own proportions. A combat face (900×820)
+ // and a reserve face (900×1260) used to be stretched to the copy box, which was then
+ // scaled non-uniformly from one aspect to the other. Now the copy box keeps the
+ // origin size and is scaled uniformly by the width ratio; each face is fitted
+ // (contain) inside it with its own bitmap aspect, and the arriving face is sized so
+ // that the last frame equals the live destination box. `measure` (optional) returns
+ // the box of the visible face; the default is the node box, as before.
+ const aspectOf=(node,fallback)=>{const c=node?.querySelector?.('.card-art-canvas');return c?.width&&c?.height?c.height/c.width:fallback;};
+ function fitFace(node,boxW,boxH,aspect){let w=boxW,h=boxW*aspect;if(h>boxH){h=boxH;w=boxH/aspect;}for(const [k,v] of Object.entries({left:(boxW-w)/2+'px',top:(boxH-h)/2+'px',width:w+'px',height:h+'px',inset:'auto'}))node.style.setProperty(k,v,'important');}
+ function play(items,{getTarget,clone,hide=()=>{},release=()=>{},valid=()=>true,sound=()=>{},speed=1,measure=n=>n.getBoundingClientRect(),reduced=root.matchMedia?.('(prefers-reduced-motion: reduce)').matches}={}){
   if(!items?.length)return Promise.resolve();cancel();
   return new Promise(resolve=>{
    const layer=document.createElement('div');layer.className='combat-return-layer';layer.setAttribute('aria-hidden','true');document.body.append(layer);
@@ -39,20 +59,24 @@
    active=end;root.addEventListener('resize',end,{once:true});
    for(const item of items){
     const target=getTarget(item.uid);if(!target){release(item.uid);continue;}
-    const rect=target.getBoundingClientRect();if(!rect.width||!rect.height){release(item.uid);continue;}
+    const rect=measure(target);if(!rect.width||!rect.height){release(item.uid);continue;}
     const spec=styles.get(item.style)||styles.get('gentle'),index=counts.get(item.owner)||0;counts.set(item.owner,index+1);
     const e={...item,spec,index,target,toRect:rect,from:mid(item.rect),to:mid(rect),delay:reduced?index*35:index*spec.stagger,done:false};
     const card=document.createElement('div');card.className='combat-return-card';card.dataset.returnStyle=e.style;card.dataset.returnUid=e.uid;
     Object.assign(card.style,{left:e.from.x+'px',top:e.from.y+'px',width:item.rect.width+'px',height:item.rect.height+'px'});
     const face=(node,className)=>{node.removeAttribute('style');node.classList.remove('selected','pending-arrival','visual-hit','snapping','dragging-source');node.classList.add(className,'flight-face');node.style.visibility='visible';node.setAttribute('tabindex','-1');return node;};
-    e.old=face(item.face,'return-old-face');card.append(e.old);layer.append(card);e.card=card;
+    e.old=face(item.face,'return-old-face');fitFace(e.old,item.rect.width,item.rect.height,aspectOf(e.old,item.rect.height/item.rect.width));card.append(e.old);layer.append(card);e.card=card;
     // Canvas card art is asynchronous. Copy it after its real render completes.
-    Promise.resolve(target.visualReady).then(()=>{if(closed||e.done)return;e.fresh=face(clone(getTarget(e.uid)||target),'return-new-face');e.card.append(e.fresh);}).catch(()=>{});
+    Promise.resolve(target.visualReady).then(()=>{if(closed||e.done)return;e.fresh=face(clone(getTarget(e.uid)||target),'return-new-face');e.freshAspect=aspectOf(e.fresh,e.toRect.height/e.toRect.width);sizeFresh(e);e.card.append(e.fresh);}).catch(()=>{});
     hide(e.uid);target.style.visibility='hidden';entries.push(e);
    }
    if(!entries.length){end();return;}
    const start=performance.now();
-   const place=(e,p,scaleX,scaleY,angle=0)=>{e.card.style.transform=`translate(-50%,-50%) translate(${p.x-e.from.x}px,${p.y-e.from.y}px) rotate(${angle}deg) scale(${scaleX},${scaleY})`;};
+   // Uniform scale only (the second argument is kept for custom styles and ignored).
+   const place=(e,p,scale,_unused,angle=0)=>{e.card.style.transform=`translate(-50%,-50%) translate(${p.x-e.from.x}px,${p.y-e.from.y}px) rotate(${angle}deg) scale(${scale})`;};
+   // The arriving face, in copy units, fills the live destination box once the copy
+   // reaches the final uniform scale (destination width / origin width).
+   function sizeFresh(e){if(!e.fresh)return;const k=e.toRect.width/e.rect.width;fitFace(e.fresh,e.rect.width,e.toRect.height/k,e.freshAspect||e.toRect.height/e.toRect.width);const offset=(e.rect.height-e.toRect.height/k)/2;e.fresh.style.setProperty('top',(parseFloat(e.fresh.style.top)||0)+offset+'px','important');}
    const morph=(e,t)=>{e.old.style.opacity=e.fresh?1-t:1;if(e.fresh)e.fresh.style.opacity=t;};
    const emit=(e,key=e.spec.sound)=>{sound(key,{from:e.from,to:e.to,level:.65,travelSeconds:.7});};
    function tick(now){
@@ -63,9 +87,9 @@
      const elapsed=(now-start)*speed-e.delay;if(elapsed<0)continue;
      // Resolve the live destination after layout/re-render, before computing scale.
      const live=getTarget(e.uid);if(!live?.isConnected){e.done=true;e.card.remove();e.model?.destroy();e.hammerHost?.remove();reveal(e);continue;}
-     e.target=live;const destination=live.getBoundingClientRect();if(!destination.width||!destination.height){e.done=true;e.card.remove();e.model?.destroy();e.hammerHost?.remove();reveal(e);continue;}
-     e.toRect=destination;e.to=mid(destination);live.style.visibility='hidden';
-     const duration=reduced?320:e.spec.duration,t=clamp(elapsed/duration),sx=e.toRect.width/e.rect.width,sy=e.toRect.height/e.rect.height;
+     e.target=live;const destination=measure(live);if(!destination.width||!destination.height){e.done=true;e.card.remove();e.model?.destroy();e.hammerHost?.remove();reveal(e);continue;}
+     e.toRect=destination;e.to=mid(destination);live.style.visibility='hidden';sizeFresh(e);
+     const duration=reduced?320:e.spec.duration,t=clamp(elapsed/duration),sx=e.toRect.width/e.rect.width,sy=sx;
      if(reduced||e.style==='gentle'){
       const v=smooth(t),p={x:mix(e.from.x,e.to.x,v),y:mix(e.from.y,e.to.y,v)};place(e,p,mix(1,sx,v),mix(1,sy,v));morph(e,smooth((t-.45)/.4));
      }else if(e.style==='forge'){
@@ -90,6 +114,10 @@
       const chainTip=t<.26?{x:mix(e.to.x,e.from.x,reach),y:mix(e.to.y,e.from.y,reach)}:p;
       chain(ctx,e.to,chainTip,t<.26?(1-reach)*32:6*Math.sin(v*Math.PI),1-smooth((t-.88)/.12),now);
      }else styles.get(e.style)?.draw?.({ctx,e,t,place,morph});
+     // UI-owner revision: the landing pose is painted for one frame before the real card
+     // is revealed (it used to be set and removed in the same frame, so the last painted
+     // frame was one step short of the destination and the card appeared to jump).
+     if(t>=1&&!e.landed){e.landed=true;place(e,e.to,sx,sy);morph(e,1);e.card.style.opacity=1;continue;}
      if(t>=1){place(e,e.to,sx,sy);morph(e,1);e.card.style.opacity=1;e.done=true;e.model?.destroy();e.hammerHost?.remove();e.card.remove();reveal(e);}
     }
     if(entries.every(e=>e.done)){end();return;}frame=requestAnimationFrame(tick);

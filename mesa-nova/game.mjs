@@ -1,4 +1,6 @@
-import {dealPatronDamage,damagedPreviousRound,noteFirstSpell,pendingFirstSpellShots,resolveFirstSpellShot,resetCombatTriggers} from './combat-triggers.mjs';
+import {revealStage,progressiveCombatView} from './progressive-reveal.mjs';
+import {patronBindingLane,restoreBoundPatrons} from './patron-bindings.mjs';
+import {dealPatronDamage,damagedPreviousRound,noteFirstSpell,pendingFirstSpellShots,resolveFirstSpellShot,skipFirstSpellShot,resetCombatTriggers} from './combat-triggers.mjs';
 import {armorEffect} from './armor-variant.mjs';
 import {patronCombatant,patronCombatId,assignPatron} from './patron-combat.mjs';
 import {resolvePreparedTransfers,validatePreparedTransfer} from './prepared-transfer.mjs';
@@ -6,7 +8,7 @@ import {syncMusic,musicView} from './music-director.mjs';
 import {handBuffView,combatHandBuffView,insertHandBuffSteps} from './hand-buff-presentation.mjs';
 import {silenceCreature} from './silence-effects.mjs';
 import {syncTurnClock,mulliganClock} from './turn-clock.mjs';
-import {grantPermanentStats,recordPermanentGains,preventControl,statGain,grantedEffects,receiveDamage,grantKeyword,syncKeywordAuras,keywordPresentation} from './forja-variant.mjs';
+import {grantPermanentStats,recordPermanentGains,preventControl,statGain,grantedEffects,receiveDamage,consumeDamageShield,shieldState,grantKeyword,syncKeywordAuras,keywordPresentation} from './forja-variant.mjs';
 import {awaitForge,chooseForge,equipWeapon,releaseEquipment,patronWeaponAttack} from './equipment.mjs';
 import {initStudies,seeStudyCard,settleStudyOpening,studyCardCost,studyPrepared,localSpell,rememberPositionSpell,existingPositionSpells,activateStudies,consumeStudyCopy,finishStudyBook,studyView,adjacentLane,previewStudyBook} from './fluxo-studies.mjs';
 import {activatePatronPower} from './patron-powers.mjs';
@@ -64,7 +66,7 @@ function returnToHand(room,target,casterId){
   p.reserve=p.reserve.filter(c=>c!==target);p.emanation=p.emanation.filter(uid=>uid!==oldUid);p.formation=p.formation.map(uid=>uid===oldUid?null:uid);delete p.taunts[oldUid];
   if(p.hand.length>=9){clearTemporaryHealth(target);p.discard.push(target);emit(room,'burn',{playerId:p.id,name:target.name});pushLog(room,`${target.name} foi para o Nartvanyr: mão cheia.`,p.id);return;}
   Object.assign(target,{uid:randomUUID(),attack:base.attack+gains.attack,health:base.health+gains.health,cost:base.cost,damage:0,attackMod:0});
-  for(const key of ['anchor','sleep','sleepUntilCombat','spellBuff','temporaryHealth','temporaryDamageBefore','protocolMode','monkMode','protocolHealth','protocolDamageBefore','temporaryTrample','grantedTrample','cursedTargets','curseArmed','tribalHealth','forcedBy','forcedLane','revealPaid','revealRequested','revealPaymentRound','blockedSummonUsed','grantedKeywords','auraKeywords','auraLane','volatileProject','firstDamageTaken','corruption','corruptionTarget','eyeSkipCombat','eyeCooldown','sealChoices','apprenticePreparation','apprenticeSpellUsed','apprenticeTargetId','attackBarrier','runeCoating','permanentGains'])delete target[key];
+  for(const key of ['anchor','sleep','sleepUntilCombat','spellBuff','temporaryHealth','temporaryDamageBefore','protocolMode','monkMode','protocolHealth','protocolDamageBefore','temporaryTrample','grantedTrample','cursedTargets','curseArmed','tribalHealth','forcedBy','forcedLane','revealPaid','revealRequested','revealPaymentRound','blockedSummonUsed','grantedKeywords','auraKeywords','auraLane','volatileProject','firstDamageTaken','corruption','corruptionTarget','eyeSkipCombat','eyeCooldown','sealChoices','apprenticePreparation','apprenticeSpellUsed','apprenticeTargetId','attackBarrier','spectralBarrier','runeCoating','permanentGains'])delete target[key];
   if(target.silenceOriginalRules){target.effects=structuredClone(target.silenceOriginalRules.effects);target.text=target.silenceOriginalRules.text;delete target.silenceOriginalRules;delete target.silenced;}
   if(retain)target.permanentGains=gains;
   p.hand.push(target);emit(room,'return',{playerId:p.id,cardId:oldUid,returnedId:target.uid,name:target.name});pushLog(room,`${target.name} voltou à mão de ${p.name}.`,p.id);
@@ -114,8 +116,9 @@ function applyEffect(room,caster,spell,target,phase){
     if(ef.op==='choose_one'){const option=ef.options?.find(o=>target?.patron?o.target==='own_patron':o.target==='chosen_allied_creature');if(option){const amount=option.amount;if(target?.patron)caster.patron.hp=Math.min(caster.patron.maxHp,caster.patron.hp+amount);else if(target&&!preventControl(target,caster.id,ef.op,spell.type))target.damage=Math.max(0,target.damage-amount);}continue;}
     if(!target)continue;
     if(preventControl(target,caster.id,ef.op,spell.type)){if(ef.draw_attack_divisor){const lane=own(room,target.owner).formation.indexOf(target.uid);draw(room,caster,Math.floor(attack(target,room,lane)/ef.draw_attack_divisor));}emit(room,'ability_notice',{playerId:target.owner,targetId:target.uid,message:target.name+': Antimagia impediu o efeito.'});continue;}
-    if(ef.op==='silence'){for(const player of room.players)if(player.study)player.study.positionEffects=player.study.positionEffects.filter(entry=>entry.targetId!==target.uid);silenceCreature(room,target,{releaseEquipment,releaseForced,syncTribalHealth,syncKeywordAuras,pruneSeals,emit,pushLog});emit(room,'silence',{playerId:caster.id,targetId:target.uid,name:target.name,op:'defeat',healthUpdates:[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,own(room,target.owner).formation.indexOf(target.uid))}]});pushLog(room,target.name+' foi silenciada.',caster.id);removeDead(room);checkWin(room);continue;}
+    if(ef.op==='silence'){for(const player of room.players)if(player.study)player.study.positionEffects=player.study.positionEffects.filter(entry=>entry.targetId!==target.uid);silenceCreature(room,target,{releaseEquipment,releaseForced,syncTribalHealth,syncKeywordAuras,pruneSeals,emit,pushLog});emit(room,'silence',{playerId:caster.id,targetId:target.uid,name:target.name,op:'defeat',healthUpdates:[{uid:target.uid,...shieldState(target),hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,own(room,target.owner).formation.indexOf(target.uid))}]});pushLog(room,target.name+' foi silenciada.',caster.id);removeDead(room);checkWin(room);continue;}
     if(ef.op==='rune_coating'){grantPermanentStats(target,ef.attack||0,ef.health);target.runeCoating=true;spellBuff(target,room.round,true);continue;}
+    if(ef.op==='barrier'){if(target.type==='creature'){target.spectralBarrier=true;spellBuff(target,room.round,true);}continue;}
     if(ef.op==='volatile_project'){target.volatileProject=true;continue;}
     if(ef.op==='grant_keyword'){grantKeyword(target,ef.keyword);continue;}
     if(ef.op==='invert_stats'){const currentAttack=attack(target,room,own(room,target.owner).formation.indexOf(target.uid)),currentHealth=Math.max(0,target.health-target.damage);clearTemporaryHealth(target);clearProtocolHealth(target);target.health=currentAttack;target.damage=0;target.attack=currentHealth-attack({...target,attack:0},room,own(room,target.owner).formation.indexOf(target.uid));continue;}
@@ -131,7 +134,14 @@ function applyEffect(room,caster,spell,target,phase){
     if(ef.op==='conditional_damage'){const value=attack(target,room,phase?.lane||0)>=ef.condition.gte?ef.amount_if_true:ef.amount_if_false;applyDamage(room,target,value);}
   }
 }
-function projectSpellChange(card,change){card=change.inversion||card;if(change.damage>0){const next=receiveDamage(card,change.damage);return {...next,attack:Math.max(0,next.attack+change.statAttack),health:next.health+change.statHealth,attackMod:(next.attackMod||0)+change.attack,damage:change.defeat?next.health+change.statHealth:Math.max(0,next.damage-change.heal)};}const absorbed=Math.min(card.extraLife||0,Math.max(0,change.damage));return {...card,extraLife:Math.max(0,(card.extraLife||0)-absorbed),attack:Math.max(0,card.attack+change.statAttack),health:card.health+change.statHealth,attackMod:(card.attackMod||0)+change.attack,damage:change.defeat?card.health+change.statHealth:Math.max(0,card.damage+change.damage-absorbed-change.heal)};}
+function projectSpellChange(card,change){
+ // Pending damage remains simultaneous, but shield consumption is per damage
+ // occurrence. Preserve the current shield through an attribute inversion.
+ const shield=card.spectralBarrier;card={...(change.inversion||card),spectralBarrier:shield};
+ const damage=(change.damagePackets||[change.damage]).reduce((n,amount)=>n+consumeDamageShield(card,amount),0);
+ if(damage>0){const next=receiveDamage(card,damage);return {...next,attack:Math.max(0,next.attack+change.statAttack),health:next.health+change.statHealth,attackMod:(next.attackMod||0)+change.attack,damage:change.defeat?next.health+change.statHealth:Math.max(0,next.damage-change.heal)};}
+ return {...card,attack:Math.max(0,card.attack+change.statAttack),health:card.health+change.statHealth,attackMod:(card.attackMod||0)+change.attack,damage:change.defeat?card.health+change.statHealth:Math.max(0,card.damage-change.heal)};
+}
 // reserve[] stores all field creatures internally. The gameplay reserve
 // excludes combat positions and Emanation; Banquete's two modes are disjoint.
 function banquetTargets(p,mode){return p.reserve.filter(c=>alive(c)&&!p.emanation.includes(c.uid)&&(mode==='prepared'?p.formation.includes(c.uid):!p.formation.includes(c.uid)));}
@@ -149,6 +159,7 @@ function canEchoTarget(room,p,spell,targetId){try{validTarget(room,p,spell,targe
 // Prepared Echo depends on an activation in this combat, never on a bare slot.
 function preparedTargetValid(room,p,prep,target){
  if(!alive(target))return false;
+ if(target.type==='patron'&&(!prep.card.combatantTarget||!effects(prep.card).every(e=>['sleep','anchor','push_right'].includes(e.op))))return false;
  try{validatePreparedSide(room,p,prep.card,own(room,prep.targetSide));}catch{return false;}
  if(prep.card.reserveOnly&&own(room,prep.targetSide).emanation.includes(target.uid))return false;
  return effects(prep.card).every(ef=>!Number.isFinite(ef.min_attack)||attack(target,room,prep.lane)>=ef.min_attack);
@@ -167,7 +178,7 @@ function apprenticeSpell(room,p){
     const target=findCreature(enemy,source.apprenticeTargetId);if(!target)continue;
     const amount=effects(source).find(e=>e.op==='bound_spell_damage').amount||1;
     const beforeHealth=Math.max(0,target.health-target.damage);if(effects(source).some(e=>e.op==='bound_spell_damage'&&e.once_per_field))source.apprenticeSpellUsed=true;applyDamage(room,target,amount);
-    emit(room,'apprentice_damage',{playerId:p.id,sourceId:source.uid,targetId:target.uid,targetModel:target.modelId,name:source.name,amount,damageDealt:Math.max(0,beforeHealth-Math.max(0,target.health-target.damage)),killed:!alive(target),op:'damage',healthUpdates:[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0,attack:attack(target,room,enemy.formation.indexOf(target.uid))}]});
+    emit(room,'apprentice_damage',{playerId:p.id,sourceId:source.uid,targetId:target.uid,targetModel:target.modelId,name:source.name,amount,damageDealt:Math.max(0,beforeHealth-Math.max(0,target.health-target.damage)),killed:!alive(target),op:'damage',healthUpdates:[{uid:target.uid,...shieldState(target),hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0,attack:attack(target,room,enemy.formation.indexOf(target.uid))}]});
     pushLog(room,`${source.name} causou ${amount} de dano ao alvo ${target.name}.`,p.id);
   }
   removeDead(room);checkWin(room);
@@ -179,6 +190,7 @@ function finishRound(room){room.forceWindow=null;for(const p of room.players){fo
 function finishCombatDecay(room){for(const p of room.players)for(const c of p.reserve)if(alive(c))for(const e of effects(c))if(e.op==='combat_decay'){applyDamage(room,c,e.amount);pushLog(room,`${c.name} recebeu ${e.amount} de dano por desgaste.`,p.id);}removeDead(room);checkWin(room);}
 export const COMBAT_MS=9000;
 function beginCombat(room){
+  restoreBoundPatrons(room);
   const id=randomUUID();
   room.phase='resolving';syncTurnClock(room,expireTurn);
   const spells=room.players.flatMap(p=>studyPrepared(p).filter(item=>laneCard(room,item.targetSide,item.lane)).map(item=>({cardId:item.card.uid,card:structuredClone(item.card),name:item.card.name,casterId:p.id,lane:item.lane,targetSide:item.targetSide,positive:item.targetSide===p.id,amount:effects(item.card).map(ef=>ef.amount||ef.attack||ef.amount_if_true||0).join('/'),op:effect(item.card)?.op})));
@@ -188,18 +200,25 @@ function beginCombat(room){
   const timeline=[{kind:'reveal',duration:platinumFormation?2800:1200},...(patronEntries.length?[{kind:'patron_entry',duration:3600,participants:patronEntries}]:[]),...spells.filter(spell=>spell.op!=='transfer_attack').map(spell=>({kind:'magic',duration:spell.card.id==='RG04'?3350:spell.card.id==='FL15'?3100:spell.card.id==='RG07'?2600:spell.op==='area_stat_buff'?3500:2500,spell})),...Array.from({length:3},(_,lane)=>({kind:'clash',lane,duration:2200})),{kind:'result',duration:1200}];
     const duration=timeline.reduce((sum,step)=>sum+step.duration,0);
   room.combat={id,round:room.round,startedAt:Date.now(),duration,timeline,lanes:Array.from({length:3},(_,lane)=>({cards:room.players.map(p=>{const c=laneCombatant(room,p.id,lane);return c?{uid:c.uid,name:c.name,owner:p.id,type:c.type}:null;})})),spells};
-  room.combat.auraHealthUpdates=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const c=findCreature(p,uid),bonus=healthAuras(p,effects).filter(e=>e.op==='lane_health_aura'&&auraApplies(e,c,lane)).reduce((n,e)=>n+statGain(c,e.amount),0);return c&&bonus?[{uid:c.uid,hp:c.health-c.damage+bonus,maxHp:c.health+bonus}]:[];}));
+  room.combat.auraHealthUpdates=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const c=findCreature(p,uid),bonus=healthAuras(p,effects).filter(e=>e.op==='lane_health_aura'&&auraApplies(e,c,lane)).reduce((n,e)=>n+statGain(c,e.amount),0);return c&&bonus?[{uid:c.uid,...shieldState(c),hp:c.health-c.damage+bonus,maxHp:c.health+bonus}]:[];}));
   // Simulate on a detached snapshot so the animation knows which cards actually
   // reach the clash after prepared spells and Revelation have resolved.
   const preview=structuredClone({...room,onChange:null,botTimer:null,combat:null,collectPreview:true});
   resolveCombat(preview);
   const activatedIds=new Set((preview.spellHealthUpdates||[]).map(x=>x.cardId));
+  for(const spell of preview.preparedActivations||[])if(!spells.some(x=>x.cardId===spell.cardId))spells.push(spell);
+  for(const caster of room.players)for(const prep of studyPrepared(caster))if(activatedIds.has(prep.card.uid)&&!spells.some(x=>x.cardId===prep.card.uid))spells.push({cardId:prep.card.uid,card:structuredClone(prep.card),name:prep.card.name,casterId:caster.id,targetSide:prep.targetSide,lane:prep.lane,op:effect(prep.card)?.op});
   for(let i=spells.length-1;i>=0;i--)if(!activatedIds.has(spells[i].cardId))spells.splice(i,1);
   for(let i=timeline.length-1;i>=0;i--)if(timeline[i].kind==='magic'&&!activatedIds.has(timeline[i].spell.cardId))timeline.splice(i,1);
-  room.combat.spawnedMirages=preview.spawnedMirages||[];room.combat.seals=preview.seals||[];
+  const firstMagic=timeline.findIndex(x=>x.kind==='magic'),magicStart=firstMagic<0?timeline.findIndex(x=>x.kind==='clash'):firstMagic;
+  for(let i=timeline.length-1;i>=0;i--)if(timeline[i].kind==='magic')timeline.splice(i,1);
+  timeline.splice(magicStart,0,...(preview.preparedActivations||[]).map(spell=>({kind:'magic',duration:2500,spell})));
+  room.combat.expiredMirages=preview.lastCombat?.expiredMirages||[];room.combat.spawnedMirages=preview.spawnedMirages||[];room.combat.seals=preview.seals||[];
   timeline.splice(timeline.findIndex(step=>step.kind==='clash'),0,...(preview.revelationsApplied||[]).map(ability=>({kind:'revelation',duration:1200,ability})));const portalIndex=timeline.findIndex(step=>step.kind==='revelation'&&step.ability.op!=='paired_seals');timeline.splice(portalIndex<0?timeline.findIndex(step=>step.kind==='clash'):portalIndex,0,...(preview.teleports||[]).map(teleport=>({kind:'teleport',duration:1400,teleport})));room.combat.visual=preview.preClash||[];if(preview.directedSteps){const index=timeline.findIndex(step=>step.kind==='clash');timeline.splice(index,3,...preview.directedSteps.map(strike=>({kind:'strike',lane:strike.lane,strike,duration:strike.blocked?300:strike.pair?2150:1950})));}if(preview.deathBursts?.length)timeline.splice(timeline.length-1,0,...preview.deathBursts.map(burst=>({kind:'death_burst',duration:1150,burst})));if(preview.growthUpdates?.length)timeline.splice(timeline.length-1,0,{kind:'growth',duration:1400,updates:preview.growthUpdates});for(const step of timeline){if(step.kind==='magic'){step.spell.healthUpdates=preview.spellHealthUpdates?.find(entry=>entry.cardId===step.spell.cardId)?.targets||[];step.spell.push=preview.pushes?.find(entry=>entry.cardId===step.spell.cardId)||null;}if(step.kind==='revelation')step.ability.healthUpdates=preview.revelationHealthUpdates?.filter(entry=>entry.sourceId===step.ability.sourceId&&entry.effectIndex===step.ability.effectIndex).map(entry=>entry.target)||[];}
   timeline.splice(timeline.findIndex(step=>['clash','strike','result'].includes(step.kind)),0,...spells.filter(spell=>spell.op==='transfer_attack').map(spell=>({kind:'magic',duration:2500,spell:{...spell,healthUpdates:preview.spellHealthUpdates?.find(entry=>entry.cardId===spell.cardId)?.targets||[]}})));
   room.combat.casualties=preview.players.flatMap(p=>p.discard.filter(c=>c.type==='creature'&&!own(room,p.id).discard.some(old=>old.uid===c.uid)).map(c=>({uid:c.uid,owner:p.id})));
+  // Expired living tokens are not casualties; tokens defeated earlier still are.
+  room.combat.casualties.push(...room.combat.expiredMirages.filter(c=>c.zone==='discard'&&!own(room,c.owner).discard.some(old=>old.uid===c.uid)).map(({uid,owner})=>({uid,owner})));
   for(const step of timeline)if(step.kind==='clash'){
     const cards=room.combat.visual.find(entry=>entry.lane===step.lane)?.cards.filter(Boolean)||[];
     const weight=Math.min(1,Math.max(0,...cards.map(c=>c.attack>=4?1:(c.attack+c.health-6)/14)));
@@ -207,10 +226,12 @@ function beginCombat(room){
   }
   timeline.splice(0,timeline.length,...insertHandBuffSteps(timeline,preview.handBuffs,room.combat.visual));
   room.combat.duration=timeline.reduce((sum,step)=>sum+step.duration,0);
-  pushLog(room,`Combate da rodada ${room.round}: formações reveladas.`);
+  for(const part of [.5,1.5,2.5])setTimeout(()=>{if(room.phase==='resolving'&&room.combat?.id===id){room.revision++;room.onChange?.();}},Math.ceil(room.combat.timeline[0].duration*part/3)+5);
+  pushLog(room,`Combate da rodada ${room.round}: revelação das formações.`);
   setTimeout(()=>{if(room.phase!=='resolving'||room.combat?.id!==id)return;resolveCombat(room);room.combat=null;syncMusic(room);room.revision++;room.onChange?.();},room.combat.duration);
 }
 export function resolveCombat(room){
+  restoreBoundPatrons(room);
   syncKeywordAuras(room);room.directedSteps=null;room.combatCount=(room.combatCount||0)+1;room.laneBonuses={};
   room.transferOrder=[];room.growthUpdates=[];room.spawnedMirages=[];room.deathBursts=[];room.handBuffs=[];room.pushes=[];
   if(room.collectPreview){room.spellHealthUpdates=[];room.revelationHealthUpdates=[];room.revelationsApplied=[];}
@@ -218,23 +239,42 @@ export function resolveCombat(room){
   room.lastCombat={round:room.round,names:[left.name,right.name],lanes:Array.from({length:3},(_,lane)=>({left:laneCard(room,left.id,lane)?.name||'Vazia',right:laneCard(room,right.id,lane)?.name||'Vazia'})),spells:[],patronHits:[]};
   for(const p of room.players)for(let lane=0;lane<3;lane++){const c=laneCard(room,p.id,lane);if(!c)continue;const bonus=healthAuras(p,effects).filter(e=>e.op==='lane_health_aura'&&auraApplies(e,c,lane)).reduce((n,e)=>n+statGain(c,e.amount),0);if(bonus){c.temporaryDamageBefore??=c.damage;c.health+=bonus;c.temporaryHealth=(c.temporaryHealth||0)+bonus;}}
   for(const p of room.players)if(p.pendingCombatAttack)for(const uid of p.formation){const c=findCreature(p,uid);if(c&&!c.runeCoating){c.attackMod=(c.attackMod||0)+statGain(c,p.pendingCombatAttack);spellBuff(c,room.round);}}
+  const combatants=new Map();
+  const occupant=(owner,lane)=>{const c=laneCombatant(room,owner,lane);if(c?.type!=='patron')return c;if(!combatants.has(c.uid))combatants.set(c.uid,c);return combatants.get(c.uid);};
+  const activatedPrepared=new Set(),resolvedPrepared=new Set();
+  room.preparedActivations=[];
   const triggered=[];
-  for(const p of room.players)for(const prep of studyPrepared(p).filter(prep=>!effects(prep.card).some(ef=>ef.op==='transfer_attack'))){const targetSide=own(room,prep.targetSide);const target=laneCard(room,targetSide.id,prep.lane);if(target)triggered.push({prep,caster:p,target,targetSide});}
-  const spellChanges=new Map();const spellDraws=[];const killDraws=[];
-  const changeFor=card=>{if(!spellChanges.has(card))spellChanges.set(card,{damage:0,heal:0,attack:0,statAttack:0,statHealth:0,gainsAttack:0,gainsHealth:0,defeat:false});return spellChanges.get(card);};
-  const activatedPrepared=new Set();
+  for(const p of room.players)for(const prep of studyPrepared(p).filter(prep=>!effects(prep.card).some(ef=>ef.op==='transfer_attack'))){const targetSide=own(room,prep.targetSide);const target=occupant(targetSide.id,prep.lane);if(target)triggered.push({prep,caster:p,target,targetSide});}
+  function resolvePreparedWave(triggered){
+  const wavePushStart=room.pushes.length;
+  const spellChanges=new Map();const spellDraws=[];const killDraws=[];const patronDamage=[];
+  const changeFor=card=>{if(!spellChanges.has(card))spellChanges.set(card,{damage:0,damagePackets:[],heal:0,attack:0,statAttack:0,statHealth:0,gainsAttack:0,gainsHealth:0,defeat:false});return spellChanges.get(card);};
+  // Prepared spells share one simultaneous window. Establish eligible shields
+  // before projecting any pending damage; each packet consumes at most one.
+  for(const entry of triggered){const {prep,caster,target}=entry;
+   if(!effects(prep.card).some(e=>e.op==='barrier')||!preparedTargetValid(room,caster,prep,target)||preventControl(target,caster.id,'barrier'))continue;
+   if(prep.echo&&!activatedPrepared.has(prep.sourcePrep.card.uid)){
+    const primary=triggered.find(x=>x.prep.card.uid===prep.sourcePrep.card.uid&&!x.prep.echo);
+    if(!primary||!preparedTargetValid(room,primary.caster,primary.prep,primary.target))continue;
+   }
+   target.spectralBarrier=true;
+  }
+  const queueDamage=(target,amount)=>{const change=changeFor(target);change.damage+=amount;change.damagePackets.push(amount);};
   for(const {prep,caster,target,targetSide} of triggered){
+    if(resolvedPrepared.has(prep.card.uid))continue;
     if(prep.echo&&!activatedPrepared.has(prep.sourcePrep.card.uid))continue;
     // Primary activations keep the existing simultaneous prepared window. Only
     // Echo rechecks the neighbour against changes pending at its resolution.
     const current=prep.echo&&spellChanges.has(target)?projectSpellChange(target,spellChanges.get(target)):target;
     if(!preparedTargetValid(room,caster,prep,current))continue;
     if(!prep.echo)activatedPrepared.add(prep.card.uid);
+    resolvedPrepared.add(prep.card.uid);room.preparedActivations.push({cardId:prep.card.uid,card:structuredClone(prep.card),name:prep.card.name,casterId:caster.id,targetSide:targetSide.id,lane:prep.lane,positive:targetSide.id===caster.id,op:effect(prep.card)?.op});
     for(const ef of effects(prep.card)){
       if(!['area_damage','area_attack_modifier','area_stat_buff','graveyard_stat_buff','draw','discard','heal_patron','armor_draw','tradition_summon'].includes(ef.op)&&preventControl(target,caster.id,ef.op)){emit(room,'ability_notice',{playerId:target.owner,targetId:target.uid,message:target.name+': Antimagia impediu o efeito.'});continue;}
       if(ef.op==='push_right'){
-        const destination=prep.lane+1,neighbor=destination<3?laneCard(room,targetSide.id,destination):null;
-        changeFor(target).damage+=ef.amount;if(neighbor&&!neighbor.runeCoating)changeFor(neighbor).damage+=ef.amount;
+        const destination=prep.lane+1,neighbor=destination<3?occupant(targetSide.id,destination):null;
+        queueDamage(target,ef.amount);if(neighbor&&!neighbor.runeCoating)queueDamage(neighbor,ef.amount);
+        for(const c of [target,neighbor])if(c?.type==='patron'&&!c.runeCoating)patronDamage.push({target:c,amount:ef.amount,ownerId:caster.id,sourceId:prep.card.uid});
         room.pushes.push({cardId:prep.card.uid,targetId:target.uid,owner:targetSide.id,fromLane:prep.lane,lane:Math.min(2,destination),collisionId:neighbor?.uid||null,blocked:Boolean(neighbor)||destination>=3,movements:[]});
         continue;
       }
@@ -248,7 +288,7 @@ export function resolveCombat(room){
       if(ef.op==='discard'){caster.pendingDiscardAfterCombat=(caster.pendingDiscardAfterCombat||0)+ef.amount;continue;}
       if(ef.op==='anchor'){target.anchor={lane:prep.lane,remaining:2,setAt:room.combatCount};continue;}
       if(ef.op==='sleep'){putToSleep(room,target,true);continue;}
-      if(ef.op==='barrier'){target.attackBarrier=true;spellBuff(target,room.round);continue;}
+      if(ef.op==='barrier'){target.spectralBarrier=true;spellBuff(target,room.round,true);continue;}
       if(ef.op==='area_attack_modifier'){for(let lane=0;lane<3;lane++){const c=laneCard(room,other(room,caster.id).id,lane);if(alive(c)&&!c.runeCoating){if(ef.permanent===false)changeFor(c).attack+=statGain(c,ef.amount);else changeFor(c).statAttack+=statGain(c,ef.amount);changeFor(c).statHealth+=ef.healthAmount||0;}}continue;}
       if(ef.op==='graveyard_stat_buff'){
         // Collective combat benefit: never replay it as an adjacent Echo.
@@ -263,40 +303,63 @@ export function resolveCombat(room){
       }
       if(ef.op==='area_stat_buff'){for(const c of caster.reserve.filter(c=>alive(c)&&!c.runeCoating)){changeFor(c).statAttack+=statGain(c,ef.attack);changeFor(c).statHealth+=statGain(c,ef.health);changeFor(c).gainsAttack+=Math.max(0,statGain(c,ef.attack));changeFor(c).gainsHealth+=Math.max(0,statGain(c,ef.health));spellBuff(c,room.round,true);}continue;}
       const change=changeFor(target);
-        if(ef.op==='area_damage'){for(let lane=0;lane<3;lane++){const enemy=laneCard(room,other(room,caster.id).id,lane);if(alive(enemy)&&!enemy.runeCoating)changeFor(enemy).damage+=ef.amount;}continue;}
-        if(ef.op==='damage'){change.damage+=ef.amount;if(ef.draw_on_kill)killDraws.push([caster,target,ef.draw_on_kill]);}
-      if(ef.op==='conditional_damage')change.damage+=attack(target,room,prep.lane)>=ef.condition.gte?ef.amount_if_true:ef.amount_if_false;
+        if(ef.op==='area_damage'){for(let lane=0;lane<3;lane++){const enemy=laneCard(room,other(room,caster.id).id,lane);if(alive(enemy)&&!enemy.runeCoating)queueDamage(enemy,ef.amount);}continue;}
+        if(ef.op==='damage'){queueDamage(target,ef.amount);if(ef.draw_on_kill)killDraws.push([caster,target,ef.draw_on_kill]);}
+      if(ef.op==='conditional_damage')queueDamage(target,attack(target,room,prep.lane)>=ef.condition.gte?ef.amount_if_true:ef.amount_if_false);
       if(ef.op==='heal')change.heal+=ef.amount;
       if(ef.op==='choose_one')change.heal+=ef.options.find(x=>x.target==='chosen_allied_creature')?.amount||0;
       if(ef.op==='defeat')change.defeat=true;
       if(ef.op==='attack_modifier'){if(ef.permanent)change.statAttack+=statGain(target,ef.amount);else change.attack+=statGain(target,ef.amount);change.statHealth+=ef.healthAmount||0;if(ef.amount>0)spellBuff(target,room.round);}
       if(ef.op==='stat_buff'){change.statAttack+=statGain(target,ef.attack);change.statHealth+=statGain(target,ef.health);change.gainsAttack+=Math.max(0,statGain(target,ef.attack));change.gainsHealth+=Math.max(0,statGain(target,ef.health));spellBuff(target,room.round,true);}
     }
-    if(room.collectPreview)room.spellHealthUpdates.push({cardId:prep.card.uid,targets:(effects(prep.card).some(e=>e.op==='heal_patron')?[{patronId:caster.id,hp:caster.patron.hp,maxHp:caster.patron.maxHp}]:[]).concat([...spellChanges].map(([card,change])=>{const projected=projectSpellChange(card,change);return {uid:card.uid,hp:Math.max(0,projected.health-projected.damage),maxHp:projected.health,extraLife:projected.extraLife||0,attack:attack(projected,room,own(room,card.owner).formation.indexOf(card.uid))};}))});
-    if(!prep.echo){rememberPositionSpell(room,caster,prep.card,target,targetSide,prep.lane);if(effects(prep.card).some(e=>e.op==='barrier')){prep.remaining??=2;prep.lastCombat=room.combatCount;}else{caster.discard.push(prep.card);caster.prepared=caster.prepared.filter(item=>item!==prep);}}
+    if(room.collectPreview)room.spellHealthUpdates.push({cardId:prep.card.uid,targets:(effects(prep.card).some(e=>e.op==='heal_patron')?[{patronId:caster.id,hp:caster.patron.hp,maxHp:caster.patron.maxHp}]:[]).concat([...spellChanges].map(([card,change])=>{const projected=projectSpellChange(card,change);return {uid:card.uid,...shieldState(card),hp:Math.max(0,projected.health-projected.damage),maxHp:projected.health,extraLife:projected.extraLife||0,attack:attack(projected,room,own(room,card.owner).formation.indexOf(card.uid))};}))});
+    if(!prep.echo){rememberPositionSpell(room,caster,prep.card,target,targetSide,prep.lane);caster.discard.push(prep.card);caster.prepared=caster.prepared.filter(item=>item!==prep);}
     room.lastCombat.spells.push(`${prep.card.name} · posição ${prep.lane+1} de ${targetSide.name}`);
     pushLog(room,`${prep.card.name} foi ativada na posição ${prep.lane+1} de ${targetSide.name}.`,caster.id);
   }
-  for(const [target,change] of spellChanges){const next=projectSpellChange(target,change);recordPermanentGains(next,change.gainsAttack,change.gainsHealth);if(!next.volatileProject)delete target.volatileProject;Object.assign(target,next);}
+  for(const [target,change] of spellChanges){if(target.type==='patron')continue;const next=projectSpellChange(target,change);recordPermanentGains(next,change.gainsAttack,change.gainsHealth);if(!next.volatileProject)delete target.volatileProject;Object.assign(target,next);}
+  for(const hit of patronDamage)applyDamage(room,hit.target,hit.amount,{ownerId:hit.ownerId,sourceId:hit.sourceId,kind:'spell'});
   for(const [caster,target,count] of killDraws)if(!alive(target))draw(room,caster,count,false,true);for(const [caster,count] of spellDraws)draw(room,caster,count,false,true);
   // Prepared spells target the creatures revealed in the original formation.
   // Apply the displacement once, after their simultaneous damage is resolved.
-  for(const push of room.pushes){const p=own(room,push.owner),c=findCreature(p,push.targetId);if(!push.blocked&&c&&p.formation[push.fromLane]===c.uid&&!p.formation[push.lane]){p.formation[push.fromLane]=null;p.formation[push.lane]=c.uid;for(const key of ['anchor','sleep'])if(c[key])c[key].lane=push.lane;if(c.forcedBy)c.forcedLane=push.lane;push.movements.push({uid:c.uid,owner:p.id,lane:push.lane});}}
+  // Resolve each real displacement in stable source order, then its descendants.
+  removeDead(room);checkWin(room);
+  const pending=room.pushes.slice(wavePushStart);
+  for(const push of pending){
+   if(room.phase==='finished')break;
+   const p=own(room,push.owner),c=occupant(p.id,push.fromLane);
+   if(push.blocked||!alive(c)||c.uid!==push.targetId||p.formation[push.lane])continue;
+   p.formation[push.fromLane]=null;p.formation[push.lane]=c.uid;
+   for(const key of ['anchor','sleep'])if(c[key])c[key].lane=push.lane;
+   if(c.forcedBy)c.forcedLane=push.lane;
+   push.movements.push({uid:c.uid,owner:p.id,lane:push.lane});
+   const arrivals=[];
+   for(const caster of room.players){const all=studyPrepared(caster),originals=all.filter(x=>!x.echo&&x.targetSide===p.id&&x.lane===push.lane&&!resolvedPrepared.has(x.card.uid)&&!effects(x.card).some(e=>e.op==='transfer_attack'));
+    for(const original of originals)for(const prep of all.filter(x=>x===original||x.echo&&x.sourcePrep===original)){
+     const targetSide=own(room,prep.targetSide),target=occupant(targetSide.id,prep.lane);
+     if(target)arrivals.push({prep,caster,target,targetSide});
+    }
+   }
+   if(arrivals.length)resolvePreparedWave(arrivals);
+  }
+  }
+  resolvePreparedWave(triggered);
   if(room.pushes.some(x=>x.movements.length)){
     for(const p of room.players)for(const c of p.reserve)if(alive(c))clearTemporaryHealth(c);
     for(const p of room.players)for(let lane=0;lane<3;lane++){const c=laneCard(room,p.id,lane);if(!c||!alive(c))continue;const bonus=healthAuras(p,effects).filter(e=>e.op==='lane_health_aura'&&auraApplies(e,c,lane)).reduce((n,e)=>n+statGain(c,e.amount),0);if(bonus){c.temporaryDamageBefore=c.damage;c.health+=bonus;c.temporaryHealth=bonus;}}
   }
   removeDead(room);checkWin(room);
-  if(room.collectPreview)for(const push of room.pushes){push.movements=push.movements.filter(m=>findCreature(own(room,m.owner),m.uid));const entry=room.spellHealthUpdates.find(x=>x.cardId===push.cardId);if(entry)entry.targets=room.players.flatMap(p=>[...p.reserve,...p.discard]).filter(c=>c.uid===push.targetId||c.uid===push.collisionId||push.movements.length&&pIsCombat(room,c)).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,extraLife:c.extraLife||0,attack:attack(c,room,own(room,c.owner).formation.indexOf(c.uid))}));}
-  if(room.phase==='finished'){finishFields(room);return;}
-  for(const p of room.players)for(const prep of p.prepared)if(effects(prep.card).some(e=>e.op==='barrier')){prep.remaining??=2;prep.lastCombat=room.combatCount;}
+  // Keep each wave's health snapshot. A later domino must not make the first
+  // Sigilo display the total damage of the complete chain prematurely.
+  if(room.collectPreview)for(const push of room.pushes)push.movements=push.movements.filter(m=>m.uid===patronCombatId(own(room,m.owner))?own(room,m.owner).patron.hp>0:findCreature(own(room,m.owner),m.uid));
+  if(room.phase==='finished'){finishFields(room,{releaseEquipment,releaseForced,emit,pushLog});return;}
   for(const p of room.players){if(p.pendingDiscardAfterCombat){p.pendingDiscard=Math.min(p.hand.length,(p.pendingDiscard||0)+p.pendingDiscardAfterCombat);delete p.pendingDiscardAfterCombat;}for(const c of p.reserve)if(effects(c).some(e=>e.op==='damage_curse')&&p.formation.includes(c.uid))c.curseArmed=true;}
   revealSeals(room,{effects,laneCard,pushLog});
   if(room.teleports.length){
     // Health belongs to the selected position, so refresh it after an exchange.
     for(const p of room.players)for(const c of p.reserve)clearTemporaryHealth(c);
     for(const p of room.players)for(let lane=0;lane<3;lane++){const c=laneCard(room,p.id,lane);if(!c)continue;const bonus=healthAuras(p,effects).filter(e=>e.op==='lane_health_aura'&&auraApplies(e,c,lane)).reduce((n,e)=>n+statGain(c,e.amount),0);if(bonus){c.temporaryDamageBefore=c.damage;c.health+=bonus;c.temporaryHealth=bonus;}}
-    room.teleports.at(-1).healthUpdates=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const c=laneCard(room,p.id,lane);return c?[{uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,lane)}]:[];}));
+    room.teleports.at(-1).healthUpdates=room.players.flatMap(p=>p.formation.flatMap((uid,lane)=>{const c=laneCard(room,p.id,lane);return c?[{uid:c.uid,...shieldState(c),hp:Math.max(0,c.health-c.damage),maxHp:c.health,attack:attack(c,room,lane)}]:[];}));
   }
   syncKeywordAuras(room);
   const reveals=[];
@@ -315,16 +378,16 @@ export function resolveCombat(room){
     }
   }
   const hits=[];
-  for(const item of reveals){if(item.ef.op==='duel_stasis'&&item.target&&!item.card.sleep){for(const c of [item.card,item.target]){const owner=own(room,c.owner),lane=owner.formation.indexOf(c.uid);c.anchor={lane,remaining:2,setAt:room.combatCount};c.eyeSkipCombat=room.combatCount;c.eyeCooldown=room.combatCount+1;}}else if(['optional_reveal_attack','small_ally_reveal'].includes(item.ef.op)){item.card.attackMod=(item.card.attackMod||0)+item.ef.amount;if(room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:item.card.uid,hp:item.card.health-item.card.damage,maxHp:item.card.health,attack:attack(item.card,room,item.lane)}});}else if(item.ef.op==='combat_protocol'){const updates=applyProtocol(room,item,{laneCard,attack});if(room.collectPreview)for(const target of updates)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target});}else if(item.ef.op==='adjacent_attack_buff'){room.laneBonuses[item.p.id]??=[0,0,0];for(const lane of [item.lane-1,item.lane+1])if(lane>=0&&lane<3){room.laneBonuses[item.p.id][lane]+=item.ef.amount;const c=laneCard(room,item.p.id,lane);if(c&&room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:c.uid,hp:c.health-c.damage,maxHp:c.health,attack:attack(c,room,lane)}});}}else if(item.ef.op==='stat_buff'&&item.target){const target=item.target,a=statGain(target,item.ef.attack||0),h=statGain(target,item.ef.health||0);target.attackMod=(target.attackMod||0)+a;target.protocolHealth=(target.protocolHealth||0)+h;target.protocolDamageBefore??=target.damage;target.health+=h;if(room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,item.p.formation.indexOf(target.uid))}});}else if(item.ef.op==='damage'&&item.target)hits.push([item.target,item.ef.amount,item.card.uid,item.effectIndex]);else if(item.ef.op==='attack_modifier'&&item.target){item.target.attackMod+=statGain(item.target,item.ef.amount);if(room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:item.target.uid,hp:Math.max(0,item.target.health-item.target.damage),maxHp:item.target.health,attack:attack(item.target,room,item.lane)}});}pushLog(room,`${item.card.name} ativou Revelação na posição ${item.lane+1}.`,item.p.id);}
-  for(const [target,amount,sourceId,effectIndex] of hits){applyDamage(room,target,amount);curseFromDamage(target,room.players.flatMap(p=>p.reserve).find(c=>c.uid===sourceId),effects);if(room.collectPreview)room.revelationHealthUpdates.push({sourceId,effectIndex,target:{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0}});}
-  removeDead(room);checkWin(room);if(room.phase==='finished'){finishFields(room);return;}
+  for(const item of reveals){if(item.ef.op==='duel_stasis'&&item.target&&!item.card.sleep){for(const c of [item.card,item.target]){const owner=own(room,c.owner),lane=owner.formation.indexOf(c.uid);c.anchor={lane,remaining:2,setAt:room.combatCount};c.eyeSkipCombat=room.combatCount;c.eyeCooldown=room.combatCount+1;}}else if(['optional_reveal_attack','small_ally_reveal'].includes(item.ef.op)){item.card.attackMod=(item.card.attackMod||0)+item.ef.amount;if(room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:item.card.uid,...shieldState(item.card),hp:item.card.health-item.card.damage,maxHp:item.card.health,attack:attack(item.card,room,item.lane)}});}else if(item.ef.op==='combat_protocol'){const updates=applyProtocol(room,item,{laneCard,attack});if(room.collectPreview)for(const target of updates)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target});}else if(item.ef.op==='adjacent_attack_buff'){room.laneBonuses[item.p.id]??=[0,0,0];for(const lane of [item.lane-1,item.lane+1])if(lane>=0&&lane<3){room.laneBonuses[item.p.id][lane]+=item.ef.amount;const c=laneCard(room,item.p.id,lane);if(c&&room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:c.uid,...shieldState(c),hp:c.health-c.damage,maxHp:c.health,attack:attack(c,room,lane)}});}}else if(item.ef.op==='stat_buff'&&item.target){const target=item.target,a=statGain(target,item.ef.attack||0),h=statGain(target,item.ef.health||0);target.attackMod=(target.attackMod||0)+a;target.protocolHealth=(target.protocolHealth||0)+h;target.protocolDamageBefore??=target.damage;target.health+=h;if(room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:target.uid,...shieldState(target),hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,item.p.formation.indexOf(target.uid))}});}else if(item.ef.op==='damage'&&item.target)hits.push([item.target,item.ef.amount,item.card.uid,item.effectIndex]);else if(item.ef.op==='attack_modifier'&&item.target){item.target.attackMod+=statGain(item.target,item.ef.amount);if(room.collectPreview)room.revelationHealthUpdates.push({sourceId:item.card.uid,effectIndex:item.effectIndex,target:{uid:item.target.uid,hp:Math.max(0,item.target.health-item.target.damage),maxHp:item.target.health,attack:attack(item.target,room,item.lane)}});}pushLog(room,`${item.card.name} ativou Revelação na posição ${item.lane+1}.`,item.p.id);}
+  for(const [target,amount,sourceId,effectIndex] of hits){applyDamage(room,target,amount);curseFromDamage(target,room.players.flatMap(p=>p.reserve).find(c=>c.uid===sourceId),effects);if(room.collectPreview)room.revelationHealthUpdates.push({sourceId,effectIndex,target:{uid:target.uid,...shieldState(target),hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0}});}
+  removeDead(room);checkWin(room);if(room.phase==='finished'){finishFields(room,{releaseEquipment,releaseForced,emit,pushLog});return;}
   resolvePreparedTransfers(room,{attack,laneCard,pushLog});
   const damage=[];const patronHits=[];
   const [a,b]=room.players;
   if(room.collectPreview)room.preClash=Array.from({length:3},(_,lane)=>({lane,cards:[a,b].map(p=>{const c=laneCombatant(room,p.id,lane);return c?{uid:c.uid,owner:p.id,type:c.type,attack:attack(c,room,lane),health:c.health-c.damage}:null;})}));
-  if(room.players.some(p=>p.formation.includes(patronCombatId(p)))||room.players.some(p=>p.formation.some((uid,lane)=>{const c=laneCard(room,p.id,lane);return c&&attack(c,room,lane)<=0;})||p.reserve.some(c=>c.equipment||c.extraLife||c.sleep||c.attackBarrier||c.corruption||c.eyeSkipCombat===room.combatCount||c.temporaryTrample||c.grantedTrample||effects(c).some(e=>['initiative','trample','taunt','kill_growth','survive_patron_armor','survive_growth','adjacent_damage','damage_curse','blocked_summon','retaliation'].includes(e.op))))){
+  if(room.players.some(p=>p.formation.includes(patronCombatId(p)))||room.players.some(p=>p.formation.some((uid,lane)=>{const c=laneCard(room,p.id,lane);return c&&attack(c,room,lane)<=0;})||p.reserve.some(c=>c.equipment||c.extraLife||c.sleep||c.spectralBarrier||c.corruption||c.eyeSkipCombat===room.combatCount||c.temporaryTrample||c.grantedTrample||effects(c).some(e=>['initiative','trample','taunt','kill_growth','survive_patron_armor','survive_growth','adjacent_damage','damage_curse','blocked_summon','retaliation'].includes(e.op))))){
     resolveDirectedCombat(room,{effects,attack,laneCard:laneCombatant,alive,applyDamage,pushLog,curseFromDamage,emit,blockedSummons,retaliation});
-    removeDead(room);checkWin(room);finishCombatDecay(room);finishFields(room);if(room.phase!=='finished')finishRound(room);return;
+    removeDead(room);checkWin(room);finishCombatDecay(room);finishFields(room,{releaseEquipment,releaseForced,emit,pushLog});if(room.phase!=='finished')finishRound(room);return;
   }
   for(let lane=0;lane<3;lane++){
     const ac=laneCard(room,a.id,lane),bc=laneCard(room,b.id,lane);
@@ -334,7 +397,7 @@ export function resolveCombat(room){
   }
   for(const [target,amount] of damage)applyDamage(room,target,amount);
   for(const [target,amount,name,lane,actor] of patronHits){dealPatronDamage(room,target,amount,{ownerId:actor,sourceId:laneCard(room,actor,lane)?.uid,kind:'combat',emit});room.lastCombat.patronHits.push(`${name}: ${amount} em ${target.name} pela posição ${lane+1}`);pushLog(room,`${name} causou ${amount} ao Patrono de ${target.name} pela posição ${lane+1}.`,actor);}
-  removeDead(room);checkWin(room);finishCombatDecay(room);finishFields(room);if(room.phase!=='finished')finishRound(room);
+  removeDead(room);checkWin(room);finishCombatDecay(room);finishFields(room,{releaseEquipment,releaseForced,emit,pushLog});if(room.phase!=='finished')finishRound(room);
 }
 // Timing is authoritative even when both clients are disconnected.
 export function expireTurn(room,now=Date.now()){
@@ -406,7 +469,7 @@ function actInternal(room,p,data,catalog){
     if(room.phase!=='lobby')throw Error('A escolha de decks terminou.');
     if(data.deckId===null){p.deckId=null;p.deckData=null;p.art={};pushLog(room,p.name+' desfez a escolha do deck.',p.id);room.revision++;return;}
     const deck=catalog.decks.find(d=>d.id===data.deckId);if(!deck)throw Error('Deck desconhecido.');
-    const limits={lacaio:4,padrao:3,elite:2,soberano:1},total=deck.cards.reduce((sum,c)=>sum+c.quantity,0);if(total<1||total>30||deck.cards.some(c=>!Number.isInteger(c.quantity)||c.quantity<1||!Object.hasOwn(limits,c.rarity)||c.quantity>limits[c.rarity]))throw Error('Deck inválido: até 30 cartas; Bronze 4, Prata 3, Ouro 2 e Platina 1 cópia por carta.');
+    const limits={lacaio:4,padrao:3,elite:2,soberano:1},total=deck.cards.reduce((sum,c)=>sum+c.quantity,0);if(total!==30||deck.cards.some(c=>!Number.isInteger(c.quantity)||c.quantity<1||!Object.hasOwn(limits,c.rarity)||c.quantity>limits[c.rarity]))throw Error('Deck inválido: exatamente 30 cartas; Bronze 4, Prata 3, Ouro 2 e Platina 1 cópia por carta.');
     const art={};for(const [id,entry] of Object.entries(data.art||{})){if(!deck.cards.some(c=>c.id===id)&&id!==deck.patron.id)continue;const image=typeof entry==='string'?entry:entry?.image;const kind=typeof entry==='string'?'illustration':entry?.kind;if(image!=null&&(typeof image!=='string'||image.length>2_000_000||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i.test(image)||!['card','illustration'].includes(kind)))throw Error('Imagem inválida.');art[id]={image,kind};for(const field of ['artZoom','artX','artY'])if(Number.isFinite(entry?.[field]))art[id][field]=Math.max(field==='artZoom'?100:0,Math.min(field==='artZoom'?230:100,entry[field]));for(const [field,max] of [['speech',160],['narrative',1200]])if(typeof entry?.[field]==='string')art[id][field]=entry[field].trim().slice(0,max);}
     p.deckId=deck.id;p.deckData=deck;p.art=art;pushLog(room,`${p.name} escolheu ${deck.name}.`,p.id);if(room.players.length===2&&room.players.every(x=>x.deckId)){room.phase='coin';room.coinWinner=room.players[randomBytes(1)[0]%2].id;emit(room,'coin',{playerId:room.coinWinner});pushLog(room,`${own(room,room.coinWinner).name} venceu a moeda e joga primeiro.`);startMatch(room,room.coinWinner);}room.revision++;return;
   }
@@ -446,6 +509,7 @@ function actInternal(room,p,data,catalog){
   if(p.pendingDiscard){if(data.type!=='discard')throw Error('Escolha uma carta para descartar antes de continuar.');if(!['prep','vote','formation'].includes(room.phase))throw Error('Aguarde o fim do combate.');const card=p.hand.find(c=>c.uid===data.cardId);if(!card)throw Error('Escolha uma carta da mão.');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);p.pendingDiscard--;pushLog(room,`${p.name} descartou ${card.name}.`,p.id);emit(room,'discard',{playerId:p.id,cardId:card.uid});room.revision++;return;}
   if(room.phase==='prep'){
     if(p.id!==room.turn)throw Error('Aguarde sua preparação.');
+    if(data.type==='apprenticeSkip'){skipFirstSpellShot(room,p,data);room.revision++;return;}
     if(data.type==='apprenticeTarget'){
       if(resolveFirstSpellShot(room,p,data,{emit,pushLog,applyDamage,removeDead,checkWin,attack})){room.revision++;return;}
 
@@ -458,7 +522,7 @@ function actInternal(room,p,data,catalog){
       room.revision++;return;
     }
     if(pendingApprentices(room,p).length)throw Error('Escolha o novo alvo da Aprendiz antes de continuar.');
-    if(data.type==='patronPower'){if(data.powerId==='estudos-avancados')activateStudies(room,p,data,{emit,pushLog,applyExisting:()=>{for(const item of existingPositionSpells(room,p)){const side=own(room,item.sideId),lane=adjacentLane(item.lane,p.study.centerNeighbor),target=findCreature(side,side.formation[lane]);if(target){applyEffect(room,p,item.spell,target);emit(room,'spell',{playerId:p.id,cardId:item.spell.uid,name:item.spell.name,targetId:target.uid,op:item.spell.effects[0]?.op,echo:true,healthUpdates:[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,lane)}]});}}removeDead(room);checkWin(room);}});else activatePatronPower(room,p,data,{findCreature,attack,spellBuff,draw,emit,pushLog,applyDamage,removeDead,checkWin,summon:(owner,spec)=>summonRuptura(room,owner,spec,{emit,pushLog,attack})});}
+    if(data.type==='patronPower'){if(data.powerId==='estudos-avancados')activateStudies(room,p,data,{emit,pushLog,applyExisting:()=>{for(const item of existingPositionSpells(room,p)){const side=own(room,item.sideId),lane=adjacentLane(item.lane,p.study.centerNeighbor),target=findCreature(side,side.formation[lane]);if(target){applyEffect(room,p,item.spell,target);emit(room,'spell',{playerId:p.id,cardId:item.spell.uid,name:item.spell.name,targetId:target.uid,op:item.spell.effects[0]?.op,echo:true,healthUpdates:[{uid:target.uid,...shieldState(target),hp:Math.max(0,target.health-target.damage),maxHp:target.health,attack:attack(target,room,lane)}]});}}removeDead(room);checkWin(room);}});else activatePatronPower(room,p,data,{findCreature,attack,spellBuff,draw,emit,pushLog,applyDamage,removeDead,checkWin,summon:(owner,spec)=>summonRuptura(room,owner,spec,{emit,pushLog,attack})});}
     else if(data.type==='grimoirePreview'){previewStudyBook(p,data);}
     else if(data.type==='grimoireFinish'){finishStudyBook(room,p,{emit,pushLog});}
     else if(data.type==='pressureLane'){const source=findCreature(p,data.cardId),lane=Number(data.lane);if(!source||!p.emanation.includes(source.uid)||!effects(source).some(e=>e.op==='lane_keyword_aura'||e.op==='lane_health_aura'&&e.choose_lane)||!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição aliada para a Emanação.');source.auraLane=lane;syncKeywordAuras(room);}
@@ -490,7 +554,7 @@ function actInternal(room,p,data,catalog){
           const damageSource=effect(card)?.op==='ally_attack_damage'?findCreature(p,data.sourceId):null;
           if(effect(card)?.op==='ally_attack_damage'&&!damageSource)throw Error('Escolha uma criatura viva que você controla para causar o dano.');
           const spellAmount=damageSource?attack(damageSource,room,p.formation.indexOf(damageSource.uid)):null;
-          paidCost(room,p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);emit(room,'spell_cast',{playerId:p.id,targetSide:shareSide?.id,lane:shareLane,sharedLane:share?echoLane:undefined,optimized:Boolean(p.study?.discount),shared:share});if(damageSource){if(!target.runeCoating)applyDamage(room,target,spellAmount);if(spellAmount>0&&!target.runeCoating)curseFromDamage(target,damageSource,effects);}else applyEffect(room,p,card,target);spellPlace={targetSide:shareSide?.id,lane:shareLane,sharedLane:share?echoLane:undefined};if(echoTarget&&room.phase!=='finished'&&canEchoTarget(room,p,shareCard,echoTarget.uid)){applyEffect(room,p,shareCard,echoTarget);emit(room,'spell',{card:structuredClone(shareCard),playerId:p.id,echo:true,targetSide:shareSide.id,lane:echoLane,targetId:echoTarget.uid,name:card.name+' · Eco',op:effect(shareCard)?.op,healthUpdates:[{uid:echoTarget.uid,hp:Math.max(0,echoTarget.health-echoTarget.damage),maxHp:echoTarget.health,attack:attack(echoTarget,room,echoLane)}]});}rememberPositionSpell(room,p,card,target,shareSide,shareLane);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{card:structuredClone(card),patronHealing:effects(card).some(e=>e.op==='heal_patron')?{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}:null,playerId:p.id,sourceId:damageSource?.uid||null,targetId:target?.uid||null,targetPatronId:target?.patron?(target.owner||p.id):null,name:card.name,op:effect(card)?.op,amount:spellAmount??(effect(card)?.amount||effect(card)?.attack||0),sourceHealthUpdate:damageSource?{uid:damageSource.uid,hp:damageSource.health-damageSource.damage,maxHp:damageSource.health,attack:attack(damageSource,room,p.formation.indexOf(damageSource.uid))}:null,healthUpdates:['area_stat_buff','graveyard_stat_buff','combat_area_attack'].includes(effect(card)?.op)?(effect(card)?.op==='graveyard_stat_buff'?banquetTargets(p,'direct'):p.reserve).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,extraLife:c.extraLife||0,attack:attack(c,room,p.formation.indexOf(c.uid))})):['area_damage','area_attack_modifier'].includes(effect(card)?.op)?other(room,p.id).reserve.concat(other(room,p.id).discard.filter(c=>c.type==='creature')).map(c=>({uid:c.uid,hp:Math.max(0,c.health-c.damage),maxHp:c.health,extraLife:c.extraLife||0,attack:attack(c,room,other(room,p.id).formation.indexOf(c.uid))})):target?.patron?[{patronId:target.owner||p.id,hp:own(room,target.owner||p.id).patron.hp,extraLife:own(room,target.owner||p.id).patron.extraLife||0,maxHp:own(room,target.owner||p.id).patron.maxHp}]:target?[{uid:target.uid,hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0,attack:attack(target,room,(kind==='enemy'?other(room,p.id):p).formation.indexOf(target.uid))}]:[],attackAfter:['attack_modifier','stat_buff'].includes(effect(card)?.op)&&target?attack(target,room,p.formation.indexOf(target.uid)):undefined});
+          paidCost(room,p,card,'direct');p.hand=p.hand.filter(c=>c!==card);p.discard.push(card);emit(room,'spell_cast',{playerId:p.id,targetSide:shareSide?.id,lane:shareLane,sharedLane:share?echoLane:undefined,optimized:Boolean(p.study?.discount),shared:share});if(damageSource){if(!target.runeCoating)applyDamage(room,target,spellAmount);if(spellAmount>0&&!target.runeCoating)curseFromDamage(target,damageSource,effects);}else applyEffect(room,p,card,target);spellPlace={targetSide:shareSide?.id,lane:shareLane,sharedLane:share?echoLane:undefined};if(echoTarget&&room.phase!=='finished'&&canEchoTarget(room,p,shareCard,echoTarget.uid)){applyEffect(room,p,shareCard,echoTarget);emit(room,'spell',{card:structuredClone(shareCard),playerId:p.id,echo:true,targetSide:shareSide.id,lane:echoLane,targetId:echoTarget.uid,name:card.name+' · Eco',op:effect(shareCard)?.op,healthUpdates:[{uid:echoTarget.uid,...shieldState(echoTarget),hp:Math.max(0,echoTarget.health-echoTarget.damage),maxHp:echoTarget.health,attack:attack(echoTarget,room,echoLane)}]});}rememberPositionSpell(room,p,card,target,shareSide,shareLane);p.directPlayed=true;removeDead(room);checkWin(room);pushLog(room,`${p.name} usou ${card.name} diretamente.`,p.id);emit(room,'spell',{card:structuredClone(card),patronHealing:effects(card).some(e=>e.op==='heal_patron')?{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}:null,playerId:p.id,sourceId:damageSource?.uid||null,targetId:target?.uid||null,targetPatronId:target?.patron?(target.owner||p.id):null,name:card.name,op:effect(card)?.op,amount:spellAmount??(effect(card)?.amount||effect(card)?.attack||0),sourceHealthUpdate:damageSource?{uid:damageSource.uid,...shieldState(damageSource),hp:damageSource.health-damageSource.damage,maxHp:damageSource.health,attack:attack(damageSource,room,p.formation.indexOf(damageSource.uid))}:null,healthUpdates:['area_stat_buff','graveyard_stat_buff','combat_area_attack'].includes(effect(card)?.op)?(effect(card)?.op==='graveyard_stat_buff'?banquetTargets(p,'direct'):p.reserve).map(c=>({uid:c.uid,...shieldState(c),hp:Math.max(0,c.health-c.damage),maxHp:c.health,extraLife:c.extraLife||0,attack:attack(c,room,p.formation.indexOf(c.uid))})):['area_damage','area_attack_modifier'].includes(effect(card)?.op)?other(room,p.id).reserve.concat(other(room,p.id).discard.filter(c=>c.type==='creature')).map(c=>({uid:c.uid,...shieldState(c),hp:Math.max(0,c.health-c.damage),maxHp:c.health,extraLife:c.extraLife||0,attack:attack(c,room,other(room,p.id).formation.indexOf(c.uid))})):target?.patron?[{patronId:target.owner||p.id,hp:own(room,target.owner||p.id).patron.hp,extraLife:own(room,target.owner||p.id).patron.extraLife||0,maxHp:own(room,target.owner||p.id).patron.maxHp}]:target?[{uid:target.uid,...shieldState(target),hp:Math.max(0,target.health-target.damage),maxHp:target.health,extraLife:target.extraLife||0,attack:attack(target,room,(kind==='enemy'?other(room,p.id):p).formation.indexOf(target.uid))}]:[],attackAfter:['attack_modifier','stat_buff'].includes(effect(card)?.op)&&target?attack(target,room,p.formation.indexOf(target.uid)):undefined});
         }else if(mode==='lane'){
           if(card.directOnly)throw Error('Esta magia só pode ser usada diretamente.');
           const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição de 1 a 3.');
@@ -523,7 +587,7 @@ function actInternal(room,p,data,catalog){
         const cleric=findCreature(p,uid),ef=effects(cleric).find(ef=>ef.op==='heal'&&String(ef.timing).includes('emanat')),targetId=data.healTargetIds?.[index]||data.healTargetId,target=targetId==='patron'&&ef?.allow_patron?{patron:true,damage:p.patron.maxHp-p.patron.hp}:findCreature(p,targetId),cost=ef?.mana_cost||0;
         if(!target||target.damage<=0||(ef?.exclude_self&&target.uid===uid)||p.mana<cost)return;
         p.mana-=cost;if(target.patron){p.patron.hp=Math.min(p.patron.maxHp,p.patron.hp+(ef.amount||1));emit(room,'cleric_heal',{playerId:p.id,sourceId:uid,targetPatronId:p.id,amount:ef.amount||1,mana:cost,healthUpdates:[{patronId:p.id,hp:p.patron.hp,maxHp:p.patron.maxHp}]});return;}target.damage=Math.max(0,target.damage-(ef.amount||1));
-        emit(room,'cleric_heal',{playerId:p.id,sourceId:uid,targetId:target.uid,amount:ef.amount||1,mana:cost,healthUpdates:[{uid:target.uid,hp:target.health-target.damage,maxHp:target.health}]});
+        emit(room,'cleric_heal',{playerId:p.id,sourceId:uid,targetId:target.uid,amount:ef.amount||1,mana:cost,healthUpdates:[{uid:target.uid,...shieldState(target),hp:target.health-target.damage,maxHp:target.health}]});
       });
       room.preparationsDone=(room.preparationsDone||0)+1;
       if(room.preparationsDone===1){startPrep(room,other(room,p.id));}
@@ -534,7 +598,7 @@ function actInternal(room,p,data,catalog){
   }
   if(room.phase==='vote'&&data.type==='vote'){
     if(p.vote!==null)throw Error('Voto já confirmado.');p.vote=Boolean(data.fight);
-    if(p.vote){room.phase='formation';startForceWindow(room);pushLog(room,`${p.name} iniciou o combate. Distribuam as criaturas em segredo.`,p.id);}
+    if(p.vote){room.phase='formation';restoreBoundPatrons(room);startForceWindow(room);pushLog(room,`${p.name} iniciou o combate. Distribuam as criaturas em segredo.`,p.id);}
     else if(room.players.every(x=>x.vote===false)){pushLog(room,'Ambos recusaram combate.');finishRound(room);}
     room.revision++;return;
   }
@@ -549,6 +613,7 @@ function actInternal(room,p,data,catalog){
     else if(data.type==='assignPatron'){if(forceWindowActive(room))throw Error('Aguarde a prioridade de Vultobreve.');assignPatron(room,p,data.lane===null?null:Number(data.lane));}
     else if(data.type==='assign'){
       const lane=Number(data.lane);if(!Number.isInteger(lane)||lane<0||lane>2)throw Error('Posição inválida.');
+      if(patronBindingLane(p)===lane&&data.cardId!==patronCombatId(p))throw Error('Esta casa está reservada ao Patrono vinculado.');
       const occupant=findCreature(p,p.formation[lane]);const requested=findCreature(p,data.cardId);if((occupant?.forcedBy&&occupant.uid!==data.cardId)||(requested?.forcedBy&&requested.forcedLane!==lane))throw Error('Vultobreve mantém esta criatura na posição escolhida até o combate.');const previous=p.formation[lane];if(previous===patronCombatId(p)&&data.cardId!==null)throw Error('Retire o Patrono antes de ocupar esta casa.');if((occupant?.anchor&&occupant.uid!==data.cardId)||(requested?.anchor&&requested.anchor.lane!==lane))throw Error('A criatura está ancorada nesta posição até o próximo combate.');if((occupant?.sleep&&occupant.uid!==data.cardId)||(requested?.sleep&&requested.sleep.lane!==lane))throw Error('A criatura está adormecida e presa nesta posição.');
       if(data.cardId!==null){const card=findCreature(p,data.cardId);if(!card||p.emanation.includes(card.uid))throw Error('Escolha uma criatura válida da reserva.');if(previous&&previous!==card.uid)releaseForced(room,previous);if(p.formation.indexOf(card.uid)!==lane)releaseForced(room,card.uid);p.formation=p.formation.map(uid=>uid===card.uid?null:uid);p.formation[lane]=card.uid;if(tauntLanes(p.taunts?.[card.uid]).some(targetLane=>Math.abs(targetLane-lane)!==1))delete p.taunts[card.uid];}else{const uid=p.formation[lane];releaseForced(room,uid);p.formation[lane]=null;if(p.taunts)delete p.taunts[uid];}
     }else if(data.type==='pressureLane'){const source=findCreature(p,data.cardId),lane=Number(data.lane);if(!source||!p.emanation.includes(source.uid)||!effects(source).some(e=>e.op==='lane_keyword_aura'||e.op==='lane_health_aura'&&e.choose_lane)||!Number.isInteger(lane)||lane<0||lane>2)throw Error('Escolha uma posição aliada para a Emanação.');source.auraLane=lane;
@@ -575,13 +640,14 @@ function actInternal(room,p,data,catalog){
 }
 
 export function view(room,p){
-  const reveal=room.phase==='finished'||room.phase==='resolving';
-  return {music:musicView(room),turnClock:room.phase==='mulligan'?(room.players.includes(p)?mulliganClock(room,p):null):room.turnClock||null,seals:room.seals||[],forceWindow:room.phase==='formation'?room.forceWindow:null,laneBonuses:reveal?room.laneBonuses||{}:{},code:room.code,inviteToken:room.inviteToken,phase:room.phase,round:room.round,turn:room.turn,first:room.first,coinWinner:room.coinWinner,winner:room.winner,you:p.id,spectator:room.spectators.includes(p),spectators:room.spectators.map(x=>({id:x.id,name:x.name})),revision:room.revision,serverNow:Date.now(),recording:room.recording||null,matchId:room.matchId||null,eventId:room.eventId,eventsFrom:room.events[0]?.id??room.eventId+1,events:room.events.map(event=>handBuffView(event,p.id)),log:room.log,lastCombat:room.lastCombat||null,combat:room.phase==='resolving'?combatHandBuffView(room.combat,p.id):null,players:room.players.map(seat=>({
-     id:seat.id,name:seat.name,bot:seat.bot,deckId:seat.deckId,study:studyView(seat,seat.id===p.id),patron:seat.patron?{...seat.patron,effectiveAttack:patronWeaponAttack(seat)}:null,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],weapons:seat.weapons||[],forge:seat.forge?(seat.id===p.id?structuredClone(seat.forge):{stage:seat.forge.stage,cost:seat.forge.cost,dueRound:seat.forge.dueRound}):null,mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,pendingApprenticeTargets:seat.id===p.id?pendingApprentices(room,seat).map(c=>c.uid):[],pendingApprenticeSources:seat.id===p.id?pendingFirstSpellShots(room,seat).map(x=>x.source):[],firstSpellUsedThisRound:seat.firstSpellRound===room.round,pendingDiscard:seat.id===p.id?seat.pendingDiscard||0:0,mulligansLeft:seat.id===p.id?seat.mulligansLeft:undefined,mulliganReady:seat.mulliganReady,mulliganStartedAt:seat.id===p.id?seat.mulliganStartedAt:undefined,hand:seat.id===p.id?seat.hand:undefined,
+  const reveal=room.phase==='finished'||room.phase==='resolving'&&revealStage(room)===3;
+  const result={music:musicView(room),turnClock:room.phase==='mulligan'?(room.players.includes(p)?mulliganClock(room,p):null):room.turnClock||null,seals:room.seals||[],forceWindow:room.phase==='formation'?room.forceWindow:null,laneBonuses:reveal?room.laneBonuses||{}:{},code:room.code,inviteToken:room.inviteToken,phase:room.phase,round:room.round,turn:room.turn,first:room.first,coinWinner:room.coinWinner,winner:room.winner,you:p.id,spectator:room.spectators.includes(p),spectators:room.spectators.map(x=>({id:x.id,name:x.name})),revision:room.revision,serverNow:Date.now(),recording:room.recording||null,matchId:room.matchId||null,eventId:room.eventId,eventsFrom:room.events[0]?.id??room.eventId+1,events:room.events.map(event=>handBuffView(event,p.id)),log:room.log,lastCombat:room.lastCombat||null,combat:room.phase==='resolving'?combatHandBuffView(room.combat,p.id):null,players:room.players.map(seat=>({
+     id:seat.id,name:seat.name,bot:seat.bot,deckId:seat.deckId,study:studyView(seat,seat.id===p.id),patron:seat.patron?{...seat.patron,effectiveAttack:seat.patron.sleep?0:patronWeaponAttack(seat)}:null,deckCount:seat.deck?.length||0,handCount:seat.hand?.length||0,discardCount:seat.discard?.length||0,discard:seat.discard||[],weapons:seat.weapons||[],forge:seat.forge?(seat.id===p.id?structuredClone(seat.forge):{stage:seat.forge.stage,cost:seat.forge.cost,dueRound:seat.forge.dueRound}):null,mana:seat.mana,manaMax:seat.manaMax,fatigue:seat.fatigue,pendingApprenticeTargets:seat.id===p.id?pendingApprentices(room,seat).map(c=>c.uid):[],pendingApprenticeSources:seat.id===p.id?pendingFirstSpellShots(room,seat).map(x=>x.source):[],firstSpellUsedThisRound:seat.firstSpellRound===room.round,pendingDiscard:seat.id===p.id?seat.pendingDiscard||0:0,mulligansLeft:seat.id===p.id?seat.mulligansLeft:undefined,mulliganReady:seat.mulliganReady,mulliganStartedAt:seat.id===p.id?seat.mulliganStartedAt:undefined,hand:seat.id===p.id?seat.hand:undefined,
     reserve:seat.reserve?.map(c=>({...c,...keywordPresentation(c,seat.id===p.id||reveal),monkMode:seat.id===p.id||reveal?c.monkMode:undefined,protocolMode:seat.id===p.id||reveal?c.protocolMode:undefined,sealChoices:seat.id===p.id||reveal?c.sealChoices:undefined,auraLane:seat.id===p.id||reveal?c.auraLane:undefined,auraKeywords:seat.id===p.id||reveal?c.auraKeywords:undefined,effects:seat.id===p.id||reveal?effects(c):effects({...c,auraKeywords:[]}),effectiveAttack:attack(c,room,seat.id===p.id||reveal?seat.formation.indexOf(c.uid):-1),owner:seat.id})),emanation:seat.emanation||[],
     taunts:seat.id===p.id||reveal?seat.taunts||{}:{},formation:seat.id===p.id||reveal?seat.formation:seat.formation.map(uid=>seat.reserve.some(c=>c.uid===uid&&(c.anchor||c.sleep))?uid:null),ready:seat.ready,voted:seat.vote!==null,
     prepared:room.players.flatMap(caster=>studyPrepared(caster).filter(item=>item.targetSide===seat.id).map(item=>({lane:item.lane,echo:Boolean(item.echo),caster:caster.id,refund:!item.echo&&caster.id===p.id&&item.paidRound===room.round&&room.phase==='prep'&&room.turn===p.id?Math.min(item.paid||0,Math.max(0,caster.manaMax-caster.mana)):0,card:reveal||caster.id===p.id||!item.hidden?item.card:null,hidden:!reveal&&caster.id!==p.id&&item.hidden})))
   }))};
+  return progressiveCombatView(room,p,result);
 }
 
 export function easyBotAction(room){

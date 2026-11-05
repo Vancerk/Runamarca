@@ -80,6 +80,7 @@
    const base={sourceIndex,name:e.name||e.op,timing,target,duration:e.permanent?'permanent':'round',condition:e.condition==='self_wounded'?'wounded':e.condition==='owner_played_direct_spell_this_round'?'spell':'none',amount:Math.abs(e.amount||0),count:1,activationCost:e.mana_cost||e.cost||0,group:'sum',reason:''};
    const add=(effect,extra={})=>rows.push({...base,effect,...extra});
    const unknown=()=>add('custom',{customPoints:0,reason:'Mecânica sem preço calibrado: '+JSON.stringify(e)});
+   if(e.op==='barrier'){add('custom',{customPoints:0,duration:'permanent',reason:'Mecânica sem preço calibrado: '+JSON.stringify(e)+'; escudo único até o próximo dano positivo, sem duração.'});continue;}
    if(e.target==='any'||e.uncounterable){unknown();continue;}
    if(e.draw_attack_divisor){unknown();continue;}
    if(e.condition&& !['self_wounded','owner_played_direct_spell_this_round'].includes(e.condition)){unknown();continue;}

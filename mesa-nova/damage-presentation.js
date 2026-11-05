@@ -23,7 +23,7 @@ function finishDamageVictim(update){
  if(state.phase==='resolving'&&state.combat?.id){deadVisuals.set(update.uid,{copy:node,owner:p?.id||card?.owner});return;}
  const grave=$(p?.id===seat()?.id?'self-grave':'opponent-grave'),a=center(node),b=center(grave);
  deadVisuals.delete(update.uid);
- safeFlight(node,[{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate(0,-3px) scale(.98)',opacity:1,offset:.25},{transform:`translate(${b.x-a.x}px,${b.y-a.y}px) scale(.18) rotate(9deg)`,opacity:0}],{duration:800,easing:'ease-in',fill:'forwards'},update.uid).finally(()=>{damageRemnants.delete(update.uid);});
+ (globalThis.RunaDeathArc&&typeof arcFlight==='function'?arcFlight(node,()=>$(p?.id===seat()?.id?'self-grave':'opponent-grave'),{duration:800,endScale:.18,uid:update.uid,owner:p?.id||card?.owner}):safeFlight(node,[{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate(0,-3px) scale(.98)',opacity:1,offset:.25},{transform:`translate(${b.x-a.x}px,${b.y-a.y}px) scale(.18) rotate(9deg)`,opacity:0}],{duration:800,easing:'ease-in',fill:'forwards'},update.uid)).finally(()=>{damageRemnants.delete(update.uid);});
 }
 function applyDamageHit(updates=[]){applyHealthUpdates(updates);for(const u of updates)finishDamageVictim(u);}
 function playDamageEffect(kind,from,to,onHit,donor=null){const combatId=state?.phase==='resolving'?state.combat?.id:null;return RunaDamageFX.play({kind,from,to,donor,onHit,getGeneration:()=>combatId?visualGeneration+':'+combatPresentationCurrent(combatId):visualGeneration});}
@@ -38,7 +38,11 @@ async function presentPreparedMagic(spell){
   const side=[...document.querySelectorAll('.lane-side')].find(n=>n.dataset.owner===spell.targetSide&&Number(n.dataset.lane)===spell.lane),target=side?.querySelector('.card')||side;
   if(typeof presentIdentitySpell==='function'&&await presentIdentitySpell(spell,target))return;
   if(generation!==visualGeneration||!combatPresentationCurrent(combatId))return;
-  if(spell.op==='push_right'){let movement=Promise.resolve();await playDamageEffect('wind',patronDamageSource(spell.casterId),target,()=>{movement=animatePushCollision(spell);});await movement;}
+  if(spell.op==='push_right'){
+   const uid=spell.push?.targetId;
+   const victim=()=>uid?(document.querySelector('#visual-layer .visual-card[data-uid="'+CSS.escape(uid)+'"]')||tableCard(uid)):target;
+   let movement=Promise.resolve();await playDamageEffect('wind',patronDamageSource(spell.casterId),victim,()=>{movement=animatePushCollision(spell);});await movement;
+  }
   else if(kind){const targets=spell.op==='area_damage'?(spell.healthUpdates||[]).filter(u=>u.uid).map(u=>({target:damageTarget(u.uid),updates:[u]})):[{target,updates:spell.healthUpdates||[]}];await Promise.all(targets.map(x=>x.target?playDamageEffect(kind,patronDamageSource(spell.casterId),x.target,()=>applyDamageHit(x.updates)):Promise.resolve(applyDamageHit(x.updates))));}
   else if(spell.op==='area_stat_buff'){await animateBanquet(spell);}
   else if(['heal','choose_one'].includes(spell.op)){healPulse(target);await pause(500);applyHealthUpdates(spell.healthUpdates);}
@@ -49,11 +53,14 @@ async function presentPreparedMagic(spell){
 async function animatePushCollision(spell){
  const push=spell.push,combatId=state?.combat?.id,generation=visualGeneration,source=push?tableCard(push.targetId):null;
  if(!push||!source){presentedPushes.set(combatId+':'+spell.cardId,true);renderBoard();applyDamageHit(spell.healthUpdates);return;}
- const destination=document.querySelector('.lane-side[data-owner="'+push.owner+'"][data-lane="'+push.lane+'"]'),a=center(source),b=destination?center(destination):a,move=push.movements?.length>0;
+ const destination=document.querySelector('.lane-side[data-owner="'+push.owner+'"][data-lane="'+push.lane+'"]'),a=center(source),b=destination?center(destination):a,move=visualPushMovements(spell).length>0;
  const copy=visualCard(source),dx=move?b.x-a.x:push.collisionId?(b.x-a.x)*.32:35,dy=move?b.y-a.y:0;
  await safeFlight(copy,move?[{transform:'translate(0,0)'},{transform:`translate(${dx*.7}px,${dy*.7}px) rotate(4deg)`,offset:.65},{transform:`translate(${dx}px,${dy}px)`}]:[{transform:'translate(0,0)'},{transform:`translate(${dx}px,${dy}px) rotate(5deg)`,offset:.55},{transform:'translate(0,0)'}],{duration:550,easing:'cubic-bezier(.15,.8,.3,1)',fill:'forwards'},push.targetId);
  if(generation!==visualGeneration||!combatPresentationCurrent(combatId))return;
- presentedPushes.set(combatId+':'+spell.cardId,true);renderBoard();if(push.collisionId)impact(tableCard(push.collisionId));applyDamageHit(spell.healthUpdates);
+ presentedPushes.set(combatId+':'+spell.cardId,true);renderBoard();
+ // A lethal hit takes its corpse snapshot from the newly positioned live card.
+ globalThis.RunaHybridLifecycle?.sync?.();
+ if(push.collisionId)impact(tableCard(push.collisionId));applyDamageHit(spell.healthUpdates);
 }
 async function presentReturn(event){const node=damageRemnants.get(event.cardId)||damageRemnant(event.cardId),destination=event.playerId===seat()?.id?document.querySelector('#hand .card[data-uid="'+event.returnedId+'"]'):$('opponent-hand')?.lastElementChild;if(!node||!destination){node?.remove();damageRemnants.delete(event.cardId);revealArrival(event.returnedId);return;}const a=center(node),b=center(destination),end=destination.getBoundingClientRect(),r=node.getBoundingClientRect();if(typeof identityPlay==='function'&&identityCard(event.returnedId)?.persistentReturnUsed)identityPlay('memory',node,node,()=>{},null,800);else sound('magic');try{await settleAnimation(node.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate(0,-25px) scale(1.18)',opacity:1,offset:.22},{transform:`translate(${b.x-a.x}px,${b.y-a.y}px) scale(${end.width/r.width})`,opacity:1}],{duration:1000,easing:'cubic-bezier(.25,.6,.3,1)',fill:'forwards'}),1000);}finally{node.remove();damageRemnants.delete(event.cardId);revealArrival(event.returnedId);sound('place');}}
 async function presentHandBuff(event){
@@ -68,4 +75,16 @@ async function presentDeathBurst(event){if(shownDeathBursts.has(event.sourceId))
 function primaryStrikeUpdates(strike){const hits=[strike,strike.pair].filter(Boolean),ids=new Set(hits.map(h=>h.targetId).filter(Boolean));return (strike.healthUpdates||[]).filter(u=>ids.has(u.uid)).map(u=>{const recoil=hits.find(h=>h.sourceId===u.uid)?.recoil;return recoil?{...u,hp:recoil.beforeHp,extraLife:recoil.beforeExtraLife}:u;});}
 function combatDamageAftermath(strike){if(typeof presentIdentityAftermath==='function')presentIdentityAftermath(strike);const hits=[strike,strike.pair].filter(Boolean);for(const hit of hits){const target=hit.targetId?damageTarget(hit.targetId):patronDamageSource(hit.targetOwner),source=damageTarget(hit.sourceId);if(!hit.targetId&&hit.amount)damagePatron(hit.targetOwner,hit.amount);if(hit.trample>0)playDamageEffect('cone',target,patronDamageSource(hit.targetOwner),()=>{patronImpact(patronDamageSource(hit.targetOwner));damagePatron(hit.targetOwner,hit.trample);});for(const uid of hit.adjacent||[]){const updates=strike.healthUpdates?.filter(u=>u.uid===uid)||[];playDamageEffect('kinetic',target,damageTarget(uid),()=>applyDamageHit(updates));}if(hit.recoil)playDamageEffect('brutal',source,source,()=>applyDamageHit([hit.recoil.update]));applyRetaliationUpdates(hit.retaliationUpdates);}}
 function combatImpactKey(card,attack){const metal=/engrenauta/i.test([card?.subtype,card?.name].join(' '));return (metal?'metalImpact':'impact')+(attack<=3?'Low':attack<=6?'Medium':'Heavy');}
-function heavyCombatImpact(target,attack,attacker){if(!target||attack<=0)return;RunaDamageFX.shockwave(target,attack,()=>visualGeneration);const full=state?.players?.flatMap(p=>[...(p.reserve||[]),...(p.discard||[])]).find(c=>c.uid===attacker?.uid)||attacker;const key=combatImpactKey(full,attack);sound(key,attack,{to:target,level:.82});const strength=RunaDamageFX.impactTier(attack),shake=[0,2,5,8][strength];(target?.querySelector?.('.flight-face')||target?.querySelector?.('.card-art-canvas'))?.animate?.([{transform:'translate(0,0)'},{transform:`translate(${shake}px,${shake*.4}px)`,offset:.18},{transform:`translate(${-shake*.6}px,-1px)`,offset:.43},{transform:'translate(0,0)'}],{duration:180+strength*55});}
+function heavyCombatImpact(target,attack,attacker){
+ if(!target||attack<=0)return;
+ // A room update can replace the victim's node during the wind-up. A detached
+ // node measures (0, 0), which would put the shockwave in the corner of the screen.
+ if(target.isConnected===false)target=currentVisualTarget(target);
+ if(!target||target.isConnected===false)return;
+ RunaDamageFX.shockwave(target,attack,()=>visualGeneration);
+ const full=state?.players?.flatMap(p=>[...(p.reserve||[]),...(p.discard||[])]).find(c=>c.uid===attacker?.uid)||attacker;
+ sound(combatImpactKey(full,attack),attack,{to:target,level:.82});
+ const strength=RunaDamageFX.impactTier(attack),shake=[0,2,5,8][strength];
+ const artwork=target.querySelector?.('.flight-face')||target.querySelector?.('.native-face-sample')||target.querySelector?.('.card-art-canvas');
+ artwork?.animate?.([{transform:'translate(0,0)'},{transform:`translate(${shake}px,${shake*.4}px)`,offset:.18},{transform:`translate(${-shake*.6}px,-1px)`,offset:.43},{transform:'translate(0,0)'}],{duration:180+strength*55});
+}

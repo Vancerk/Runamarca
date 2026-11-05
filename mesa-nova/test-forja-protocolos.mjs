@@ -44,7 +44,7 @@ for(const occupied of [false,true]){
  act(room,a,{type:'play',cardId:spell.uid,mode:'lane',lane:0,targetSide:b.id},catalog);room.phase='resolving';resolveCombat(room);
  assert.equal(a.prepared.length,0);assert.ok(a.discard.some(c=>c.uid===spell.uid));assert.equal(a.patron.hp,100);
  assert.equal(room.spawnedMirages.length,occupied?0:1);assert.equal(attacker.temporaryTrample,undefined);
- if(!occupied){const token=room.spawnedMirages[0].card;assert.equal(token.attack,0);assert.equal(token.health,1);assert.ok(a.discard.some(c=>c.uid===token.uid));assert.ok(room.preClash[0].cards.some(c=>c?.uid===token.uid),'Ficha ocupa a posição antes do dano simultâneo');}
+ if(!occupied){const token=room.spawnedMirages[0].card;assert.equal(token.attack,0);assert.equal(token.health,1);for(const p of room.players){for(const zone of ['hand','reserve','discard','deck'])assert.ok(!p[zone].some(c=>c.uid===token.uid),'Miragem desaparece de '+zone);assert.ok(!p.formation.includes(token.uid));}assert.ok(room.preClash[0].cards.some(c=>c?.uid===token.uid),'Ficha ocupa a posição antes do dano simultâneo');}
 }
 {
  const {room,a,b}=setup();const attacker=place(b,card('FL03',b,{attack:4,health:5}),0),spell=card('FL20',a);a.prepared=[{card:spell,targetSide:b.id,lane:0}];
@@ -52,7 +52,7 @@ for(const occupied of [false,true]){
  try{globalThis.setTimeout=fn=>{finish=fn;return 0;};act(room,a,{type:'ready'},catalog);act(room,b,{type:'ready'},catalog);}finally{globalThis.setTimeout=originalTimer;}
  assert.equal(room.phase,'resolving');assert.ok(room.combat.timeline.filter(step=>step.kind==='magic').every(step=>step.duration>=140+1045+400),'Etapa comporta leitura e voo');assert.equal(room.combat.duration,room.combat.timeline.reduce((n,step)=>n+step.duration,0));const spawned=room.combat.spawnedMirages[0];assert.equal(spawned.owner,a.id);assert.equal(spawned.lane,0);assert.equal(spawned.spellId,spell.uid);
  assert.ok(room.combat.visual[0].cards.some(c=>c?.uid===spawned.card.uid));
- finish();assert.ok(a.discard.some(c=>c.uid===spawned.card.uid),'Prévia e resolução usam a mesma identidade da ficha');
+ finish();assert.equal(room.spawnedMirages[0].card.uid,spawned.card.uid,'Prévia e resolução usam a mesma identidade da ficha');for(const p of room.players)for(const zone of ['hand','reserve','discard','deck'])assert.ok(!p[zone].some(c=>c.uid===spawned.card.uid),'Ficha efêmera não persiste em '+zone);
 }
 {
  const {room,a,b}=setup();place(b,card('FL03',b,{attack:4,health:5}),0);for(let i=0;i<8;i++)a.reserve.push(card('FL02',a));a.prepared=[{card:card('FL20',a),targetSide:b.id,lane:0}];room.phase='resolving';resolveCombat(room);assert.equal(room.spawnedMirages.length,0);assert.equal(a.prepared.length,0);assert.equal(a.patron.hp,96);
