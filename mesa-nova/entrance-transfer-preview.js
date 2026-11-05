@@ -7,7 +7,7 @@ async function animateTransfer({uid,copy,rect,card,duration:customDuration,delay
   if(changesFace)await Promise.race([target.visualReady,pause(1800)]);if(generation!==visualGeneration||!target.isConnected&&target.isConnected!==undefined)return;
   if(target.closest?.('.combat-emanation')&&typeof layoutCombatEmanations==='function')layoutCombatEmanations();
   const end=target.getBoundingClientRect(),bounds=$('visual-layer').getBoundingClientRect();if(!end.width||!end.height)return;
-  movingCards.add(uid);target.style.visibility='hidden';pendingArrival=pendingArrival.filter(id=>id!==uid);
+  movingCards.add(uid);target.style.visibility='hidden';RunaCardArrivals.release(uid);
   const dx=end.left+end.width/2-rect.left-rect.width/2,dy=end.top+end.height/2-rect.top-rect.height/2;
   const make=(face,w,h)=>{const wrapper=document.createElement('div');wrapper.className='card-flight';Object.assign(wrapper.style,{left:(rect.left+rect.width/2-w/2-bounds.left)+'px',top:(rect.top+rect.height/2-h/2-bounds.top)+'px',width:w+'px',height:h+'px'});face.classList.remove('hand-card','opening-card','dragging-source','drag-preview','pending-arrival','selected','arrived','snapping','visual-hit','payable');face.classList.add('flight-face');face.removeAttribute('style');wrapper.append(face);$('visual-layer').append(wrapper);return wrapper;};
   flight=make(copy,rect.width,rect.height);

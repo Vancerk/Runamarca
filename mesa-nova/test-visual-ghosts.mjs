@@ -1,7 +1,8 @@
+import {installArrivals} from './test-card-arrivals-fixture.mjs';
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const presentation=fs.readFileSync(new URL('damage-presentation.js',import.meta.url),'utf8'),app=fs.readFileSync(new URL('app.js',import.meta.url),'utf8');
 class Node{constructor(uid='',hp=2){this.dataset={uid};this.hp=hp;this.style={};this.children=[];this.isConnected=true;this.className='';this.classes=new Set();this.classList={add:(...xs)=>xs.forEach(x=>this.classes.add(x)),remove:(...xs)=>xs.forEach(x=>this.classes.delete(x)),contains:x=>this.classes.has(x)};}getBoundingClientRect(){return {left:100,top:200,width:100,height:140};}querySelector(s){return s==='.health-value'?{textContent:String(this.hp)}:null;}append(n){this.children.push(n);n.isConnected=true;}remove(){this.isConnected=false;}removeAttribute(){}animate(){return {playState:'running',currentTime:0,effect:{getTiming:()=>({duration:1000})},finished:Promise.resolve(),cancel(){}};}getAnimations(){return [];}}
-function fixture(events,nodes=[]){const layer=new Node(),ctx={state:{phase:'prep',you:'a',players:[{id:'a',reserve:[],discard:[]},{id:'b',reserve:[],discard:[]}],events},lastVisualId:0,visualGeneration:1,pendingArrival:[],movingCards:new Set(),deadVisuals:new Map(),cloneVisual:n=>new Node(n.dataset.uid,n.hp),$:()=>layer,seat:()=>({id:'a'}),tableCard:()=>null,spellTarget:()=>null,document:{createElement:()=>new Node(),querySelectorAll:s=>s==='#game .card'?nodes:[]},revealArrival:uid=>{ctx.revealed=uid;},applyHealthUpdates(){},sound(){}};vm.createContext(ctx);vm.runInContext(presentation,ctx);return {ctx,layer};}
+function fixture(events,nodes=[]){const layer=new Node(),ctx={state:{phase:'prep',you:'a',players:[{id:'a',reserve:[],discard:[]},{id:'b',reserve:[],discard:[]}],events},lastVisualId:0,visualGeneration:1,pendingArrival:[],movingCards:new Set(),deadVisuals:new Map(),cloneVisual:n=>new Node(n.dataset.uid,n.hp),$:()=>layer,seat:()=>({id:'a'}),tableCard:()=>null,spellTarget:()=>null,document:{createElement:()=>new Node(),querySelectorAll:s=>s==='#game .card'?nodes:[]},revealArrival:uid=>{ctx.revealed=uid;},applyHealthUpdates(){},sound(){}};vm.createContext(ctx);installArrivals(ctx);vm.runInContext(presentation,ctx);return {ctx,layer};}
 {
  const {ctx,layer}=fixture([{id:1,type:'spell',op:'area_attack_modifier',healthUpdates:[{uid:'old-dead',hp:0},{uid:'alive',hp:3}]}],[new Node('old-dead',0)]);ctx.captureDamageSnapshots();ctx.prepareDamagePresentation();assert.equal(layer.children.length,0,'Geada must not resurrect discarded creatures as visual ghosts');
 }
@@ -12,12 +13,26 @@ function fixture(events,nodes=[]){const layer=new Node(),ctx={state:{phase:'prep
  const {ctx,layer}=fixture([{id:1,type:'spell',op:'damage',healthUpdates:[{uid:'victim',hp:0}]}],[new Node('victim',2)]);ctx.captureDamageSnapshots();ctx.prepareDamagePresentation();assert.equal(layer.children.length,1,'new lethal spell holds one visible copy until its impact');ctx.prepareDamagePresentation();assert.equal(layer.children.length,1,'same pending event cannot duplicate the copy');
 }
 {
- const {ctx,layer}=fixture([],[new Node('returning',2)]);ctx.captureDamageSnapshots();ctx.damageRemnant('returning');await ctx.presentReturn({cardId:'returning',returnedId:'new',playerId:'b'});assert.equal(layer.children[0].isConnected,false,'no destination must not strand a return-to-hand copy');assert.equal(ctx.revealed,'new');
+ const {ctx,layer}=fixture([],[new Node('returning',2)]);ctx.captureDamageSnapshots();ctx.damageRemnant('returning');await ctx.presentReturn({cardId:'returning',returnedId:'new',playerId:'b'});assert.equal(layer.children[0].isConnected,false,'no destination must not strand a return-to-hand copy');assert.equal(ctx.revealed,undefined,'a rival return must not release a local arrival');
 }
 {
  const {ctx,layer}=fixture([{id:1,type:'spell',op:'area_damage',healthUpdates:[{uid:'old',hp:0},{uid:'new',hp:0}]}],[new Node('old',0),new Node('new',2)]);ctx.captureDamageSnapshots();ctx.prepareDamagePresentation();assert.equal(layer.children.length,1,'area damage must animate only the new casualty, excluding historical zero HP updates');assert.equal(layer.children[0].dataset.uid,'new');
 }
 console.log('Cartas fantasma: descarte não recria cópias, morte já animada não duplica, magia letal nova mantém uma cópia, retorno sem destino é limpo.');
+
+// The fallback uses the same owner: its old async finally cannot release a new
+// match's arrival or delete a newer remnant that happens to have the same UID.
+{
+ const {ctx}=fixture([],[new Node('returning',2)]);ctx.captureDamageSnapshots();ctx.damageRemnant('returning');
+ ctx.document.querySelector=()=>new Node('same');ctx.center=()=>({x:100,y:200});
+ let finish;ctx.settleAnimation=()=>new Promise(r=>finish=r);
+ const flight=ctx.presentReturn({cardId:'returning',returnedId:'same',playerId:'a'});
+ assert.equal(ctx.RunaCardArrivals.has('same'),true);
+ ctx.RunaCardArrivals.reset('new-match');const next=ctx.RunaCardArrivals.begin('draw',{uid:'same',arrival:true,lock:true});
+ vm.runInContext("damageRemnants.set('returning',{newer:true})",ctx);finish();await flight;
+ assert.equal(ctx.RunaCardArrivals.current(next),true);assert.equal(ctx.RunaCardArrivals.blocked,true);assert.equal(ctx.revealed,undefined);
+ assert.equal(vm.runInContext("damageRemnants.get('returning').newer",ctx),true);
+}
 
 function appFunction(name,next){const start=app.indexOf('function '+name+'('),end=next?app.indexOf(next,start):app.indexOf('\n',start);assert.ok(start>=0&&end>start);return (app.slice(start-6,start)==='async '?'async ':'')+app.slice(start,end);}
 {

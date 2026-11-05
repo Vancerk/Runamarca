@@ -1,6 +1,6 @@
 /* Isolated rehearsal: production card renderer, transfer motion and audio players. */
 const $=id=>document.getElementById(id),pause=ms=>new Promise(r=>setTimeout(r,ms));
-let audioContext=null,visualGeneration=0,pendingArrival=[],selectedLab='FL09',busy=false,run=0,captionFrame=0,musicTimer=null,musicPlayer=null;
+let audioContext=null,visualGeneration=0,selectedLab='FL09',busy=false,run=0,captionFrame=0,musicTimer=null,musicPlayer=null;
 const movingCards=new Set(),models=new Map(),handNodes=new Map();
 function cloneVisual(source){const copy=source.cloneNode(true),originals=source.querySelectorAll('canvas'),clones=copy.querySelectorAll('canvas');originals.forEach((c,i)=>clones[i].getContext('2d').drawImage(c,0,0));return copy;}
 function tableCard(uid){return [...$('lab-slot').querySelectorAll('.card')].find(n=>n.dataset.uid===uid);}

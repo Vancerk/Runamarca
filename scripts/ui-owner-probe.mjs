@@ -85,7 +85,7 @@ if(want('draw')){report.draw=[];
  for(const [w,h,reduced] of [[1920,900,false],[1280,720,false],[390,800,false],[1920,900,true]]){const id=`${w}x${h}${reduced?'-reduced':''}`,{context,page}=await open({width:w,height:h},{reduced});
   const t=table({hand:5});t.room.turn=t.a.id;t.room.turnClock={phase:'prep',key:'probe-'+id,startedAt:Date.now()-50000,endsAt:Date.now()+9000};const drawn=card('FV03',t.a);t.a.hand.push(drawn);
   await paint(page,view(t.room,t.a),600);
-  const res=await page.evaluate(async uid=>{pendingArrival.push(uid);render();await new Promise(r=>setTimeout(r,250));const shots=[];let done=false;const style=document.createElement('style');
+  const res=await page.evaluate(async uid=>{RunaCardArrivals.reserve(uid);render();await new Promise(r=>setTimeout(r,250));const shots=[];let done=false;const style=document.createElement('style');
    // Test-only: let hit testing see paint order of overlays that normally ignore input.
    style.textContent='.turn-fuse,.turn-clock-badge,.hybrid-flight-portal,.hybrid-flight-carrier,.hybrid-flight-carrier *{pointer-events:auto!important}';
    const probe=()=>{const carrier=document.querySelector('.hybrid-flight-carrier');if(!carrier)return null;const r=carrier.getBoundingClientRect(),badge=document.querySelector('.turn-clock-badge:not([hidden])'),br=badge?.getBoundingClientRect();document.head.append(style);const at=(x,y)=>{const top=document.elementFromPoint(x,y);return top?.closest('.hybrid-flight-carrier,.hybrid-flight-portal')?'card':top?.matches('.turn-fuse')?'fuse':top?.matches('.turn-clock-badge')?'badge':top?.className||top?.tagName||null;};
@@ -97,7 +97,7 @@ if(want('draw')){report.draw=[];
   check(`${id}: the drawn card is above the turn fuse/counter in every sampled frame (rise, flip, read, arrival)`,res.samples.length>3&&bad.length===0,{bad:bad.slice(0,4),stages,frames:res.samples.length});
   // Capture during the read stage for visual inspection.
   const t2=table({hand:5});t2.room.turn=t2.a.id;t2.room.turnClock={phase:'prep',key:'probe2-'+id,startedAt:Date.now()-50000,endsAt:Date.now()+9000};const d2=card('FV03',t2.a);t2.a.hand.push(d2);await paint(page,view(t2.room,t2.a),400);
-  await page.evaluate(uid=>{pendingArrival.push(uid);render();setTimeout(()=>animateEvent({id:990002,type:'draw',playerId:state.you,cardId:uid}),200);},d2.uid);
+  await page.evaluate(uid=>{RunaCardArrivals.reserve(uid);render();setTimeout(()=>animateEvent({id:990002,type:'draw',playerId:state.you,cardId:uid}),200);},d2.uid);
   await page.waitForFunction(()=>RunaHybridFlights.stats.active[0]?.stage==='read',null,{timeout:8000}).catch(()=>{});await page.screenshot({path:`${out}/draw-read-${id}.png`});await page.waitForTimeout(3000);
   await context.close();}}
 
@@ -155,7 +155,7 @@ if(want('green')){report.green=[];
 
 // ---------- 7. No wait cursor ----------
 if(want('cursor')){const {context,page}=await open({width:1920,height:900});const t=table({hand:5});const drawn=card('FV03',t.a);t.a.hand.push(drawn);await paint(page,view(t.room,t.a),400);
- const r=await page.evaluate(async uid=>{pendingArrival.push(uid);render();await new Promise(r=>setTimeout(r,200));const p=animateEvent({id:990010,type:'draw',playerId:state.you,cardId:uid});await new Promise(r=>setTimeout(r,250));const lock=document.querySelector('.hybrid-draw-lock'),hand=document.getElementById('hand'),card=hand.querySelector('.hand-card');const res={lockHidden:lock.hidden,lockCursor:getComputedStyle(lock).cursor,handBusy:hand.getAttribute('aria-busy'),handInert:hand.inert,handCursor:getComputedStyle(hand).cursor,cardCursor:card?getComputedStyle(card).cursor:null,bodyCursor:getComputedStyle(document.body).cursor};await p;return res;},drawn.uid);
+ const r=await page.evaluate(async uid=>{RunaCardArrivals.reserve(uid);render();await new Promise(r=>setTimeout(r,200));const p=animateEvent({id:990010,type:'draw',playerId:state.you,cardId:uid});await new Promise(r=>setTimeout(r,250));const lock=document.querySelector('.hybrid-draw-lock'),hand=document.getElementById('hand'),card=hand.querySelector('.hand-card');const res={lockHidden:lock.hidden,lockCursor:getComputedStyle(lock).cursor,handBusy:hand.getAttribute('aria-busy'),handInert:hand.inert,handCursor:getComputedStyle(hand).cursor,cardCursor:card?getComputedStyle(card).cursor:null,bodyCursor:getComputedStyle(document.body).cursor};await p;return res;},drawn.uid);
  report.cursor=r;check('cursor: no wait/progress cursor while the hand is temporarily locked; lock, inert and aria-busy remain',!/wait|progress/.test([r.lockCursor,r.handCursor,r.cardCursor,r.bodyCursor].join(' '))&&r.lockHidden===false&&r.handInert===true&&r.handBusy==='true',r);
  await context.close();}
 

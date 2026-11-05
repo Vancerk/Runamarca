@@ -37,7 +37,7 @@ try{
   await page.evaluate(()=>document.activeElement.blur());await page.waitForTimeout(150);const blurred=await handState(page);check('blur restores origin '+id,!blurred.preview&&blurred.cards.every(k=>k.opacity==='1'));
   // Hover cancelled by a draw, then by a drag that is interrupted.
   await page.mouse.move(rest.cards[6].x+rest.cards[6].w/2,viewport.height-30);await page.waitForTimeout(220);
-  const drawn=card('FV03',a);a.hand.push(drawn);a.hand.splice(0,1);await page.evaluate(({s,uid})=>{pendingArrival.push(uid);state=s;render();window.flightDone=false;animateDraw(uid,true).finally(()=>window.flightDone=true);},{s:view(room,a),uid:drawn.uid});
+  const drawn=card('FV03',a);a.hand.push(drawn);a.hand.splice(0,1);await page.evaluate(({s,uid})=>{RunaCardArrivals.reserve(uid);state=s;render();window.flightDone=false;animateDraw(uid,true).finally(()=>window.flightDone=true);},{s:view(room,a),uid:drawn.uid});
   await page.waitForFunction(()=>RunaHybridFlights.stats.active.some(e=>e.stage==='read'));const drawing=await handState(page);check('draw cancels hover without stuck original '+id,!drawing.preview&&drawing.cards.every(k=>!k.concealed));
   await page.waitForFunction(()=>flightDone,null,{timeout:8000});await page.waitForTimeout(150);
   const hist=await page.evaluate(()=>RunaHybridFlights.stats.history.filter(e=>e.kind==='draw'));const t=k=>hist.filter(e=>e.stage===k).at(-1)?.time;
@@ -49,7 +49,7 @@ try{
  // B. Draw cancellations restore controls: session change and resize during each stage.
  for(const stage of ['flip','read','to-hand']){for(const how of ['session','resize','blur']){
   const {room,a}=setup();a.hand=Array.from({length:4},()=>card('FV03',a));const {context,page}=await open({width:1920,height:900});await paint(page,view(room,a));
-  const drawn=card('FL10',a);a.hand.push(drawn);await page.evaluate(({s,uid})=>{pendingArrival.push(uid);state=s;render();window.flightDone=false;animateDraw(uid,true).finally(()=>window.flightDone=true);},{s:view(room,a),uid:drawn.uid});
+  const drawn=card('FL10',a);a.hand.push(drawn);await page.evaluate(({s,uid})=>{RunaCardArrivals.reserve(uid);state=s;render();window.flightDone=false;animateDraw(uid,true).finally(()=>window.flightDone=true);},{s:view(room,a),uid:drawn.uid});
   await page.waitForFunction(st=>RunaHybridFlights.stats.active.some(e=>e.stage===st),stage,{timeout:6000});
   if(how==='session'){const next=view(room,a);next.matchId='other-match';await page.evaluate(s=>{state=s;render();},next);}else if(how==='resize')await page.setViewportSize({width:1600,height:900});else await page.evaluate(()=>dispatchEvent(new Event('blur')));
   // Neighbour interpolation (240–300 ms, revision 8) may still be finishing; it must end on its own.
