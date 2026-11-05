@@ -38,7 +38,7 @@
   host.dataset.since=String(next?.music?.since||'');
   player?.update(next?.music||null);
  }
- const previousRender=render;render=function(){try{return previousRender.apply(this,arguments);}finally{sync();}};
+ RunaPresentation.register('music',{after:sync});
  show('idle');
  function loadCatalog(){
  if(loading||destroyed)return;loading=true;

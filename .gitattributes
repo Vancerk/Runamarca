@@ -18,6 +18,7 @@ mesa-nova/patron-bindings.mjs text eol=lf
 mesa-nova/patron-combat.mjs text eol=lf
 mesa-nova/patron-powers.mjs text eol=lf
 mesa-nova/prepared-transfer.mjs text eol=lf
+mesa-nova/progressive-reveal.mjs text eol=lf
 mesa-nova/ruptura-effects.mjs text eol=lf
 mesa-nova/silence-effects.mjs text eol=lf
 mesa-nova/study-selection.mjs text eol=lf
