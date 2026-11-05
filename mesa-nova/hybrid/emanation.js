@@ -1,7 +1,7 @@
 import {HYBRID} from './config.js';
 // The slot gets a presentation of an already public native card. No game lookup.
-const descriptions=new WeakMap(),nativeCard=cardEl;
-cardEl=function(card,options={}){const node=nativeCard(card,options);if(!options.back)descriptions.set(node,card.silenced?'Silenciado':card.text||'');return node;};
+const descriptions=new WeakMap();
+RunaPresentation.register('emanation-description',{notify(kind,p){if(kind==='card-created'&&!p.back)descriptions.set(p.node,p.card.silenced?'Silenciado':p.card.text||'');}});
 // Revision 11: vertical compact face. Illustration in the upper region, card text in
 // its own lower region, and on top the card's own native liquid heart: the
 // `.health-liquid` canvas painted by app.js updateLiquidHeart()/drawLiquidHeart()

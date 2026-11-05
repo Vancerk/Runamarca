@@ -1,3 +1,17 @@
+# Mesa 3D — estado atual da arquitetura
+
+Desde a simplificação de 05/11/2026, a entrada canônica é `mesa-nova/index.html`. `/runamarca/` e os aliases antigos servem essa mesma entrada 3D. O diretório `hybrid` contém adaptadores ativos de apresentação; não oferece uma segunda versão pública do jogo.
+
+O cliente declara a ordem de atualização, a geometria e os pontos de animação. Os módulos registram adaptadores em `RunaPresentation`, usam `RunaGeometry` e compartilham o controle de chegadas por partida/UID. Eles não substituem as funções globais do cliente. Se WebGL falhar, a interface oferece recuperação ou recarregamento, sem expor uma mesa 2D.
+
+Documentação atual: [plano e estado das etapas](../../docs/PLANO-SIMPLIFICACAO-MESA-3D.md), [coordenadas](../../docs/APRESENTACAO-ETAPA-3-GEOMETRIA.md), [atualizações](../../docs/APRESENTACAO-ETAPA-4-ATUALIZACOES.md) e [entrada e recuperação](../../docs/APRESENTACAO-ETAPA-5-ENTRADA-RECUPERACAO.md).
+
+## Arquivo histórico das revisões visuais
+
+O conteúdo abaixo registra versões anteriores. Seus ângulos, rotas, resultados, referências a fallback e afirmações de publicação descrevem a época de cada revisão, não o contrato atual.
+
+---
+
 # RunaMarca híbrido — revisão de UI do dono (31/10–01/11/2026)
 
 Abrir **http://127.0.0.1:3086/runamarca/hybrid/index.html** com **Ctrl+F5** (`hybrid-12-ui-owner`). Pacote de revisão completo (requisito → implementação → teste → evidência, medidas por viewport, expectativas de QA alteradas, resultados, falhas herdadas, referências Hearthstone e pendências): **`prototype-qa/ui-owner/REVIEW-PACKAGE.md`**. Nada foi commitado além dos commits locais de segurança anteriores (`88ad7b5`, `d7a29cd`); nada foi enviado nem publicado. A revisão cabe ao Codex.

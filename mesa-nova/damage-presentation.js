@@ -25,7 +25,7 @@ function finishDamageVictim(update){
  deadVisuals.delete(update.uid);
  (globalThis.RunaDeathArc&&typeof arcFlight==='function'?arcFlight(node,()=>$(p?.id===seat()?.id?'self-grave':'opponent-grave'),{duration:800,endScale:.18,uid:update.uid,owner:p?.id||card?.owner}):safeFlight(node,[{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate(0,-3px) scale(.98)',opacity:1,offset:.25},{transform:`translate(${b.x-a.x}px,${b.y-a.y}px) scale(.18) rotate(9deg)`,opacity:0}],{duration:800,easing:'ease-in',fill:'forwards'},update.uid)).finally(()=>{damageRemnants.delete(update.uid);});
 }
-function applyDamageHit(updates=[]){applyHealthUpdates(updates);for(const u of updates)finishDamageVictim(u);}
+function applyDamageHit(updates=[]){const draw=()=>{applyHealthUpdates(updates);for(const u of updates)finishDamageVictim(u);};return globalThis.RunaPresentation?RunaPresentation.renderPart('damage-hit',updates,draw):draw();}
 function playDamageEffect(kind,from,to,onHit,donor=null){const combatId=state?.phase==='resolving'?state.combat?.id:null;return RunaDamageFX.play({kind,from,to,donor,onHit,getGeneration:()=>combatId?visualGeneration+':'+combatPresentationCurrent(combatId):visualGeneration});}
 async function presentDamageSpell(event){if(event.echo)globalThis.RunaMarikaEffects?.pages([damageTarget(event.targetId)].filter(Boolean));const from=patronDamageSource(event.playerId),target=event.targetPatronId?patronDamageSource(event.targetPatronId):damageTarget(event.targetId),kind=damageSpellKind(event.card||{name:event.name},event.op),donor=event.sourceId?damageTarget(event.sourceId):null;if(!kind||!from||!target){applyDamageHit(event.healthUpdates);return false;}await playDamageEffect(kind,from,target,()=>{if(event.targetPatronId)patronImpact(target);applyDamageHit(event.healthUpdates);if(event.sourceHealthUpdate)applyHealthUpdates([event.sourceHealthUpdate]);},donor);return true;}
 async function presentPreparedMagic(spell){
@@ -88,4 +88,5 @@ function heavyCombatImpact(target,attack,attacker){
  const strength=RunaDamageFX.impactTier(attack),shake=[0,2,5,8][strength];
  const artwork=target.querySelector?.('.flight-face')||target.querySelector?.('.native-face-sample')||target.querySelector?.('.card-art-canvas');
  artwork?.animate?.([{transform:'translate(0,0)'},{transform:`translate(${shake}px,${shake*.4}px)`,offset:.18},{transform:`translate(${-shake*.6}px,-1px)`,offset:.43},{transform:'translate(0,0)'}],{duration:180+strength*55});
+ globalThis.RunaPresentation?.notify('physical-impact',{target,attack,attacker});
 }
