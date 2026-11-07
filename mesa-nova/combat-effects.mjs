@@ -12,6 +12,11 @@ export function resolveDirectedCombat(room,{effects,attack,laneCard,alive,applyD
   const redirect=participants.find(x=>x.p===enemy&&effects(x.card).some(e=>e.op==='taunt')&&tauntLanes(enemy.taunts?.[x.card.uid]).includes(lane)&&Math.abs(x.lane-lane)===1);
   return {card,p,lane,originalTarget:laneCard(room,enemy.id,lane),redirected:Boolean(redirect),targetLane:redirect?.lane??lane,target:redirect?.card||laneCard(room,enemy.id,lane),enemy,initiative:effects(card).some(e=>e.op==='initiative')};
  });
+ // Owner decision (06/11/2026): a Taunt attacked by a provoked enemy strikes that enemy back, as in a frontal
+ // exchange, instead of its own lane. One strike with its effective attack. With several provoked attackers it answers
+ // the first to attack it (Initiative first, then the leftmost lane); only enemies that actually attack count.
+ const strikesNow=s=>!s.card.sleep&&s.card.eyeSkipCombat!==room.combatCount&&attack(s.card,room,s.lane)>0;
+ for(const s of strikes){const provoked=strikes.filter(x=>x.redirected&&x.target===s.card&&strikesNow(x)).sort((x,y)=>(y.initiative-x.initiative)||(x.lane-y.lane));if(provoked.length){s.answers=provoked;s.target=provoked[0].card;s.targetLane=provoked[0].lane;}}
  const contributors=new Map(),steps=[];
  for(const initiative of [true,false]){
   const eligible=strikes.filter(s=>s.initiative===initiative&&alive(s.card)&&!s.card.sleep&&s.card.eyeSkipCombat!==room.combatCount&&attack(s.card,room,s.lane)>0);
@@ -19,6 +24,8 @@ export function resolveDirectedCombat(room,{effects,attack,laneCard,alive,applyD
   // attackers to their original defender (or Patron if that lane was empty).
   // Original defenders killed earlier still block, as in the existing rule.
   for(const s of eligible)if(s.redirected&&!alive(s.target)){s.target=s.originalTarget;s.targetLane=s.lane;s.redirected=false;}
+  // A provoked enemy killed before it could attack no longer draws the answer: the next one does, else the own lane.
+  for(const s of eligible)if(s.answers&&!alive(s.target)){const next=s.answers.find(x=>alive(x.card));if(next){s.target=next.card;s.targetLane=next.lane;}else{s.target=s.originalTarget;s.targetLane=s.lane;s.answers=null;}}
   blockedSummons?.(room,eligible,{attack,emit,pushLog});
   const changes=new Map(),patronChanges=new Map(),preventedTargets=new Set();
   const damage=(target,amount,source)=>{if(amount>0&&target?.type==='creature'&&target.spectralBarrier)preventedTargets.add(target);amount=consumeDamageShield(target,amount);if(!target||amount<=0)return;changes.set(target,(changes.get(target)||0)+amount);if(!contributors.has(target))contributors.set(target,new Set());contributors.get(target).add(source);};

@@ -57,11 +57,16 @@
 /* S3: the whole scene is out of focus — every #game layer (hybrid WebGL canvas,
    Emanation, decorations) plus body-level atmosphere. The selection and its
    flights live outside #game (#mulligan-overlay, #visual-layer) and stay sharp. */
-body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>*,
-body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>.table,
-body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>.rail,
+/* Claude round 4 (combat reveal lag): the body:has(…) #game.is-obscured>* form made every DOM insertion anywhere in
+   the page re-check the body :has() and recalculate the style of the whole document (~570 elements, ~3 ms per forced
+   read, 10+ times per reveal). #mulligan-overlay is the preceding sibling of #game inside <main> (index.html), so the
+   sibling form selects exactly the same elements with the same specificity (2,2,1 and 2,3,1). The fog canvas lives
+   outside <main> and keeps its :has() (its subject is one class, which stays cheap). */
+body #mulligan-overlay:not([hidden])~#game.is-obscured>*,
+body #mulligan-overlay:not([hidden])~#game.is-obscured>.table,
+body #mulligan-overlay:not([hidden])~#game.is-obscured>.rail,
 body:has(#mulligan-overlay:not([hidden])):has(#game.is-obscured)>.formation-fog-canvas {filter:blur(8px) brightness(.75)}
-body:has(#mulligan-overlay:not([hidden])) #game.is-obscured>.room-sidebar {filter:blur(8px) brightness(.75);z-index:auto;pointer-events:none}
+body #mulligan-overlay:not([hidden])~#game.is-obscured>.room-sidebar {filter:blur(8px) brightness(.75);z-index:auto;pointer-events:none}
 @keyframes opening-card-float {0%,100%{translate:0 3px}50%{translate:0 -5px}}
 @media(max-width:650px) {
   #mulligan-overlay {padding:22px 16px;align-items:center}

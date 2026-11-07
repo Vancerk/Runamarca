@@ -24,7 +24,7 @@ export function installFocus({sync,lifecycle}){
   // The transition clock begins on its first painted frame, after the phase DOM
   // has settled. Work done by render() must not consume the first half of the move.
   let firstFrame=true;
-  const step=now=>{if(firstFrame){firstFrame=false;sync();t0=performance.now();raf=requestAnimationFrame(step);return;}const k=Math.max(0,Math.min(1,(now-t0)/F.ms)),e=1-Math.pow(1-k,3);value=from+(target-from)*e;sync();if(k<1)raf=requestAnimationFrame(step);else raf=0;};
+  /* Round 2: the first painted frame only starts the clock; render() has just built the scene with the same focus value, so a second full build here only lengthened the hitch when the formation fog appears. */const step=now=>{if(firstFrame){firstFrame=false;t0=performance.now();raf=requestAnimationFrame(step);return;}const k=Math.max(0,Math.min(1,(now-t0)/F.ms)),e=1-Math.pow(1-k,3);value=from+(target-from)*e;sync();if(k<1)raf=requestAnimationFrame(step);else raf=0;};
   raf=requestAnimationFrame(step);}
  function mobileScroll(){
   if(innerWidth>900||state?.phase!=='formation'||seat()?.ready)return;const key=[state.code,state.matchId,state.round].join(':');if(scrolledFor===key)return;scrolledFor=key;

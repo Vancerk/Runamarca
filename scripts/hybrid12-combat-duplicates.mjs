@@ -39,7 +39,9 @@ const browser=await launch(),nativeRef={};
 // as inherited or as introduced by the hybrid. It never relaxes the absolute check.
 const RUNS=[...['golias-taunt','golias-attacks','bobo-taunt','control'].flatMap(kind=>['a','b'].map(seat=>({w:1920,h:900,kind,seat,url:URL_NATIVE}))),...[[1920,900],[1280,720]].flatMap(([w,h])=>['golias-taunt','golias-attacks','bobo-taunt','control'].flatMap(kind=>['a','b'].map(seat=>({w,h,kind,seat,url:URL_HYBRID}))))];
 // Optional focus (COMBAT_KINDS=bobo-taunt,control); native references of the selected kinds always run first.
-const focus=process.env.COMBAT_KINDS?.split(',').filter(Boolean),SELECTED=focus?RUNS.filter(r=>focus.includes(r.kind)):RUNS;
+const focus=process.env.COMBAT_KINDS?.split(',').filter(Boolean),seats=process.env.COMBAT_SEATS?.split(','),screens=process.env.COMBAT_SCREENS?.split(',');
+const SELECTED=RUNS.filter(r=>(!focus||focus.includes(r.kind))&&(!seats||seats.includes(r.seat))&&(r.url===URL_NATIVE||!screens||screens.includes(r.w+'x'+r.h)));
+if(!SELECTED.length)throw Error('No combat scenarios selected');
 try{for(const {w,h,kind,seat,url} of SELECTED){const native=url===URL_NATIVE;
  const s=scenario(kind),id=`${native?'native-':''}${kind}-${seat}-${w}x${h}`,{context,page}=await open(browser,{width:w,height:h},{url,errors:H.errors,gpu:H.gpu});
  await paint(page,{...s.pre[seat],serverNow:Date.now()},600);

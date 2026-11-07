@@ -1,7 +1,9 @@
 import {layoutHands} from './fan-layout.js';
 import {HYBRID} from './config.js';
 // Complete native card: no substitute titles, frame or rules.
-const records=new Map();let source=null,hoverRAF=0,sampleRAF=0,sampleBatches=0,lastBatchMs=0,supersampling=2;
+const records=new Map();// Round 3 (owner): the fan cards are rotated by the compositor; a 2× sample was minified 2:1 bilinearly while rotating,
+// which broke the thin frame lines into steps ("escadinha"). A 1:1 device-pixel sample keeps them continuous.
+let source=null,hoverRAF=0,sampleRAF=0,sampleBatches=0,lastBatchMs=0,supersampling=1;
 function paint(node,record){
  const canvas=node.querySelector('.card-art-canvas');if(!canvas?.width||!record.sourceReady)return;
  const ratio=Math.min(4,Math.max(1,devicePixelRatio||1)*supersampling),w=Math.max(1,Math.round(node.offsetWidth*ratio)),h=Math.max(1,Math.round(node.offsetHeight*ratio)),key=node.visualFaceKey+':'+w+':'+h;
@@ -86,7 +88,10 @@ function projectedShowHover({card,event},fallback){
  }
  if(document.activeElement===source)checkPointerAfterRender=false;
  if(source!==previous||hiddenSource!==source)introSource=source;
- queueHover();
+ // Publish the preview and conceal its source in the same task. Deferring the
+ // first placement leaves a visible native-position preview plus its original
+ // until the next animation frame, which can be delayed by board work.
+ cancelAnimationFrame(hoverRAF);hoverRAF=0;placeHover();
 };
 function projectedMoveHover({event},fallback){if(source?.isConnected&&!document.getElementById('hover-preview').hidden){queueHover();return;}fallback();};
 function projectedHideHover({event},fallback){

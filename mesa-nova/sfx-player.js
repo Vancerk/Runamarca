@@ -5,7 +5,7 @@
  function create({manifest={cues:{}},base='',fetcher=root.fetch?.bind(root),mode='epidemic',maxVoices=16}={}){
   let catalog=manifest,selectedMode='epidemic',volume=1,muted=false;
   const contexts=new WeakMap(),voices=new Set(),sources=new WeakMap(),bytes=new Map(),loading=new Map();
-  const stats={played:0,fallback:0,failed:0,suppressed:0};
+  const stats={played:0,fallback:0,failed:0,suppressed:0,stolen:0,limited:0};
   function state(context){let value=contexts.get(context);if(!value){value={buffers:new Map(),pending:new Map(),last:new Map(),buses:new WeakMap()};contexts.set(context,value);}return value;}
   function output(context,destination){const cache=state(context);if(!context.createDynamicsCompressor)return destination;if(!cache.buses.has(destination)){const compressor=context.createDynamicsCompressor();compressor.threshold.value=-8;compressor.knee.value=8;compressor.ratio.value=10;compressor.attack.value=.003;compressor.release.value=.13;compressor.connect(destination);cache.buses.set(destination,compressor);}return cache.buses.get(destination);}
   async function file(url){
@@ -47,18 +47,28 @@
    if(!buffer){void prepare(context,key);stats.fallback++;return false;}
    const now=context.currentTime,last=cache.last.get(key)??-Infinity;
    if(now-last<(cue.minIntervalMs??35)/1000){stats.suppressed++;return true;}
-   if(voices.size>=maxVoices){stats.suppressed++;return true;}
+   const policy=root.RunaSoundDirection?.policy(key,cue)||{priority:1,maxConcurrent:Infinity,maxSeconds:Infinity};
+   const same=[...voices].filter(v=>v.url===cue.url&&!v.releasing);
+   const active=[...voices].filter(v=>!v.releasing);
+   const crowded=same.length>=policy.maxConcurrent?same:active.length>=maxVoices?active:null;
+   if(crowded){
+    const victim=crowded.filter(v=>v.priority<policy.priority).sort((a,b)=>a.priority-b.priority||a.started-b.started)[0];
+    if(!victim){stats.suppressed++;stats.limited++;return true;}
+    release(victim.source,.025);stats.stolen++;
+   }
+   // At most four 25 ms crossfade tails beyond the active budget, even in a burst.
+   while(voices.size>=maxVoices+4){const tail=[...voices].find(v=>v.releasing);if(!tail){stats.suppressed++;return true;}try{tail.source.stop();}catch{}tail.cleanup();}
    const source=context.createBufferSource(),gain=context.createGain(),nodes=[source,gain];
    source.buffer=buffer;source.playbackRate.value=cue.rate||1;
    const start=Math.max(0,Math.min(buffer.duration-.001,(cue.offset||0)+offset));
-   const duration=Math.min(buffer.duration-start,limit??cue.duration??buffer.duration)/(cue.rate||1);
-   const fade=Math.min(cue.fadeOut??.35,duration*.45),level=Math.min(1,Math.max(0,cue.gain??.5))*volume*scale;
+   const duration=Math.min(buffer.duration-start,limit??cue.duration??buffer.duration,policy.maxSeconds)/(cue.rate||1);
+   const fade=Math.min(policy.fadeOut??cue.fadeOut??.35,duration*.45),level=Math.min(1,Math.max(0,cue.gain??.5))*volume*scale;
    gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(level,now+Math.min(.004,duration/4));
    gain.gain.setValueAtTime(level,now+Math.max(.004,duration-fade));gain.gain.linearRampToValueAtTime(0,now+duration);
    source.connect(gain);
-   const bus=output(context,destination);
+   const bus=output(context,root.RunaAudioMix?.destination(context,'effects',destination)||destination);
    const space=spatial(context,{from,to,pan,depth,travelSeconds:Math.min(travelSeconds??duration,duration),destination:bus});gain.connect(space.input);
-   let cleaned=false;const voice={source,context,gain,level,fade,end:now+duration,cleanup(){if(cleaned)return;cleaned=true;space.dispose();nodes.forEach(node=>{try{node.disconnect();}catch{}});voices.delete(voice);sources.delete(source);}};sources.set(source,voice);
+   let cleaned=false;const voice={source,context,gain,level,fade,url:cue.url,priority:policy.priority,started:now,end:now+duration,cleanup(){if(cleaned)return;cleaned=true;space.dispose();nodes.forEach(node=>{try{node.disconnect();}catch{}});voices.delete(voice);sources.delete(source);}};sources.set(source,voice);
    source.addEventListener('ended',voice.cleanup,{once:true});voices.add(voice);cache.last.set(key,now);
    try{track(source);source.start(now,start,duration*(cue.rate||1));stats.played++;return true;}catch{voice.cleanup();stats.failed++;return false;}
   }

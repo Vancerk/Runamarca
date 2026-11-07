@@ -17,13 +17,13 @@
   x.textAlign='center';x.textBaseline='middle';x.font='bold 15px Georgia';relief(()=>x.fillText(back?'ELYSIUM':'RUNAMARCA',120,181));x.font='bold 8px Georgia';x.fillStyle='#765020';x.fillText('✦  •  ✦',120,204);
   textures.set(back,c);return c;
  }
- function create(){
-  const stage=document.createElement('div');stage.className='coin-toss coin-volume';stage.setAttribute('role','img');stage.setAttribute('aria-label','Moeda de ouro lançada, com frente, verso e borda');
+ function create({back=false}={}){
+  const stage=document.createElement('div');stage.style.setProperty('--coin-final',back?'1980deg':'1800deg');stage.dataset.face=back?'back':'front';stage.className='coin-toss coin-volume';stage.setAttribute('role','img');stage.setAttribute('aria-label','Moeda de ouro lançada, com frente, verso e borda');
   const shadow=document.createElement('div');shadow.className='coin-ground-shadow';stage.append(shadow);
   const solid=document.createElement('div');solid.className='coin-solid';stage.append(solid);
   for(let i=0;i<96;i++){const edge=document.createElement('i');edge.className='coin-edge';edge.style.setProperty('--edge-angle',i*360/96+'deg');edge.style.setProperty('--edge-light',String(.52+.48*Math.max(0,Math.cos(i*Math.PI*2/96-2.2))));solid.append(edge);}
   for(const back of [false,true]){const cap=document.createElement('div');cap.className='coin-cap '+(back?'coin-cap-back':'coin-cap-front');const canvas=document.createElement('canvas');canvas.width=canvas.height=SIZE;canvas.getContext('2d').drawImage(faceTexture(back),0,0);cap.append(canvas);solid.append(cap);}
-  stage.dataset.geometry='96 fluted edge faces, radius 104, thickness 22';stage.dataset.texture='768px procedural minted metal';return stage;
+  stage.dataset.geometry='96 fluted edge faces, radius 104, thickness 30';stage.dataset.texture='768px procedural minted metal';return stage;
  }
  root.RunaCoinVolume={create};
 })(globalThis);

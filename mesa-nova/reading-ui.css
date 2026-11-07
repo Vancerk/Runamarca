@@ -50,6 +50,15 @@
 .deck-pack-count,.deck-pack-patron small{font-family:'DM Sans',Arial,sans-serif;font-weight:600;letter-spacing:.07em}
 .mechanics-context,.patron-power-zoom,.choice-desc,.welcome .entry{font-family:'DM Sans',Arial,sans-serif}
 .patron-ether .ether-count{font-family:'DM Sans',Arial,sans-serif;font-weight:700;letter-spacing:-.02em}
-.camp-layout .player-band .patron-power .illustrated-power>b{width:20px;height:20px;top:2px;font:700 13px/1 'DM Sans',Arial,sans-serif;color:#fff8e5;background:radial-gradient(circle at 32% 25%,#3979a1,#173e62 65%,#102840);border:1.5px solid #dcc082;box-shadow:0 1px 2px #0009,inset 0 0 0 1px #ffffff33;text-shadow:0 1px #071323}
+.camp-layout .player-band .patron-power .illustrated-power>b{width:20px;height:20px;top:2px;font:700 13px/1 'DM Sans',Arial,sans-serif;color:#fff8e5;background:radial-gradient(circle at 32% 25%,var(--ether-cost-light,#3979a1),var(--ether-cost-mid,#173e62) 65%,var(--ether-cost-dark,#102840));border:1.5px solid #dcc082;box-shadow:0 1px 2px #0009,inset 0 0 0 1px #ffffff33;text-shadow:0 1px #071323}
 .camp-layout .player-band .patron-equipment .patron-powers{align-items:center}
 @media(min-width:901px){.camp-layout .player-band .patron-power{box-shadow:inset 0 0 0 1px #e7c58366,0 2px 3px #0006;border-color:#caa260}.contract-orbit .deck-option.is-settled{will-change:auto}.contract-orbit .deck-option.is-settled .deck-pack-wrap{transform:none!important}}
+
+/* Match the gem to its owner's ether; leave the golden metal rim unchanged. */
+.fighter[data-affinity="ruptura"]{--ether-cost-light:#c6574b;--ether-cost-mid:#832f2a;--ether-cost-dark:#431918}
+.fighter[data-affinity="forja"]{--ether-cost-light:#ba8b31;--ether-cost-mid:#785515;--ether-cost-dark:#49320c}
+.fighter[data-affinity="fluxo"]{--ether-cost-light:#3979a1;--ether-cost-mid:#173e62;--ether-cost-dark:#102840}
+#target-picker .taunt-spatial.choice-row,#target-picker .taunt-spatial{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;max-width:780px;margin-inline:auto}
+#target-picker .taunt-spatial .choice-option{width:100%;min-width:0}
+#target-picker .taunt-spatial .taunt-both{grid-column:1 / -1;grid-row:2;justify-self:center;width:auto;min-height:0;padding:12px 20px;font-size:14px}
+#target-picker .taunt-spatial .taunt-both:before{display:none}

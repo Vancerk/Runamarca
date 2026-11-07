@@ -68,7 +68,11 @@ export const HYBRID=Object.freeze({
  //   ms 400 — entry/exit; veil .45 — darkening of the decoration (WebGL wood and props) outside the field, the own
  //     reserve and the side panels; holdMaxMs — longest wait for the last casualty flight / return after combat;
  //   mobileHandStripPx — visible strip of the lowered hand on phones during the formation.
- focus:Object.freeze({max:1.12,ms:400,panelMarginPx:14,rivalGapPx:6,rivalTopPx:16,veil:.45,holdMaxMs:4500,mobileHandStripPx:44}),
+  // Round 2 (owner, 06/11/2026): the visible growth was only 1.5% (1920×1080) / 4.5% (1366×768) because the upward
+ //   room limits it; gain 3 asks for three times that growth, taking the rest downward into the gap above the own
+ //   reserve (ownGapPx kept); max raised so it does not cap the gain.
+  // Round 3 (owner): twice the round-2 growth (gain 3 → 6, max 1.36 → 1.6); the rival band may rise to 30 px from the top.
+ focus:Object.freeze({gain:6,ownGapPx:2,ownShiftMaxPx:26,max:1.6,ms:400,panelMarginPx:14,rivalGapPx:6,rivalTopPx:48,rivalTopGainPx:30,veil:.45,holdMaxMs:4500,mobileHandStripPx:44}),
  camera:Object.freeze({tiltDegrees,tilt:radians(tiltDegrees),distance:Math.hypot(22,16),fovDegrees:43,fov:radians(43)}),
  // Relief and light (revision 12). With a near-vertical camera the side faces of the
  // boxes are almost invisible, so depth comes from cast shadows and edge shading.
@@ -86,8 +90,8 @@ export const HYBRID=Object.freeze({
  hover:Object.freeze({widthToHandCard:1.55,maxViewportHeight:.46,bottomInset:6,sideMargin:10,topMargin:10,mobileMaxViewportHeight:.62,introMs:120}),
  // Vertical composition: physical distance between the own Patron band and the
  // visible top of the hand fan (desktop). The hand keeps its intentional edge crop.
- // UI-owner revision: patronGap 10 → 6 px and rivalGap 6 → 3 px (less empty space next to the Patrons).
- hand:Object.freeze({patronGap:6,rivalGap:3}),
+ // Art sample (05/11/2026): breathing room on both sides, replacing the old 6 / 3 px gaps.
+ hand:Object.freeze({patronGap:34,rivalGap:24}),
  // Combat field, measured in the 3D table plane. The equal parcel removed from each
  // lateral edge is at least minEdgeTrim (revision 9: 2.8333%) and grows on desktop
  // until both side panels respect panels.outerInsetFraction (capped at maxEdgeTrim).
@@ -107,7 +111,27 @@ export const HYBRID=Object.freeze({
  // .935 at 1280×720 against < .93; .897 at .115). .085 keeps most of the reduction and
  // gives .923 / .899 / .876 at 1280×720 / 1920×900 / 1920×1080
  // (prototype-qa/ui-owner/tools/shadow-probe.mjs).
- panels:Object.freeze({sideGapPx:2.4,registerGapPx:.85,outerInsetFraction:.085}),
+ panels:Object.freeze({sideGapPx:6,registerGapPx:5,outerInsetFraction:.085}),
+ // Claude review (05/11/2026), owner request: concentrate the field and show the normal complete card in each
+ // Emanation. Applied once over the partition above, presentation only.
+ //   combatWidth — factor on the width of the six combat sockets. PROPOSAL chosen among measured variants
+ //     (.85/.80/.75 measured; .85 kept: 26% narrower field, traps still clear of the card), not a value approved by the owner; the cards keep their size (it never depended on it).
+ //     QA may compare other values through window.__HYBRID_COMBAT_WIDTH (0.6–1), like the camera override.
+ //   emanaFullCard — the Emanation shows the card's normal face (900×1260 master: art, frame, title, rules, stats)
+ //     instead of the compact crop of revision 11; the socket takes the card's portrait proportion.
+ //   emanaSlotDepth / emanaCenterGap — fraction of the field depth for each Emanation socket and for the gap with
+ //     the "Emanação" plate (two sockets + gap + 2% border = 1). emanaMargin — margin around the card, as a
+ //     fraction of the socket depth, equal on the four sides. label — the "Emanação" plate, below.
+ compose:Object.freeze({combatWidth:(()=>{const v=Number(globalThis.__HYBRID_COMBAT_WIDTH);return Number.isFinite(v)&&v>=.6&&v<=1?v:.85;})(),emanaFullCard:true,emanaSlotDepth:.435,emanaCenterGap:.1,emanaMargin:.035,cardRatio:1260/900,
+  // "Emanação" plate (round 2, parametrised): minPx — minimum width on screen; depth — plate depth as a fraction of
+  // the field depth; offsetX/offsetY — screen-pixel nudges from the socket axis (0 = centred); fontRatio — plate width
+  // divided by the letter size (15 px cap). The plate is measured after placement and re-centred (bridge.js fitLabel).
+  label:Object.freeze({minPx:125,depth:.08,offsetX:0,offsetY:0,fontRatio:7.6})}),
+ // Claude review: internal resolution of the WebGL table. Measured: with 4× MSAA alone, thin rims and the lane
+ // glyph diagonals stepped visibly at DPR 1, and at DPR 2 the old 1.5 cap made the browser enlarge the scene 1.33×.
+ // Now 2 device pixels per CSS pixel (integer 2:1 reduction at DPR 1, native at DPR 2). QA can compare with
+ // window.__HYBRID_RENDER_SCALE (1–2). Cost measured in the review package.
+ render:Object.freeze({scale:dpr=>{const q=Number(globalThis.__HYBRID_RENDER_SCALE);return Number.isFinite(q)&&q>=1&&q<=2?q:Math.min(2,Math.max(2,dpr));}}),
  // Compact Emanation face: illustration on top, card text below, native heart on top.
  // UI-owner revision: complete text without internal scroll. The illustration may shrink
  // down to minArtFraction and the text font steps through fontPx (screen pixels).
@@ -120,5 +144,5 @@ export const HYBRID=Object.freeze({
  // normal draw duration; later draws keep the normal profile.
  draw:Object.freeze({normal:Object.freeze({rise:190,flip:170,travel:420,read:1000,readReduced:600,arrive:300}),openingFactor:.25})
 });
-export function snapshot(){const c=HYBRID.camera;return {visualScale:HYBRID.visualScale,owner:{...HYBRID.owner},v2:{...HYBRID.v2},formA:{...HYBRID.formA},focus:{...HYBRID.focus},camera:{tiltDegrees:c.tiltDegrees,parameter:CAMERA_TILT_DEGREES,qaOverride:overridden?override:null,measuredFrom:'vertical',distance:c.distance,fovDegrees:c.fovDegrees,history:{...CAMERA_HISTORY}},relief:{...HYBRID.relief},hover:{...HYBRID.hover},hand:{...HYBRID.hand},field:{...HYBRID.field},panels:{...HYBRID.panels},emanaFace:{...HYBRID.emanaFace},deck:{...HYBRID.deck},draw:{normal:{...HYBRID.draw.normal},openingFactor:HYBRID.draw.openingFactor}};}
+export function snapshot(){const c=HYBRID.camera;return {visualScale:HYBRID.visualScale,owner:{...HYBRID.owner},v2:{...HYBRID.v2},formA:{...HYBRID.formA},focus:{...HYBRID.focus},camera:{tiltDegrees:c.tiltDegrees,parameter:CAMERA_TILT_DEGREES,qaOverride:overridden?override:null,measuredFrom:'vertical',distance:c.distance,fovDegrees:c.fovDegrees,history:{...CAMERA_HISTORY}},relief:{...HYBRID.relief},hover:{...HYBRID.hover},hand:{...HYBRID.hand},field:{...HYBRID.field},panels:{...HYBRID.panels},compose:{...HYBRID.compose},emanaFace:{...HYBRID.emanaFace},deck:{...HYBRID.deck},draw:{normal:{...HYBRID.draw.normal},openingFactor:HYBRID.draw.openingFactor}};}
 window.RunaHybridConfig={snapshot,get config(){return HYBRID;}};

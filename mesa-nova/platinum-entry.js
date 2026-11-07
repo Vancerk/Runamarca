@@ -18,6 +18,9 @@
  async function texture(node){
   let timer;try{if(node.visualReady)await Promise.race([node.visualReady,new Promise(r=>timer=setTimeout(r,4000))]);}catch{}finally{clearTimeout(timer);}
   const original=node.querySelector('canvas');if(!original?.width||!original?.height)return null;
+  // Snapshot the already painted bitmap without making another full-size canvas
+  // surface that would be uploaded on the first animation frame.
+  if(typeof createImageBitmap==='function')try{return await createImageBitmap(original);}catch{}
   const c=document.createElement('canvas');c.width=original.width;c.height=original.height;c.getContext('2d').drawImage(original,0,0);return c;
  }
  function clear(){for(const finish of [...active])finish(false);seen.clear();}
@@ -26,13 +29,13 @@
   if(card?.type!=='creature'||card.rarity!=='soberano'||!spec.palette||!anchor?.getBoundingClientRect().width||!valid()||signal?.aborted||(key&&(seen.has(key)||pending.has(key))))return false;
   if(key)pending.add(key);
   const requestedAt=performance.now();let cancelled=false;const pendingClose=()=>{cancelled=true;};active.add(pendingClose);
-  const image=await texture(anchor);active.delete(pendingClose);if(key)pending.delete(key);if(!image||cancelled||!valid()||signal?.aborted)return false;if(key){seen.add(key);if(seen.size>300)seen.delete(seen.values().next().value);}
+  const image=await texture(anchor);active.delete(pendingClose);if(key)pending.delete(key);if(!image||cancelled||!valid()||signal?.aborted){image?.close?.();return false;}if(key){seen.add(key);if(seen.size>300)seen.delete(seen.values().next().value);}
   if(spec.phase==='combat')elapsedMs+=performance.now()-requestedAt;
   return new Promise(resolve=>{
    const layer=document.createElement('div'),canvas=document.createElement('canvas');layer.className='platinum-entry-scene';layer.dataset.profile=spec.kind;layer.dataset.stage=spec.phase;layer.dataset.card=card.modelId||card.id;layer.setAttribute('aria-hidden','true');layer.append(canvas);document.body.append(layer);
    const ctx=canvas.getContext('2d'),w=innerWidth,h=innerHeight,dpr=Math.min(root.devicePixelRatio||1,1.5);canvas.width=Math.ceil(w*dpr);canvas.height=Math.ceil(h*dpr);ctx.scale(dpr,dpr);
-   const length=reduced?260:Math.max(600,duration||spec.duration),start=performance.now()-Math.max(0,elapsedMs),sounds=new Set(),triggered=new Set();let raf=0,closed=false,masked=null;
-   function finish(completed=true){if(closed)return;closed=true;cancelAnimationFrame(raf);masks.delete(mask);masked?.classList.remove('platinum-actor-masked');layer.remove();if(!completed)for(const sound of sounds){if(!root.RunaSfx?.release(sound,.08))try{sound.stop();}catch{}}signal?.removeEventListener('abort',abort);root.removeEventListener('resize',abort);active.delete(finish);resolve(completed);}
+   const length=reduced?260:Math.max(600,duration||spec.duration),start=performance.now()-Math.max(0,elapsedMs),sounds=new Set(),triggered=new Set();let raf=0,closed=false,masked=null,frameRect=null;
+   function finish(completed=true){if(closed)return;closed=true;cancelAnimationFrame(raf);masks.delete(mask);masked?.classList.remove('platinum-actor-masked');layer.remove();image.close?.();if(!completed)for(const sound of sounds){if(!root.RunaSfx?.release(sound,.08))try{sound.stop();}catch{}}signal?.removeEventListener('abort',abort);root.removeEventListener('resize',abort);active.delete(finish);resolve(completed);}
    const abort=()=>finish(false);active.add(finish);signal?.addEventListener('abort',abort,{once:true});root.addEventListener('resize',abort,{once:true});
    const rect=anchor.getBoundingClientRect(),end=center(rect),cw=Math.min(spec.phase==='combat'?Math.max(rect.width,Math.min(224,rect.width*1.3)):278,w*(w<600?.27:.4),h*.34),ch=cw*rect.height/rect.width;
    const focus={x:Math.max(cw*1.1,Math.min(w-cw*1.1,end.x)),y:Math.max(ch*.8,Math.min(h-ch*.85,spec.phase==='combat'?end.y:end.y-ch*.48))};
@@ -47,16 +50,18 @@
    function sparks(x,y,t,amount=22,color='#f9b46d',reach=cw){if(t<=0||t>=1)return;ctx.save();ctx.globalAlpha=(1-t)**1.3;ctx.strokeStyle=color;ctx.lineWidth=1.7;for(let i=0;i<amount;i++){const a=i*2.39996,v=reach*(.3+(i%7)/8),px=x+Math.cos(a)*v*t,py=y+Math.sin(a)*v*t*.65+70*t*t;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px-Math.cos(a)*(4+8*(1-t)),py-Math.sin(a)*6);ctx.stroke();}ctx.restore();}
    function dust(x,y,t,scale=1){if(t<=0||t>=1)return;ctx.save();for(let i=0;i<16;i++){const a=i*2.4,travel=cw*(.3+(i%5)*.13)*scale*t,px=x+Math.cos(a)*travel,py=y+Math.sin(a)*travel*.25-18*t;ctx.globalAlpha=(1-t)*.18;const r=(8+t*28)*scale,g=ctx.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,'#b4a18a');g.addColorStop(1,'#b4a18a00');ctx.fillStyle=g;ctx.fillRect(px-r,py-r,r*2,r*2);}ctx.restore();}
    function crack(x,y,t,size=cw){ctx.save();ctx.globalAlpha=clamp(t*5)*(1-range(t,.65,1));for(let i=0;i<9;i++){const a=i*2.399,dx=Math.cos(a)*size,dy=Math.sin(a)*size*.42;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+dx*.3+10*Math.sin(i),y+dy*.3);ctx.lineTo(x+dx*.65,y+dy*.7+5);ctx.lineTo(x+dx*clamp(t*2),y+dy*clamp(t*2));ctx.strokeStyle='#0c0e0f';ctx.lineWidth=4;ctx.stroke();ctx.strokeStyle='#ad85604d';ctx.lineWidth=1;ctx.stroke();}ctx.restore();}
-   function settle(t,at){const p=smooth(range(t,at,1)),r=get(source)?.getBoundingClientRect()||rect,final=center(r);return {x:mix(focus.x,final.x,p),y:mix(focus.y,final.y,p),cw:mix(cw,r.width,p),ch:mix(ch,r.height,p)};}
+   function settle(t,at){const p=smooth(range(t,at,1)),r=frameRect||rect,final=center(r);return {x:mix(focus.x,final.x,p),y:mix(focus.y,final.y,p),cw:mix(cw,r.width,p),ch:mix(ch,r.height,p)};}
    function assembly(t){
     const combat=spec.phase==='combat',p=settle(t,.79),rise=out(range(t,.02,.22)),ground=focus.y+ch*.43;
     ctx.save();ctx.globalAlpha=(1-smooth(range(t,.65,.83)))*rise;
     for(const sign of [-1,1]){const x=focus.x+sign*cw*.66;metal(x,focus.y,18,ch*1.18);metal(x-sign*cw*.12,ground,cw*.38,18);for(let i=0;i<3;i++)metal(x-sign*(18+16*smooth(range(t,.2,.65))),focus.y+(i-1)*ch*.32,60,10);}ctx.restore();
     const cols=combat?2:3,rows=combat?3:4;
+    const assembled=t>=(combat?.4:.594);
+    if(assembled)drawCard(p.x,p.y,p.cw,p.ch,{shadow:false});
     for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
      const i=row*cols+col,delay=combat?.07+(i%2)*.06:.06+((rows-1-row)*cols+col)*.024,progress=out(range(t,delay,delay+.27));
      const direction=col<cols/2?-1:1,dx=(1-progress)*direction*cw*(combat?1.55:1.1),dy=(1-progress)*(row-(rows-1)/2)*ch*.9,u=col/cols,v=row/rows;
-     drawCard(p.x+dx,p.y+dy,p.cw,p.ch,{angle:(1-progress)*direction*(combat?.13:.3),alpha:clamp(progress*4),clip:[[u,v],[u+1/cols,v],[u+1/cols,v+1/rows],[u,v+1/rows]],shadow:false});
+     if(!assembled)drawCard(p.x+dx,p.y+dy,p.cw,p.ch,{angle:(1-progress)*direction*(combat?.13:.3),alpha:clamp(progress*4),clip:[[u,v],[u+1/cols,v],[u+1/cols,v+1/rows],[u,v+1/rows]],shadow:false});
      if(t>delay+.24&&t<delay+.42)sparks(p.x+(u+.5/cols-.5)*p.cw,p.y+(v+.5/rows-.5)*p.ch,range(t,delay+.24,delay+.42),8,'#ffd08b',cw*.3);
     }
     if(t>.55&&t<.8){const pulse=range(t,.55,.8);for(const sign of [-1,1])metal(focus.x+sign*(cw*.48+(1-out(pulse))*50),focus.y,17,ch*.88);sparks(focus.x,ground,pulse,24,'#f19650');}
@@ -101,15 +106,18 @@
     if(t>.69){dust(p.x,p.y+p.ch*.4,range(t,.69,1),.75);sparks(p.x,p.y+p.ch*.4,range(t,.69,.93),18,'#ae8764',cw*.7);}
    }
    const paint={protocol:assembly,artillery:cataclysm,seals,hunt};
-   function mask(){
-    const node=get(source);if(!node?.isConnected||node===masked)return;
+   function mask(node=get(source)){
+    if(!node?.isConnected||node===masked)return;
     masked?.classList.remove('platinum-actor-masked');node.classList.add('platinum-actor-masked');masked=node;
    }
    function draw(now){
-    if(closed)return;if(!valid()||signal?.aborted||!get(source)?.isConnected){finish(false);return;}
+    if(closed)return;const node=get(source);if(!valid()||signal?.aborted||!node?.isConnected){finish(false);return;}
+    // Resolve the current public card once per frame, before writes. Room renders can replace
+    // the node between frames, so this is deliberately not a persistent UID/geometry cache.
+    frameRect=node.getBoundingClientRect();
     const elapsed=getElapsedMs&&!reduced?getElapsedMs():now-start;
-    const t=clamp(elapsed/length),node=get(source);masks.add(mask);mask();layer.dataset.phase=t<.3?'anticipation':t<.78?'manifest':'settle';layer.dataset.progress=t.toFixed(3);ctx.clearRect(0,0,w,h);
-    if(reduced){const r=node.getBoundingClientRect(),p=center(r);drawCard(p.x,p.y,r.width,r.height,{alpha:out(t),shadow:false});}
+    const t=clamp(elapsed/length);masks.add(mask);mask(node);layer.dataset.phase=t<.3?'anticipation':t<.78?'manifest':'settle';layer.dataset.progress=t.toFixed(3);ctx.clearRect(0,0,w,h);
+    if(reduced){const r=frameRect,p=center(r);drawCard(p.x,p.y,r.width,r.height,{alpha:out(t),shadow:false});}
     else{ctx.save();ctx.fillStyle='#0a0b0c';ctx.globalAlpha=Math.sin(t*Math.PI)*(spec.phase==='combat'?0:.32);ctx.fillRect(0,0,w,h);ctx.restore();paint[spec.kind](t);}
     for(const [at,cue]of spec.cues)if(t>=at&&!triggered.has(cue+at)){triggered.add(cue+at);if(!reduced&&elapsedMs/length<at+.08)root.RunaSfx?.play(context,cue,{to:node,level:.7,track:s=>{sounds.add(s);s.addEventListener('ended',()=>sounds.delete(s),{once:true});}});}
     if(t>=1)finish();else raf=requestAnimationFrame(draw);
@@ -135,14 +143,15 @@
    function placeLinks(){
     const current=get(source);if(!valid()||!current?.isConnected){finish();return;}
     const origin=center(current.getBoundingClientRect());
-    for(const link of links){
-     const node=get(link.target);
-     if(!node?.isConnected){
+    // Read all anchors before moving any rail/plate; interleaving them forced layout per target.
+    const poses=links.map(link=>{const node=get(link.target);return {link,rect:node?.isConnected?node.getBoundingClientRect():null};});
+    for(const {link,rect:r} of poses){
+     if(!r){
       if(link.rail)link.rail.style.visibility='hidden';
       for(const {plate} of link.plates)plate.style.visibility='hidden';
       continue;
      }
-     const r=node.getBoundingClientRect(),to=center(r),dx=to.x-origin.x,dy=to.y-origin.y;
+     const to=center(r),dx=to.x-origin.x,dy=to.y-origin.y;
      if(link.rail)Object.assign(link.rail.style,{visibility:'',left:origin.x+'px',top:(origin.y-2.5)+'px',width:Math.hypot(dx,dy)+'px',transform:`rotate(${Math.atan2(dy,dx)}rad)`});
      for(const {plate,side} of link.plates)Object.assign(plate.style,{visibility:'',left:(to.x+side*(r.width*.5+7))+'px',top:to.y+'px'});
     }
