@@ -2,6 +2,7 @@ import {layoutHands} from './fan-layout.js';
 import {matrix} from './card-plane.js';
 import {flightPortal,flattenFace,geometry,handPose,rectQuad,cardCopyAt} from './visuals.js';
 import {HYBRID} from './config.js';
+import {trackMotionSampling} from './motion-sampling.js';
 
 // Presentation only: no speculative play, draw or cost is sent to the server.
 export function installFlights({sync,lifecycle}){
@@ -11,12 +12,18 @@ export function installFlights({sync,lifecycle}){
  lock.className='hybrid-draw-lock';lock.hidden=true;lock.setAttribute('aria-label','Comprando carta');document.body.append(lock);
  const key=()=>state?[state.code,state.matchId,state.you].join(':'):'';
  const liveHand=()=>new Set(seat()?.hand?.map(c=>c.uid)||[]);
- function updateLock(){const busy=arrivals.blocked;row.inert=busy;grid.inert=busy;controls.inert=busy;row.setAttribute('aria-busy',String(busy));lock.hidden=!busy;const r=row.getBoundingClientRect();lock.style.height=Math.max(0,innerHeight-r.top+12)+'px';}
+ // Claude round 4 (reveal lag): called on every arrival notification. Unchanged values are not written again and the
+ // hand is measured only while the lock is shown (its height is invisible otherwise), so a hidden lock no longer forces
+ // a style and layout pass after each DOM change.
+ function updateLock(){const busy=arrivals.blocked;if(row.inert!==busy)row.inert=busy;if(grid.inert!==busy)grid.inert=busy;if(controls.inert!==busy)controls.inert=busy;if(row.getAttribute('aria-busy')!==String(busy))row.setAttribute('aria-busy',String(busy));if(lock.hidden!==!busy)lock.hidden=!busy;if(!busy)return;const r=row.getBoundingClientRect(),h=Math.max(0,innerHeight-r.top+12)+'px';if(lock.style.height!==h)lock.style.height=h;}
  function markWaiting(){for(const parent of [row,grid])for(const node of parent.querySelectorAll('.card')){node.classList.toggle('pending-arrival',arrivals.has(node.dataset.uid));if(parent===row)node.toggleAttribute('data-hybrid-waiting',arrivals.waiting(node.dataset.uid));}}
  function cleanupPending(){arrivals.retain(liveHand());markWaiting();updateLock();}
  function stopEntries(){for(const e of entries){e.cancelled=true;for(const a of e.animations)a.cancel();e.node?.remove();e.arriving?.remove();}entries.clear();}
  function cancelAll(){const ids=arrivals.pending,moved=arrivals.cancelKinds(['draw','rival-draw','return','mulligan-return','opening-to-hand','transfer','reflow']);stopEntries();for(const uid of moved)finishVisual(uid);for(const uid of ids){arrivals.release(uid);if(liveHand().has(uid))revealArrival(uid);}markWaiting();layoutHands();updateLock();}
- arrivals.subscribe(type=>{if(type==='reset')stopEntries();markWaiting();if(type==='release')layoutHands();updateLock();});
+ // Claude round 4 (reveal lag): neighbours that finish sliding together (reflow tickets) release in the same microtask
+ // checkpoint; their hand layouts are merged into one, run before the lifecycle's merged sync and before the frame.
+ let handLayoutQueued=false;const layoutHandsSoon=()=>{if(handLayoutQueued)return;handLayoutQueued=true;queueMicrotask(()=>{handLayoutQueued=false;layoutHands();});};
+ arrivals.subscribe((type,detail)=>{if(type==='reset')stopEntries();markWaiting();if(type==='release'){if(detail?.kind==='reflow')layoutHandsSoon();else layoutHands();}updateLock();});
  lifecycle.addHook({afterContent(){if(paused)cancelAll();else cleanupPending();},after:updateLock});
  const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
  const duration=ms=>reduce()?Math.max(30,ms*.15):ms;
@@ -35,9 +42,9 @@ export function installFlights({sync,lifecycle}){
  // the first Preparation) keep DRAW.
  const DRAW=HYBRID.draw.normal,OPENING_DRAW=Object.freeze(Object.fromEntries(Object.entries(DRAW).map(([k,v])=>[k,v*HYBRID.draw.openingFactor])));
  async function animate(e,node,frames,ms,delay=0,easing='cubic-bezier(.22,.65,.22,1)'){
-  if(!valid(e))return false;const a=node.animate(frames,{duration:ms,delay,easing,fill:'forwards'});e.animations.add(a);let raf=0;
+  if(!valid(e))return false;const a=node.animate(frames,{duration:ms,delay,easing,fill:'forwards'}),stopSampling=trackMotionSampling(node,a,frames);e.animations.add(a);let raf=0;
   const check=()=>{if(!valid(e)){a.cancel();return;}raf=requestAnimationFrame(check);};raf=requestAnimationFrame(check);
-  try{await Promise.race([a.finished.catch(()=>{}),pause(ms+delay+600)]);if(valid(e)){const last=frames.at(-1);for(const p of ['transform','opacity'])if(last[p]!==undefined)node.style[p]=last[p];return true;}return false;}finally{cancelAnimationFrame(raf);a.cancel();e.animations.delete(a);}
+  try{await Promise.race([a.finished.catch(()=>{}),pause(ms+delay+600)]);if(valid(e)){const last=frames.at(-1);for(const p of ['transform','opacity'])if(last[p]!==undefined)node.style[p]=last[p];return true;}return false;}finally{stopSampling();cancelAnimationFrame(raf);a.cancel();e.animations.delete(a);}
  }
  async function hold(e,ms){const until=performance.now()+ms;while(valid(e)&&performance.now()<until)await pause(Math.min(40,until-performance.now()));return valid(e);}
  const box=node=>{const r=node?.getBoundingClientRect();return r?.width&&r?.height?r:null;};
@@ -67,7 +74,7 @@ export function installFlights({sync,lifecycle}){
    }else fullFace=makeBack();
    if(!valid(e)||!target)return;
    const front=flattenFace(fullFace);front.classList.add('hybrid-flight-face','hybrid-return-front');c.flip.append(front);
-   const end=mine?handPose(target):rectPose(target.getBoundingClientRect()),rise={...start,y:start.y-25,w:start.w*1.08,h:start.h*1.08};
+   const end=mine?handPose(target):rectPose(target.getBoundingClientRect()),rise={...start,y:start.y-25,w:start.w*1.08,h:start.h*1.08};/* Round 2 (owner): the carrier is laid out at the END (hand) size and starts scaled down, without will-change, so the face is rasterised for the hand and not enlarged from the small reserve bitmap during the transition. */c.w=end.w;c.h=end.h;Object.assign(c.n.style,{width:end.w+'px',height:end.h+'px',willChange:'auto'});c.n.style.transform=transform(c,start);
    stage(e,'to-hand',end);if(typeof identityPlay==='function'&&identityCard(event.returnedId)?.persistentReturnUsed)identityPlay('memory',c.n,c.n,()=>{},null,800);else sound('magic');
    await Promise.all([
     animate(e,c.n,[frame(c,start),{...frame(c,rise),offset:.22},frame(c,end)],duration(1000),0,'cubic-bezier(.25,.6,.3,1)'),

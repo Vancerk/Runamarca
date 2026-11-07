@@ -34,7 +34,7 @@ function enhance(){
   // assistive technology and existing selectors; the separator is only visually hidden.
   const t=document.createElement('span');t.className='choice-title';t.textContent=title;const parts=[t];
   if(desc&&label===title+' · '+desc){const sep=document.createElement('span');sep.className='choice-sep';sep.textContent=' · ';const d=document.createElement('span');d.className='choice-desc';d.textContent=desc;parts.push(sep,d);}
-  else if(desc){const d=document.createElement('span');d.className='choice-desc';d.setAttribute('aria-hidden','true');d.textContent=desc;parts.push(d);b.setAttribute('aria-description',desc);if(title!==label){t.setAttribute('aria-hidden','true');b.setAttribute('aria-label',label);}}
+  else if(desc){const d=document.createElement('span');d.className='choice-desc';d.setAttribute('aria-hidden','true');d.textContent=desc;parts.push(d);b.setAttribute('aria-description',desc);if(title!==label){t.setAttribute('aria-hidden','true');if(!b.hasAttribute('aria-label'))b.setAttribute('aria-label',label);}}
   b.replaceChildren(...parts);if(buttons.length>1&&b.classList.contains('primary'))b.setAttribute('aria-current','true');}
  // Hearthstone-like stage: the first enabled (or current) option takes the focus, not
  // the small close button, so Enter/Space confirm deliberately chosen tiles only.

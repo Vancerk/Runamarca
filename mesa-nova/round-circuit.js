@@ -15,11 +15,12 @@
  function build(){
   const box=document.createElement('div');box.id='round-circuit';box.className='round-circuit';box.setAttribute('role','img');
   const label=document.createElement('strong');label.className='round-circuit-label';
-  const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 132 60');svg.setAttribute('aria-hidden','true');
-  svg.innerHTML='<path class="rc-path rc-path-rival" d="M19 12 C 58 12, 72 30, 106 30"/><path class="rc-path rc-path-ally" d="M19 48 C 58 48, 72 30, 106 30"/>'+
-   '<circle class="rc-light rc-rival" cx="11" cy="12" r="9"/><circle class="rc-light rc-ally" cx="11" cy="48" r="9"/>'+
-   '<text class="rc-light-tag rc-tag-rival" x="11" y="15.6" text-anchor="middle">R</text><text class="rc-light-tag rc-tag-ally" x="11" y="51.6" text-anchor="middle">V</text>'+
-   '<circle class="rc-light rc-combat" cx="117" cy="30" r="11"/><text class="rc-combat-symbol" x="117" y="34.5" text-anchor="middle">⚔</text>';
+  const svg=document.createElementNS(NS,'svg');/* Round 3 (owner): symmetric circuit — rival light left, combat light on the panel axis, own light right; both paths
+     meet in the centre, so every element sits on the axis or mirrors its pair across it. */svg.setAttribute('viewBox','0 0 132 44');svg.setAttribute('aria-hidden','true');
+  svg.innerHTML='<path class="rc-path rc-path-rival" d="M23 22 C 34 22, 44 22, 55 22"/><path class="rc-path rc-path-ally" d="M109 22 C 98 22, 88 22, 77 22"/>'+
+   '<circle class="rc-light rc-rival" cx="14" cy="22" r="9"/><circle class="rc-light rc-ally" cx="118" cy="22" r="9"/>'+
+   '<text class="rc-light-tag rc-tag-rival" x="14" y="25.6" text-anchor="middle">R</text><text class="rc-light-tag rc-tag-ally" x="118" y="25.6" text-anchor="middle">V</text>'+
+   '<circle class="rc-light rc-combat" cx="66" cy="22" r="11"/><text class="rc-combat-symbol" x="66" y="26.5" text-anchor="middle">⚔</text>';
   const caption=document.createElement('small');caption.className='round-circuit-state';
   box.append(label,svg,caption);return box;}
  function render(){
@@ -34,7 +35,7 @@
   const symbol=box.querySelector('.rc-combat-symbol');if(symbol)symbol.textContent=formation?'☁':'⚔';
   let caption=box.querySelector('.round-circuit-state');if(!caption){caption=document.createElement('small');caption.className='round-circuit-state';box.append(caption);}const initial=p=>(p?.name||'?').trim().charAt(0).toUpperCase()||'?',tagAlly=box.querySelector('.rc-tag-ally'),tagRival=box.querySelector('.rc-tag-rival');if(tagAlly)tagAlly.textContent=state.spectator?initial(me):'V';if(tagRival)tagRival.textContent=state.spectator?initial(rival):'R';
   const turnCaption=active==='ally'?(state.spectator?'▼ Vez de '+me.name:'▼ Sua vez'):active==='rival'?(state.spectator?'▲ Vez de '+(rival?.name||'rival'):'▲ Vez do rival'):'';
-  caption.textContent=turnCaption;caption.hidden=!turnCaption;caption.dataset.turn=combat?'':active||'';
+  /* Claude review: the direction arrow is its own element (hung left of the words by CSS), the text content is unchanged. */const arrow=turnCaption.match(/^[▼▲]/);if(arrow){const mark=document.createElement('span');mark.className='rc-arrow';mark.setAttribute('aria-hidden','true');mark.textContent=arrow[0];caption.replaceChildren(mark,document.createTextNode(turnCaption.slice(1)));}else caption.textContent=turnCaption;caption.hidden=!turnCaption;caption.dataset.turn=combat?'':active||'';
   box.querySelector('.round-circuit-label').textContent=`Rodada ${state.round}`;
   const who=formation?'formação, posições secretas':resolving?'combate em andamento':active==='ally'?(state.spectator?`vez de ${me.name}`:'sua vez'):active==='rival'?`vez de ${rival?.name||'rival'}`:{vote:'votação',formation:'formação'}[state.phase]||'';
   box.setAttribute('aria-label',`Rodada ${state.round}${who?' · '+who:''}`);

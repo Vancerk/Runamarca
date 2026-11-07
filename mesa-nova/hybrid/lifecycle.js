@@ -1,9 +1,13 @@
 import {layoutHands} from './fan-layout.js';
 import {matrix} from './card-plane.js';
 import {geometry,cardCopyAt,currentQuad} from './visuals.js';
+import {trackMotionSampling} from './motion-sampling.js';
 // The game remains authoritative. Ghosts only bridge old/new public DOM poses.
 export function installLifecycle({sync,ensureGeometry}){
  const hooks=[],motions=new Map(),owner=RunaCardArrivals;let renders=0,session='';
+ // Claude round 4 (reveal lag): neighbours that finish sliding in the same frame each rebuilt and redrew the scene
+ // (3–4 builds in one microtask checkpoint). Their syncs are merged into one, still before the frame is rendered.
+ let syncQueued=false;const syncSoon=()=>{if(syncQueued)return;syncQueued=true;queueMicrotask(()=>{syncQueued=false;sync();});};
  const current=uid=>[...document.querySelectorAll('#game .card')].find(n=>n.dataset.uid===uid);
  const key=()=>state?[state.code,state.matchId,state.you].join(':'):'';
  function clear(){for(const m of motions.values())owner.finish(m.ticket);motions.clear();}
@@ -18,8 +22,9 @@ export function installLifecycle({sync,ensureGeometry}){
   owner.own(ticket,()=>{entry.animation?.cancel();copy.remove();if(motions.get(from.uid)===entry)motions.delete(from.uid);});
   const options={duration:matchMedia('(prefers-reduced-motion: reduce)').matches?60:duration,easing:'cubic-bezier(.2,.7,.25,1)',fill:'forwards'};
   entry.animation=copy.animate([{transform:'matrix3d('+matrix(from.pose.quad,from.pose.w,from.pose.h).join(',')+')'},{transform:'matrix3d('+matrix(to.pose.quad,from.pose.w,from.pose.h).join(',')+')'}],options);
+  trackMotionSampling(copy,entry.animation,entry.animation.effect.getKeyframes());
   motions.set(from.uid,entry);to.node.style.visibility='hidden';
-  entry.animation.finished.catch(()=>{}).finally(()=>{if(!owner.finish(ticket))return;finishVisual(from.uid);sync();});
+  entry.animation.finished.catch(()=>{}).finally(()=>{if(!owner.finish(ticket))return;finishVisual(from.uid);syncSoon();});
  }
  function reflow(before,after){const oldIds=before.map(p=>p.uid).sort().join('|'),newIds=after.map(p=>p.uid).sort().join('|');if(oldIds===newIds)return;for(const to of after){const from=before.find(p=>p.uid===to.uid);if(from)move(from,to);}}
  function handTransition(change){const before=capture('#hand>.hand-card');change();layoutHands();const after=capture('#hand>.hand-card');for(const to of after){const from=before.find(p=>p.uid===to.uid);if(from)move(from,to,300);}hideMotionTargets();sync();}

@@ -4,7 +4,7 @@
   "hashes": {
     "mesa-nova/armor-variant.mjs": "e548cc5e25110cd1343eeb0a5c6be06a13b8fa1aed839b53cbb53fd9a41fb463",
     "mesa-nova/cartas.json": "b7334af5fc4938b669afc0a11a93f2518cc77220ff9980a2da8dd1003b6b47f6",
-    "mesa-nova/combat-effects.mjs": "a85f17fd6d030f4a87617ecbb043acff390b8041522d8b53ce008b018947745a",
+    "mesa-nova/combat-effects.mjs": "1156889f703c4d205fd29caac7ea5d7dca3453ebd1acc6956b2944e4adde5242",
     "mesa-nova/combat-triggers.mjs": "7f1b8fad3d8e77989d1c9d8818946292af2139c280497fe6e51969c192ceeacc",
     "mesa-nova/dom-powers.mjs": "93d1a4254e753fdbcd26ea5c64b2c4c3d90bbb0bd6cf9c360a8f2f733079c4eb",
     "mesa-nova/equipment.mjs": "8c9f11cb257b60f148d7a346aecaa01d6cf51aad2574caf970d2df18d176cbd2",

@@ -13,28 +13,42 @@
   const captions=line.captions||[{at:0,text:line.text}];
   return captions.filter(c=>c.at<=seconds).at(-1)?.text||null;
  }
+ function captionOnly(line,options,valid){
+  if(typeof options.onCaption!=='function'||(!line.text&&!line.captions?.some(c=>c.text)))return;
+  // Unavailable recordings still have an authored subtitle. This clock never
+  // starts audio later, changes its timing, or ducks the music without a voice.
+  const duration=Number(line.durationSeconds)>0?Number(line.durationSeconds):Math.max(3,...(line.captions||[]).map(c=>Number(c.at)||0))+3;
+  return new Promise(resolve=>{
+   let done=false,poll,timer,lastCaption;const startedAt=Date.now();
+   const finish=()=>{if(done)return;done=true;clearInterval(poll);clearTimeout(timer);options.onCaption(null);if(stopCurrent===finish)stopCurrent=null;resolve();};
+   const caption=()=>{if(!valid()){finish();return;}const text=captionAt(line,(Date.now()-startedAt)/1000);if(text!==lastCaption){lastCaption=text;options.onCaption(text);}};
+   stopCurrent=finish;poll=setInterval(caption,50);timer=setTimeout(finish,duration*1000);caption();
+  });
+ }
  async function perform(options,version){
   const valid=()=>version===generation&&(!options.valid||options.valid());
   if(!valid())return;
-  const context=options.getAudioContext?.();if(context?.state!=='running')return;
-  let timeout;
+  const context=options.getAudioContext?.();let timeout,line;
   try{
    const task=(async()=>{
     const data=await root.RunaPatronIntro.manifest(options.base);
     if(!valid())return null;
-    const line=selectCue(data,options.player,options.kind,options);
-    if(!line?.audio)return null;
+    line=selectCue(data,options.player,options.kind,options);
+    if(!line)return null;
+    if(!line.audio||context?.state!=='running')return {line,buffer:null};
     const url=options.base+line.audio;
     if(!buffers.has(url))buffers.set(url,fetch(url).then(r=>{if(!r.ok)throw Error('Áudio indisponível');return r.arrayBuffer();}).then(b=>context.decodeAudioData(b)).catch(e=>{buffers.delete(url);throw e;}));
-    return {line,buffer:await buffers.get(url)};
+    try{return {line,buffer:await buffers.get(url)};}
+    catch(error){console.warn('Fala do Patrono indisponível:',error.message);return {line,buffer:null};}
    })();
-   const loaded=await Promise.race([task,new Promise(resolve=>{timeout=setTimeout(()=>resolve(null),6000);})]);
-   clearTimeout(timeout);if(!loaded||!valid()||context.state!=='running')return;
+   const loaded=await Promise.race([task,new Promise(resolve=>{timeout=setTimeout(()=>resolve(line?{line,buffer:null}:null),6000);})]);
+   clearTimeout(timeout);if(!loaded||!valid())return;
+   if(!loaded.buffer||context?.state!=='running'){await captionOnly(loaded.line,options,valid);return;}
    await new Promise(resolve=>{
     const source=context.createBufferSource(),gain=context.createGain();let done=false,timer,poll,lastCaption;
     const startedAt=context.currentTime||0;
     const caption=()=>{const text=captionAt(loaded.line,(context.currentTime||0)-startedAt);if(text!==lastCaption){lastCaption=text;options.onCaption?.(text);}};
-    source.buffer=loaded.buffer;gain.gain.value=.9;source.connect(gain).connect(context.destination);
+    source.buffer=loaded.buffer;gain.gain.value=.9;source.connect(gain).connect(root.RunaAudioMix?.destination(context,'voice')||context.destination);
     const finish=()=>{if(done)return;done=true;clearTimeout(timer);clearInterval(poll);options.onCaption?.(null);source.onended=null;try{source.stop();}catch{}source.disconnect();gain.disconnect();root.document?.body.classList.remove('patron-voice-active');if(stopCurrent===finish)stopCurrent=null;resolve();};
     stopCurrent=finish;source.onended=finish;
     root.document?.body.classList.add('patron-voice-active');

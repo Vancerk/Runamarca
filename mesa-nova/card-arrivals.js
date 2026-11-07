@@ -34,7 +34,7 @@
   if(!current(ticket))return false;
   tickets.delete(ticket);if(ticket.arrival)arrivals.delete(ticket.uid);if(ticket.moving)moves.delete(ticket.uid);
   const owned=resources.get(ticket);resources.delete(ticket);for(const dispose of owned||[])dispose();
-  notify('release');return true;
+  notify('release',{kind:ticket.kind});return true;
  }
  function reset(nextScope=scope){
   const moved=[...moves.keys()],owned=[...resources.values()];scope=nextScope;epoch++;arrivals.clear();moves.clear();tickets.clear();resources.clear();for(const group of owned)for(const dispose of group)dispose();notify('reset',moved);

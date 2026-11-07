@@ -156,7 +156,7 @@
     scene.dataset.line=String(index+1);scene.dataset.speaker=line.speaker;portraits.forEach((node,id)=>node.classList.toggle('speaking',id===actor?.id));speaker.textContent=identity?.name||line.speaker;words.textContent=line.text;options.onLine?.(line,index);
     let buffer=null;if(!muted)buffer=await bounded(loadClip(line),4000,signal);if(signal.aborted)break;
     if(buffer&&!muted&&context?.state==='running'){
-     sound.textContent='Som ligado';source=context.createBufferSource();source.buffer=buffer;const gain=context.createGain();gain.gain.value=.9;source.connect(gain).connect(context.destination);
+     sound.textContent='Som ligado';source=context.createBufferSource();source.buffer=buffer;const gain=context.createGain();gain.gain.value=.9;source.connect(gain).connect(root.RunaAudioMix?.destination(context,'voice')||context.destination);
      const ended=new Promise(resolve=>{source.onended=()=>{gain.disconnect();resolve();};});source.start();scene.dataset.audio='playing';await bounded(ended,buffer.duration*1000+1800,signal);stopVoice();
     }else{scene.dataset.audio=muted?'muted':'unavailable';await wait(Math.min(8000,Math.max(2200,(line.durationSeconds||3.5)*1000)),signal);}
     if(!signal.aborted)await wait(220,signal);

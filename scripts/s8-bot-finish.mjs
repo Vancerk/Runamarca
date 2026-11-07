@@ -1,7 +1,9 @@
 // S8: a full match against the REAL automatic bot (shared bot runtime, scheduled by the server itself) until
 // `finished`, then the post-match questionnaire in the browser for the human.
 // · The runner controls only the human seat: room, bot and deck through the human's own commands, then only
-//   legal passive moves (confirm mulligan, end preparation, vote to fight, confirm formation).
+//   legal passive moves (confirm mulligan, end preparation, vote after the bot, confirm formation).
+// · A single positive vote starts formation. Let the bot decide first, so the
+//   harness does not race it with a vote based on the preceding GET response.
 // · It never reads or uses the bot's token and never edits HP, damage, rules, clocks or room state.
 // · Explicit time limit; reaching it records round, phase and progress and fails (no retry loop).
 // Usage: QA_ACCESS_CODE=<test code> node scripts/s8-bot-finish.mjs <base-url> <out-dir> <feedback-store-dir> [limit-seconds]
@@ -43,7 +45,7 @@ try{
   if(s.phase==='finished')break;
   if(s.phase==='mulligan'&&!me.mulliganReady)await act({type:'confirmMulligan'});
   else if(s.phase==='prep'&&s.turn===me.id&&!me.pendingDiscard)await act({type:'endPrep'});
-  else if(s.phase==='vote'&&me.vote==null&&!me.voted)await act({type:'vote',fight:true});
+  else if(s.phase==='vote'&&!me.voted&&bot.voted)await act({type:'vote',fight:true});
   else if(s.phase==='formation'&&!me.ready)await act({type:'ready'});
   await sleep(400);
  }
@@ -62,6 +64,9 @@ try{
   const qids=await page.$$eval('dialog.match-survey[open] fieldset',f=>f.map(x=>x.dataset.question)).catch(()=>[]);
   const openedAfterFinale=await page.evaluate(()=>Boolean(document.querySelector('dialog.match-survey[open]'))&&window.__s8.finale.length>0);
   check('questionário abre para o humano depois do encerramento, com pergunta sobre o bot',openedAfterFinale&&qids.length>=3&&qids.length<=5&&qids.includes('bot_desafio'),{qids});
+  // The opening includes a short delayed fade. Capture its readable state,
+  // rather than treating the first [open] frame as the finished presentation.
+  await page.waitForFunction(()=>{const d=document.querySelector('dialog.match-survey[open]');return d&&Number(getComputedStyle(d).opacity)>=.99;},{},{timeout:5000});
   await page.screenshot({path:out+'/questionario.png'});
   await answerSteps(page);
   const comment=page.locator('dialog.match-survey[open] textarea');if(await comment.count())await comment.first().fill('QA S8: partida completa contra o bot real.');

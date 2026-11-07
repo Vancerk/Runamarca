@@ -15,7 +15,8 @@
    if(version!==generation||!valid()||context.state!=='running')return false;
    const source=context.createBufferSource(),gain=context.createGain();source.buffer=decoded;
    const now=context.currentTime,end=now+decoded.duration,tail=cue.kind==='voice'?.12:.65;gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(.85,now+.035);gain.gain.setValueAtTime(.85,Math.max(now+.035,end-tail));gain.gain.linearRampToValueAtTime(0,end);
-   const space=root.RunaSfx?.spatial(context,{to,depth:.25});source.connect(gain).connect(space?.input||context.destination);
+   const destination=root.RunaAudioMix?.destination(context,cue.kind==='voice'?'voice':'effects')||context.destination;
+   const space=root.RunaSfx?.spatial(context,{to,depth:.25,destination});source.connect(gain).connect(space?.input||destination);
    let done=false;const record={cancel(){if(done)return;const t=context.currentTime;gain.gain.cancelScheduledValues(t);gain.gain.setValueAtTime(gain.gain.value,t);gain.gain.linearRampToValueAtTime(0,t+.12);source.stop(t+.13);}};
    function finish(){if(done)return;done=true;active.delete(record);source.disconnect();gain.disconnect();space?.dispose();if(!active.size)root.document?.body.classList.remove('creature-entrance-active');}
    source.onended=finish;active.add(record);root.document?.body.classList.add('creature-entrance-active');try{source.start();onStart({at:now,duration:decoded.duration,cue});}catch(e){finish();throw e;}return true;

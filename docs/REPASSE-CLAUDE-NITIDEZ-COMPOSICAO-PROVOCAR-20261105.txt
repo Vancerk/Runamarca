@@ -1,0 +1,315 @@
+Você está assumindo a próxima revisão do Runamarca depois de uma sequência extensa de trabalho do Codex. Quero que estude, diagnostique, implemente e valide os pontos deste repasse. Não quero apenas um parecer ou outro plano sem execução.
+
+Use o maior nível de análise e esforço disponível na sua sessão para este trabalho. Se não tiver acesso a alguma ferramenta, modelo, referência ou ambiente, diga precisamente a limitação; não afirme que examinou imagens ou vídeos que não abriu.
+
+1. RETOMADA: O JOGO ATUAL É DIFERENTE DO QUE VOCÊ DEIXOU
+
+Não retome a partir da lembrança do V4, da antiga câmera de 5°, da versão verde/azul da mesa ou de um checkout limpo do GitHub. A implementação continuou e mudou bastante.
+
+Árvore de trabalho conferida pelo Codex neste repasse:
+C:/Users/vanxf/Documents/Codex/2026-10-28/task-2/runamarca-simplificacao-etapa2
+
+Branch local: codex/amostra-arte-patronos
+HEAD conferido: 073429de71be9412442abcd690fe017227434408
+
+Há MUITAS mudanças locais, inclusive arquivos novos ainda não versionados. Esse commit sozinho NÃO contém a aparência atual. Confirme branch, diferenças e arquivos antes de trabalhar. Preserve o trabalho existente. Não use reset/clean nem restaure arquivos antigos inteiros para corrigir um detalhe. A pasta histórica runamarca-board-prototype não é a árvore atual da prévia.
+
+Prévia local: http://127.0.0.1:3086/runamarca/
+Alias histórico: http://127.0.0.1:3086/runamarca/hybrid/index.html
+Comparação mais recente: http://127.0.0.1:3090/superficies/
+
+Confira de qual diretório o processo da porta 3086 está servindo e se os arquivos servidos correspondem ao disco. Uma aba aberta, um nome de branch ou uma versão V26 não provam isso. Não reinicie a partida que eu estiver usando para montar testes; prefira uma instância isolada. Use salas e armazenamento de QA próprios.
+
+A simplificação arquitetural de cinco etapas está presente nesta árvore: sequência explícita de apresentação, controle visual por partida/UID, geometria compartilhada, atualização incremental e entrada pública 3D com recuperação WebGL. O nome da pasta hybrid permanece, mas não significa que seja necessário manter duas experiências públicas de jogo.
+
+Use os contratos atuais de RunaPresentation e RunaGeometry. rect, pose e surfaceRect têm funções diferentes. Não reintroduza substituição de funções globais, controladores duplicados de voo ou caches de coordenadas que sobrevivam incorretamente a resize/rolagem/troca de partida. Não apague DOM/canvas só por querer uma experiência 3D: texto, controles e acessibilidade ainda dependem deles.
+
+2. LEITURA NECESSÁRIA, EM ORDEM
+
+Leia a ponte:
+C:/Users/vanxf/Documents/Codex/SEGUNDO-CEREBRO.md
+
+Consulte somente notas relevantes e recentes. Memória registra histórico, não comprova o estado atual nem concede autorização. Documentos antigos podem conter paletas, ângulos e pendências já superados.
+
+Na árvore atual, leia:
+- docs/ENCAIXE-SUPERFICIES-20261105.md
+- prototype-qa/encaixe-superficies-20261105/README.md e manifest.json
+- docs/CONTROLES-MATERIAIS-20261105.md
+- docs/FECHAMENTO-AUDIOVISUAL-20261105.md
+- docs/PLANO-SIMPLIFICACAO-MESA-3D.md e os relatos APRESENTACAO-ETAPA-* pertinentes aos módulos que tocar.
+
+O plano de simplificação contém trechos históricos sobre PRs e etapas pendentes. Não os transforme numa fila para refazer trabalho já implementado. Confirme o código e os relatos finais.
+
+Para entender a intenção artística original:
+C:/Users/vanxf/Downloads/REPASSE-ORQUESTRADOR.txt
+e a nota “Runamarca - plano mestre audiovisual”, encontrada pela ponte.
+
+Abra módulos do pacote audiovisual apenas conforme precisar. O foco desta rodada é imagem, composição, sombra e uma correção de combate. Não é necessário carregar todo o cofre, refazer áudio nem reabrir todas as etapas do projeto.
+
+Se houver conflito, este pedido atual prevalece. Em particular, ele pede voltar à carta completa na Emanação e autoriza investigar/corrigir o caso de Provocar.
+
+3. O QUE JÁ EXISTE E PRECISA SER PRESERVADO
+
+Trate os pontos abaixo como implementação atual ou resultados documentados, não como prova de que tudo ficou artisticamente resolvido:
+
+- Mesa 3D como experiência principal; recuperação de falha gráfica e de conexão.
+- Câmera atualmente vertical, sem a inclinação de 18° que rejeitei. Preserve o enquadramento atual nesta rodada, salvo necessidade demonstrada e discutida.
+- Foco do campo na formação, com transição de 400 ms, confirmação/espera, circuito e arcos de baixas.
+- Compras, retornos, abertura e continuidade das cartas coordenados pela arquitetura simplificada.
+- Moeda com volume; queima por mão cheia mais evidente/lenta; custos de poderes por afinidade; opções espaciais de Provocar.
+- Encerramento com foco nos Patronos e sequência de resultado; questionário central em etapas.
+- Regra de foco para efeitos luminosos; canais sonoros, controles e legendas.
+- Fontes locais e melhorias de leitura de descrições e controles.
+- Paleta quente atual: madeira, couro, bronze e papel, sem a predominância azul/verde que rejeitei.
+- Vela, diário acima do Registro e profundidade das reservas, elementos dos quais gostei.
+- Último acabamento dos controles: face, bisel e espessura em uma peça; menos anéis; desgaste discreto; superfície do campo com variação tonal.
+
+A paleta quente foi aceita. O acabamento continua sujeito à minha avaliação. Não interprete testes verdes como aprovação estética. Quero melhorar o que ainda está ruim, preservando os acertos.
+
+Referência de integridade neste repasse:
+- game.mjs: 0ac0d8ca5cc1bdd42d4b997631b301f130cb571c5a75d95812c0e7ac8eaa0644
+- hybrid/bridge.js: 7d8e2d2b9dfaa7e26bf8e16f79069fe0b2f727ff422180b34f26ba8c593e02a4
+- hybrid/renderer.js: d3ac2222a71380e309c6b4ecc0bff21ddb453b58797a6e07c20a6726414433a4
+- art-direction.css: 8768f216d9d2dbeac0a2fba1a38ab92f0d3bb8dcc98bc0829ba56695647806b8
+
+Confirme novamente; não restaure esses hashes se houver trabalho posterior legítimo. A preservação anterior do motor deixa de ser uma proibição absoluta: autorizo a correção focal do bug de Provocar, caso sua causa esteja nele. As outras regras não devem mudar.
+
+4. ESTUDO VISUAL PROFUNDO, COM APLICAÇÃO CONCRETA
+
+Hearthstone é a referência principal de acabamento e clareza. Magic pode servir como contraste secundário. Não quero uma cópia genérica, outra mesa azul, cores lavadas ou ornamentos acrescentados indiscriminadamente.
+
+Estude imagens reais em tamanho adequado e trechos em movimento. Observe:
+- proporção entre carta, casa, campo, reservas, Patronos e controles;
+- organização do espaço vazio e concentração da informação;
+- qualidade de ilustração e contornos em tamanho pequeno;
+- diferença entre uma carta parada, viajando e pousando;
+- sombra de contato, sombra projetada, espessura e iluminação;
+- como material, bisel, desgaste e contraste fazem uma peça parecer única;
+- alinhamento perceptivo da interface no ponto de vista final do jogador.
+
+Referências já examinadas na rodada anterior, como ponto de partida:
+https://katkorwes.com/portfolio/hearthstone/
+https://interfaceingame.com/screenshots/hearthstone-heroes-of-warcraft-options/
+https://interfaceingame.com/screenshots/hearthstone-heroes-of-warcraft-main-menu/
+https://interfaceingame.com/screenshots/hearthstone-heroes-of-warcraft-card-hover/
+
+Há cópias de referência em:
+prototype-qa/encaixe-superficies-20261105/referencias/
+
+Procure as referências locais de vídeo citadas nos estudos anteriores. Se não estiverem disponíveis, use outras fontes identificáveis ou me informe. Não invente parâmetros internos de câmera, antialiasing, servidor ou renderização do Hearthstone a partir de uma captura.
+
+Para cada conclusão, separe:
+observação verificável da referência;
+problema observado no Runamarca;
+hipótese técnica;
+mudança proposta/aplicada;
+forma de verificar o resultado.
+
+Use fonte primária para afirmações sobre implementação técnica. Uma captura demonstra aparência, não revela automaticamente o algoritmo usado. Não copie assets da Blizzard para o produto.
+
+O estudo precisa orientar as correções abaixo. Evite gastar a rodada inteira produzindo pesquisa sem colocar uma versão corrigida para eu comparar.
+
+5. NITIDEZ DAS CARTAS: MÃO → RESERVA → COMBATE
+
+Meu relato atual: ao sair da mão e entrar na reserva, a ilustração fica visivelmente embaçada. No combate é menos intenso, mas ainda perde nitidez. As descrições já melhoraram; agora o problema principal é a imagem da carta e os contornos.
+
+Reproduza o mesmo UID:
+- na mão e na consulta ampliada;
+- durante a transferência, inclusive na maior ampliação;
+- no primeiro quadro visível depois de pousar;
+- parado na reserva;
+- no campo de combate;
+- ao retornar à reserva/mão.
+
+Separe qualidade da fonte de perda causada pelo pipeline. Levante resolução da arte original, bitmap mestre, amostras intermediárias, tamanho CSS, tamanho projetado na tela e DPR. Investigue se existe redução seguida de ampliação, amostra velha reaproveitada, troca para cópia de baixa qualidade, transformação fracionária ou composição que reamostra a face.
+
+Inspecione as funções de desenho compartilhadas, hybrid/card-plane.js, hand.js, flights.js, emanation.js/emana-read.js e a geometria atual conforme o diagnóstico apontar. Isso é um mapa inicial, não uma causa já confirmada.
+
+Escolha a técnica pelo caminho real: desenho no tamanho necessário, amostragem por destino, filtragem adequada, cache invalidado corretamente, alinhamento quando aplicável e antialiasing. Mipmaps só fazem sentido onde realmente houver textura e minificação compatíveis. Não aplique image-rendering:pixelated nem aumente todas as imagens para “4K” indiscriminadamente.
+
+Preserve a face anterior até a nova estar pronta. Nenhuma correção pode criar quadros vazios, duplicar cartas, vazar o conteúdo da mão rival, esconder uma carta até a rodada seguinte ou prender a interação após o pouso.
+
+Critério: a mesma arte deve conservar detalhes reconhecíveis na reserva e no combate, sem uma queda abrupta de qualidade ao pousar. Compare em tamanho real e com a renderização direta no tamanho de destino. Nitidez numérica maior por excesso de contraste/serrilhado não basta.
+
+6. LINHAS SERRILHADAS E QUALIDADE DOS OUTROS ATIVOS
+
+As molduras e linhas inclinadas/diagonais ainda parecem pequenas escadas. Revise contornos das cartas, recortes arredondados, ícones e linhas do tabuleiro nos caminhos afetados.
+
+Distinga:
+- serrilhado já presente na imagem de origem;
+- linha fina demais para a escala exibida;
+- filtro incorreto;
+- resolução insuficiente do canvas/cena;
+- reamostragem no compositor;
+- aliasing que aparece principalmente durante o movimento.
+
+Não resolva o serrilhado borrando tudo. Compare repouso e movimento, principalmente aproximação, respiração, voo e pouso. Não remova animações aprovadas para esconder o problema.
+
+Faça também um inventário objetivo dos ativos visíveis que estão em baixa qualidade: ilustrações das cartas, retratos dos Patronos, poderes, custos e outros elementos com imagem. Registre resolução original, dimensão de uso e causa provável. Priorize os ativos do fluxo principal e corrija as perdas introduzidas pela apresentação.
+
+Quando o arquivo original for insuficiente, procure o original de melhor qualidade disponível no projeto. Não invente detalhes de personagens com upscale generativo nem substitua arte aprovada sem mostrar essa necessidade separadamente. Aumentar pixels não recupera informação inexistente. O que depender de uma nova fonte deve ficar identificado por arquivo e motivo, não como uma promessa vaga de “super-resolução”.
+
+Preserve a melhoria já alcançada na leitura das letras e descrições.
+
+7. SOMBRAS E PROFUNDIDADE DAS CARTAS
+
+Meu relato: o sombreamento está cinzento e sem a densidade necessária para transmitir profundidade. Em revisões anteriores também apareceu um bloco intermediário estranho entre a face e a sombra.
+
+Use Hearthstone como referência de apoio e separação da peça, sem presumir que sua luz ou técnica interna seja igual à nossa.
+
+Isole face, corpo 3D, sombra de contato, sombra projetada e qualquer efeito CSS. Identifique qual camada produz o cinza e o eventual bloco. Não confunda o topo do corpo aparecendo sob transparência com uma sombra que precisa ficar mais escura.
+
+Quero contato mais convincente com a mesa, bordas e espessura coerentes e sombra projetada limpa. Ela pode ser mais densa junto à base e mais suave com a distância. Não quero uma mancha preta grande, múltiplos retângulos ou halo cinzento em volta.
+
+Confira cartas da reserva e combate, próximas e afastadas da vela, dos dois assentos. Preserve detalhes da arte. Verifique a transição para voo e retorno.
+
+A variante antiga de luz na vela foi experimentada e retirada. Não a reative automaticamente. Se for necessário alterar iluminação global ou resolução do mapa de sombra, justifique com comparação e custo; não use isso como primeiro palpite.
+
+8. COMPOSIÇÃO: REDUZIR A LARGURA DAS CASAS DE COMBATE
+
+Há espaço vazio demais no campo. Quero reduzir a largura horizontal das casas de combate para concentrar a informação útil perto do centro da visão.
+
+Ainda não determinei um percentual novo. Meça o estado atual e use variantes pequenas e controladas para escolher a redução que realmente melhora a composição. Percentuais experimentais devem ser identificados como proposta, não como um número que eu aprovei.
+
+Não diminua as cartas nem seus textos para fazer caber. Não deixe as casas estreitas e distribua a mesma sobra como vãos maiores entre elas: o conjunto deve se tornar mais compacto. Preserve folga para molduras, marcas de condição, armadilhas e interação.
+
+Coordene este ajuste com a volta da carta completa nas Emanações. Priorize a geometria final antes de fechar a amostragem das imagens.
+
+Confira:
+- as três posições de cada lado e seus alinhamentos;
+- casas vazias e ocupadas;
+- reserva cheia e mão cheia;
+- foco da formação e combate;
+- provocações e ataques diagonais;
+- arrasto, mira, pavio e destinos das animações;
+- Registro/Nartvanyr e painel direito.
+
+Use a geometria compartilhada. Não crie correções independentes para o desenho, a área de clique e a animação.
+
+9. EMANAÇÃO: VOLTAR À CARTA COMPLETA E CORRIGIR O ENCAIXE
+
+Quero voltar a mostrar uma carta normal completa dentro da Emanação: arte, moldura e organização da face normal. Não quero continuar com o recorte compacto especial atual. Essa é uma mudança expressa em relação à decisão anterior.
+
+A casa pode precisar ser ajustada à proporção e ao tamanho útil dessa carta. Não coloque simplesmente a carta completa comprimida dentro do antigo retângulo: preserve proporção, qualidade e identidade.
+
+O problema de posicionamento continua: pelos olhos do jogador, a carta parece fora do lugar e partes das extremidades vazam do encaixe. Não basta demonstrar que o centro da caixa DOM está correto.
+
+Meça e confira os quatro cantos da face visível e a área interna do encaixe depois da projeção. O conjunto deve ter margens coerentes, sem transbordamento ou deslocamento para cima/direita. Diferencie moldura pintada, transparência da imagem, corpo 3D e limites de interação.
+
+Verifique as quatro Emanações, nos dois assentos, antes e durante o foco. Inclua cartas com arte clara/escura, descrição curta/longa e estados de vida distintos. O letreiro, a placa e a carta precisam se compor; não regredir a legibilidade de “EMANAÇÃO”.
+
+Preserve regras, sigilo e estados da Emanação. A mudança é de apresentação e layout.
+
+10. PAINEL DIREITO: CENTRALIZAÇÃO NO PONTO DE VISTA DO JOGADOR
+
+O conjunto de rodada, indicador de vez/circuito e botão Encerrar parece deslocado e torto para a direita.
+
+Confira o contorno visível do painel e a área interna útil, já na tela. Centralize a composição percebida, não só um elemento isolado em coordenadas anteriores à projeção. Texto, circuito e botão devem ter um eixo visual coerente e folgas laterais intencionais.
+
+Verifique todos os estados: sua vez, vez do rival, votação, formação, confirmação, aguardando o rival e combate. Diferentes comprimentos de legenda não podem deslocar o conjunto ou causar salto.
+
+Não recoloque o contador numérico de tempo, “Vazia”, “Solte aqui” ou as legendas “Formação/Combate” que eu pedi para remover. Pavio, prazos reais, sinais de fase e regras continuam funcionando.
+
+11. BUG FUNCIONAL: PROVOCAR COM ATAQUE BASE ZERO E BÔNUS
+
+Relato novo, ainda não reproduzido pelo Codex nesta rodada:
+uma criatura com Provocar e ataque base zero, por exemplo João Bobão, recebe bônus de ataque. Quando é atacada pelo inimigo provocado, aparentemente não causa o dano que deveria causar a esse inimigo.
+
+Quero a reprodução e a correção, não apenas um efeito visual fingindo dano.
+
+Monte uma cena mínima com cartas e bônus reais. Registre:
+- UID e posição do provocador e do atacante;
+- ataque base e ataque efetivo no instante do confronto;
+- origem, duração e momento de aplicação do bônus;
+- escolha de Provocar/redirecionamento;
+- estado autoritativo, passos de combate e vida de ambos antes/depois;
+- o que cada cliente realmente exibe.
+
+Investigue se a lógica usa indevidamente o ataque base, um valor antigo ou trata o ataque redirecionado como unilateral. São hipóteses, não diagnóstico pronto. Diferencie dano ausente no servidor de dano correto com apresentação incorreta.
+
+A regra esperada neste pedido: se o provocador tem ataque efetivo positivo e nenhuma regra específica válida impede aquele dano, ele deve causar o dano correspondente ao inimigo que foi provocado. Preservar exceções reais do jogo; não criar um novo contra-ataque genérico ou duplicar dano para “compensar”.
+
+Cobertura mínima útil:
+- João Bobão com ataque zero, sem bônus;
+- a mesma carta com bônus que deixa seu ataque positivo;
+- criatura de ataque base positivo como controle;
+- alvo redirecionado e confronto normal;
+- dois assentos e uma criatura igual ao lado para provar a identidade;
+- expiração do bônus e, se pertinente, dano letal/mais de um atacante.
+
+Crie primeiro um teste que reproduza a falha. Corrija a causa mínima e confira o fluxo de servidor e apresentação. Se não reproduzir, documente tentativas e solicite o bônus/cenário exato sem inventar uma correção.
+
+Esta correção focal pode alterar o motor. Registre isso claramente e execute as regressões de combate afetadas. Não altere outras regras, custos, relógios, política do bot ou ordem de revelação.
+
+12. ORDEM DE EXECUÇÃO E LIMITES
+
+Siga em blocos, sem parar pedindo autorização no fim de cada um:
+
+A. Confirmar árvore, referências e estado servido; salvar baseline exata e uma lista de problemas observados.
+B. Reproduzir e corrigir separadamente o bug de Provocar, mantendo a mudança funcional identificável.
+C. Estudar as referências e acertar a composição: largura das casas, carta completa na Emanação, encaixe e painel direito.
+D. Corrigir nitidez, amostragem e serrilhado nas dimensões finais; revisar a qualidade dos ativos.
+E. Ajustar corpo/sombras e acabamento, com a referência e a composição já definidas.
+F. Validar a integração e entregar uma comparação clara e uma prévia jogável.
+
+Pode mudar a ordem por dependência técnica comprovada; explique brevemente. Não interrompa trabalho independente porque outro item precisa de uma informação minha.
+
+Pergunte quando faltar uma informação que realmente impeça decidir uma regra, identificar uma arte ou concluir uma reprodução. Melhorias adicionais encontradas no estudo devem aparecer separadas dos pedidos desta lista. Não transforme esta rodada em reformulação completa da paleta, câmera, áudio ou arquitetura.
+
+Desktop é prioridade: Full HD 1920×1080 como referência e 1366×768 como compatibilidade. Não iniciar novo port para celular nem bloquear o acesso móvel por conta própria. Testar DPR 1 e 2 nos caminhos de nitidez. Zoom fracionário é relevante, mas diferencie zoom real de navegador de uma simulação por deviceScaleFactor; não declare os dois equivalentes.
+
+13. VALIDAÇÃO E EVIDÊNCIAS SEM DESPERDÍCIO
+
+Use cenas iguais antes/depois, mesmo navegador, viewport, DPR, fontes carregadas, estado e iluminação. Salve os arquivos exatos do antes antes de editar. Não reconstrua um “antes” aproximado e o apresente como baseline exata.
+
+Para o visual, entregue:
+- mesa inteira para composição;
+- recortes em tamanho real de reserva, combate, Emanação e painel direito;
+- ampliações identificadas apenas para diagnóstico;
+- trechos curtos do voo/pouso e do confronto de Provocar, quando necessários.
+
+Métrica de nitidez sozinha não aprova a imagem. Zero erro de JavaScript não comprova centralização. Um teste de dano por UID não comprova onde o ataque apareceu.
+
+Reaproveite os testes atuais de geometria, compras/retornos, transferências, interação, duplicatas de combate, foco e recuperação conforme os arquivos tocados. A arquitetura simplificada tem scripts presentation-*; não use exclusivamente os antigos scripts hybrid9 como se nada tivesse mudado.
+
+Adicione testes úteis para defeitos reproduzidos. Não altere uma tolerância apenas para ficar verde. Se uma asserção codifica uma apresentação antiga que este pedido muda, substitua pelo contrato novo com a justificativa explícita.
+
+Faça verificações focais enquanto ajusta e a integração ao final; não repita a bateria completa a cada cor ou espaçamento. Não gaste várias rodadas só para conseguir um vídeo: imagens e medidas válidas podem sustentar o diagnóstico, com vídeo curto quando a questão for temporal.
+
+Meça custo quando alterar amostragem, texturas, sombras ou reconstruções: tamanho dos bitmaps, quantidade/cache, draw/build, intervalos de quadro e tarefas longas conforme o caminho. Compare na mesma máquina, sem misturar carga simultânea. Não prometa 60 FPS nem escolha “4K em tudo” sem verificar custo.
+
+Não remova a sincronização WebGL existente por reflexo: ela tem histórico de impacto no início do movimento da reserva. Preserve o contrato de erro e recuperação, ou demonstre uma alternativa compatível.
+
+Salve resultados em uma pasta NOVA. Leia as opções dos runners para não sobrescrever capturas históricas. Confirme o código de saída real, não o de um comando usado para cortar logs.
+
+14. PENDÊNCIAS HERDADAS: NÃO CONFUNDIR COM ESTA RODADA
+
+A revisão mais recente de encaixe está implementada localmente e teve testes verdes, mas isso não encerra meus relatos atuais de imagem, sombra e alinhamento.
+
+Resultados de referência da entrega anterior:
+controles 34/34, DPR2 17/17, contraste 10/10 + 5/5, movimento reduzido 18/18, WebGL 7/7, recuperação 25/25, movimento 12/12 e comparador 13/13. São históricos: não provam sua nova versão nem o bug de Provocar.
+
+Há tarefas longas conhecidas. A medição A/B de material anterior não certificou fluidez de uma partida inteira.
+
+Falas novas de Marika e Dom ainda dependem das gravações e integração. Os textos já foram preparados em docs/ROTEIRO-VOZES-PENDENTES-20261105.md, preservando as vozes atuais. Não trocar vozes nem gerar dublagem nesta revisão.
+
+Faixas/efeitos externos candidatos e novas ilustrações não foram adotados automaticamente; audição e disponibilidade/licença de novos ativos permanecem assuntos separados.
+
+Não foi revalidado aqui o estado atual do Render, banco de produção, OAuth real do Discord ou portal geral. Não afirme que o site já tem estas mudanças só porque a prévia local tem.
+
+15. ENTREGA
+
+Ao concluir, apresente:
+- lista de cada pedido desta mensagem com status: corrigido e verificado, não reproduzido ou pendente com motivo;
+- causas comprovadas, distinguindo-as das hipóteses descartadas;
+- mudanças e arquivos principais, destacando eventual alteração no motor;
+- comparação antes/depois que funcione dentro do Codex e no navegador, com modo 100%, imagens inteiras e erro explícito se alguma não carregar;
+- endereço da prévia que serve exatamente os arquivos testados;
+- testes realmente executados, resultados reaproveitados e limites;
+- pendências que dependem de mim, sem escondê-las sob “tudo concluído”.
+
+Registre uma nota curta no segundo cérebro conforme a ponte, com origem Claude, fonte, resultado, limitações e próximo passo. Preserve notas e evidências anteriores.
+
+Este pedido autoriza estudo, implementação e validação LOCAIS destes pontos. Não fazer commit, push, merge, deploy, mudanças no Render ou alterações em dados de perfil/partidas do site. Não mandar mensagens a terceiros. A publicação será uma etapa separada.
+
+Comece confirmando a candidata e montando a baseline. Depois prossiga até concluir os blocos, com atualizações curtas durante o trabalho.

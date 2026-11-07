@@ -3,14 +3,36 @@
 .coin-cap{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;background:#a67930;border:3px solid #efcc83;box-shadow:inset 0 0 0 2px #6b451c,inset 0 0 0 5px #f8df95,inset 2px 3px 6px #fff2bd99,inset -3px -4px 6px #563111;overflow:hidden}
 .coin-cap>canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;pointer-events:none}
 .coin-cap::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(110deg,transparent 17%,#fffbe159 28%,transparent 39%,#21110020 68%,#fff1b133);mix-blend-mode:soft-light;pointer-events:none}
-.coin-cap-front{transform:translateZ(11px)}.coin-cap-back{transform:rotateY(180deg) translateZ(11px)}
-.coin-edge{position:absolute;left:calc(50% - 3.6px);top:calc(50% - 11px);width:7.2px;height:22px;background:linear-gradient(0deg,#f1d382 0 8%,#926022 10% 20%,#dcb260 30% 72%,#80501b 80% 90%,#edca79 94%),repeating-linear-gradient(90deg,#4b2d11 0 1px,#d7ad57 1px 3px);background-blend-mode:multiply;transform:rotateZ(var(--edge-angle)) translateY(-102px) rotateX(90deg);backface-visibility:visible;filter:brightness(var(--edge-light))}
+.coin-cap-front{transform:translateZ(15px)}.coin-cap-back{transform:rotateY(180deg) translateZ(15px)}
+.coin-edge{position:absolute;left:calc(50% - 3.6px);top:calc(50% - 15px);width:7.2px;height:30px;background:linear-gradient(0deg,#f1d382 0 8%,#926022 10% 20%,#dcb260 30% 72%,#80501b 80% 90%,#edca79 94%),repeating-linear-gradient(90deg,#4b2d11 0 1px,#d7ad57 1px 3px);background-blend-mode:multiply;transform:rotateZ(var(--edge-angle)) translateY(-103px) rotateX(90deg);backface-visibility:visible;filter:brightness(var(--edge-light))}
 .coin-ground-shadow{position:absolute;left:-16px;right:-16px;top:165px;height:50px;border-radius:50%;background:radial-gradient(ellipse,#000a 0%,#10090470 35%,transparent 72%);filter:blur(6px);animation:coin-shadow-toss 2.4s ease both}
-@keyframes coin-solid-toss{0%{transform:translateY(130px) rotateX(65deg) rotateY(-12deg) scale(.6);opacity:0}12%{opacity:1}46%{transform:translateY(-100px) rotateX(420deg) rotateY(990deg) scale(1.1)}82%{transform:translateY(0) rotateX(740deg) rotateY(1786deg) rotateZ(-8deg)}92%{transform:translateY(-8px) rotateX(746deg) rotateY(1796deg) rotateZ(-8deg)}100%{transform:translateY(0) rotateX(740deg) rotateY(1786deg) rotateZ(-8deg)}}
+/* Claude round 2 (owner): a real toss — end-over-end around the horizontal axis, landing FLAT on one face (rotateX a
+   multiple of 180°: --coin-final is 1800deg for the front, 1980deg for the back), a short bounce, then rest. The previous
+   end pose kept 20°/−40° of tilt, so the coin lay on a diagonal. */
+@keyframes coin-solid-toss{0%{transform:translateY(130px) rotateX(0deg) rotateZ(-6deg) scale(.6)}46%{transform:translateY(-100px) rotateX(calc(var(--coin-final,1800deg)*.5)) rotateZ(4deg) scale(1.1)}80%{transform:translateY(0) rotateX(var(--coin-final,1800deg)) rotateZ(-8deg) scale(1)}87%{transform:translateY(-12px) rotateX(calc(var(--coin-final,1800deg) + 14deg)) rotateZ(-8deg) scale(1)}93%{transform:translateY(0) rotateX(calc(var(--coin-final,1800deg) - 5deg)) rotateZ(-8deg) scale(1)}100%{transform:translateY(0) rotateX(var(--coin-final,1800deg)) rotateZ(-8deg) scale(1)}}
 @keyframes coin-shadow-toss{0%,100%{transform:translateX(14px) scale(1);opacity:.85}46%{transform:translateX(28px) scale(.65);opacity:.24}}
 .burned-draw{position:fixed;pointer-events:none;z-index:115;transform-origin:center;filter:drop-shadow(0 12px 14px #0008)}
 .burned-draw-face{width:100%!important;height:100%!important;transform:none!important;animation:none!important;transition:none!important}
-.burned-draw.burning::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,transparent 5%,#ff7a00cc 25%,#ffe89d 29%,transparent 35%);mix-blend-mode:screen;animation:card-ember .36s ease-in both;pointer-events:none}
+.burned-draw.burning::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,transparent 5%,#ff7a00cc 25%,#ffe89d 29%,transparent 35%);mix-blend-mode:screen;animation:card-ember .72s ease-in both;pointer-events:none}
 @keyframes card-ember{from{clip-path:inset(75% 0 0);transform:translateY(40%)}to{clip-path:inset(0);transform:translateY(-55%);opacity:0}}
 .burn-arrived{box-shadow:inset 0 0 18px #e98835!important}
-@media(prefers-reduced-motion:reduce){.coin-solid,.coin-ground-shadow{animation:none}.coin-solid{transform:rotateY(0) rotateX(12deg)}.burned-draw.burning::after{display:none}}
+@media(prefers-reduced-motion:reduce){.coin-solid,.coin-ground-shadow{animation:none}.coin-solid{transform:rotateX(var(--coin-final,1800deg)) rotateZ(-8deg)}.burned-draw.burning::after{display:none}}
+
+/* The rim is geometry; its parent must never animate opacity (which flattens 3D). */
+.burned-draw-caption{position:absolute;left:50%;bottom:calc(100% + 18px);transform:translateX(-50%);min-width:290px;text-align:center;padding:12px 18px;border:1px solid #d6a76c;border-radius:6px;background:#21150df2;color:#ffe4b1;font:700 18px/1.3 'DM Sans',sans-serif;box-shadow:0 4px 24px #000a}
+.burned-draw.burning{filter:drop-shadow(0 0 24px #ef681678) drop-shadow(0 12px 14px #0009)}
+/* The prelude retains the real table and two portraits; the outcome follows the shot. */
+.capture-scene.finale-intro{background:#080706d9;backdrop-filter:none;transition:background 350ms ease}
+.finale-intro>.capture-title,.finale-intro>.capture-stage{visibility:hidden}
+.finale-focus-patron{position:fixed;border-radius:44% 44% 12% 12%;box-shadow:0 0 28px #ebc28255,0 0 65px #f2b95b26;pointer-events:none}
+.finale-focus-patron>.finale-focus-face{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;transform:none!important;translate:none!important;zoom:1!important;filter:none!important;opacity:1!important}
+.finale-focus-patron .wanted-star{font-size:25px}
+.finale-intro .capture-sight{width:70px;height:70px;top:44%;border-width:1px}
+.finale-intro .capture-sight:before{width:94px;left:-13px;top:33px}.finale-intro .capture-sight:after{height:94px;top:-13px;left:33px}
+.capture-scene.finale-result{animation:finale-result-in 400ms ease-out both}
+@keyframes finale-result-in{from{background:#080706d9}to{background:#110c0bf2}}
+@media(prefers-reduced-motion:reduce){.capture-scene.finale-result,.wanted-star,.capture-sight,.capture-hit{animation:none!important}.capture-scene.finale-intro{transition:none}}
+
+.finale-focus-face>.patron-card{position:relative!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;overflow:hidden}
+.finale-focus-face>.patron-card>img{width:100%;height:100%;object-fit:cover}
+.light-focus-veil{position:fixed;inset:0;width:100vw;height:100vh;z-index:4500;pointer-events:none}

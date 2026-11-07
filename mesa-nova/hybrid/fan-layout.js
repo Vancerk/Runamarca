@@ -8,12 +8,18 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 // the per-frame lifecycle render). The computed value stays as fallback when none is inline.
 const rootVar=name=>{const v=document.documentElement.style.getPropertyValue(name);return v!==''?v:getComputedStyle(document.documentElement).getPropertyValue(name);};
 const ownerComposition=()=>Number(rootVar('--hybrid-owner-composition'))||1;
+// Claude round 4 (reveal lag): the stylesheet size of a hand card was read by removing its inline size, reading the
+// computed style and writing the size back — a forced style recalculation on every fan (three per render). That size
+// depends only on the viewport, the root variables and the classes involved, so it is kept per that key and measured
+// again only when one of them changes.
+const baseSizes=new Map();
 function dimensions(nodes,isOwn,scale){
  const first=nodes[0];
- if(first){first.style.removeProperty('width');first.style.removeProperty('height');}
- const css=first?getComputedStyle(first):null;
- const baseW=css?parseFloat(css.width):isOwn?(innerWidth<=600?102:innerHeight<=820?86:108):(innerWidth<=600?54:innerHeight<=820?54:64);
- const baseH=css?parseFloat(css.height):baseW*(isOwn?1.4:1.40625);
+ const sizeKey=first?[isOwn,innerWidth,innerHeight,devicePixelRatio,scale,document.documentElement.getAttribute('style'),document.documentElement.className,document.body.className,document.getElementById('game')?.className,first.parentElement?.className,first.className].join('|'):null;
+ let cached=sizeKey?baseSizes.get(sizeKey):null;
+ if(first&&!cached){first.style.removeProperty('width');first.style.removeProperty('height');const css=getComputedStyle(first);cached={w:parseFloat(css.width),h:parseFloat(css.height)};if(baseSizes.size>64)baseSizes.clear();baseSizes.set(sizeKey,cached);}
+ const baseW=cached?cached.w:isOwn?(innerWidth<=600?102:innerHeight<=820?86:108):(innerWidth<=600?54:innerHeight<=820?54:64);
+ const baseH=cached?cached.h:baseW*(isOwn?1.4:1.40625);
  const viewport=document.documentElement.clientWidth||innerWidth;
  // Revision 11: the narrow-screen caps also grow by the visual factor, so mobile
  // hands get the requested 15% too; any resulting edge crop is reported in QA.

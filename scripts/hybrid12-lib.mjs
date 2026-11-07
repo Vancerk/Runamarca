@@ -13,7 +13,16 @@ export function harness(out){
  const check=(name,value,detail)=>{checks.push({name,pass:!!value,detail});if(!value)console.log('FAIL',name,JSON.stringify(detail??'').slice(0,600));else console.log('ok  ',name);};
  return {checks,errors,gpu,check};
 }
-export async function launch(){return chromium.launch({executablePath:process.env.QA_BROWSER||CHROME,headless:true});}
+// Claude round 4: HYBRID_VERIFY_INCREMENTAL=1 turns on the incremental-rebuild verification in every page of the run
+// (each incremental rebuild is followed by a full one and compared; a mismatch raises a page error).
+export async function launch(){const browser=await chromium.launch({executablePath:process.env.QA_BROWSER||CHROME,headless:true,args:(process.env.QA_BROWSER_ARGS||'').split(' ').filter(Boolean)});if(process.env.QA_ISOLATE_CONTEXTS==='1'){
+ // Some local Chrome runs stall on a second context even with the baseline source.
+ // Keep assertions intact, but give each QA context its own browser process.
+ const children=new Set(),close=browser.close.bind(browser);
+ browser.newContext=async options=>{const child=await chromium.launch({executablePath:process.env.QA_BROWSER||CHROME,headless:true,args:(process.env.QA_BROWSER_ARGS||'').split(' ').filter(Boolean)});children.add(child);try{const context=await child.newContext(options),closeContext=context.close.bind(context);context.close=async()=>{try{await closeContext();}finally{children.delete(child);await child.close();}};return context;}catch(error){children.delete(child);await child.close();throw error;}};
+ browser.newPage=async options=>(await browser.newContext(options)).newPage();
+ browser.close=async()=>{await Promise.allSettled([...children].map(child=>child.close()));children.clear();await close();};
+ }if(process.env.HYBRID_VERIFY_INCREMENTAL){const ctx=browser.newContext.bind(browser),page=browser.newPage.bind(browser),init=c=>{if(process.env.HYBRID_VERIFY_LOG)c.on('page',p=>p.on('console',m=>{const t=m.text();if(t.includes('[hybrid-incremental]'))import('node:fs').then(fs=>fs.appendFileSync(process.env.HYBRID_VERIFY_LOG,t+String.fromCharCode(10)));}));return c.addInitScript(()=>{window.__HYBRID_VERIFY_INCREMENTAL=true;}).then(()=>c);};browser.newContext=o=>ctx(o).then(init);browser.newPage=async o=>{const c=await browser.newContext(o);const p=await c.newPage();return p;};}return browser;}
 // Continuação da revisão 12: HYBRID_QA_SOURCE=rev11 serve, por interceptação local das
 // respostas, os arquivos de mesa-nova/ que diferem entre o checkout e a árvore Git
 // verificada da revisão 11 (87f9208…), lidos com `git cat-file` (nenhum arquivo do checkout
@@ -22,7 +31,7 @@ export const REV11_TREE='87f9208df3408f1d033e9a8321b60744eea7b0fa';
 export const sourceOverride=(()=>{
  const label=process.env.HYBRID_QA_SOURCE||'current';if(label==='current')return {label,files:{},served:{}};
  if(label!=='rev11')throw Error('HYBRID_QA_SOURCE must be current or rev11');
- const git=(...a)=>execFileSync('git',a,{cwd:ROOT,maxBuffer:1<<26});
+ const git=(...a)=>execFileSync('git',a,{cwd:ROOT,windowsHide:true,maxBuffer:1<<26});
  const changed=git('diff','--name-only',REV11_TREE,'--','mesa-nova').toString().split('\n').filter(Boolean),files={};
  for(const p of changed){let blob;try{blob=git('cat-file','blob',`${REV11_TREE}:${p}`);}catch{blob=null;}files['/runamarca/'+p.slice('mesa-nova/'.length)]={path:p,body:blob,sha1:blob&&createHash('sha1').update(blob).digest('hex')};}
  return {label,tree:REV11_TREE,files,served:{}};

@@ -15,19 +15,26 @@
  let saved={};try{saved=JSON.parse(localStorage.getItem('runamarca-music-v1')||'{}')||{};}catch{}
  const percent=(value,fallback)=>Number.isFinite(value)?Math.min(100,Math.max(0,Math.round(value*100))):fallback;
  const music=range('Música',percent(saved.music,17)),ambience=range('Ambiente',percent(saved.ambience,7));
+ const mix=globalThis.RunaAudioMix,initialMix=mix?.snapshot()||{};
+ const effects=range('Efeitos',percent(initialMix.effects,100)),voice=range('Vozes',percent(initialMix.voice,100));
  const muteLabel=document.createElement('label'),mute=document.createElement('input');mute.type='checkbox';mute.checked=Boolean(saved.muted);
  muteLabel.className='table-music-mute';muteLabel.append(mute,document.createTextNode('Silenciar trilha e ambiente'));panel.append(muteLabel);
+ const masterLabel=document.createElement('label'),master=document.createElement('input');master.type='checkbox';master.checked=initialMix.muted===true;
+ masterLabel.className='table-music-mute';masterLabel.append(master,document.createTextNode('Silenciar todo o áudio'));panel.append(masterLabel);
+ const note=document.createElement('small');note.className='audio-caption-note';note.textContent='As legendas das falas continuam visíveis com o som desligado.';panel.append(note);
  const start=document.createElement('button');start.type='button';start.textContent='Ativar áudio';start.hidden=true;
  panel.append(start,status);
  (document.querySelector('.room-sidebar')||document.getElementById('table-tools')).append(host);
  let player=null,catalog=null,timer=null,destroyed=false,gesture=false,loading=false;
  const labels={idle:'A trilha começa com a partida.',loading:'Carregando trilha…',playing:'Trilha compartilhada da partida.',blocked:'Clique em Ativar áudio.',error:'Não foi possível carregar o áudio.', 'waiting-gesture':'Clique na mesa para ativar o áudio.'};
- function show(value){status.textContent=labels[value]||value;host.dataset.playback=value;start.hidden=!['blocked','error','waiting-gesture'].includes(value);}
+ function show(value){const resting=host.dataset.stage!=='none'&&!host.dataset.track&&value==='playing';status.textContent=resting?'Pausa musical · ambiente da mesa.':labels[value]||value;host.dataset.playback=value;start.hidden=!['blocked','error','waiting-gesture'].includes(value);}
  function save(){
   const prefs={music:Number(music.value)/100,ambience:Number(ambience.value)/100,muted:mute.checked};
-  player?.preferences(prefs);try{localStorage.setItem('runamarca-music-v1',JSON.stringify(prefs));}catch{}
+  mix?.preferences({effects:Number(effects.value)/100,voice:Number(voice.value)/100,muted:master.checked});
+  player?.preferences({...prefs,muted:prefs.muted||master.checked});try{localStorage.setItem('runamarca-music-v1',JSON.stringify(prefs));}catch{}
  }
- mute.addEventListener('change',save);
+ mute.addEventListener('change',save);master.addEventListener('change',save);
+ const unsubscribe=mix?.subscribe(prefs=>{master.checked=prefs.muted;player?.preferences({music:Number(music.value)/100,ambience:Number(ambience.value)/100,muted:mute.checked||prefs.muted});});
  const unlock=()=>{gesture=true;player?.unlock();};
  start.addEventListener('click',()=>{gesture=true;if(player)player.retry();else loadCatalog();});
  document.addEventListener('pointerdown',unlock,{passive:true});document.addEventListener('keydown',unlock);
@@ -37,6 +44,7 @@
   host.dataset.track=next?.music?.trackId||'';
   host.dataset.since=String(next?.music?.since||'');
   player?.update(next?.music||null);
+  show(host.dataset.playback||'idle');
  }
  RunaPresentation.register('music',{after:sync});
  show('idle');
@@ -58,6 +66,6 @@
  }
  loadCatalog();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)player?.tick();});
- window.addEventListener('pagehide',event=>{if(!event.persisted){destroyed=true;clearInterval(timer);player?.dispose();}});
+ window.addEventListener('pagehide',event=>{if(!event.persisted){destroyed=true;clearInterval(timer);player?.dispose();unsubscribe?.();}});
  globalThis.RunaMusic={sync};
 })();

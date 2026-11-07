@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="72" viewBox="0 0 192 72">
+ <!-- Claude round 3 (owner): one piece of solid wood — face, bevel and thickness — with a thin inlay of polished silver
+      (light/dark/light like real metal) instead of a flat metallic outline. Procedural grain, no raster asset. -->
+ <defs>
+  <linearGradient id="face" x1="0" y1="0" x2=".08" y2="1"><stop stop-color="#c99460"/><stop offset=".5" stop-color="#b8824f"/><stop offset="1" stop-color="#a06c3e"/></linearGradient>
+  <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d9dee2"/><stop offset=".3" stop-color="#7f878e"/><stop offset=".52" stop-color="#c3c9ce"/><stop offset=".8" stop-color="#5b6268"/><stop offset="1" stop-color="#a9b0b6"/></linearGradient>
+  <linearGradient id="edge" x2="0" y2="1"><stop stop-color="#5a341a"/><stop offset="1" stop-color="#2a170c"/></linearGradient>
+  <clipPath id="inset"><path d="M10 5H182Q187 5 187 10V61Q187 65 182 65H10Q5 65 5 61V10Q5 5 10 5Z"/></clipPath>
+  <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".011 .26" numOctaves="3" seed="11" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 .17  0 0 0 0 .09  0 0 0 0 .04  0 0 0 -1.6 1.05"/></filter>
+  <filter id="rings" x="0" y="0" width="100%" height="100%"><feTurbulence type="turbulence" baseFrequency=".006 .09" numOctaves="2" seed="4"/><feColorMatrix type="matrix" values="0 0 0 0 .12  0 0 0 0 .06  0 0 0 0 .02  0 0 0 -2.2 .62"/></filter>
+ </defs>
+ <path d="M9 1H183Q191 1 191 9V63Q191 71 183 71H9Q1 71 1 63V9Q1 1 9 1Z" fill="#1a0e07"/>
+ <path d="M9 1H183Q190 1 190 8V61Q190 68 183 68H9Q2 68 2 61V8Q2 1 9 1Z" fill="url(#edge)"/>
+ <path d="M10 4H182Q188 4 188 10V61Q188 66 182 66H10Q4 66 4 61V10Q4 4 10 4Z" fill="none" stroke="url(#silver)" stroke-width="1.1"/>
+ <path d="M10 5H182Q187 5 187 10V61Q187 65 182 65H10Q5 65 5 61V10Q5 5 10 5Z" fill="url(#face)"/>
+ <g clip-path="url(#inset)">
+  <rect x="4" y="4" width="184" height="62" filter="url(#rings)"/>
+  <rect x="4" y="4" width="184" height="62" filter="url(#grain)"/>
+  <path d="M-4 9Q50 4 98 9T198 7V20Q150 13 98 17T-4 19Z" fill="#fff3dc" opacity=".12"/>
+  <path d="M-4 58Q50 53 98 58T198 55V70H-4Z" fill="#6b3f1f" opacity=".28"/>
+ </g>
+ <path d="M6 17V10Q6 6 11 6H181Q186 6 186 10" fill="none" stroke="#ffe8c4" opacity=".55" stroke-width="1"/>
+ <path d="M6 59Q6 64 11 64H181Q186 64 186 59" fill="none" stroke="#1f1108" opacity=".75" stroke-width="1.3"/>
+</svg>

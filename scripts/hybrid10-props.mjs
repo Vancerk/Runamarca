@@ -5,7 +5,7 @@ const require=createRequire(import.meta.url),{chromium}=require('C:/Users/vanxf/
 const out=process.env.HYBRID_QA_OUT||'prototype-qa/hybrid-10/qa',checks=[],errors=[];fs.mkdirSync(out,{recursive:true});
 const check=(name,value,detail)=>{checks.push({name,pass:!!value,detail});assert.ok(value,name+' '+JSON.stringify(detail??''));};
 const {room,a,b}=setup();for(const p of [a,b]){p.hand=Array.from({length:9},()=>card('FV03',p));p.reserve=Array.from({length:5},()=>card('FV03',p));}room.phase='prep';
-const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+const browser=await chromium.launch({executablePath:process.env.QA_BROWSER||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
 const viewports=[{width:1920,height:900,dpr:1},{width:1920,height:1080,dpr:1},{width:1440,height:900,dpr:1},{width:1280,height:720,dpr:2},{width:1920,height:900,dpr:2},{width:390,height:800,dpr:1},{width:320,height:800,dpr:2}];
 try{for(const v of viewports){
  const id=`${v.width}x${v.height}-dpr${v.dpr}`;const context=await browser.newContext({viewport:{width:v.width,height:v.height},deviceScaleFactor:v.dpr,hasTouch:v.width<600});await context.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
@@ -51,10 +51,11 @@ try{for(const v of viewports){
  const aimed=await page.evaluate(()=>{const n=[...document.querySelectorAll('.hybrid-prop:not([hidden])')][0];if(!n)return true;const t=RunaTargeting.active;RunaTargeting.active=()=>true;const s=RunaHybridProps.stats.activations[n.dataset.prop];n.click();const ok=RunaHybridProps.stats.activations[n.dataset.prop]===s;RunaTargeting.active=t;return ok;});check('targets ignored while aiming '+id,aimed);
  const scroll=await page.evaluate(()=>({h:document.documentElement.scrollHeight<=innerHeight+1,w:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1}));check('desktop keeps no scroll '+id,scroll.h&&scroll.w,scroll);
  await context.close();}
- // WebGL loss removes the targets together with the projected faces.
+ // Step 5 recovery hides the unavailable surface and retains its DOM until
+ // restoration; decorative hit targets are disposed immediately.
  const context=await browser.newContext({viewport:{width:1920,height:900}});await context.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());const page=await context.newPage();page.on('pageerror',e=>errors.push('loss: '+e.message));await page.goto((process.env.QA_BASE||'http://127.0.0.1:3086')+'/runamarca/hybrid/index.html');await page.waitForFunction(()=>typeof render==='function'&&window.RunaHybridProps);await page.evaluate(s=>{state=s;serverClockOffset=Date.now()-s.serverNow;render();},view(room,a));await page.waitForFunction(()=>RunaHybrid?.ready);await page.waitForTimeout(500);
  await page.evaluate(()=>document.querySelector('.hybrid-prop:not([hidden])')?.click());await page.evaluate(()=>document.querySelector('.hybrid-canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext());await page.waitForTimeout(400);
- const lost=await page.evaluate(()=>({props:document.querySelectorAll('.hybrid-props,.hybrid-prop').length,failed:RunaHybrid.stats.failed,faces:document.querySelectorAll('.hybrid-card-face').length,animating:RunaHybridProps.stats.animating}));check('WebGL loss removes decorative targets and stops motion',lost.failed&&lost.props===0&&lost.faces===0&&!lost.animating,lost);await context.close();
+ const lost=await page.evaluate(()=>({props:document.querySelectorAll('.hybrid-props,.hybrid-prop').length,failed:RunaHybrid.stats.failed,visibleFaces:[...document.querySelectorAll('.hybrid-card-face')].filter(n=>n.checkVisibility({visibilityProperty:true,opacityProperty:true})).length,animating:RunaHybridProps.stats.animating,recovery:RunaHybrid.recovery.visible}));check('WebGL loss hides faces, removes decorative targets and stops motion',lost.failed&&lost.props===0&&lost.visibleFaces===0&&!lost.animating&&lost.recovery,lost);await context.close();
 }finally{await browser.close();fs.writeFileSync(out+'/props.json',JSON.stringify({checks,errors},null,1));}
 check('no page errors',errors.length===0,errors);
 console.log(`${checks.filter(c=>c.pass).length}/${checks.length} verificações de decoração passaram`);

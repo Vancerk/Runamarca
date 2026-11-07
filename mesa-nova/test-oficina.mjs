@@ -26,7 +26,7 @@ function place(p,c,lane){p.reserve.push(c);p.formation[lane]=c.uid;return c;}
  const {room,a,b}=setup();place(a,card('FL05',a),0);place(b,card('FL03',b),0);resolveCombat(room);assert.equal(b.patron.hp,97,'Transpassar: 5 contra 2 de vida transmite 3');
 }
 {
- const {room,a,b}=setup(),taunter=place(b,card('FL09',b),1),redirected=place(a,card('FL05',a),0);b.taunts[taunter.uid]=0;resolveCombat(room);assert.equal(taunter.damage,5);assert.equal(b.patron.hp,100,'Provocar impede golpe na casa vazia');assert.equal(room.directedSteps.find(s=>s.sourceId===redirected.uid).targetId,taunter.uid);assert.equal(room.directedSteps.filter(s=>s.sourceId===taunter.uid).length,1);
+ const {room,a,b}=setup(),taunter=place(b,card('FL09',b),1),redirected=place(a,card('FL05',a),0);b.taunts[taunter.uid]=0;resolveCombat(room);assert.equal(taunter.damage,5);assert.equal(b.patron.hp,100,'Provocar impede golpe na casa vazia');assert.equal(room.directedSteps.find(s=>s.sourceId===redirected.uid).targetId,taunter.uid);/* Provocar, owner decision 06/11/2026: the Taunt still strikes exactly once, now answering the redirected attacker (a paired exchange, so its step may sit inside the pair). */{const all=room.directedSteps.flatMap(s=>[s,...(s.pair?[s.pair]:[])]).filter(s=>s.sourceId===taunter.uid);assert.equal(all.length,1);assert.equal(all[0].targetId,redirected.uid);}
 }
 {
  const {room,a,b}=setup(),veronica=place(a,card('FL11',a,{protocolMode:'assault'}),0);place(b,card('FL03',b),0);resolveCombat(room);assert.equal(veronica.attack,4);assert.equal(veronica.health,5);assert.equal(room.preClash[0].cards[0].attack,6);
