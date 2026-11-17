@@ -155,7 +155,10 @@
   }
   ctx.translate(b.x,b.y);ctx.rotate(angle);ctx.shadowColor='#0009';ctx.shadowBlur=4;ctx.shadowOffsetY=4;ctx.strokeStyle='#c4b7a4';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(5,0);ctx.bezierCurveTo(20,-17,20,17,5,10);ctx.stroke();ctx.fillStyle='#e7d3b0';ctx.beginPath();ctx.moveTo(5,10);ctx.lineTo(10,3);ctx.lineTo(11,13);ctx.fill();ctx.restore();
  }
- root.RunaCombatReturn={capture,candidates,styleFor,play:(items,options={})=>root.RunaPresentation?root.RunaPresentation.play('reserveReturn',{items,options},p=>play(p.items,p.options)):play(items,options),cancel,
+ // 11/11/2026 (dono): 'busy' cobre o recolhimento pedido e ainda na fila da apresentação até o fim do último voo; o foco
+ // do combate (hybrid/focus.js) espera por ele antes de desfazer o zoom.
+ let pending=0;const tracked=run=>{pending++;let done=false;const end=()=>{if(!done){done=true;pending--;}};try{return Promise.resolve(run()).finally(end);}catch(error){end();throw error;}};
+ root.RunaCombatReturn={capture,candidates,styleFor,play:(items,options={})=>tracked(()=>root.RunaPresentation?root.RunaPresentation.play('reserveReturn',{items,options},p=>play(p.items,p.options)):play(items,options)),cancel,get busy(){return pending>0||active!==null;},
   registerStyle(name,definition){styles.set(name,definition);}};
  root.addEventListener?.('pagehide',cancel);
 })(globalThis);

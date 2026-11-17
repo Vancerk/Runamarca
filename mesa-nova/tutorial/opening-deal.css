@@ -1,0 +1,84 @@
+/* Abertura da partida e mão inicial (09/11/2026). Carregada por último: ajusta só o painel da mão inicial, o palco
+   da moeda (opening-toss.js) e os estados da troca única. Cartas, mesa e desfoque de fundo seguem as folhas atuais. */
+
+/* ── Pergaminho "Mão inicial": título e instrução curta numa folha presa a duas hastes de nogueira ────────────── */
+body #mulligan-overlay .mulligan-banner{
+ position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-sizing:border-box;
+ width:max-content;max-width:calc(100% - 140px);min-width:min(430px,calc(100% - 140px));min-height:104px;margin:0 auto 12px;padding:22px 34px 24px;
+ background:url('assets/ui/scroll-body.svg') center/100% 100% no-repeat;filter:drop-shadow(0 12px 16px #000a);
+}
+body #mulligan-overlay .mulligan-banner::before,body #mulligan-overlay .mulligan-banner::after{
+ content:'';position:absolute;top:0;bottom:0;aspect-ratio:64/136;background:url('assets/ui/scroll-cap.svg') center/100% 100% no-repeat;pointer-events:none;
+}
+body #mulligan-overlay .mulligan-banner::before{right:calc(100% - 9px)}
+body #mulligan-overlay .mulligan-banner::after{left:calc(100% - 9px);transform:scaleX(-1)}
+body #mulligan-overlay .mulligan-banner h1{
+ margin:0;font:700 clamp(25px,2.5vw,38px)/1.1 var(--r-inscription);letter-spacing:.05em;color:#36210f;
+ text-shadow:0 1px 0 #fff3d6b8,0 -1px 0 #2a170c33;
+}
+body #mulligan-overlay .mulligan-banner .mulligan-instruction{
+ margin:0;font:600 clamp(14px,1.05vw,17px)/1.35 var(--r-font);color:#4b3320;text-shadow:0 1px 0 #fff3d680;
+}
+body #mulligan-overlay #mulligan-status{margin:0;font:500 13px/1.4 var(--r-font);letter-spacing:.03em;color:#e3d1ad;text-shadow:0 1px 2px #000,0 0 10px #000c}
+body #mulligan-overlay #mulligan-cards{padding:30px 0 26px}
+
+/* ── Troca única: marcadas, limite atingido, botão de confirmar ─────────────────────────────────────────────── */
+body #mulligan-overlay .card.opening-card{cursor:pointer}
+body #mulligan-overlay .card.opening-card:focus-visible{outline:3px solid var(--r-focus);outline-offset:5px}
+body #mulligan-overlay .card.opening-card.at-limit{cursor:not-allowed;opacity:.72}
+body #mulligan-overlay .card.opening-card.at-limit:hover{transform:none}
+body #mulligan-overlay #mulligan-controls{display:flex;flex-direction:column;align-items:center;gap:10px;margin:6px auto 0}
+body #mulligan-overlay #mulligan-controls #mulligan-confirm{
+ min-width:250px;padding:15px 34px;border:1px solid transparent;border-radius:7px;background:none;
+ border-image:url('assets/ui/control-wood.svg') 12 fill / 12px / 0 stretch;box-shadow:0 8px 18px #0009;
+ font:700 18px/1.2 var(--r-inscription);letter-spacing:.05em;color:#241105;text-shadow:0 1px 0 #ffe6bd99,0 -1px 0 #00000066,0 0 1px #2411058c;cursor:pointer;opacity:1;
+}
+body #mulligan-overlay #mulligan-controls #mulligan-confirm:disabled{border-image-source:url('assets/ui/control-wood-dark.svg');color:#c9b597;text-shadow:0 -1px 0 #0b0502b3;cursor:default}
+body #mulligan-overlay #mulligan-controls #mulligan-confirm:focus-visible{outline:3px solid var(--r-focus);outline-offset:4px}
+body #mulligan-overlay .mulligan-hint{margin:0;min-height:1.4em;font:500 13px/1.4 var(--r-font);color:#d9c7a4;text-shadow:0 1px 2px #000,0 0 10px #000c}
+body #mulligan-overlay .mulligan-hint.is-refusal{color:#ffcf8f;font-weight:700}
+body #mulligan-overlay #mulligan-timer{margin-top:10px}
+
+/* ── Moeda em primeiro plano: o painel só aparece quando o desfoque sai ─────────────────────────────────────── */
+body #mulligan-overlay :is(.mulligan-banner,#mulligan-status,#mulligan-controls,#mulligan-timer){transition:opacity .42s ease,translate .42s cubic-bezier(.2,.8,.3,1)}
+/* 1% de opacidade, não 0: invisível sob o véu, mas já desenhado quando o desfoque sair (sem pausa na revelação). */
+body #mulligan-overlay:is(.opening-toss,.opening-await) :is(.mulligan-banner,#mulligan-status,#mulligan-controls,#mulligan-timer){opacity:.01;transition:none;pointer-events:none}
+body #mulligan-overlay:is(.opening-toss,.opening-await) .mulligan-banner{translate:0 -16px}
+body #mulligan-overlay:is(.opening-toss,.opening-await) #mulligan-controls{translate:0 14px}
+body #mulligan-overlay:is(.opening-toss,.opening-await) #mulligan-cards{pointer-events:none}
+/* A carta pousa uma vez: o voo já assenta na casa, sem o segundo salto de chegada (.arrived) das compras comuns. */
+body #mulligan-overlay.opening-toss #mulligan-cards .card.arrived{animation:none!important}
+.opening-toss-stage{position:fixed;inset:0;z-index:4650;pointer-events:none;overflow:hidden}
+.opening-toss-veil{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 44%,#0b070426 0,#0b07047a 72%);backdrop-filter:blur(5px) saturate(.92);-webkit-backdrop-filter:blur(5px) saturate(.92)}
+.opening-toss-stage .coin-toss.coin-volume{top:42%}
+.opening-toss-stage.is-priming .coin-toss.coin-volume{opacity:.01}
+.opening-toss-stage.is-priming :is(.coin-solid,.coin-ground-shadow){animation-play-state:paused}
+.opening-toss-caption{position:absolute;left:50%;top:calc(42% + 148px);width:min(560px,calc(100vw - 32px));margin:0;transform:translateX(-50%);text-align:center;font-family:var(--r-font)}
+.opening-toss-lead{display:block;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#e3d1ad;text-shadow:0 1px 3px #000,0 0 12px #000c}
+.opening-toss-caption strong{display:block;font:700 clamp(24px,2.3vw,34px)/1.2 var(--r-inscription);letter-spacing:.04em;color:#fff0d2;text-shadow:0 2px 4px #000,0 0 22px #000d}
+.opening-toss-caption small{display:block;margin-top:6px;font-size:15px;font-weight:600;color:#ecd9b2;text-shadow:0 1px 3px #000,0 0 12px #000c}
+.opening-toss-stage.has-landed .opening-toss-caption :is(strong,small){animation:opening-result-in .34s cubic-bezier(.2,.9,.3,1.25) both}
+.opening-toss-stage.has-landed .opening-toss-caption small{animation-delay:.08s}
+.opening-toss-motes{position:absolute;left:50%;top:42%}
+.opening-toss-motes i{position:absolute;left:0;top:0;width:10px;height:10px;border-radius:50%;background:radial-gradient(#fff6cf,#e7b95a 52%,#e7b95a00 72%)}
+@keyframes opening-result-in{from{opacity:0;translate:0 10px;scale:.94}to{opacity:1;translate:0 0;scale:1}}
+
+@media(max-width:650px){
+ /* Tela estreita: três fileiras de cartas (2+2+1). O pergaminho e as margens encolhem e a largura das cartas reserva a
+    altura do painel inteiro (pergaminho, contagem, botão, aviso e relógio), para nada ficar cortado em cima ou embaixo. */
+ body #mulligan-overlay{padding:10px 12px;overflow-x:hidden}
+ body #mulligan-overlay .mulligan-banner{min-width:0;max-width:calc(100% - 84px);min-height:0;margin-bottom:6px;padding:15px 12px 16px}
+ body #mulligan-overlay .mulligan-banner h1{font-size:21px}
+ body #mulligan-overlay .mulligan-banner .mulligan-instruction{font-size:12.5px;line-height:1.25}
+ body #mulligan-overlay #mulligan-status{font-size:12px}
+ body #mulligan-overlay #mulligan-cards,body.hybrid-prototype #mulligan-overlay #mulligan-cards{--opening-card-width:min(181px,calc((100vw - 56px) / 2),calc((100dvh - 318px) / 4.2));gap:10px 12px;padding:12px 0 10px}
+ body #mulligan-overlay #mulligan-controls{gap:6px;margin-top:0}
+ body #mulligan-overlay #mulligan-timer{margin-top:4px;font-size:12px}
+ body #mulligan-overlay #mulligan-controls #mulligan-confirm{min-width:0;width:min(260px,100%);padding:11px 18px;font-size:16px}
+ .opening-toss-stage .coin-toss.coin-volume{scale:.78}
+ .opening-toss-caption{top:calc(42% + 122px)}
+}
+@media(prefers-reduced-motion:reduce){
+ body #mulligan-overlay :is(.mulligan-banner,#mulligan-status,#mulligan-controls,#mulligan-timer){transition:none}
+ .opening-toss-stage.has-landed .opening-toss-caption :is(strong,small){animation:none}
+}

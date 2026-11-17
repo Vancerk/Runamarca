@@ -1,0 +1,959 @@
+// 12/11/2026 (dono): ao arrastar uma criatura da mão para perto da sua reserva, a carta encolhe até o tamanho das
+// cartas da reserva (como na Emanação), indicando que vai se encaixar ali. Começa a 90 px da estante e chega ao
+// tamanho final sobre ela. Só na sua preparação.
+function reserveFit(e,kind,card,ghost){if(kind!=='hand'||card?.type!=='creature'||state?.phase!=='prep'||state.turn!==state.you||!ghost)return 1;const camp=document.querySelector('.reserve-camp.self-camp');if(!camp)return 1;const r=camp.getBoundingClientRect();if(!r.height)return 1;const d=Math.hypot(Math.max(r.left-e.clientX,0,e.clientX-r.right),Math.max(r.top-e.clientY,0,e.clientY-r.bottom)),near=Math.max(0,Math.min(1,1-d/90));if(!near)return 1;const sample=camp.querySelector('.card-row>.card'),targetH=sample?.getBoundingClientRect().height||r.height*.66,base=ghost.offsetHeight||1;const k=Math.min(1,targetH/base);return 1+(k-1)*near;}
+function cloneVisual(source){const copy=source.cloneNode(true);const originals=source.querySelectorAll('canvas'),clones=copy.querySelectorAll('canvas');const paint=()=>originals.forEach((canvas,i)=>clones[i]?.getContext('2d').drawImage(canvas,0,0));paint();if(source.visualReady)copy.visualReady=Promise.resolve(source.visualReady).then(paint).catch(()=>{});globalThis.RunaPresentation?.clone?.(source,copy);return copy;}
+const $=id=>document.getElementById(id);
+const gameBase='/runamarca/tutorial/';
+let state=null,models=null,selected=null,importedArt={},lastRevision=-1,toastTimer=null,hoverUid=null,serverClockOffset=0,pendingSnap=null,refreshing=false;
+let visualGeneration=0,visualMatchKey=null,connectionLost=false,matchEffectsEnded=false;
+let visualBooted=false,lastVisualId=0,lastPhase=null,lastBattleStep='',handOrder=[],mulliganSelected=new Set(),audioContext=null,suppressClickUntil=0;const visualQueue=RunaPresentation.createQueue();
+const mulliganDepartures=new Map();
+const emanationChoices=new Map(),spellTargets=new Map(),promptedEmanations=new Set();let emanationChoiceTurn='',autoMulliganKey='';const noticeQueue=RunaPresentation.createQueue();
+const displayedPatronExtraLife=new Map(),pendingPatronHealth=new Map();
+const displayedHealth=new Map(),pendingHealth=new Map(),displayedPatronHealth=new Map();let healthDisplayCombat=null;
+const displayedAttack=new Map(),pendingAttack=new Map();let attackDisplayCombat=null;
+
+function syncHealthDisplay(){
+ for(const player of state?.players||[])if(!displayedPatronExtraLife.has(player.id))displayedPatronExtraLife.set(player.id,player.patron?.extraLife||0);
+ const combat=state?.combat?.id||null;if(healthDisplayCombat!==combat){displayedHealth.clear();pendingHealth.clear();displayedPatronHealth.clear();pendingPatronHealth.clear();healthDisplayCombat=combat;}
+ const unseen=(state?.events||[]).filter(e=>e.id>lastVisualId&&['spell','patron_power','apprentice_damage','launcher_damage','silence','cleric_heal','death_burst','fatigue','ether_reprisal'].includes(e.type));for(const p of state?.players||[]){for(const card of p.reserve||[]){const value=Math.max(0,card.health-card.damage);if(!combat&&displayedHealth.has(card.uid)&&displayedHealth.get(card.uid)!==value&&unseen.some(e=>e.healthUpdates?.some(u=>u.uid===card.uid)))pendingHealth.set(card.uid,value);if(!displayedHealth.has(card.uid)||!combat&&!pendingHealth.has(card.uid))displayedHealth.set(card.uid,value);}if(!combat&&displayedPatronHealth.has(p.id)&&unseen.some(e=>e.healthUpdates?.some(u=>u.patronId===p.id)))pendingPatronHealth.set(p.id,true);if(!displayedPatronHealth.has(p.id)||!combat&&!pendingPatronHealth.has(p.id)){displayedPatronHealth.set(p.id,p.patron?.hp??0);displayedPatronExtraLife.set(p.id,p.patron?.extraLife||0);}}
+}
+// 11/11/2026 (fluidez): a camada do coração líquido cobre a carta inteira, mas só desenha o coração no canto. Era um canvas
+// de 900×820/1260 px em toda carta — ~0,7–1,1 Mpx por carta pintados, enviados à GPU e copiados a cada voo, para um
+// coração de ~20 px na tela. A resolução agora acompanha o tamanho em que a carta aparece (drawLiquidHeart já escala
+// pelo tamanho do canvas): consulta ampliada 100%, carta da mão 40%, carta pequena da mesa 25%.
+function liquidScale(node){return node.dataset.liquidScale?Number(node.dataset.liquidScale):node.classList.contains('mini')?.25:.4;}
+function updateLiquidHeart(node,hp,maxHp,animate=false){
+ let canvas=node.querySelector('.health-liquid');if(!canvas){const k=liquidScale(node);canvas=document.createElement('canvas');canvas.width=Math.round(900*k);canvas.height=Math.round((node.classList.contains('combat-card')?820:1260)*k);canvas.className='health-liquid';canvas.setAttribute('aria-hidden','true');node.append(canvas);}
+ const target=Math.max(0,Math.min(1,hp/Math.max(1,maxHp))),from=canvas.fillRatio??target,start=performance.now();
+ cancelAnimationFrame(canvas.liquidFrame);const paint=now=>{const progress=animate?Math.min(1,(now-start)/450):1;canvas.fillRatio=from+(target-from)*(1-Math.pow(1-progress,3));RunaCardVisual.drawLiquidHeart(canvas,canvas.fillRatio,node.classList.contains('combat-card'));if(progress<1&&canvas.isConnected)canvas.liquidFrame=requestAnimationFrame(paint);};paint(start);
+}
+function deferVisual(callback,delay){const generation=visualGeneration;return visualQueue.defer(()=>{if(generation===visualGeneration)callback();},delay);}
+function applyHealthUpdates(updates=[]){for(const update of updates){if(update.uid?.startsWith('patron:')&&!update.patronId)applyHealthUpdates([{patronId:update.uid.slice(7),hp:update.hp,maxHp:update.maxHp,extraLife:update.extraLife}]);if(update.patronId){pendingPatronHealth.delete(update.patronId);if(update.extraLife!==undefined){displayedPatronExtraLife.set(update.patronId,update.extraLife);if(typeof updatePatronExtraLife==='function')updatePatronExtraLife(update.patronId,update.extraLife);}displayedPatronHealth.set(update.patronId,update.hp);const player=state.players.find(p=>p.id===update.patronId),head=$(update.patronId===seat()?.id?'self-head':'opponent-head');if(head?.querySelector('.hp')){if(typeof updateLocalPatronHealth==='function'&&head.querySelector('.patron-hp-value'))updateLocalPatronHealth(head,update.hp,player?.patron.maxHp||update.maxHp);else head.querySelector('.hp').textContent=update.hp+'/'+(player?.patron.maxHp||update.maxHp)+' ♥';}continue;}if(update.spectralBarrier!==undefined){const c=state.players.flatMap(p=>p.reserve||[]).find(c=>c.uid===update.uid);if(c){if(update.spectralBarrier)c.spectralBarrier=true;else delete c.spectralBarrier;}}if(update.corruption){const c=state.players.flatMap(p=>p.reserve||[]).find(c=>c.uid===update.uid);if(c&&!c.corruption){c.corruption=true;c.text=(c.text||'')+'\nCorrupção.';c.highlightKeywords=[...(c.highlightKeywords||[]),'Corrupção'];const node=tableCard(c.uid);if(node){const replacement=cardEl(c,{mini:true,combat:node.classList.contains('combat-card')});node.replaceWith(replacement);}}}if(update.attack!==undefined){displayedAttack.set(update.uid,update.attack);for(const node of document.querySelectorAll('.card'))if(node.dataset.uid===update.uid){const number=node.querySelector('.attack-value');if(number){number.textContent=String(update.attack);number.classList.toggle('attack-buffed',update.attack>Number(node.dataset.baseAttack));}}}displayedHealth.set(update.uid,update.hp);pendingHealth.delete(update.uid);for(const node of document.querySelectorAll('.card'))if(node.dataset.uid===update.uid){const number=node.querySelector('.health-value');if(number){number.textContent=String(update.hp);number.classList.toggle('health-damaged',update.hp<update.maxHp);number.classList.remove('health-changed');void number.offsetWidth;number.classList.add('health-changed');}updateLiquidHeart(node,update.hp,update.maxHp,true);if(update.uid.startsWith('patron:')&&update.extraLife!==undefined){let badge=node.querySelector('.patron-field-armor');if(update.extraLife>0){badge??=text(node,'span','','patron-field-armor');badge.textContent=String(update.extraLife);}else badge?.remove();}node.classList.toggle('wounded',update.hp<update.maxHp);}if(state?.phase==='resolving'&&update.hp<=0&&typeof finishDamageVictim==='function')finishDamageVictim(update);}
+}
+function damagePatron(owner,amount){const player=state.players.find(p=>p.id===owner);if(!player)return;const armor=displayedPatronExtraLife.get(owner)??player.patron.extraLife??0,absorbed=Math.min(armor,Math.max(0,amount));applyHealthUpdates([{patronId:owner,hp:Math.max(0,(displayedPatronHealth.get(owner)??player.patron.hp)-Math.max(0,amount)+absorbed),maxHp:player.patron.maxHp,extraLife:armor-absorbed}]);}
+
+function syncAttackDisplay(){const combat=state?.combat?.id||null;if(attackDisplayCombat!==combat){displayedAttack.clear();pendingAttack.clear();attackDisplayCombat=combat;}for(const p of state?.players||[])for(const card of p.reserve||[]){const value=card.effectiveAttack??Math.max(0,card.attack+(card.attackMod||0)),previous=displayedAttack.get(card.uid);if(!combat&&previous!==undefined&&value>previous&&(state.events||[]).some(e=>e.id>lastVisualId&&['attack_modifier','stat_buff'].includes(e.op)&&e.targetId===card.uid))pendingAttack.set(card.uid,value);if(!displayedAttack.has(card.uid)||(!combat&&!pendingAttack.has(card.uid)))displayedAttack.set(card.uid,value);}}
+let commandBusy=false,activeDrag=null;
+// Round 2 (owner): action queue, as in Hearthstone. While a command is in flight (server round trip and its transfer
+// animation), further actions are queued instead of being silently dropped, and are sent one by one in order; the server
+// still validates every one against the state it has reached. The queue only lives for the same match, phase, turn and
+// round, holds at most 8 actions and never the same card twice; a rejected action shows its error and the queue goes on.
+const actionQueue=[],QUEUEABLE=new Set(['play','emanate','assign','endPrep','ready','vote','taunt','equip','patronPower','movePrepared','unprepare','protocol','monkChoice']);
+const queueKey=()=>state?[state.code,state.matchId,state.phase,state.turn,state.round].join(':'):'';
+function updateQueuedStyle(){let tag=document.getElementById('queued-actions-style');if(!tag){tag=document.createElement('style');tag.id='queued-actions-style';document.head.append(tag);}const ids=actionQueue.map(q=>q.data.cardId).filter(Boolean);tag.textContent=ids.map(id=>`#game .card[data-uid="${CSS.escape(id)}"]`).join(',')+(ids.length?'{opacity:.55!important;filter:saturate(.6)!important;pointer-events:none!important}':'');document.body.classList.toggle('actions-queued',actionQueue.length>0);}
+function enqueueAction(data,dragRect,entryConfirmed){if(!QUEUEABLE.has(data?.type)||state?.spectator||actionQueue.length>=8)return false;if(data.cardId&&actionQueue.some(q=>q.data.cardId===data.cardId))return false;actionQueue.push({data,dragRect,entryConfirmed,key:queueKey(),generation:visualGeneration});updateQueuedStyle();return true;}
+function drainActionQueue(){while(actionQueue.length){const next=actionQueue.shift();updateQueuedStyle();if(next.generation!==visualGeneration||next.key!==queueKey())continue;queueMicrotask(()=>command(next.data,next.dragRect,next.entryConfirmed));return;}}
+globalThis.RunaActionQueue={get length(){return actionQueue.length;},get items(){return actionQueue.map(q=>({type:q.data.type,cardId:q.data.cardId||null}));}};const deadVisuals=new Map();
+const spellTargetRects=new Map();
+function rememberSpellTargets(){for(const node of document.querySelectorAll('#game .card'))if(node.dataset.uid)spellTargetRects.set(node.dataset.uid,node.getBoundingClientRect());if(spellTargetRects.size>200)for(const uid of [...spellTargetRects.keys()].slice(0,100))spellTargetRects.delete(uid);}
+function spellTarget(uid){return tableCard(uid)||(spellTargetRects.has(uid)?{getBoundingClientRect:()=>spellTargetRects.get(uid)}:null);}
+function cardInFlight(uid){return RunaCardArrivals.moving(uid);}
+RunaCardArrivals.subscribe((type,moved)=>{if(type==='reset')for(const uid of moved||[])finishVisual(uid);});
+/* Round 3 (combat lag): select by data-uid directly instead of scanning every card node on each lookup; same preference order. */
+function tableCard(uid){if(!uid)return null;const q=`[data-uid="${CSS.escape(String(uid))}"]`,nodes=[...document.querySelectorAll(`#game .card${q},#game .spell-mark${q},#mulligan-cards .card${q},.grimoire-floating-card .card${q}`)].filter(node=>!node.closest('#visual-layer')),hasBox=node=>{const r=node.getBoundingClientRect();return r.width>0&&r.height>0;};return nodes.find(node=>node.closest('#game')&&hasBox(node))||nodes.find(hasBox)||null;}
+function cleanupDrag(){activeDrag?.();activeDrag=null;document.querySelectorAll('.drag-preview,.drag-ground-shadow').forEach(node=>node.remove());document.querySelectorAll('.dragging-source,.drop-ready').forEach(node=>node.classList.remove('dragging-source','drop-ready'));}
+window.addEventListener('blur',cleanupDrag);document.addEventListener('visibilitychange',()=>{if(document.hidden)cleanupDrag();});
+const isInvitation=()=>new URLSearchParams(location.search).has('invite');
+const laneSymbols=['☀','☽','✦'];
+const avatar=(seat)=>seat?.patron?.affinity==='ruptura'?'◆':seat?.patron?.affinity==='fluxo'?'◇':'✦';
+const seat=()=>state?.players.find(p=>p.id===state.you)||(state?.spectator?state?.players[0]:null);
+const rival=()=>state?.players.find(p=>p.id!==seat()?.id);
+const err=error=>{const message=error?.message||String(error);$('welcome-error').textContent=message;const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);};
+async function api(route,data,method='POST'){
+ if(method==='POST'&&data&&/\/api\/rooms\/[^/]+\/act$/.test(route)&&state?.tutorial)data={id:crypto.randomUUID(),version:state.tutorial.version,action:data};
+ const controller=method==='GET'?new AbortController():null,timer=controller?setTimeout(()=>controller.abort(),route.includes('wait=1')?25000:10000):null;
+ try{
+  const headers={'Content-Type':'application/json'};const saved=sessionStorage.getItem('runamarca-tutorial-seat');if(saved)headers['x-player-token']=JSON.parse(saved).token;
+  const response=await fetch(gameBase+route.replace(/^\//,''),{method,headers,...(controller?{signal:controller.signal}:{}),...(data?{body:JSON.stringify(data)}:{})});if(response.status===204)return null;const result=await response.json();if(response.status===403&&result.code==='ACCESS_REQUIRED'){location.assign('/runamarca/access');throw Object.assign(Error('Acesso necessário.'),{code:'ACCESS_REQUIRED'});}if(!response.ok)throw Object.assign(Error(result.error||'Ação não concluída.'),{code:result.code,status:response.status});return result;
+ }finally{clearTimeout(timer);}
+}
+function trackArrivals(previous,next){
+ const hand=next.players.find(p=>p.id===next.you)?.hand||[],present=new Set(hand.map(c=>c.uid));RunaCardArrivals.retain(present);
+ if(!previous||previous.you!==next.you||next.spectator||previous.matchId!==next.matchId)return;
+ const draws=new Set((next.events||[]).filter(e=>e.type==='draw'&&e.playerId===next.you&&e.id>(previous.eventId??previous.events?.at(-1)?.id??0)).map(e=>e.cardId));
+ for(const card of hand)if(draws.has(card.uid)&&!RunaCardArrivals.has(card.uid))RunaCardArrivals.reserve(card.uid);
+}
+function prepareOpeningArrivals(){
+ if(!visualBooted||!state||state.spectator)return;
+ const opening=(state.events||[]).find(e=>e.type==='opening'&&e.playerId===state.you&&e.id>lastVisualId);if(!opening)return;
+ const hand=seat()?.hand||[],ids=new Set(opening.cardIds||hand.slice(0,opening.count||5).map(c=>c.uid));
+ for(const c of hand)if(ids.has(c.uid)&&!RunaCardArrivals.has(c.uid))RunaCardArrivals.reserve(c.uid);
+}
+async function command(data,dragRect=null,entryConfirmed=false){if(RunaCardArrivals.blocked&&data?.cardId&&seat()?.hand?.some(c=>c.uid===data.cardId))return;if((pendingEntryPlacement||pendingSpellConfirmation)&&!entryConfirmed)return;const pendingCard=data.type==='play'?[...(seat()?.hand||[]),...(seat()?.study?.book?.cards||[])].find(c=>c.uid===data.cardId):null;if(!entryConfirmed&&pendingCard&&needsApprenticeConfirmation(pendingCard))return confirmApprenticeSpell(data,dragRect);if(!entryConfirmed&&pendingCard&&creatureNeedsEntryChoice(pendingCard))return beginEntryPlacement(data,dragRect);if(typeof patronIntroActive!=='undefined'&&patronIntroActive&&['mulligan','confirmMulligan'].includes(data.type))return;if(commandBusy){enqueueAction(data,dragRect,entryConfirmed);return;}commandBusy=true;globalThis.RunaPresentation?.notify('interaction');const commandGeneration=visualGeneration,transfers=[];try{
+ if(['endPrep','ready'].includes(data.type)){unlockAudio();if(typeof RunaTableAudio!=='undefined'){if(audioContext?.state==='running')RunaTableAudio.turn(audioContext);else void audioContext?.resume().then(()=>RunaTableAudio.turn(audioContext)).catch(()=>{});}}
+ if(typeof chooseSharedLane==='function'){data=await chooseSharedLane(data);if(!data)return;}
+ const movingId=data.cardId||(data.type==='assign'?seat()?.formation[data.lane]:null),source=tableCard(movingId),movedCard=[...(seat()?.hand||[]),...(seat()?.reserve||[]),...(seat()?.study?.book?.cards||[]),...(state?.players.flatMap(p=>p.prepared?.map(item=>item.card).filter(Boolean)||[])||[])].find(c=>c.uid===movingId);
+ const grimoireRect=globalThis.RunaMarikaEffects?.departure(movingId),transfer=(source||grimoireRect&&movedCard)&&['play','assign','emanate','unprepare','movePrepared'].includes(data.type)?{uid:movingId,copy:!source||data.type==='unprepare'&&movedCard?cardEl(movedCard):cloneVisual(source),rect:dragRect||grimoireRect||source.getBoundingClientRect(),card:movedCard}:null;const opening=data.type==='confirmMulligan'?[...$('mulligan-cards').querySelectorAll('.card')].map(node=>({uid:node.dataset.uid,copy:cloneVisual(node),rect:node.getBoundingClientRect()})):null;const returning=data.type==='mulligan'?data.cardIds.map(uid=>{const node=tableCard(uid);return node?{uid,copy:cloneVisual(node),rect:node.getBoundingClientRect()}:null;}).filter(Boolean):null;if(data.type==='emanate')promptedEmanations.delete(data.cardId);if(transfer){transfer.ticket=RunaCardArrivals.begin('transfer',{uid:transfer.uid,moving:true});if(!transfer.ticket){transfer.copy.remove();return;}transfers.push(transfer);}
+ const next=await api(`/api/rooms/${state.code}/act`,data);if(commandGeneration!==visualGeneration)return;if(next.left){sessionStorage.removeItem('runamarca-tutorial-seat');state=null;selected=null;visualBooted=false;lastRevision=-1;history.replaceState(null,'',gameBase);render();return;}if(returning?.length){const event=next.events?.find(e=>e.type==='mulligan'&&e.playerId===state.you&&e.id>(state.eventId||0));if(event)mulliganDepartures.set(event.id,returning);}trackArrivals(state,next);serverClockOffset=Date.now()-next.serverNow;state=next;if(opening?.length)for(const item of opening){item.ticket=RunaCardArrivals.begin('transfer',{uid:item.uid,moving:true});transfers.push(item);}render();if(opening?.length)await animateOpeningToHand(opening);if(transfer)await animateTransfer(transfer);}catch(e){if(commandGeneration===visualGeneration)err(e);}finally{for(const item of transfers){item.copy?.remove();if(RunaCardArrivals.finish(item.ticket))finishVisual(item.uid);}commandBusy=false;globalThis.RunaPresentation?.notify('interaction');if(commandGeneration!==visualGeneration){actionQueue.length=0;updateQueuedStyle();return;}drainActionQueue();queueMicrotask(promptApprenticeTarget);if(['play','emanate'].includes(data.type)&&data.cardId){const source=seat()?.reserve.find(c=>c.uid===data.cardId);if(seat()?.emanation.includes(data.cardId)&&source?.effects?.some(e=>e.op==='lane_keyword_aura'||e.op==='lane_health_aura'&&e.choose_lane))showPressurePicker(source);}if(data.type==='assign'&&data.cardId){const card=seat()?.reserve.find(c=>c.uid===data.cardId);if(card?.effects?.some(e=>e.op==='monk_choice')&&!card.monkMode)showMonkPicker(card);else if(card?.effects?.some(e=>['optional_reveal_attack','force_opponent'].includes(e.op)))showRupturaPicker(card);else if(card?.effects?.some(e=>e.op==='paired_seals')&&!card.sealChoices)showSealPicker(card);else if(card?.effects?.some(e=>e.op==='combat_protocol')&&!card.protocolMode)showProtocolPicker(card);else if(card?.effects?.some(e=>e.op==='taunt')&&seat().taunts?.[card.uid]===undefined)showTauntPicker(card);}}}
+async function refresh(){
+ const saved=sessionStorage.getItem('runamarca-tutorial-seat');
+ if(!saved){connectionLost=false;globalThis.RunaConnectionStatus?.reset();return;}
+ if(refreshing||commandBusy||activeDrag||globalThis.RunaTutorial?.transitioning)return;
+ refreshing=true;let receivedState=false;
+ try{
+  const info=JSON.parse(saved),next=await api(`/api/rooms/${info.code}/state?revision=${lastRevision}&wait=1`,null,'GET');receivedState=true;
+  if(sessionStorage.getItem('runamarca-tutorial-seat')!==saved||commandBusy||activeDrag||globalThis.RunaTutorial?.transitioning)return;
+  connectionLost=false;globalThis.RunaConnectionStatus?.restored(saved);if(!next)return;
+  serverClockOffset=Date.now()-next.serverNow;if(next.revision>lastRevision||!state){trackArrivals(state,next);state=next;render();}
+ }catch(e){
+  // A late failure belongs to the old seat, just like a late successful response.
+  if(sessionStorage.getItem('runamarca-tutorial-seat')!==saved||globalThis.RunaTutorial?.transitioning)return;
+  if(receivedState){err(e);return;}
+  if(['SEAT_INVALID','ROOM_NOT_FOUND','TUTORIAL_CHANGED'].includes(e.code)){sessionStorage.removeItem('runamarca-tutorial-seat');state=null;render();err(e);}
+  else if(e.code!=='ACCESS_REQUIRED'){
+   if(!connectionLost){cancelPendingEntryPlacement();connectionLost=true;if(!globalThis.RunaConnectionStatus)err(e.code==='ACCOUNT_REQUIRED'?e:Error('Conexão interrompida. Tentando reconectar sem perder sua vaga.'));}
+   globalThis.RunaConnectionStatus?.lost(saved,e.code==='ACCOUNT_REQUIRED'?e.message:null);
+  }
+ }finally{refreshing=false;}
+}
+// Formation addendum B (review): 'Encerrar' and the wait share one box. Both labels sit in the same grid cell and the
+// one not in use is hidden (and out of the accessible name), so the box is sized by the longer label in both states
+// and swapping the text never moves or resizes it. The wait is aria-disabled (not disabled), so a keyboard user keeps
+// the focus on the slot after confirming and hears the state.
+function formationSlot(b,current){b.classList.add('formation-slot');b.replaceChildren(...['Encerrar','Aguardando o rival'].map(t=>{const s=document.createElement('span');s.textContent=t;if(t===current)s.className='slot-text';else{s.className='slot-ghost';s.setAttribute('aria-hidden','true');}return s;}));if(current!=='Encerrar'){b.setAttribute('aria-label','Formação confirmada. Aguardando o rival');b.setAttribute('aria-disabled','true');}return b;}
+function button(label,handler,klass='',disabled=false){const b=document.createElement('button');b.type='button';b.textContent=label;b.className=klass;b.disabled=disabled;b.onclick=handler;return b;}
+function text(parent,tag,value,klass){const el=document.createElement(tag);el.textContent=value;if(klass)el.className=klass;parent.append(el);return el;}
+function manaAffinity(value){return ['ruptura','forja','fluxo'].includes(value)?value:'fluxo';}
+function affordable(card){const p=seat();if(!p||state.spectator||state.phase!=='prep'||state.turn!==p.id||!p.hand?.some(c=>c.uid===card?.uid)&&!p.study?.book?.instantIds.includes(card?.uid))return false;if(p.study?.book?.instantIds.includes(card?.uid))return true;const sources=p.emanation.filter(uid=>p.reserve.find(c=>c.uid===uid)?.modelId==='M04').length;const cost=card.type!=='creature'&&card.type!=='equipment'&&sources&&!p.discountUsed&&!p.directPlayed?Math.max(Math.min(1,Math.max(0,card.cost-(p.study?.discount?1:0))),card.cost-(p.study?.discount?1:0)-sources):Math.max(0,card.cost-(p.study?.discount&&!['creature','equipment'].includes(card.type)?1:0));return p.mana>=cost;}
+const cardFaceCache=new Map();
+function paintCardFace(canvas,design,combat,flat){
+ const key=JSON.stringify([design,combat,flat,canvas.width,canvas.height]);let entry=cardFaceCache.get(key);
+ if(!entry){
+  const frame=document.createElement('canvas');frame.width=canvas.width;frame.height=canvas.height;frame.getContext('2d').imageSmoothingQuality='high';entry={frame,ready:false};cardFaceCache.set(key,entry);
+  const render=combat?RunaCardVisual.drawCombat:RunaCardVisual.drawCard;
+  entry.promise=(!combat&&flat?new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>{frame.getContext('2d').drawImage(image,0,0,frame.width,frame.height);resolve();};image.onerror=reject;image.src=design.art;}):render(frame,design,{assets:'criador/',hideStats:true,flat})).then(()=>{entry.ready=true;}).catch(error=>{cardFaceCache.delete(key);console.error(error);});
+  if(cardFaceCache.size>32)cardFaceCache.delete(cardFaceCache.keys().next().value);
+ }
+ const paint=()=>canvas.getContext('2d').drawImage(entry.frame,0,0);
+ if(entry.ready){paint();return Promise.resolve();}return entry.promise.then(paint);
+}
+// V1: the hover and detail faces are read up close. The shared 900×1260 master stays as it is (hand, board,
+// flights and the hybrid samples copy it), but these two surfaces are redrawn by drawCard (vector) at the
+// displayed size, instead of letting the browser shrink the master 2–4× with bilinear filtering, which aliased
+// the rules text, frame and icons. A 1:1 bitmap is only sharp when its box is a whole number of device pixels:
+// the browser already snaps the box origin, but a fractional size (379.5 px in the centred dialog, the hybrid
+// `zoom`) made it rescale the bitmap and blur it. So the face (and the health overlay) gets an exact device-pixel
+// size. Inside the hybrid hover's CSS `zoom` (k≠1) the origin is not snapped either, so it is moved onto the grid.
+// That exact mapping only holds for a whole devicePixelRatio; at 0.8/0.9/1.25 (browser zoom, Windows scaling) a
+// 1:1 bitmap still landed between pixels and blurred, so there the face is drawn at 2× and left to fill its box.
+// The new bitmap replaces the old one only once it is ready.
+function sharpenZoomFace(el,canvas,design,combat,flat){
+ if(typeof ResizeObserver==='undefined')return;let ticket=0,pending=null,frame=0;
+ const fit=()=>{if(!el.isConnected){observer.disconnect();zoomWatch?.disconnect();return;}const layers=[canvas,el.querySelector('.health-liquid')].filter(Boolean);for(const n of layers)n.style.width=n.style.height=n.style.translate='';
+  // Size comes from layout (computed size × the CSS zoom of the ancestors), not from getBoundingClientRect: the
+  // hybrid hover enters with a scale animation, and a size read mid-animation stayed stuck smaller than the face.
+  // The origin does need the rect, so the fit is repeated once the card's own animations have finished.
+  let k=1;for(let n=canvas;n;n=n.parentElement){const z=parseFloat(getComputedStyle(n).zoom);if(z>0)k*=z;}
+  const cs=getComputedStyle(canvas),r=canvas.getBoundingClientRect(),dpr=devicePixelRatio||1,exact=Math.abs(dpr-Math.round(dpr))<1e-3,w=Math.round(parseFloat(cs.width)*k*dpr*(exact?1:2)),h=Math.round(parseFloat(cs.height)*k*dpr*(exact?1:2));if(!w||!h)return;
+  const moving=el.getAnimations?.().filter(a=>a.playState==='running')||[];if(moving.length)Promise.all(moving.map(a=>a.finished.catch(()=>{}))).then(()=>{if(el.isConnected)fit();});
+  const shift=exact&&Math.abs(k-1)>1e-3?`${(Math.round(r.left*dpr)/dpr-r.left)/k}px ${(Math.round(r.top*dpr)/dpr-r.top)/k}px`:'';
+  if(exact)for(const n of layers){n.style.width=w/dpr/k+'px';n.style.height=h/dpr/k+'px';n.style.translate=shift;}
+  // Every new size claims the ticket first, so a slower redraw requested for an earlier size (400 → 500 → 400)
+  // can no longer land after the box went back to the bitmap it already has. The same size already in flight
+  // is not requested again.
+  if(pending&&pending.w===w&&pending.h===h)return;const own=++ticket;pending=null;if(canvas.width===w&&canvas.height===h)return;pending={w,h};const next=document.createElement('canvas');next.width=w;next.height=h;
+  paintCardFace(next,design,combat,flat).then(()=>{if(own!==ticket||!el.isConnected||!canvas.isConnected)return;pending=null;canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(next,0,0);
+   const heart=el.querySelector('.health-liquid');if(heart){heart.width=w;heart.height=h;RunaCardVisual.drawLiquidHeart(heart,heart.fillRatio??1,combat);}});};
+ const observer=new ResizeObserver(fit);try{observer.observe(el,{box:'device-pixel-content-box'});}catch{observer.observe(el);}
+ // The hybrid hover rescales the face with a CSS `zoom` (--hybrid-hover-zoom on #hover-preview); that changes the
+ // shown size without a ResizeObserver notification. Only a change of that value re-checks the size (the holder's
+ // style also changes on every mouse move, which must not force a layout per frame).
+ const holder=document.getElementById('hover-preview');let lastZoom=holder?.style.getPropertyValue('--hybrid-hover-zoom');
+ const zoomWatch=holder&&new MutationObserver(()=>{const z=holder.style.getPropertyValue('--hybrid-hover-zoom');if(z===lastZoom)return;lastZoom=z;if(!frame)frame=requestAnimationFrame(()=>{frame=0;fit();});});zoomWatch?.observe(holder,{attributes:true,attributeFilter:['style']});
+}
+// V1 (native table): hand and board faces are shown 64–120 px wide while the master is 900 px, and the browser
+// shrank it 8–14× with bilinear filtering (pixelated frame, title, icons and art). As on the hybrid table
+// (hybrid/hand.js), a display sample at 2× the shown device pixels is drawn from the master with high-quality
+// smoothing and shown in its place. The master stays the `.card-art-canvas` that flights, clones and the Platinum
+// entry copy. The health overlay is redrawn (vector) at the same size. The hybrid route keeps its own samples.
+// render() rebuilds the card elements on every update, so finished samples are cached by design and size and
+// later copies are 1:1 (the high-quality reduction runs once per face and size, not once per render).
+// A card may be built off-DOM and finish its face before it is shown (the unprepare flight copy waits for the
+// server): the master stays visible until the sample has a real size and is painted, a detached card keeps its
+// observer until it enters the page, and the observer is released once the card leaves the page after being on it.
+// A flight that grows (animateTransfer scales its layout size up by transform, e.g. unprepare: 30 → 119 px) shows the
+// 900 px master instead: the sample is sized for the layout box and would be magnified (see .flight-grows).
+const nativeSampleCache=new Map();
+function sampleNativeFace(el,canvas,design,combat,flat){
+ if(document.body.classList.contains('hybrid-prototype')||typeof ResizeObserver==='undefined')return;
+ const sample=document.createElement('canvas');sample.className='native-face-sample';sample.setAttribute('aria-hidden','true');canvas.after(sample);let ready=false,attached=false;
+ const paint=()=>{if(!el.isConnected){if(attached)observer.disconnect();return;}attached=true;if(!ready||!canvas.clientWidth||!canvas.clientHeight||el.closest('.flight-grows'))return;const ratio=Math.min(4,(devicePixelRatio||1)*2),w=Math.max(1,Math.round(canvas.clientWidth*ratio)),h=Math.max(1,Math.round(canvas.clientHeight*ratio));
+  if(sample.width!==w||sample.height!==h){sample.width=w;sample.height=h;}const ink=sample.getContext('2d'),key=JSON.stringify([design,combat,flat,w,h]),cached=nativeSampleCache.get(key);ink.clearRect(0,0,w,h);
+  if(cached)ink.drawImage(cached,0,0);else{ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';ink.drawImage(canvas,0,0,w,h);const copy=document.createElement('canvas');copy.width=w;copy.height=h;copy.getContext('2d').drawImage(sample,0,0);nativeSampleCache.set(key,copy);if(nativeSampleCache.size>96)nativeSampleCache.delete(nativeSampleCache.keys().next().value);}
+  const heart=el.querySelector('.health-liquid');if(heart&&(heart.width!==w||heart.height!==h)){heart.width=w;heart.height=h;RunaCardVisual.drawLiquidHeart(heart,heart.fillRatio??1,combat);}el.classList.add('native-sampled');};
+ const observer=new ResizeObserver(paint);observer.observe(canvas);Promise.resolve(el.visualReady).then(()=>{ready=true;paint();},()=>{});
+}
+function silenceIcon(){
+ const icon=document.createElement('span');icon.className='silence-icon';icon.setAttribute('aria-hidden','true');
+ icon.innerHTML='<img src="silence-hush.svg" alt="">';
+ return icon;
+}
+function cardEl(card,{mini=false,back=false,active=false,combat=false,zoom=false,history=false}={}){
+  if(card.type==='equipment'&&typeof RunaWeapons!=='undefined')card={...card,image:card.modelId==='armor-weapon'&&card.image?card.image:RunaWeapons.imageForCost(card.cost)||card.image};
+  const isCombatant=['creature','patron'].includes(card.type);
+  const shownText=card.silenced?'Silenciado':card.text;
+  const el=document.createElement('button');el.type='button';el.className=`card${mini?' mini':''}${back?' back':''}${active?' selected':''}${card?.imageKind==='card'?' has-art':''}`;el.dataset.uid=card?.uid||'';if(!back&&affordable(card))el.classList.add('payable');if(!history&&!zoom&&(cardInFlight(card?.uid)||visuallyDefeated.has(card?.uid)))el.style.visibility='hidden';if(isCombatant&&card.damage>0)el.classList.add('wounded');el.setAttribute('aria-label',back?'Magia oculta':`${card.name} · custo ${card.cost} · ${shownText||''}`);
+  if(!back){el.classList.add('styled-card','energy-'+manaAffinity(card.affinity));if(combat)el.classList.add('combat-card');if(card.image){const image=document.createElement('img');image.src=card.image;image.alt='';el.append(image);}else text(el,'div',isCombatant?'✦':'◈','fallback');text(el,'div',card.name,'card-title');text(el,'span',String(card.cost??0),`mana-gem mana-${manaAffinity(card.affinity)}`);if(isCombatant){const ns='http://www.w3.org/2000/svg',stats=document.createElementNS(ns,'svg');stats.classList.add('card-stats-svg');stats.setAttribute('viewBox',combat?'0 0 900 820':'0 0 900 1260');stats.setAttribute('aria-hidden','true');el.append(stats);const attack=displayedAttack.get(card.uid)??card.effectiveAttack??Math.max(0,card.attack+(card.attackMod||0)),health=displayedHealth.get(card.uid)??Math.max(0,card.health-card.damage);const baseAttack=card.baseStats?.attack??card.attack;el.dataset.baseAttack=baseAttack;for(const [value,x,y,klass] of [[attack,83.3,combat?739:1172,'attack-value'+(attack>baseAttack?' attack-buffed':'')],[health,826,combat?744.12:1177.12,'health-value'+(health<card.health?' health-damaged':'')]]){const number=document.createElementNS(ns,'text');number.setAttribute('x',x);number.setAttribute('y',y);number.setAttribute('text-anchor','middle');number.setAttribute('dominant-baseline','central');number.setAttribute('class',klass);number.textContent=String(value);stats.append(number);}}if(card.sleep){el.classList.add('sleeping-card');text(el,'span','Zzz','sleep-badge');el.title='Adormecida: não ataca nem pode sair desta posição.';}if(card.rarity)text(el,'span',card.rarity,'rarity');}
+  if(!back){const canvas=document.createElement('canvas');canvas.width=900;canvas.height=combat?820:1260;canvas.className='card-art-canvas';el.prepend(canvas);const design={reader:zoom,name:card.name,rarity:card.rarity,kind:card.type==='equipment'?'equipment':isCombatant?'creature':'spell',rules:shownText,highlightKeywords:card.highlightKeywords,spellModesLabel:!isCombatant&&card.type!=='equipment'?RunaCardVisual.spellModesLabel(card):undefined,subtype:card.subtype||'',themeEnergy:manaAffinity(card.affinity),art:card.image,artFit:card.artFit||(card.type==='equipment'?'contain':undefined),artZoom:card.artZoom||100,artX:card.artX??50,artY:card.artY??(card.type==='equipment'?50:0),fontName:card.fontName,fontSubtype:card.fontSubtype,fontRules:card.fontRules,autoFitRules:true,generic:card.cost,power:card.attack,health:card.health,durability:card.durability};el.visualReady=paintCardFace(canvas,design,combat,card.imageKind==='card');el.visualFaceKey=JSON.stringify([design,combat,card.imageKind]);el.repaintVisualFace=target=>{if(!combat&&card.imageKind==='card'){const ink=target.getContext('2d');ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';ink.drawImage(canvas,0,0,target.width,target.height);return Promise.resolve();}return (combat?RunaCardVisual.drawCombat:RunaCardVisual.drawCard)(target,design,{assets:'criador/',hideStats:true,flat:card.imageKind==='card'});};if(zoom)sharpenZoomFace(el,canvas,design,combat,card.imageKind==='card');else sampleNativeFace(el,canvas,design,combat,card.imageKind==='card');if(zoom)el.dataset.liquidScale='1';if(isCombatant)updateLiquidHeart(el,displayedHealth.get(card.uid)??Math.max(0,card.health-card.damage),card.health);if(card.revealRequested||card.revealPaid){const ef=card.effects.find(e=>e.op==='optional_reveal_attack'),badge=text(el,'span',`Revelação +${ef.amount}`,'reveal-paid-badge');badge.title=card.revealPaid?`${ef.cost} Éter pago na Revelação.`:`Pagamento de ${ef.cost} Éter pendente até a Revelação.`;}}
+  el.onclick=ev=>{if(state?.phase==='formation'&&seat()?.formation.includes(card.uid)&&card.effects?.some(e=>e.op==='monk_choice')&&!seat().ready){showMonkPicker(card);return;}if(state?.phase==='formation'&&seat()?.formation.includes(card.uid)&&card.effects?.some(e=>e.op==='paired_seals')&&!seat().ready&&!state.seals?.some(s=>s.sourceId===card.uid)){showSealPicker(card);return;}if(state?.phase==='formation'&&seat()?.formation.includes(card.uid)&&card.effects?.some(e=>['optional_reveal_attack','force_opponent'].includes(e.op))&&!seat().ready){showRupturaPicker(card);return;}if(state?.phase==='formation'&&seat()?.formation.includes(card.uid)&&card.effects?.some(e=>e.op==='combat_protocol')&&!seat().ready){showProtocolPicker(card);return;}if(state?.phase==='formation'&&seat()?.formation.includes(card.uid)&&card.effects?.some(e=>e.op==='taunt')&&!seat().ready){showTauntPicker(card);return;}if(back||Date.now()<suppressClickUntil)return;if(state?.phase==='mulligan'&&seat()?.hand?.some(c=>c.uid===card.uid)){toggleMulliganCard(card.uid);return;}if(state?.phase==='prep'&&state.turn===state.you&&seat()?.emanation.includes(card.uid)){showEmanationMenu(card);return;}if(state?.phase==='prep'&&state.turn===state.you&&!state.spectator){if(seat()?.hand?.some(c=>c.uid===card.uid)&&card.type==='creature'){/* 12/11/2026 (dono): criatura da mão vai para a reserva só arrastando; o clique do mouse não abre mais o menu de entrada. Pelo teclado (Enter/Espaço, ev.detail 0) o menu continua, para quem não usa mouse. */if(ev?.detail>0)return;showCreaturePlacementMenu(card);return;}if(seat()?.hand?.some(c=>c.uid===card.uid)&&card.type!=='creature'){chooseSpellTarget(card);return;}if(seat()?.reserve?.some(c=>c.uid===card.uid)&&JSON.stringify(card.effects||[]).includes('emanat')){showEmanationMenu(card);return;}}if(el.classList.contains('reserve-card'))showCard(card);};el.ondblclick=null;
+  if(!back){el.onmouseenter=event=>{clearTimeout(hoverEnterTimer);const point={clientX:event.clientX,clientY:event.clientY};hoverEnterTimer=setTimeout(()=>showHover(card,point),75);};el.onmousemove=moveHover;el.onmouseleave=hideHover;el.onfocus=()=>{const r=el.getBoundingClientRect();showHover(card,{clientX:r.right,clientY:r.top+r.height/2});};el.onblur=hideHover;}
+  if(!back&&card.silenced){el.classList.add('silenced-card');el.append(silenceIcon());const badge=text(el,'span','Silenciado','silenced-badge');badge.title=keywordGlossary.find(([,name])=>name==='Silêncio')[2];}
+  if(!back&&card.effects?.some(e=>e.op==='first_spell_damage')&&(state?.players||[]).some(p=>p.reserve.some(c=>c.uid===card.uid))){const owner=state.players.find(p=>p.id===card.owner),badge=text(el,'span','✧','apprentice-mark-badge');badge.title=!owner?.emanation?.includes(card.uid)?'Fora da Emanação: efeito inativo':owner.firstSpellUsedThisRound?'Primeira magia da rodada já jogada':'Emanação — aguarda a primeira magia da rodada';}
+  if(!back&&card.effects?.some(e=>e.op==='bound_spell_damage')&&(state?.players||[]).some(p=>p.reserve.some(c=>c.uid===card.uid))){const marked=state.players.flatMap(p=>p.reserve).find(c=>c.uid===card.apprenticeTargetId);const badge=text(el,'span','✧','apprentice-mark-badge');badge.title=card.apprenticeSpellUsed?'Efeito utilizado':marked?'Alvo: '+marked.name:'Aguardando novo alvo';el.setAttribute('aria-label',el.getAttribute('aria-label')+' · '+badge.title);}
+  if(!back&&typeof addEquipmentVisual==='function')addEquipmentVisual(el,card);
+  if(!back&&!zoom&&!history){const pick=()=>{unlockAudio();sound("card_select",0,{to:el});};el.addEventListener("pointerdown",e=>{if(e.button===0)pick();});el.addEventListener("keydown",e=>{if(!e.repeat&&(e.key==="Enter"||e.key===" "))pick();});}
+  globalThis.RunaPresentation?.notify('card-created',{card,node:el,back});return el;
+}
+let narrativeTimer=null,hoverEnterTimer=null,hoverFrame=0,hoverSize=null,hoverPoint=null;
+const keywordGlossary=window.RunaRulesGlossary;
+function showHover(card,event){const draw=()=>{
+ if(globalThis.RunaTargeting?.active())return;
+ if(activeDrag){hideHover();return;}
+ const holder=$('hover-preview'),host=$('target-picker').open?$('target-picker'):document.body;if(holder.parentElement!==host)host.append(holder);if(hoverUid!==card.uid){
+  clearTimeout(narrativeTimer);hoverUid=card.uid;holder.replaceChildren();
+  const picture=card.type==='patron'?document.createElement('div'):cardEl(card,{zoom:true});if(card.type==='patron'){picture.className='patron-large';if(card.image){const image=document.createElement('img');image.src=card.image;image.alt=card.name;picture.append(image);}text(picture,'strong',`${card.name} · ${card.hp}/${card.maxHp}`);}else picture.classList.add('big');picture.onclick=picture.ondblclick=picture.onmouseenter=picture.onmousemove=picture.onmouseleave=picture.onfocus=picture.onblur=null;
+  const terms=keywordGlossary.filter(([pattern])=>pattern.test((card.text||'')+' '+(!['creature','equipment','patron'].includes(card.type)?RunaCardVisual.spellModesLabel(card):''))),narrative=String(card.narrative||'').trim();
+  if(narrative){const side=document.createElement('aside');side.className='hover-context narrative-context';const dream=document.createElement('div');dream.className='hover-dream';dream.textContent=narrative;side.append(dream);holder.append(side);narrativeTimer=setTimeout(()=>{if(hoverUid===card.uid&&!holder.hidden)dream.classList.add('revealed');},900);}
+  holder.append(picture);
+  if(terms.length||card.text){const side=document.createElement('aside');side.className='hover-context mechanics-context';const keys=document.createElement('div');keys.className='hover-keywords';if(card.text){text(keys,'p',card.silenced?'Silenciado':card.text,'reading-rules');}for(const [,name,definition,shortDefinition] of terms){const item=document.createElement('div');text(item,'strong',name);text(item,'p',shortDefinition||definition);keys.append(item);}side.append(keys);holder.append(side);}
+ }holder.hidden=false;hoverSize={w:holder.offsetWidth||245,h:holder.offsetHeight||380};moveHover(event);
+};return globalThis.RunaPresentation?RunaPresentation.play('showHover',{card,event},draw):draw();}
+function moveHover(event){const draw=()=>{const holder=$('hover-preview');if(activeDrag||holder.hidden)return;hoverPoint={x:event.clientX,y:event.clientY};if(hoverFrame)return;hoverFrame=requestAnimationFrame(()=>{hoverFrame=0;if(holder.hidden||!hoverPoint)return;const {w,h}=hoverSize||{w:245,h:380},{x,y}=hoverPoint;holder.style.left='0px';holder.style.top='0px';holder.style.transform=`translate3d(${Math.max(10,Math.min(innerWidth-w-10,x+(x>innerWidth*.68?-w-26:22)))}px,${Math.max(70,Math.min(innerHeight-h-10,y-h*.38))}px,0)`;});};return globalThis.RunaPresentation?RunaPresentation.play('moveHover',{event},draw):draw();}
+function hideHover(event){const draw=()=>{clearTimeout(narrativeTimer);clearTimeout(hoverEnterTimer);cancelAnimationFrame(hoverFrame);hoverFrame=0;narrativeTimer=null;const holder=$('hover-preview');holder.hidden=true;hoverUid=null;hoverSize=null;};return globalThis.RunaPresentation?RunaPresentation.play('hideHover',{event},draw):draw();}
+function showCard(card){hideHover();const d=$('card-detail');const area=$('detail-content');area.replaceChildren();const picture=cardEl(card,{zoom:true,history:true});picture.classList.add('big');picture.onclick=picture.ondblclick=picture.onmouseenter=picture.onmousemove=picture.onmouseleave=null;area.append(picture);const body=document.createElement('div');text(body,'h2',card.name);text(body,'p',card.type==='equipment'?`Equipamento · +${card.attack} ataque · ${card.durability}/${card.maxDurability} durabilidade · custo ${card.cost}`:card.type==='creature'?`Criatura · ${card.attack}/${card.health} · custo ${card.cost}`:`Magia · ${RunaCardVisual.spellModesLabel(card)} · custo ${card.cost}`);text(body,'p',card.silenced?'Silenciado':card.text||'Sem texto.');area.append(body);d.showModal();}
+function selectedCard(){if(!state)return null;return [...(seat()?.hand||[]),...(seat()?.reserve||[]),...(rival()?.reserve||[]),...state.players.flatMap(p=>p.prepared.filter(item=>item.caster===state.you&&item.card).map(item=>item.card))].find(c=>c.uid===selected);}
+function role(card){const ef=Array.isArray(card.effects)?card.effects[0]:card.effects;if(ef?.target==='any_creature')return 'any-creature';if(ef?.target==='chosen_allied_creature')return 'friendly';if(ef?.target==='any')return 'any';if(['armor_draw','draw','area_stat_buff','graveyard_stat_buff','tradition_summon','combat_area_attack'].includes(ef?.op))return 'self';if(['area_damage','area_attack_modifier'].includes(ef?.op))return 'enemy-board';if(ef?.op==='choose_one')return 'friendly-or-patron';if(['heal','attack_modifier','stat_buff','barrier'].includes(ef?.op)&&ef?.target==='chosen_allied_creature')return 'friendly';return 'enemy';}
+function matchSeat(player,position){if(!player)return;const self=position==='self';const node=$(`${position}-head`);node.replaceChildren();const portrait=document.createElement('div');portrait.className='patron-card';portrait.dataset.owner=player.id;if(player.patron?.image){const image=document.createElement('img');image.src=player.patron.image;image.alt=`Retrato de ${player.patron.name}`;portrait.append(image);}else text(portrait,'span',avatar(player));portrait.title='Ver Patrono';portrait.onclick=()=>{if(player.patron)showPatron(player.patron);};node.append(portrait);const info=document.createElement('div');info.className='patron-info';text(info,'small',state.spectator?'PATRONO':self?'SEU PATRONO':'PATRONO RIVAL');text(info,'strong',player.patron?.name||'Patrono');text(info,'span',player.name,'muted');text(info,'span',`${player.deckCount} no deck · ${player.handCount} na mão`,'muted');node.append(info);const stats=document.createElement('div');stats.className='patron-stats';if(player.patron){const affinity=manaAffinity(player.patron.affinity);const mana=text(stats,'span','',`resource mana-resource mana-${affinity}`);const icon=document.createElement('img');icon.src=`energy-icons/${affinity}.png`;icon.alt='';mana.append(icon);text(mana,'span',`${player.mana}/${player.manaMax} ${affinity}`);text(stats,'span',`${displayedPatronHealth.get(player.id)??player.patron.hp}/${player.patron.maxHp} ♥`,'hp');}node.append(stats);const deck=$(position+'-deck')||document.createElement('div');deck.replaceChildren();deck.id=position+'-deck';deck.className='deck-stack';deck.tabIndex=0;deck.dataset.empty=String(player.deckCount===0);deck.dataset.count=String(player.deckCount);deck.style.setProperty('--stack-depth',Math.min(14,player.deckCount*.45)+'px');deck.title=player.deckCount===0?'Baralho vazio — próxima compra causa fadiga':`${player.deckCount} ${player.deckCount===1?'carta restante':'cartas restantes'} no baralho`;deck.setAttribute('aria-label',deck.title);const back=document.createElement('img');back.src='card-back.png';back.alt=`Baralho: ${player.deckCount} carta(s) restantes`;deck.append(back);const counter=document.createElement('span');counter.className='deck-count-tooltip';counter.textContent=deck.title;deck.append(counter);const mount=$(position+'-deck-mount');if(mount){if(deck.parentNode!==mount)mount.replaceChildren(deck);}else node.append(deck);if(typeof decorateLocalPatron==='function')decorateLocalPatron(player,position);}
+function showPatron(patron){const d=$('card-detail'),area=$('detail-content');area.replaceChildren();const card=document.createElement('div');card.className='patron-large';if(patron.image){const image=document.createElement('img');image.src=patron.image;image.alt='';card.append(image);}text(card,'strong',patron.name);area.append(card);const body=document.createElement('div');text(body,'h2',patron.name);const energy=manaAffinity(patron.affinity);text(body,'p',`Patrono da energia ${energy.charAt(0).toUpperCase()+energy.slice(1)}`,'patron-energy');text(body,'p',`${patron.hp}/${patron.maxHp} de vida`);/* S4: authored Patron descriptions pending from the owner (editorial). */area.append(body);d.showModal();}
+function deckPack(deck){
+ const chosen=seat()?.deckId===deck.id,box=document.createElement('article');box.className='deck-option deck-pack '+deck.affinity+(chosen?' chosen':'');box.dataset.deckId=deck.id;
+ const wrap=document.createElement('div');wrap.className='deck-pack-wrap';
+ const patron=document.createElement('div');patron.className='deck-pack-patron';const portrait=document.createElement('img');const custom=importedArt[deck.id]?.[deck.patron.id];portrait.src=(typeof custom==='string'?custom:custom?.image)||({forja:'patrons/bigorna-desperta-nova.png',fluxo:'patrons/olho-dos-pactos-novo.png',ruptura:'patrons/dom-maioral.png'})[deck.affinity];portrait.alt=deck.patron.name;patron.append(portrait);text(patron,'strong',deck.patron.name);wrap.append(patron);
+ const emblem=document.createElementNS('http://www.w3.org/2000/svg','svg');emblem.setAttribute('viewBox','0 0 100 100');emblem.setAttribute('aria-hidden','true');emblem.classList.add('deck-pack-emblem');const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d','M50 3 60 36 96 50 60 64 50 97 40 64 4 50 40 36ZM6 50Q50 20 94 50Q50 80 6 50Z');path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','2');emblem.append(path);wrap.append(emblem);
+ const ribbon=document.createElement('div');ribbon.className='deck-pack-ribbon';text(ribbon,'h2',deck.name);text(ribbon,'span',deck.archetype,'deck-archetype');wrap.append(ribbon);
+ const foot=document.createElement('div');foot.className='deck-pack-foot';const energy=document.createElement('div');energy.className='deck-pack-energy';const icon=document.createElement('img');icon.src='energy-icons/'+deck.affinity+'.png';icon.alt='';energy.append(icon);text(energy,'strong',deck.affinity[0].toUpperCase()+deck.affinity.slice(1));foot.append(energy);wrap.append(foot);if(chosen)text(wrap,'span','✓ Escolhido','deck-pack-selected');box.append(wrap);
+ const content=document.createElement('div');content.className='deck-content';text(content,'p',deck.plan,'deck-plan');const choose=button(chosen?'Desfazer escolha':'Escolher este deck',()=>command({type:'deck',deckId:chosen?null:deck.id,art:importedArt[deck.id]||{}}),'primary',false);choose.setAttribute('aria-label',(chosen?'Deck escolhido: ':'Escolher deck: ')+deck.name);content.append(choose);box.append(content);return box;
+}
+function renderGate(){
+  $('welcome').hidden=Boolean(state);$('lobby').hidden=!state||state.phase!=='lobby';$('mulligan-overlay').hidden=!state||state.phase!=='mulligan'||Boolean(seat()?.mulliganReady)||Boolean(typeof patronIntroActive!=='undefined'&&patronIntroActive);$('mulligan-overlay').classList.toggle('opening-await',openingAwait!==null&&openingAwait===visualGeneration&&state?.phase==='mulligan');$('game').hidden=!state;$('game').classList.toggle('is-obscured',Boolean(state&&(state.phase==='lobby'||state.phase==='mulligan'&&!seat()?.mulliganReady)));
+  $('room-name').textContent=state?`SALA ${state.code}`:'';$('spectators-game').hidden=!state;$('rules-toggle').hidden=!state;$('copy-link').hidden=!state;$('leave-room').hidden=!state;$('change-role').hidden=!state;$('change-role').textContent=state?.spectator?'Ocupar vaga':'Arquibancada';$('change-role').disabled=Boolean(state?.spectator&&(state.phase!=='lobby'||state.players.length>=2));
+  $('phase-label').textContent=state?`${({lobby:'SALA',coin:'MOEDA',mulligan:'MÃO INICIAL',prep:'PREPARAÇÃO',vote:'DECISÃO',formation:'FORMAÇÃO',forging:'FORJA',resolving:'COMBATE',finished:'FIM'})[state.phase]||state.phase.toUpperCase()} · RODADA ${state.round}`:'';
+  if(!state){$('entry-title').textContent=isInvitation()?'Entre na sala convidada':'Abra a mesa';$('entry-note').textContent=isInvitation()?'Informe seu nome. Se as duas vagas estiverem ocupadas, você entra na arquibancada.':'Jogue em duas abas ou convide outra pessoa para entrar na sala.';$('create').hidden=isInvitation();$('join').textContent=isInvitation()?'Entrar na sala':'Entrar com código';$('join-code-label').hidden=isInvitation();$('role-label').hidden=isInvitation();}
+  if(!state){globalThis.RunaDeckCarousel?.reset();globalThis.RunaTutorial?.renderMenu?.();return;}
+  const crowd=`Arquibancada · ${state.spectators?.length||0}: ${state.spectators?.map(p=>p.name+(p.id===state.you?' (você)':'')).join(', ')||'ninguém'}`;$('spectators').textContent=crowd;$('spectators-game').textContent=`${state.spectators?.length||0}`;$('spectators-game').setAttribute('aria-label',`${state.spectators?.length||0} espectadores`);
+  if(state.phase==='lobby'){
+    $('lobby-players').textContent=state.players.map(p=>`${p.name}${p.bot?' · bot de treino':''}${p.deckId?' ✓':''}`).join('  ·  ');
+    $('lobby-note').textContent=state.spectator?'Você está assistindo. Ocupe uma vaga para escolher um deck.':state.players.length<2?'Escolha seu deck ou convide outra pessoa. Você também pode treinar contra o bot de treino.':state.players.every(p=>p.deckId)?'Os decks estão prontos.':'Cada jogador escolhe um deck.';
+    const holder=$('deck-options');if(state.spectator){globalThis.RunaDeckCarousel?.reset();holder.replaceChildren();}else if(globalThis.RunaDeckCarousel){RunaDeckCarousel.render(holder,models?.decks||[],deckPack,deck=>command({type:'deck',deckId:deck?.id??null,art:deck?importedArt[deck.id]||{}:{}}),seat()?.deckId);}else{holder.replaceChildren();for(const deck of models?.decks||[])holder.append(deckPack(deck));}
+    // 11/11/2026: escolha "a arquibancada vê as mãos", visível aos dois jogadores; o espectador só lê o estado.
+    let watch=$('spectator-hands');if(!watch){watch=document.createElement('label');watch.id='spectator-hands';watch.className='spectator-hands-option';const box=document.createElement('input');box.type='checkbox';box.onchange=()=>command({type:'spectatorHands',value:box.checked});watch.append(box,document.createTextNode(' A arquibancada vê as mãos dos dois jogadores'));$('bot-setup').before(watch);}
+    const box=watch.querySelector('input');box.checked=Boolean(state.spectatorHands);box.disabled=Boolean(state.spectator);watch.title=state.spectator?'Os jogadores decidem antes da partida.':'Desligado: quem assiste vê só as costas das cartas.';
+    const botSetup=$('bot-setup');botSetup.hidden=state.spectator||state.players.length!==1;const select=$('bot-deck');if(!select.options.length)for(const deck of models?.decks||[]){const option=document.createElement('option');option.value=deck.id;option.textContent=`Bot: ${deck.name}`;select.append(option);}
+  }
+}
+// Troca inicial em uma etapa (09/11/2026). O jogador marca até o limite do seu assento (motor: mulliganLimit, 3 para
+// quem começa e 4 para quem joga em segundo) e confirma uma vez. Com cartas marcadas, "Confirmar mão" envia a troca; a
+// mão nova é apresentada e a confirmação final segue sozinha (scheduleAutomaticMulligan). Sem marcas, confirma a mão.
+let mulliganSubmitting=false,mulliganNotice='';
+function mulliganCap(){const p=seat();return p&&!p.mulliganReady&&p.mulligansLeft?Math.max(0,Math.min(p.mulliganLimit??0,p.hand?.length||0)):0;}
+function toggleMulliganCard(uid){
+ const cap=mulliganCap();if(!cap||mulliganSubmitting||RunaCardArrivals.blocked||$('mulligan-overlay').classList.contains('opening-toss'))return;
+ let refused=false;if(mulliganSelected.has(uid))mulliganSelected.delete(uid);else if(mulliganSelected.size>=cap)refused=true;else mulliganSelected.add(uid);
+ mulliganNotice=refused?`Limite de ${cap} carta${cap===1?'':'s'}: desmarque uma para escolher outra.`:'';render();
+ const node=[...$('mulligan-cards').querySelectorAll('.card')].find(n=>n.dataset.uid===uid);node?.focus?.({preventScroll:true});
+ if(refused&&node&&!matchMedia('(prefers-reduced-motion: reduce)').matches)node.animate([{translate:'0 0'},{translate:'-7px 0'},{translate:'6px 0'},{translate:'-4px 0'},{translate:'0 0'}],{duration:260,easing:'ease-out'});
+}
+function confirmOpeningHand(){
+ const p=seat();if(mulliganSubmitting||!p||state?.phase!=='mulligan'||p.mulliganReady||!p.mulligansLeft)return;
+ const cardIds=[...mulliganSelected].filter(uid=>p.hand.some(c=>c.uid===uid)).slice(0,mulliganCap()),generation=visualGeneration;
+ mulliganSubmitting=true;mulliganNotice='';render();
+ // mulligan/confirmMulligan não entram na fila de ações: espera um comando em andamento (openingReady) em vez de perder o clique.
+ (async()=>{for(let i=0;i<80&&commandBusy&&generation===visualGeneration;i++)await pause(50);if(generation===visualGeneration&&state?.phase==='mulligan')await command(cardIds.length?{type:'mulligan',cardIds}:{type:'confirmMulligan'});})().finally(()=>{mulliganSubmitting=false;if(state?.phase==='mulligan')render();});
+}
+function renderMulliganOverlay(){
+ const status=$('mulligan-status'),cards=$('mulligan-cards'),controls=$('mulligan-controls'),instruction=$('mulligan-instruction');
+ if(state.phase!=='mulligan'){cards.replaceChildren();controls.replaceChildren();mulliganNotice='';return;}
+ // O painel é refeito a cada estado novo: o foco do teclado volta para a mesma carta (ou para o botão) depois de refazer.
+ const focused=document.activeElement,focusKey=cards.contains(focused)?'card:'+focused.dataset.uid:controls.contains(focused)?'confirm':null;
+ const refocus=()=>{if(!focusKey)return;const node=focusKey==='confirm'?$('mulligan-confirm'):[...cards.children].find(n=>'card:'+n.dataset.uid===focusKey);if(node&&!node.disabled)node.focus({preventScroll:true});};
+ const self=seat();cards.replaceChildren();controls.replaceChildren();
+ if(state.spectator){instruction.textContent='Os jogadores escolhem suas cartas.';status.textContent='';return;}
+ const hand=self.hand||[],cap=mulliganCap(),order=state.first===self.id?'Você joga primeiro':'Você joga em segundo';
+ for(const uid of [...mulliganSelected])if(!cap||!hand.some(c=>c.uid===uid)||mulliganSelected.size>cap)mulliganSelected.delete(uid);
+ const marked=mulliganSelected.size,plural=n=>n===1?'':'s';
+ instruction.textContent=self.mulliganReady?'Mão confirmada.':cap?`Selecione até ${cap} carta${plural(cap)} para trocar.`:'Esta é a sua nova mão.';
+ status.textContent=self.mulliganReady?'Aguardando o adversário.':cap?`${order} · ${marked} de ${cap} marcada${plural(marked)}`:`${order} · troca concluída`;
+ if(self.mulliganReady)return;
+ for(const card of hand){const on=mulliganSelected.has(card.uid),node=cardEl(card,{zoom:true,active:on});node.classList.add('opening-card');node.setAttribute('aria-pressed',String(on));
+  if(cap&&!on&&marked>=cap){node.classList.add('at-limit');node.setAttribute('aria-disabled','true');}if(!cap)node.removeAttribute('aria-pressed');
+  node.style.setProperty('--float-delay',(-((performance.now()/1000+cards.childElementCount*.68)%5.4))+'s');if(RunaCardArrivals.has(card.uid))node.classList.add('pending-arrival');cards.append(node);}
+ if(!cap){const done=text(controls,'p','Confirmando sua mão…','mulligan-hint');done.id='mulligan-hint';done.setAttribute('role','status');refocus();return;}
+ const confirm=button(mulliganSubmitting?'Confirmando…':'Confirmar mão',confirmOpeningHand,'primary',mulliganSubmitting);confirm.id='mulligan-confirm';confirm.setAttribute('aria-describedby','mulligan-hint');controls.append(confirm);
+ const hint=text(controls,'p',mulliganNotice||(marked?`${marked} carta${plural(marked)} ${marked===1?'será trocada':'serão trocadas'} ao confirmar.`:'Sem marcas, você mantém estas cartas.'),'mulligan-hint'+(mulliganNotice?' is-refusal':''));hint.id='mulligan-hint';hint.setAttribute('role','status');hint.setAttribute('aria-live','polite');refocus();
+}
+// 11/11/2026: na arquibancada com mãos visíveis, a mão de cima mostra as faces (sem interação) no mesmo leque.
+function renderSpectatorLabels(){const watching=Boolean(state?.spectator),me=seat(),opp=rival();document.body.classList.toggle('spectating',watching);
+ for(const [id,p,mine] of [['self-reserve-area',me,true],['opponent-reserve',opp,false]]){const head=(mine?$(id):$(id)?.parentElement)?.querySelector(':scope>.zone-head');if(!head)continue;const node=head.firstChild;if(node?.nodeType!==3)continue;const want=watching?`RESERVA DE ${(p?.name||'').toUpperCase()} `:(mine?'SUA RESERVA ':'RESERVA RIVAL ');if(node.nodeValue!==want)node.nodeValue=want;}
+ for(const [id,p,word] of [['opponent-grave',opp,'RIVAL'],['self-grave',me,'VOCÊ']]){const node=$(id)?.parentElement?.firstChild;if(node?.nodeType!==3)continue;const want=watching?(p?.name||word).toUpperCase():word;if(node.nodeValue!==want)node.nodeValue=want;}}
+function renderRivalHand(player){renderSpectatorLabels();const holder=$('opponent-hand');if(!holder)return;const faces=state?.spectator&&Array.isArray(player?.hand)?player.hand.slice(0,9):null,count=faces?faces.length:Math.max(0,Math.min(9,Number(player?.handCount)||0)),key=[state?.matchId,player?.id,count,faces?faces.map(c=>c.uid).join(','):''].join(':');if(holder.presentationKey===key)return;holder.presentationKey=key;holder.replaceChildren();holder.classList.toggle('spectator-faces',Boolean(faces));holder.setAttribute('aria-label',faces?`Mão de ${player?.name||'jogador'}: ${count} carta(s) visíveis à arquibancada`:'Mão rival: cartas ocultas');for(let i=0;i<count;i++){const back=document.createElement('div');back.className='rival-hand-back'+(faces?' is-face':'');back.style.setProperty('--fan-angle',((i-(count-1)/2)*5)+'deg');back.style.setProperty('--fan-rise',(Math.abs(i-(count-1)/2)*3)+'px');if(faces){const face=cardEl(faces[i],{mini:true});face.tabIndex=-1;face.classList.add('spectator-face');back.append(face);}else{const image=document.createElement('img');image.src='card-back.png';image.alt='Carta oculta';back.append(image);}holder.append(back);}}
+function boardRegionKey(player,cards){return JSON.stringify([visualMatchKey,state.phase,state.turn,state.spectator,player?.ready,selected,player?.firstSpellUsedThisRound,cards.map(c=>[c,displayedAttack.get(c.uid),displayedHealth.get(c.uid),cardInFlight(c.uid),visuallyDefeated.has(c.uid)])]);}
+function renderBoard(){const self=seat()||{id:'',name:'Aguardando jogador',hand:[],reserve:[],discard:[],formation:[null,null,null],emanation:[],handCount:0,discardCount:0,deckCount:0,mana:0,manaMax:0},opp=rival();matchSeat(self,'self');matchSeat(opp,'opponent');renderRivalHand(opp);
+  for(const [id,p] of [['self',self],['opponent',opp]]){
+    const holder=$(`${id}-reserve`);const cards=(p?.reserve||[]).filter(c=>!p.emanation?.includes(c.uid)&&!p.formation?.includes(c.uid));$(`${id}-reserve-count`).textContent='';
+    RunaPresentation.memo(holder,boardRegionKey(p,cards),()=>{holder.replaceChildren();for(const c of cards){const node=cardEl(c,{mini:true,combat:c.type==='creature',active:selected===c.uid});node.classList.add('reserve-card');if(c.type==='creature')node.setAttribute('aria-label',node.getAttribute('aria-label')+' · ataque '+(displayedAttack.get(c.uid)??c.effectiveAttack??Math.max(0,c.attack+(c.attackMod||0)))+' · vida '+Math.max(0,c.health-c.damage)+' de '+c.health);if(!state.spectator&&p.id===self.id)makeDraggable(node,c);holder.append(node);}});
+    const eman=$(`${id}-emana`);RunaPresentation.memo(eman,boardRegionKey(p,(p?.reserve||[]).filter(c=>p.emanation?.includes(c.uid)))+JSON.stringify(p?.emanation),()=>{eman.replaceChildren();for(let slot=0;slot<2;slot++){const em=p?.reserve?.find(c=>c.uid===p.emanation?.[slot]);/* 11/11/2026 (dono): na Emanação a carta aparece como na reserva e no combate — arte, ataque e vida, sem o texto. */if(em)eman.append(cardEl(em,{mini:true,combat:em.type==='creature',active:selected===em.uid}));else text(eman,'span',String(slot+1),'emana-empty');}});
+    const grave=$(`${id}-grave`);const top=p?.discard?.at(-1);RunaPresentation.memo(grave,JSON.stringify([visualMatchKey,p?.id,p?.discardCount,top?.image]),()=>{grave.replaceChildren();if(top&&top.image){const art=document.createElement('img');art.src=top.image;art.alt='';grave.append(art);}else text(grave,'span','✝');/* 11/11/2026 (dono): só a miniatura da carta do topo e o número, numa caixinha; o texto completo fica no rótulo acessível */const count=p?.discardCount||0;text(grave,'b',String(count),'grave-count');grave.setAttribute('aria-label',`${id==='self'?'Seu Nartvanyr':'Nartvanyr do rival'}: ${count} ${count===1?'carta':'cartas'}`);});grave.onclick=()=>showCemetery(p);
+  }
+  const reserveDrop=$('self-reserve-area');reserveDrop.ondragover=event=>{if(state.phase==='formation'&&!self.ready){event.preventDefault();reserveDrop.classList.add('drop-ready');}};
+  reserveDrop.ondragleave=event=>{if(!reserveDrop.contains(event.relatedTarget))reserveDrop.classList.remove('drop-ready');};
+  reserveDrop.ondrop=event=>{reserveDrop.classList.remove('drop-ready');const uid=event.dataTransfer.getData('text/plain');const lane=self.formation.indexOf(uid);if(state.phase==='formation'&&!self.ready&&lane!==-1){event.preventDefault();command({type:'assign',lane,cardId:null});}};
+  renderHand(self);
+  const lanes=$('lanes'),laneKey=state.phase==='resolving'?Symbol():JSON.stringify([visualMatchKey,state.phase,state.turn,state.round,state.you,state.spectator,state.players,state.seals,state.laneBonuses,selected,pendingSnap&&pendingSnap.until>Date.now()?pendingSnap:null,[...displayedHealth],[...displayedAttack],state.players.flatMap(p=>p.reserve||[]).map(c=>[c.uid,cardInFlight(c.uid),visuallyDefeated.has(c.uid)])]);RunaPresentation.memo(lanes,laneKey,()=>{lanes.replaceChildren();for(let i=0;i<3;i++){
+    const lane=document.createElement('div');lane.className='lane';lane.dataset.lane=i;lane.dataset.symbol=laneSymbols[i];lane.setAttribute('aria-label',`Posição ${laneSymbols[i]}`);
+    for(const player of [opp,self]){
+      const side=document.createElement('div');side.className='lane-side';side.dataset.owner=player?.id||'';side.dataset.lane=i;side.setAttribute('role','group');side.setAttribute('aria-label',`Posição ${i+1} · ${player?.id===state.you?'seu campo':'campo rival'}`);
+      const placement=combatPlacements(),placed=state.players.flatMap(p=>[...(p.reserve||[]),patronBoardCard(p)]).filter(Boolean).find(c=>placement.get(c.uid)?.owner===player?.id&&placement.get(c.uid)?.lane===i)||visibleMirage(player?.id,i);
+      for(const seal of boardSeals())if(seal.owner===player?.id&&seal.allyLane===i||seal.enemyOwner===player?.id&&seal.enemyLane===i){side.classList.add('sealed-space');const mark=text(side,'span','◈','seal-space-mark');mark.title='Selo de Ithalion · troca de lado';mark.setAttribute('aria-label',mark.title);}
+      const aura=(player?.emanation||[]).some(uid=>{const c=player.reserve.find(c=>c.uid===uid);return i===0&&c?.modelId==='R05'||c?.effects?.some(e=>['lane_attack_aura','lane_health_aura'].includes(e.op)&&(e.choose_lane?c.auraLane:e.lane)===i);});
+      const buff=(player?.prepared||[]).some(item=>item.lane===i&&item.caster===player.id&&item.card?.effects?.some(e=>['attack_modifier','stat_buff','barrier'].includes(e.op)&&((e.amount||e.attack||e.health)>0)));if(aura||buff||state.laneBonuses?.[player?.id]?.[i])side.classList.add('lane-buffed');
+      if(placed?.sleep){side.classList.add('sleeping-space');text(side,'span','☾','sleep-space-mark');}if(placed?.anchor){side.classList.add('anchored-space');text(side,'span','⚓','anchor-mark');}if(placed){const node=cardEl(placed,{mini:true,combat:true,active:selected===placed.uid});if(!state.spectator&&player.id===self.id){if(placed.type==='patron'){bindCardDrag(node,placed,'patron');node.onclick=()=>{if(Date.now()>=suppressClickUntil)choosePatronPosition(player);};}else makeDraggable(node,placed);}if(placed.type==='patron'){if(placed.extraLife)text(node,'span',String(placed.extraLife),'patron-field-armor');if(patronEntryPending(placed.uid))node.style.visibility='hidden';}if(player.id===self.id&&pendingSnap?.lane===i&&pendingSnap.until>Date.now())node.classList.add('snapping');side.append(node);}else{const secret=(state.phase==='formation'&&player?.id!==state.you)||player?.revealPending?.includes(i);if(secret)side.classList.add('fogged-space');/* Formation addendum B (review): after the own seat confirms, its empty positions lose 'Solte aqui' (no label). */const mineFormation=state.phase==='formation'&&player?.id===state.you;if(!(mineFormation&&seat()?.ready))text(side,'span','',secret?'drop-label secret-alert':'drop-label');}
+      const prepared=player?.prepared?.filter(item=>item.lane===i)||[];const dock=document.createElement('div');dock.className='spell-dock';dock.setAttribute('aria-label','Magias da posição '+(i+1));
+      for(const prep of prepared){const symbol=document.createElement('button');symbol.type='button';symbol.className=`spell-mark ${prep.caster===player.id?'ally-spell':'trap-spell'}${prep.hidden?' hidden-spell':''}`;symbol.textContent=prep.hidden?'':'✧';symbol.title=prep.hidden?'Magia inimiga oculta':prep.card?.name||'Magia';symbol.setAttribute('aria-label',symbol.title);if(!prep.hidden&&prep.card){symbol.onmouseenter=e=>showHover(prep.card,e);symbol.onmousemove=moveHover;symbol.onmouseleave=hideHover;symbol.onfocus=()=>{const r=symbol.getBoundingClientRect();showHover(prep.card,{clientX:r.right,clientY:r.top});};symbol.onblur=hideHover;}if(prep.card){symbol.dataset.uid=prep.card.uid;if(cardInFlight(prep.card.uid))symbol.style.visibility='hidden';}
+ symbol.onclick=()=>{if(prep.hidden||!prep.card||Date.now()<suppressClickUntil)return;showCard(prep.card);};
+ if(!prep.echo&&prep.caster===state.you&&((state.phase==='prep'&&state.turn===state.you)||(state.phase==='formation'&&!self.ready)))bindCardDrag(symbol,prep.card,'prepared');dock.append(symbol);}
+      if(prepared.length){side.classList.add('has-prepared-magic');side.dataset.magicCount=String(prepared.length);const mark=text(side,'span',prepared.every(p=>p.hidden)?'Magia oculta':'Magia preparada','prepared-space-label');mark.setAttribute('aria-hidden','true');side.append(dock);}
+      if(!state.spectator&&player?.id){
+        if(player.id===self.id)side.classList.add('own-drop');
+        side.classList.add('spell-drop');
+        side.ondragover=event=>{
+          const uid=event.dataTransfer.getData('text/plain');
+          const spell=self.hand?.find(card=>card.uid===uid&&card.type!=='creature');
+          if((state.phase==='formation'&&player.id===self.id&&!self.ready)||(state.phase==='prep'&&state.turn===self.id&&spell)){event.preventDefault();side.classList.add('drop-ready');}
+        };
+        side.ondragleave=event=>{if(!side.contains(event.relatedTarget))side.classList.remove('drop-ready');};
+        side.ondrop=event=>{
+          event.preventDefault();side.classList.remove('drop-ready');const uid=event.dataTransfer.getData('text/plain');
+          const spell=self.hand?.find(card=>card.uid===uid&&card.type!=='creature');
+          if(spell&&spell.type!=='equipment'&&!spell.directOnly&&canPrepareOn(spell,player.id)&&state.phase==='prep')command({type:'play',cardId:uid,mode:'lane',lane:i,targetSide:player.id});
+          else if(uid&&state.phase==='formation'&&player.id===self.id&&self.reserve.some(card=>card.uid===uid)){pendingSnap={lane:i,until:Date.now()+900};command({type:'assign',lane:i,cardId:uid});}
+        };
+      }
+      for(const caster of state.players){for(const [uid,targetLane] of Object.entries(caster.taunts||{})){const sourceLane=caster.formation.indexOf(uid);if(sourceLane<0)continue;if(caster.id!==player?.id&&(Array.isArray(targetLane)?targetLane:[targetLane]).includes(i)){side.classList.add('taunted-space');text(side,'span','⚑','taunt-space-mark').title='Provocada por '+caster.reserve.find(c=>c.uid===uid)?.name;}if(caster.id===player?.id&&placed?.uid===uid){text(side,'span','⚑ '+(Array.isArray(targetLane)?targetLane:[targetLane]).map(lane=>laneSymbols[lane]).join(' '),'taunt-source-mark').title='Provoca a posição '+laneSymbols[targetLane];}}}
+      lane.append(side);
+    }
+    lanes.append(lane);
+  }});
+  globalThis.RunaPlatinumEntry?.refreshMasks?.();
+  if(typeof layoutCombatEmanations==='function')layoutCombatEmanations();
+  if(typeof layoutReserveRows==='function')layoutReserveRows();
+  if(state.phase==='finished')clearBoardEffectMarks();
+  if(typeof syncCardIdentities==='function')syncCardIdentities();
+  if(typeof RunaTableAtmosphere!=='undefined')RunaTableAtmosphere.sync({session:state.code+':'+state.matchId,phase:state.phase,selfId:seat()?.id,spectator:state.spectator,battle:state.combat,clockOffset:serverClockOffset});
+  const log=$('log');log.replaceChildren();let group=null;for(const item of state.log.slice(-10)){const entry=typeof item==='string'?{message:item,round:state.round,turn:null,phase:'lobby'}:item;const key=`${entry.round}:${entry.phase==='prep'?entry.turn:entry.phase}`;if(key!==group){const name=state.players.find(player=>player.id===entry.turn)?.name;const phase={vote:'Decisão',formation:'Formação',resolving:'Combate',finished:'Resultado',lobby:'Sala',coin:'Moeda',mulligan:'Mão inicial'}[entry.phase]||entry.phase;const title=entry.phase==='prep'&&name?`Rodada ${entry.round} · turno de ${name}`:`Rodada ${entry.round} · ${phase}`;text(log,'h4',title,'log-divider');group=key;}text(log,'p',entry.message,entry.actor===state.you?'log-own':entry.actor&&state.players.some(p=>p.id===entry.actor)?'log-rival':'log-neutral');}
+}
+function layoutHand(){const cards=[...$('hand').querySelectorAll('.hand-card')];cards.forEach((node,index)=>{node.style.setProperty('--fan-angle',`${(index-(cards.length-1)/2)*4.3}deg`);node.style.setProperty('--fan-rise',`${Math.abs(index-(cards.length-1)/2)*5}px`);node.style.zIndex=index+1;});}
+function renderHand(self){return RunaPresentation.renderPart('hand',self,()=>{
+ const hand=$('hand'),current=state.phase==='mulligan'&&!self.mulliganReady?[]:self.hand||[];
+ const scope=[state.code,state.matchId,state.you,Boolean(state.spectator)].join(':');
+ if(hand.presentationScope!==scope){hand.replaceChildren();hand.presentationScope=scope;}
+ handOrder=handOrder.filter(uid=>current.some(c=>c.uid===uid));for(const card of current)if(!handOrder.includes(card.uid))handOrder.push(card.uid);
+ const existing=new Map([...hand.children].map(node=>[node.dataset.uid,node]));
+ for(const [index,uid] of handOrder.entries()){
+  const card=current.find(c=>c.uid===uid),key=JSON.stringify([card,displayedAttack.get(uid),displayedHealth.get(uid)]);let node=existing.get(uid);
+  if(!node||node.presentationKey!==key){node?.remove();node=cardEl(card);node.presentationKey=key;node.classList.add('hand-card');if(!state.spectator)bindLiveHandDrag(node,card);}
+  node.classList.toggle('selected',selected===uid||mulliganSelected.has(uid));node.classList.toggle('payable',affordable(card));node.classList.toggle('pending-arrival',RunaCardArrivals.has(uid));
+  node.style.visibility=cardInFlight(uid)||visuallyDefeated.has(uid)?'hidden':'';
+  if(hand.children[index]!==node)hand.insertBefore(node,hand.children[index]||null);
+ }
+ for(const node of [...hand.children])if(!handOrder.includes(node.dataset.uid)||node!==[...hand.children].find(n=>n.dataset.uid===node.dataset.uid))node.remove();
+ layoutHand();
+});}
+// Formation addendum B: while a combatant is dragged in the formation, the own sockets (public data: the seat's own
+// lanes, where assign/assignPatron are accepted) are lit; the socket under the pointer keeps drop-ready.
+function markLegalDrops(kind){if(state?.phase!=='formation'||seat()?.ready||!['reserve','patron'].includes(kind))return;const me=seat()?.id;for(const side of document.querySelectorAll('#lanes .lane-side'))if(side.dataset.owner===me)side.classList.add('legal-drop');}
+function bindCardDrag(node,card,kind='hand'){
+ node.draggable=false;node.style.touchAction='none';node.classList.add('draggable');node.querySelectorAll('img').forEach(img=>img.draggable=false);
+ node.onpointerdown=event=>{
+  // An active aim owns this click; starting a reserve drag here cancels it
+  // before the document click handler can confirm the selected creature.
+  /* Round 2: dragging stays available while a command is in flight; the drop is queued (command()). */if(event.button!==0||pendingEntryPlacement||state.phase==='mulligan'||globalThis.RunaTargeting?.active()||(globalThis.RunaActionQueue?.items||[]).some(q=>q.cardId===node.dataset.uid))return;cleanupDrag();RunaTargeting?.cancel();
+  const origin={x:event.clientX,y:event.clientY};let ghost=null,ground=null,timer,aiming=false;
+  const clean=()=>{clearTimeout(timer);ghost?.remove();ground?.destroy();node.classList.remove('dragging-source');document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',release);document.removeEventListener('pointercancel',cancel);document.removeEventListener('keydown',cancelKey,true);document.removeEventListener('contextmenu',cancelContext,true);document.querySelectorAll('.drop-ready,.legal-drop').forEach(el=>el.classList.remove('drop-ready','legal-drop'));activeDrag=null;};
+  const cancel=()=>{RunaTargeting?.cancel();suppressClickUntil=Date.now()+450;clean();};const cancelKey=e=>{if(e.key==='Escape'&&!e.isComposing&&!e.repeat&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();cancel();}};const cancelContext=e=>{e.preventDefault();cancel();};
+  const move=e=>{
+   if(!ghost&&Math.hypot(e.clientX-origin.x,e.clientY-origin.y)<7)return;
+   e.preventDefault();if(!ghost){hideHover();ghost=cloneVisual(node);ghost.classList.remove('pending-arrival');ghost.classList.add('drag-preview');ghost.style.visibility='';ghost.style.setProperty('width',node.offsetWidth+'px','important');ghost.style.setProperty('height',node.offsetHeight+'px','important');$('visual-layer').append(ghost);if(typeof RunaDragShadow!=='undefined')ground=RunaDragShadow.create($('visual-layer'));node.classList.add('dragging-source');if(typeof markLegalDrops==='function')markLegalDrops(kind);}
+   ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';
+   if(kind==='hand'){const edge=$('hand').getBoundingClientRect().top-10;if(e.clientY<edge){if(!aiming)aiming=beginDraggedAim(card,{x:e.clientX,y:e.clientY});}else if(aiming){RunaTargeting.cancel();aiming=false;}ghost.classList.toggle('aiming-card',aiming);}
+   const emanates=['hand','reserve'].includes(kind)&&card.type==='creature'&&card.effects?.some(effect=>String(effect.timing).includes('emana'));
+   const emanaFit=emanates?RunaMotion.emanationFit({x:e.clientX,y:e.clientY},{width:node.offsetWidth,height:node.offsetHeight},[...document.querySelectorAll('#self-emana>*')].map(slot=>slot.getBoundingClientRect())):1;const fit=emanaFit<.99?emanaFit:typeof reserveFit==='function'?reserveFit(e,kind,card,ghost):1;
+   ghost.style.setProperty('transform',`translate(-50%,-50%) rotate(0deg) scale(${fit})`,'important');
+   ghost.classList.toggle('near-emanation',fit<.99);
+   ground?.update(e.clientX,e.clientY,node.offsetWidth,node.offsetHeight,fit);
+
+   document.querySelectorAll('.drop-ready').forEach(el=>el.classList.remove('drop-ready'));
+   const target=document.elementFromPoint(e.clientX,e.clientY),lane=target?.closest('.lane-side'),zone=target?.closest('#self-reserve-area,#self-emana-zone,#hand');
+   if(lane||zone)(lane||zone).classList.add('drop-ready');
+   const over=target?.closest('.hand-card');if(kind==='hand'&&over&&over!==node){const rect=over.getBoundingClientRect();$('hand').insertBefore(node,e.clientX>rect.left+rect.width/2?over.nextSibling:over);handOrder=[...$('hand').querySelectorAll('.hand-card')].map(el=>el.dataset.uid);layoutHand();}
+  };
+  const release=e=>{
+   if(aiming){RunaTargeting.release(e);clean();suppressClickUntil=Date.now()+450;return;}
+   const rect=ghost?.getBoundingClientRect(),target=document.elementFromPoint(e.clientX,e.clientY),lane=target?.closest('.lane-side'),zone=target?.closest('#self-reserve-area,#self-emana-zone,#hand');let action=null;
+   if(kind==='patron'&&state.phase==='formation'&&!seat().ready){if(lane&&lane.dataset.owner===seat().id)action={type:'assignPatron',lane:Number(lane.dataset.lane)};else if(zone?.id==='self-reserve-area')action={type:'assignPatron',lane:null};}
+   else if(kind==='prepared'){
+    if(lane&&canPrepareOn(card,lane.dataset.owner))action={type:'movePrepared',cardId:card.uid,lane:Number(lane.dataset.lane),targetSide:lane.dataset.owner};
+    else if(zone)action={type:'unprepare',cardId:card.uid};
+   }
+   else if(kind==='hand'&&state.phase==='prep'&&state.turn===seat()?.id){
+    if(card.type==='equipment'&&zone?.id==='self-reserve-area')action={type:'play',cardId:card.uid};
+    else if(card.type==='creature'&&zone&&zone.id!=='hand')action={type:'play',cardId:card.uid,...(zone.id==='self-emana-zone'?{mode:'emanate'}:{})};
+    else if(card.type!=='creature'&&card.type!=='equipment'&&lane&&!card.directOnly&&canPrepareOn(card,lane.dataset.owner))action={type:'play',cardId:card.uid,mode:'lane',lane:Number(lane.dataset.lane),targetSide:lane.dataset.owner};
+   }else if(kind==='reserve'&&state.phase==='prep'&&state.turn===seat()?.id&&zone?.id==='self-emana-zone'){
+    action={type:'emanate',cardId:card.uid};
+   }else if(kind==='reserve'&&state.phase==='formation'&&!seat().ready){
+    if(lane?.dataset.owner===seat().id)action={type:'assign',cardId:card.uid,lane:Number(lane.dataset.lane)};
+    else if(zone?.id==='self-reserve-area'){const index=seat().formation.indexOf(card.uid);if(index!==-1)action={type:'assign',cardId:null,lane:index};}
+   }
+   const moved=Boolean(ghost),held=action&&ghost?cloneVisual(ghost):null;
+   if(held){held.classList.remove('drag-preview','hand-card','selected','arrived','pending-arrival');held.classList.add('release-ghost');held.style.setProperty('left',rect.left+'px','important');held.style.setProperty('top',rect.top+'px','important');held.style.setProperty('width',rect.width+'px','important');held.style.setProperty('height',rect.height+'px','important');held.style.setProperty('transform','none','important');held.style.setProperty('transition','none','important');held.style.pointerEvents='none';document.body.append(held);}
+   clean();if(!moved)return;suppressClickUntil=Date.now()+450;selected=null;
+   if(action){node.style.visibility='hidden';command(action,rect).finally(()=>{held?.remove();if(node.isConnected&&!cardInFlight(card.uid))node.style.visibility='';});}
+  };
+  activeDrag=clean;timer=setTimeout(clean,15000);document.addEventListener('pointermove',move,{passive:false});document.addEventListener('pointerup',release);document.addEventListener('pointercancel',cancel);document.addEventListener('keydown',cancelKey,true);document.addEventListener('contextmenu',cancelContext,true);
+ };
+}
+function bindLiveHandDrag(node,card){bindCardDrag(node,card,'hand');}
+function makeDraggable(node,card){if(!seat().emanation.includes(card.uid)&&((state.phase==='formation'&&!seat().ready)||(state.phase==='prep'&&state.turn===seat().id&&card.effects?.some(e=>String(e.timing).includes('emana')))))bindCardDrag(node,card,'reserve');}
+function revealArrival(uid=RunaCardArrivals.pending[0]){if(!uid)return;RunaCardArrivals.release(uid);for(const node of document.querySelectorAll('.card'))if(node.dataset.uid===uid){node.classList.remove('pending-arrival');node.classList.add('arrived');setTimeout(()=>node.classList.remove('arrived'),650);}}
+function showCemetery(player){hideHover();const dialog=$('cemetery-detail'),area=$('cemetery-content');area.replaceChildren();text(area,'h2',`Nartvanyr · ${player.name}`);text(area,'p',`${player.discardCount} carta(s) consumida(s) ou derrotada(s). Clique numa carta para ler tudo.`);const row=document.createElement('div');row.className='cemetery-cards';for(const card of [...(player.discard||[])].reverse()){const node=cardEl(card,{history:true});node.classList.add('cemetery-card');node.onmouseenter=node.onmousemove=node.onmouseleave=null;node.onclick=()=>showCard(card);row.append(node);}area.append(row);dialog.showModal();}
+function makeSelect(options){const select=document.createElement('select');for(const [value,label] of options){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);}return select;}
+function showRupturaPicker(card){
+ if(state.phase!=='formation'||seat().ready||card.sleep||!seat().formation.includes(card.uid))return;
+ hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();
+ const paid=card.effects?.find(e=>e.op==='optional_reveal_attack');
+ if(paid){text(content,'h2','Bônus de Revelação');text(content,'p',card.revealPaymentRound===state.round?(card.revealRequested?`Escolha confirmada: pagar ${paid.cost} Éter na Revelação para +${paid.amount} de ataque, se houver Éter.`:'Sem pagamento neste combate.'):`Na Revelação, pagar ${paid.cost} Éter para +${paid.amount} de ataque neste combate? O Éter será cobrado apenas nesse momento.`);if(card.revealPaymentRound!==state.round){content.append(button(`Pagar ${paid.cost} Éter na Revelação`,()=>{dialog.close();command({type:'revealPayment',cardId:card.uid,pay:true});},'primary',seat().mana<paid.cost),button('Não pagar',()=>{dialog.close();command({type:'revealPayment',cardId:card.uid,pay:false});}));}if(!dialog.open)dialog.showModal();return;}
+ text(content,'h2','Puxar da reserva');if(!state.forceWindow||Date.now()-serverClockOffset>=state.forceWindow.until){text(content,'p','O tempo para escolher o alvo terminou.');if(!dialog.open)dialog.showModal();return;}let chosen=false;const close=()=>{dialog.removeEventListener('close',close);dialog.removeEventListener('contextmenu',context);if(!chosen)onCancel?.('cancel');};const context=e=>{if(onCancel){e.preventDefault();dialog.close();}};dialog.addEventListener('close',close);dialog.addEventListener('contextmenu',context);const row=document.createElement('div');row.className='target-options';
+ for(const c of rival()?.reserve||[])if(!rival().emanation.includes(c.uid)&&!c.anchor&&!c.sleep&&!c.forcedBy){const picture=cardEl(c);picture.classList.add('target-card');picture.onclick=()=>{dialog.close();command({type:'forceOpponent',cardId:card.uid,targetId:c.uid});};row.append(picture);}
+ content.append(row);content.append(button('Sem alvo / desfazer',()=>{dialog.close();command({type:'forceOpponent',cardId:card.uid,targetId:null});}));if(!dialog.open)dialog.showModal();
+}
+function showTauntPicker(card){
+ if(state.phase!=='formation'||seat().ready||!seat().formation.includes(card.uid))return;
+ hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2','Escolha a posição para Provocar');
+ const row=document.createElement('div');row.className='taunt-options taunt-spatial';const ownLane=seat().formation.indexOf(card.uid);
+ const laneNames=['Sol','Lua','Estrela'];
+ for(let lane=0;lane<3;lane++){
+  if(Math.abs(lane-ownLane)>1)continue;
+  const front=lane===ownLane,occupied=!front&&Object.entries(seat().taunts||{}).some(([uid,value])=>uid!==card.uid&&(Array.isArray(value)?value:[value]).includes(lane)&&seat().formation.includes(uid));
+  const choice=button(front?'Somente à frente':laneSymbols[lane],()=>{dialog.close();command({type:'taunt',cardId:card.uid,lane:front?null:lane});},(front?seat().taunts?.[card.uid]===undefined:seat().taunts?.[card.uid]===lane)?'primary':'',occupied);
+  choice.dataset.lane=lane;choice.style.gridColumn=String(lane+1);choice.style.gridRow='1';choice.setAttribute('aria-label',front?'Somente à frente · posição '+laneNames[lane]:'Provocar posição '+laneNames[lane]);row.append(choice);
+ }
+ if((card.effects.find(e=>e.op==='taunt')?.maxAdditional||1)>1&&ownLane===1){const blocked=Object.entries(seat().taunts||{}).some(([uid,value])=>uid!==card.uid&&(Array.isArray(value)?value:[value]).some(lane=>[0,2].includes(lane))&&seat().formation.includes(uid));const both=button('As duas adjacentes',()=>{dialog.close();command({type:'taunt',cardId:card.uid,lanes:[0,2]});},Array.isArray(seat().taunts?.[card.uid])?'primary':'',blocked);both.classList.add('taunt-both');row.append(both);}
+ content.append(row);if(!dialog.open)dialog.showModal();
+}
+function visibleMirage(owner,lane){
+ if(state?.phase!=='resolving'||!state.combat)return null;const battle=state.combat,spawn=battle.spawnedMirages?.find(x=>x.owner===owner&&x.lane===lane);if(!spawn)return null;let start=0;for(const step of battle.timeline){if(step.kind==='magic'&&step.spell.cardId===spawn.spellId)return combatElapsed(battle)>=start+500?spawn.card:null;start+=step.duration;}return null;
+}
+function showMonkPicker(card){if(card.monkMode){showCard(card);return;}
+ if(state.phase!=='formation'||seat().ready||card.sleep||!seat().formation.includes(card.uid))return;hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2','Monge Rúnico · escolha um');const row=document.createElement('div');row.className='taunt-options';for(const [mode,label] of [['weaken','Enfraquecer · −2 ataque ao inimigo à frente'],['buff','Fortalecer · +1/+1 ao aliado à direita']])row.append(button(label,()=>{dialog.close();command({type:'monkChoice',cardId:card.uid,mode});},card.monkMode===mode?'primary':''));content.append(row);text(content,'p','O efeito dura apenas este combate. Sem criatura na casa escolhida, não há efeito.');if(!dialog.open)dialog.showModal();
+}
+function showProtocolPicker(card){if(card.protocolMode){showCard(card);return;}
+ if(state.phase!=='formation'||seat().ready||card.sleep||!seat().formation.includes(card.uid))return;hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2','Escolha o protocolo');const row=document.createElement('div');row.className='taunt-options';for(const [mode,label] of [['assault','Assalto · +2 ataque · adjacentes +1 ataque'],['escort','Escolta · +2 vida · adjacentes +1 vida']])row.append(button(label,()=>{dialog.close();command({type:'protocol',cardId:card.uid,mode});},card.protocolMode===mode?'primary':''));content.append(row);if(!dialog.open)dialog.showModal();
+}
+function aimNode(id){
+ if(id==='patron')return tableCard('patron:'+state.you)||$('self-head')?.querySelector('.patron-card');
+ if(id?.startsWith('patron:'))return tableCard(id)||$(id.slice(7)===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card');
+ return tableCard(id);
+}
+function showTargetPicker(source,ids,onChoose,title='Escolha o alvo',providerUid=null,onCancel=null){
+ hideHover();
+ const getIds=typeof ids==='function'?ids:()=>ids,session=[state?.code,state?.matchId,state?.phase,state?.turn].join(':'),inHand=seat()?.hand?.some(c=>c.uid===source.uid);
+ const valid=()=>!commandBusy&&!state?.spectator&&state?.phase==='prep'&&state.turn===state.you&&session===[state.code,state.matchId,state.phase,state.turn].join(':')&&(!inHand||seat().hand.some(c=>c.uid===source.uid)&&affordable(source));
+ const candidates=()=>getIds().filter(Boolean).filter(id=>id==='patron'?seat()?.patron?.hp>0:id.startsWith('patron:')?state.players.some(p=>'patron:'+p.id===id&&p.patron?.hp>0):state.players.some(p=>p.reserve.some(c=>c.uid===id&&c.damage<c.health))||id===source.uid);
+ if(!globalThis.RunaTargeting||!valid()){showTargetDialog(source,candidates(),onChoose,title,onCancel);return;}
+ const anchor=()=>pendingEntryNode(source.uid)||(['creature','equipment'].includes(source.type)?aimNode(source.uid)||patronDamageSource(state.you):patronDamageSource(state.you));
+ RunaTargeting.start({source:anchor,valid,picked:providerUid?()=>aimNode(providerUid):null,onCancel,targets:()=>candidates().map(id=>({id,node:pendingEntryNode(id)||aimNode(id)})),confirm:id=>{if(valid()&&candidates().includes(id))onChoose(id);},fallback:()=>showTargetDialog(source,candidates,id=>{if(valid()&&candidates().includes(id))onChoose(id);},title,onCancel),title});
+}
+function beginDraggedAim(card,point){
+ if(!affordable(card))return false;
+ const kind=role(card),op=card.effects?.[0]?.op;
+ if(card.type==='equipment')return false;
+ if(card.type==='creature')return false;
+ if(op==='choose_one'||op==='ally_attack_damage')return false;
+ const targeted=!['self','enemy-board'].includes(kind)&&!card.positionOnly;
+ if(!targeted&&!card.positionOnly)return false;
+ const session=[state.code,state.matchId,state.turn].join(':'),valid=()=>!commandBusy&&state.phase==='prep'&&state.turn===state.you&&session===[state.code,state.matchId,state.turn].join(':')&&affordable(card);
+ const targets=()=>{
+  const choices=targeted?RunaTargeting.creatureIds(state,state.you,card,kind).map(id=>({id,node:aimNode(id)})):[];
+  if(!card.directOnly)for(const node of document.querySelectorAll('#lanes .lane-side'))if(canPrepareOn(card,node.dataset.owner))choices.push({id:'lane:'+node.dataset.owner+':'+node.dataset.lane,node});
+  return choices;
+ };
+ RunaTargeting.start({source:()=>patronDamageSource(state.you),targets,valid,point,title:'Solte sobre um alvo ou posição válida',confirm:id=>{if(!valid())return;const option=targets().find(t=>t.id===id);if(!option)return;if(id.startsWith('lane:')){const [,targetSide,lane]=id.split(':');command({type:'play',cardId:card.uid,mode:'lane',lane:Number(lane),targetSide});}else command({type:'play',cardId:card.uid,mode:'direct',targetId:id});}});return true;
+}
+function showTargetDialog(source,ids,onChoose,title='Escolha o alvo',onCancel=null){
+ if(typeof ids==='function')ids=ids();
+ hideHover();const dialog=$('target-picker'),content=$('target-picker-content');const targets=ids.map(uid=>({uid,card:state.players.flatMap(p=>p.reserve).find(c=>c.uid===uid)||(uid===source.uid?source:null),patron:uid==='patron'?seat():state.players.find(p=>uid==='patron:'+p.id)})).filter(t=>t.card||t.patron);if(!targets.length){if(dialog.open)dialog.close();return;}content.replaceChildren();text(content,'h2',typeof title==='string'?title:'Escolha o alvo');let chosen=false;const close=()=>{dialog.removeEventListener('close',close);dialog.removeEventListener('contextmenu',context);if(!chosen)onCancel?.('cancel');};const context=e=>{if(onCancel){e.preventDefault();dialog.close();}};dialog.addEventListener('close',close);dialog.addEventListener('contextmenu',context);const row=document.createElement('div');row.className='target-options';
+ for(const {uid,card,patron} of targets){const picture=patron?$(patron.id===seat().id?'self-head':'opponent-head').querySelector('.patron-card').cloneNode(true):cardEl(card),preview=card||{...patron.patron,uid:'target-patron-'+patron.id,type:'patron'};picture.classList.add('target-card');if(patron){picture.setAttribute('role','button');picture.setAttribute('aria-label','Patrono: '+patron.patron.name);picture.tabIndex=0;picture.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();picture.onclick();}};}picture.onmouseenter=event=>{tableCard(uid)?.classList.add('target-highlight');showHover(preview,event);};picture.onmouseleave=()=>{tableCard(uid)?.classList.remove('target-highlight');hideHover();};picture.onmousemove=moveHover;picture.ondblclick=null;picture.onfocus=()=>{const r=picture.getBoundingClientRect();picture.onmouseenter({clientX:r.right,clientY:r.top+r.height/2});};picture.onblur=picture.onmouseleave;picture.onclick=()=>{hideHover();document.querySelectorAll('.target-highlight').forEach(n=>n.classList.remove('target-highlight'));chosen=true;dialog.close();onChoose(uid);};row.append(picture);}content.append(row);if(!dialog.open)dialog.showModal();
+}
+function chooseEntryAlly(card){return new Promise(resolve=>{const dialog=$('target-picker');let settled=false;const finish=uid=>{if(settled)return;settled=true;dialog.removeEventListener('close',cancel);resolve(uid);};const cancel=()=>finish(null);dialog.addEventListener('close',cancel);showTargetPicker(card,[...seat().reserve.filter(c=>c.damage<c.health).map(c=>c.uid),card.uid],finish,'Escolha um aliado para receber Iniciativa');});}
+function chooseEntryCreature(card){return new Promise(resolve=>{const dialog=$('target-picker');let settled=false;const finish=uid=>{if(settled)return;settled=true;dialog.removeEventListener('close',cancel);resolve(uid);};const cancel=()=>finish(null);dialog.addEventListener('close',cancel);showTargetPicker(card,[...state.players.flatMap(p=>p.reserve.filter(c=>c.damage<c.health).map(c=>c.uid)),card.uid],finish,'Fogo Fátuo · escolha uma criatura para Silêncio');});}
+function chooseEntryEnemy(card){return new Promise(resolve=>{const dialog=$('target-picker');let settled=false;const finish=uid=>{if(settled)return;settled=true;dialog.removeEventListener('close',cancel);resolve(uid);};const cancel=()=>finish(null);dialog.addEventListener('close',cancel);showTargetPicker(card,(rival()?.reserve||[]).filter(c=>c.damage<c.health).map(c=>c.uid),finish,'Aprendiz · escolha uma criatura inimiga');});}
+function promptApprenticeTarget(){
+ if(commandBusy||pendingSpellConfirmation||globalThis.RunaTargeting?.active()||state?.phase!=='prep'||state.turn!==state.you||state.spectator||seat()?.pendingDiscard||$('target-picker').open)return;
+ const uid=seat()?.pendingApprenticeTargets?.[0],source=seat()?.reserve.find(c=>c.uid===uid)||seat()?.pendingApprenticeSources?.find(c=>c.uid===uid);if(!source)return;
+ const round=state.round,code=state.code,queued=seat()?.pendingApprenticeSources?.some(c=>c.uid===uid);
+ const cancel=reason=>{if(reason==='cancel'&&queued&&state.code===code&&state.round===round&&state.phase==='prep'&&state.turn===state.you&&!commandBusy)void command({type:'apprenticeSkip',cardId:uid,round});};
+ showTargetPicker(source,()=> (rival()?.reserve||[]).filter(c=>c.damage<c.health).map(c=>c.uid),targetId=>command({type:'apprenticeTarget',cardId:source.uid,targetId}),'Aprendiz — escolha o alvo ou cancele para não disparar',null,cancel);
+}function chooseEmanationTarget(card){if(state.phase!=='prep'||state.turn!==state.you)return;const effect=card.effects?.find(e=>e.op==='heal');if(seat().mana<(effect?.mana_cost||0))return;showTargetPicker(card,[...seat().reserve.filter(c=>c.damage>0&&(!effect?.exclude_self||c.uid!==card.uid)).map(c=>c.uid),...(effect?.allow_patron&&seat().patron.hp<seat().patron.maxHp?['patron']:[])],uid=>{emanationChoices.set(card.uid,uid);render();},true);}
+function promptEmanationTarget(){if(state?.phase!=='prep'||state.turn!==state.you||state.spectator||$('target-picker').open)return;const card=seat().reserve.find(c=>seat().emanation.includes(c.uid)&&c.effects?.some(e=>e.op==='heal'&&String(e.timing).includes('emanat'))&&!promptedEmanations.has(c.uid));if(!card)return;promptedEmanations.add(card.uid);visualQueue.then(()=>noticeQueue).then(()=>pause(250)).then(()=>{if(state?.phase==='prep'&&state.turn===state.you&&seat().emanation.includes(card.uid)&&!$('target-picker').open)chooseEmanationTarget(card);}).catch(err);}
+function showSealPicker(card){if(state.phase!=='formation'||seat().ready)return;hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2','Ithalion · Selos vinculados');text(content,'p','Escolha uma casa de cada lado. Os selos duram enquanto Ithalion viver.');const picks={...card.sealChoices};for(const [key,label] of [['allyLane','Selo aliado'],['enemyLane','Selo inimigo']]){text(content,'h3',label);const row=document.createElement('div');row.className='seal-options';for(let lane=0;lane<3;lane++){const b=button(laneSymbols[lane]+' · Casa '+(lane+1),()=>{picks[key]=lane;row.querySelectorAll('button').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');confirm.disabled=!Number.isInteger(picks.allyLane)||!Number.isInteger(picks.enemyLane);},picks[key]===lane?'primary':'');row.append(b);}content.append(row);}const confirm=button('Vincular os selos',()=>{dialog.close();command({type:'sealLanes',cardId:card.uid,...picks});},'primary',!Number.isInteger(picks.allyLane)||!Number.isInteger(picks.enemyLane));content.append(confirm);if(!dialog.open)dialog.showModal();}
+function showPressurePicker(card){hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2',card.name);text(content,'p','Escolha a casa aliada que receberá '+(card.effects.some(e=>e.op==='lane_health_aura')?'+1 de vida':'Transpassar')+' enquanto esta Emanação estiver ativa.');for(let lane=0;lane<3;lane++)content.append(button(laneSymbols[lane]+' · Casa '+(lane+1),()=>{dialog.close();command({type:'pressureLane',cardId:card.uid,lane});},card.auraLane===lane?'primary':''));if(!dialog.open)dialog.showModal();}
+function showEmanationMenu(card){hideHover();const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2',card.name);content.append(button('Trocar de local · 1 mana',()=>{dialog.close();command({type:'emanate',cardId:card.uid});},'',seat().mana<1));if(card.effects?.some(e=>e.op==='lane_keyword_aura'||e.op==='lane_health_aura'&&e.choose_lane)){content.append(button('Escolher casa · '+(card.effects.some(e=>e.op==='lane_health_aura')?'+1 de vida':'Transpassar'),()=>showPressurePicker(card)));text(content,'p',Number.isInteger(card.auraLane)?'Casa '+(card.auraLane+1)+' selecionada.':'Escolha uma casa para esta Emanação.');}else if(card.effects?.some(e=>e.op==='heal'&&String(e.timing).includes('emanat'))){content.append(button('Mudar alvo',()=>chooseEmanationTarget(card)));if(emanationChoices.has(card.uid))content.append(button('Cancelar cura',()=>{emanationChoices.delete(card.uid);dialog.close();render();}));text(content,'p','A cura acontece ao encerrar a preparação e exige a mana indicada.');}else text(content,'p','Esta Emanação aplica seu efeito automaticamente.');if(!dialog.open)dialog.showModal();}
+let targetLinkFrame=null;
+function renderTargetLinks(){
+ const svg=$('target-links');if(targetLinkFrame)cancelAnimationFrame(targetLinkFrame);targetLinkFrame=null;
+ if(!state||!['prep','vote','formation','resolving'].includes(state.phase)||state.spectator){svg.replaceChildren();return;}
+ const bounds=svg.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${bounds.width} ${bounds.height}`);svg.setAttribute('preserveAspectRatio','none');svg.style.overflow='visible';const ns='http://www.w3.org/2000/svg',active=new Set();
+ const links=[...new Map([...emanationChoices,...spellTargets,...(state.players||[]).flatMap(p=>p.reserve.filter(c=>c.apprenticeTargetId&&!c.apprenticeSpellUsed&&c.effects?.some(e=>e.op==='bound_spell_damage')).map(c=>[c.uid,c.apprenticeTargetId]))].map(pair=>[pair[0],pair])).values()];
+ for(const [sourceId,targetId] of links){
+  if(!seat().emanation.includes(sourceId)&&!seat().hand?.some(c=>c.uid===sourceId)&&!(state.players||[]).some(p=>p.reserve.some(c=>c.uid===sourceId&&c.effects?.some(e=>e.op==='bound_spell_damage'))))continue;
+  const from=tableCard(sourceId),to=targetId==='patron'?$('self-head').querySelector('.patron-card'):tableCard(targetId);if(!from||!to)continue;
+  const key=sourceId+':'+targetId;active.add(key);let group=[...svg.children].find(n=>n.dataset.key===key);if(!group){group=document.createElementNS(ns,'g');group.dataset.key=key;for(const cls of ['target-link','target-flow','target-arrow']){const path=document.createElementNS(ns,'path');path.setAttribute('class',cls);group.append(path);}svg.append(group);}
+  const sourceOwner=(state.players||[]).find(p=>p.reserve.some(c=>c.uid===sourceId))?.id;group.setAttribute('class',sourceOwner&&sourceOwner!==state.you?'rival-target-link':'');
+  const sourceRect=from.getBoundingClientRect(),targetRect=to.getBoundingClientRect();if(!sourceRect.width||!targetRect.width){active.delete(key);continue;}
+  const motion=RunaMotion.link(sourceRect,targetRect),matrix=svg.getScreenCTM();if(!matrix)continue;const convert=p=>new DOMPoint(p.x,p.y).matrixTransform(matrix.inverse()),a=convert(motion.start),b=convert(motion.end),c=convert(motion.control);
+  const peers=links.filter(pair=>pair[1]===targetId).map(pair=>pair[0]).sort(),bend=(peers.indexOf(sourceId)-(peers.length-1)/2)*42,length=Math.hypot(b.x-a.x,b.y-a.y)||1;c.x-=((b.y-a.y)/length)*bend;c.y+=((b.x-a.x)/length)*bend;
+  const d='M '+a.x+' '+a.y+' Q '+c.x+' '+c.y+' '+b.x+' '+b.y;group.children[0].setAttribute('d',d);group.children[1].setAttribute('d',d);const angle=Math.atan2(b.y-c.y,b.x-c.x),backX=b.x-10*Math.cos(angle),backY=b.y-10*Math.sin(angle);group.children[2].setAttribute('d',`M ${backX+5*Math.sin(angle)} ${backY-5*Math.cos(angle)} L ${b.x} ${b.y} L ${backX-5*Math.sin(angle)} ${backY+5*Math.cos(angle)}`);
+ }
+ for(const group of [...svg.children])if(!active.has(group.dataset.key))group.remove();
+ if(active.size)targetLinkFrame=requestAnimationFrame(renderTargetLinks);
+}
+function scheduleAutomaticMulligan(){if(typeof patronIntroActive!=='undefined'&&patronIntroActive)return;const p=seat();if(state?.spectator||state?.phase!=='mulligan'||p?.mulliganReady||p?.mulligansLeft!==0){autoMulliganKey='';return;}const key=`${state.code}:${p.id}`;if(autoMulliganKey===key)return;autoMulliganKey=key;visualQueue.enqueue(async context=>{if(!await context.wait(1000))return;if(autoMulliganKey===key&&state?.phase==='mulligan'&&!seat()?.mulliganReady&&seat()?.mulligansLeft===0){mulliganSelected.clear();await command({type:'confirmMulligan'});}}).catch(err);}
+window.addEventListener('resize',renderTargetLinks);window.addEventListener('scroll',renderTargetLinks,true);
+function renderSelection(){const panel=$('selection-panel');panel.replaceChildren();panel.hidden=true;}
+function canPrepareOn(card,owner){const op=card.effects?.[0]?.op;if(op==='anchor'||role(card)==='any-creature'&&!card.enemyOnly)return true;const allied=['friendly','friendly-or-patron','self'].includes(role(card))||op==='barrier';return (owner===state.you)===(!card.enemyOnly&&allied);}
+function chooseSpellTarget(card){
+ if(card.type==='equipment'){chooseEquipment(card);return;}
+ if(commandBusy||state.phase!=='prep'||state.turn!==state.you)return;
+ if(!affordable(card)){err('Mana insuficiente.');return;}
+ if(card.effects?.some(e=>e.op==='ally_attack_damage')){const allies=seat().reserve.filter(c=>c.damage<c.health).map(c=>c.uid),enemies=(rival()?.reserve||[]).filter(c=>c.damage<c.health).map(c=>c.uid);if(!allies.length||!enemies.length)return;showTargetPicker(card,allies,sourceId=>showTargetPicker(card,enemies,targetId=>{selected=null;command({type:'play',cardId:card.uid,mode:'direct',sourceId,targetId});},'Bomba Cinética · 2/2: escolha o inimigo · aliado selecionado: '+(seat().reserve.find(c=>c.uid===sourceId)?.name||'criatura'),sourceId),'Bomba Cinética · 1/2: escolha o aliado que fornecerá o ataque');return;}
+ if(card.positionOnly){err('Arraste a magia até uma posição permitida para prepará-la.');return;}
+ const kind=role(card),self=seat(),cast=targetId=>{selected=null;command({type:'play',cardId:card.uid,mode:'direct',targetId});};
+ if(['self','enemy-board'].includes(kind)){const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();/* Round 3 (owner): the card already shows its name and text — only the card and the use button. */dialog.setAttribute('aria-label',card.name);dialog.addEventListener('close',()=>dialog.removeAttribute('aria-label'),{once:true});const preview=cardEl(card,{zoom:true,history:true});preview.classList.add('choice-card-art');preview.inert=true;preview.onclick=preview.onmouseenter=preview.onfocus=null;content.append(preview);content.append(button('Usar',()=>{dialog.close();cast('');},'primary'));dialog.showModal();return;}
+ if(kind==='any-creature'){showTargetPicker(card,()=>RunaTargeting.creatureIds(state,state.you,card,kind),cast);return;}
+ if(kind==='any'){showTargetPicker(card,()=>RunaTargeting.creatureIds(state,state.you,card,kind),cast);return;}
+ showTargetPicker(card,()=>RunaTargeting.creatureIds(state,state.you,card,kind),cast);
+}
+function promptDiscard(){if(!seat()?.pendingDiscard)return;hideHover();const dialog=$('target-picker'),content=$('target-picker-content');if(dialog.dataset.discardRevision===String(state.revision)&&dialog.open)return;dialog.dataset.discardRevision=String(state.revision);content.replaceChildren();text(content,'h2','Escolha uma carta para descartar');let chosen=false;const close=()=>{dialog.removeEventListener('close',close);dialog.removeEventListener('contextmenu',context);if(!chosen)onCancel?.('cancel');};const context=e=>{if(onCancel){e.preventDefault();dialog.close();}};dialog.addEventListener('close',close);dialog.addEventListener('contextmenu',context);const row=document.createElement('div');row.className='target-options';for(const c of seat().hand||[]){const node=cardEl(c);node.onmouseenter=node.onmousemove=node.onmouseleave=null;node.onclick=()=>{dialog.close();command({type:'discard',cardId:c.uid});};row.append(node);}content.append(row);if(!dialog.open)dialog.showModal();}
+function renderActions(){if(typeof renderStudyBook==='function')renderStudyBook();const box=$('phase-actions'),slotFocus=box.contains(document.activeElement)&&document.activeElement.classList.contains('formation-slot');box.replaceChildren();const self=seat();if(!self)return;const choiceTurn=!state.spectator?`${state.code}:${state.round}:${self.id}`:'';if(choiceTurn!==emanationChoiceTurn){emanationChoices.clear();spellTargets.clear();promptedEmanations.clear();emanationChoiceTurn=choiceTurn;}$('game').dataset.phase=state.phase;const message=$('match-status');
+  const label=state.phase==='coin'?'Moeda lançada':state.phase==='mulligan'?'Escolha da mão inicial':state.phase==='prep'?state.turn===self.id?'Sua preparação':'Preparação rival':state.phase==='vote'?'Decisão de combate':state.phase==='formation'?'Formação secreta':state.phase==='resolving'?'Confronto em curso':state.phase==='finished'?'Partida encerrada':'Aguardando';
+  message.textContent=state.phase==='prep'||state.phase==='resolving'?'':['vote','formation'].includes(state.phase)?label:label+` · rodada ${state.round}`;/* S5: the round circuit shows "Rodada N" and the combat light. */message.hidden=['prep','finished'].includes(state.phase);if(state.phase==='finished')message.textContent='';
+  if(state.spectator){text(box,'h3','Arquibancada');text(box,'p',state.spectatorHands?'Mãos à vista. Formações seguem secretas.':'Sem ver mãos nem formações.','spectator-note');return;}
+  if(state.phase==='coin'){
+    text(box,'h3','O vencedor da moeda joga primeiro.');
+  }else if(state.phase==='mulligan'){
+    text(box,'h3','Mão inicial');text(box,'p','Escolha as cartas na janela central.');
+  }else if(state.phase==='prep'){
+    if(state.turn===self.id){if(self.pendingApprenticeTargets?.length){text(box,'h3','Aprendiz · novo alvo');box.append(button('Escolher alvo',()=>promptApprenticeTarget(),'primary'));return;}const clerics=self.emanation.map(uid=>self.reserve.find(c=>c.uid===uid)).filter(c=>c?.effects?.some(e=>e.op==='heal'&&String(e.timing).includes('emanat')));for(const cleric of clerics){const uid=emanationChoices.get(cleric.uid),target=self.reserve.find(c=>c.uid===uid&&c.damage>0);if(uid&&!target&&!(uid==='patron'&&cleric.effects.some(e=>e.allow_patron)&&self.patron.hp<self.patron.maxHp))emanationChoices.delete(cleric.uid);}
+      const healingCost=clerics.filter(c=>emanationChoices.has(c.uid)).reduce((n,c)=>n+(c.effects.find(e=>e.op==='heal'&&String(e.timing).includes('emanat'))?.mana_cost||0),0);if(healingCost)text(box,'p',`Curas escolhidas: ${healingCost} mana ao encerrar${self.mana<healingCost?' · falta mana':''}`);box.append(button('Encerrar',()=>command({type:'endPrep',healTargetIds:clerics.map(c=>emanationChoices.get(c.uid)||'')}),'primary',self.mana<healingCost));}else{box.append(button('Turno do oponente',()=>{},'',true));}
+  }else if(state.phase==='forging'){text(box,'h3',`Forja - Rodada ${state.round}`);box.append(button(state.turn===self.id?'Escolha da arma':'Turno do oponente',()=>renderForge(),'',state.turn!==self.id));
+  }else if(state.phase==='vote'){
+    if(self.voted)text(box,'p','Você recusou. Aguardando a decisão rival.','status-pill');else{box.append(button('Começar combate',()=>command({type:'vote',fight:true}),'primary'));box.append(button('Não combater',()=>command({type:'vote',fight:false})));}
+  }else if(state.phase==='formation'){
+    if(!self.ready)for(const uid of self.emanation){const source=self.reserve.find(c=>c.uid===uid);if(source?.effects?.some(e=>e.op==='lane_keyword_aura'||e.op==='lane_health_aura'&&e.choose_lane)){box.append(button(source.name+(Number.isInteger(source.auraLane)?' · '+laneSymbols[source.auraLane]:' · escolher casa'),()=>showPressurePicker(source)));}}
+
+    if(!self.ready)for(const c of self.reserve.filter(c=>self.formation.includes(c.uid)&&!c.sleep&&c.effects?.some(e=>e.op==='paired_seals')&&!state.seals?.some(s=>s.sourceId===c.uid)))box.append(button(c.name+' · escolher selos',()=>showSealPicker(c)));
+
+    /* Formation addendum B: after confirming, the wait is shown in the same place as the confirmation. */if(self.ready)box.append(formationSlot(button('Aguardando o rival',()=>{},'formation-waiting'),'Aguardando o rival'));else box.append(formationSlot(button('Encerrar',()=>command({type:'ready'}),'primary formation-confirm',Boolean(state.forceWindow&&(state.tutorial?.clock?.paused?state.tutorial.clock.now:Date.now()-serverClockOffset)<state.forceWindow.until)),'Encerrar'));/* keyboard focus stays on the slot across re-renders (rival moves) and after confirming */if(slotFocus)box.querySelector('.formation-slot')?.focus({preventScroll:true});
+  }else if(state.phase==='resolving'){
+    box.append(button('Turno de combate',()=>{},'',true));
+  }else if(state.phase==='finished'){
+    if(!state.winner)text(box,'h3','Empate!');box.append(button(state?.tutorial?'Repetir treino':'Nova partida',()=>{selected=null;if(state?.tutorial)return globalThis.RunaTutorial?.start();command({type:'reset'});},'primary'));
+  }
+}
+const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const unlockAudio=()=>{try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();audioContext.resume();globalThis.RunaSfx?.preload(audioContext);}catch{}};
+document.addEventListener('pointerdown',()=>{unlockAudio();warmSounds();globalThis.RunaCreatureEntrances?.preload(audioContext);});document.addEventListener('keydown',unlockAudio,{once:true});
+// Preserve event timing without central stage pop-ups.
+function visualMessage(title,caption='',duration=1050){const generation=visualGeneration;return noticeQueue.enqueue(async context=>{if(generation===visualGeneration)await context.wait(duration);});}
+function warmSounds(){try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();return globalThis.RunaSfx?.preload(audioContext)||Promise.resolve();}catch{return Promise.resolve();}}
+function sound(kind='magic',attack=0,options={}){const key=kind==='impact'?(attack<=3?'impactLow':attack<=6?'impactMedium':'impactHeavy'):kind;return globalThis.RunaSfx?.play(audioContext,key,options);}
+function combatPresentationCurrent(id){return !id||(state?.phase==='resolving'&&state.combat?.id===id);}
+function animationCue(animation,fraction,callback){const generation=visualGeneration,combatId=state?.phase==='resolving'?state.combat?.id:null;let frame;const duration=Number(animation.effect.getTiming().duration);function check(){if(animation.playState==='idle'||generation!==visualGeneration||!combatPresentationCurrent(combatId))return;if(Number(animation.currentTime)>=duration*fraction){callback();return;}frame=requestAnimationFrame(check);}frame=requestAnimationFrame(check);animation.finished.catch(()=>{}).finally(()=>cancelAnimationFrame(frame));}
+warmSounds();
+function spellSound(name,op){return /flecha|arco|besta|seta/i.test(name)?'arrow':/tiro|disparo|cartucho|pistola/i.test(name)?'gun':op==='heal'||op==='stat_buff'?'heal':'magic';}
+function currentVisualTarget(target){if(target&&!target.nodeType)return target;if(target?.isConnected)return target;if(target?.dataset?.uid)return tableCard(target.dataset.uid)||target;if(target?.matches('.patron-card')&&target.dataset.owner)return $(target.dataset.owner===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card')||target;return target;}
+function impact(target,positive=false){target=currentVisualTarget(target);if(!target)return;if(target.matches?.('.patron-card')&&!positive){patronImpact(target);return;}const pos=center(target),ring=document.createElement('div');ring.className=`spell-impact${positive?' positive':''}`;ring.style.left=`${pos.x}px`;ring.style.top=`${pos.y}px`;$('visual-layer').append(ring);for(let i=0;i<12;i++){const spark=document.createElement('span');spark.style.setProperty('--angle',`${i*30}deg`);ring.append(spark);}setTimeout(()=>ring.remove(),1050);target.classList?.add('visual-hit');setTimeout(()=>target.classList?.remove('visual-hit'),800);}
+function healPulse(target){if(!target)return;const p=center(target),aura=document.createElement('div');aura.className='healing-aura';Object.assign(aura.style,{left:p.x+'px',top:p.y+'px'});aura.textContent='✦';$('visual-layer').append(aura);setTimeout(()=>aura.remove(),1200);}
+function buffRise(target,amount=1,attackAfter=null){const generation=visualGeneration;if(!target)return;amount=Number(amount)||0;const card=target.matches('.card')?target:target.querySelector('.card'),uid=card?.dataset.uid,shown=displayedAttack.get(uid)??(Number(card?.querySelector('.attack-value')?.textContent)||0),combatId=state?.combat?.id||null;const r=target.getBoundingClientRect(),arrow=document.createElement('div');arrow.className='buff-rise';Object.assign(arrow.style,{left:(r.right+8)+'px',top:(r.top+r.height/2)+'px'});arrow.textContent=`↑ +${amount}`;$('visual-layer').append(arrow);setTimeout(()=>{arrow.remove();if(generation!==visualGeneration||!uid||(state?.combat?.id||null)!==combatId)return;const value=attackAfter??pendingAttack.get(uid)??Math.max(0,shown+amount);displayedAttack.set(uid,value);if(value>=(pendingAttack.get(uid)??value))pendingAttack.delete(uid);for(const node of document.querySelectorAll('.card'))if(node.dataset.uid===uid){const number=node.querySelector('.attack-value');if(number){number.textContent=String(value);number.classList.remove('attack-increased');void number.offsetWidth;number.classList.add('attack-increased');number.classList.toggle('attack-buffed',value>Number(node.dataset.baseAttack));}}},1100);}
+function patronImpact(patron){patron=currentVisualTarget(patron);if(!patron)return;const pos=center(patron),ring=document.createElement('div');ring.className='patron-impact-ring';Object.assign(ring.style,{left:pos.x+'px',top:pos.y+'px'});$('visual-layer').append(ring);setTimeout(()=>ring.remove(),450);patron.classList.remove('visual-hit');const direction=patron.closest('#self-head')?1:-1;patron.animate([{transform:'translateY(0)'},{transform:`translateY(${direction*10}px)`,offset:.35},{transform:'translateY(0)'}],{duration:300,easing:'ease-out'});const tint=document.createElement('div');tint.className='patron-red-flash';patron.append(tint);setTimeout(()=>tint.remove(),350);}
+function center(node){const rect=globalThis.RunaGeometry?.rect(node)||node?.getBoundingClientRect();return rect?{x:rect.left+rect.width/2,y:rect.top+rect.height/2}:{x:innerWidth/2,y:innerHeight/2};}
+function fly(symbol,from,to,kind='spell',onHit=null){const start=center(from),end=center(to),node=document.createElement('div');node.className=`flying-effect ${kind}`;node.textContent=symbol;node.style.left=`${start.x}px`;node.style.top=`${start.y}px`;(kind==='capture-bullet'?document.querySelector('.capture-scene'):$('visual-layer')).append(node);const animation=node.animate([{transform:'translate(-50%,-50%) scale(.7)',opacity:0},{transform:'translate(-50%,-50%) scale(1.2)',opacity:1,offset:.18},{transform:`translate(calc(${end.x-start.x}px - 50%),calc(${end.y-start.y}px - 50%)) scale(.9)`,opacity:1,offset:.84},{transform:`translate(calc(${end.x-start.x}px - 50%),calc(${end.y-start.y}px - 50%)) scale(1.8)`,opacity:0}],{duration:900,easing:'ease-in-out'});if(onHit)animationCue(animation,.84,onHit);animation.finished.catch(()=>{}).finally(()=>node.remove());return animation;}
+function weightOf(card){return Math.max(0,Math.min(1,((card?.attack||0)+(card?.health||0)-6)/14));}
+function finishVisual(uid,copy){copy?.remove();if(copy?.visualTicket&&!RunaCardArrivals.finish(copy.visualTicket))return;if(RunaCardArrivals.moving(uid))return;if(uid?.startsWith('patron:')){const portrait=patronPortraitNode(uid.slice(7));if(portrait)portrait.style.visibility='';}RunaCardArrivals.release(uid);for(const node of document.querySelectorAll('#game .card,#game .spell-mark'))if(node.dataset.uid===uid){node.classList.remove('pending-arrival');node.style.visibility=visuallyDefeated.has(uid)?'hidden':'';}}
+async function arcFlight(copy,target,options){const generation=visualGeneration;try{await Promise.race([RunaDeathArc.fly(copy,target,options),pause((options.duration||850)+400)]);}finally{if(generation===visualGeneration)finishVisual(options.uid,copy);else copy.remove();}}
+async function safeFlight(copy,frames,options,uid){const generation=visualGeneration,animation=copy.animate(frames,options);try{await Promise.race([animation.finished.catch(()=>{}),pause((options.duration||1000)+(options.delay||0)+400)]);}finally{animation.cancel();if(generation===visualGeneration)finishVisual(uid,copy);else copy.remove();}}
+async function settleAnimation(animation,duration=2000){try{await Promise.race([animation.finished,pause(duration+400)]);}catch{}finally{animation.cancel();}}
+function visualCard(source){const rect=source.getBoundingClientRect(),layer=$('visual-layer'),bounds=layer.getBoundingClientRect(),copy=document.createElement('div'),face=cloneVisual(source);copy.className='visual-card card-flight';copy.dataset.uid=source.dataset.uid;if(state?.phase==='resolving'&&state.combat?.id)copy.dataset.combatId=state.combat.id;Object.assign(copy.style,{left:(rect.left-bounds.left)+'px',top:(rect.top-bounds.top)+'px',width:rect.width+'px',height:rect.height+'px'});face.classList.remove('hand-card','opening-card','dragging-source','pending-arrival','selected','arrived','snapping','visual-hit');face.classList.add('flight-face');face.removeAttribute('style');copy.append(face);layer.append(copy);RunaCardArrivals.trackNode(RunaCardArrivals.begin('combat',{uid:source.dataset.uid,moving:true,replace:true}),copy);source.style.visibility='hidden';return copy;}
+async function animateTransfer(options){
+ const ticket=options.ticket===undefined?RunaCardArrivals.begin('transfer',{uid:options.uid,moving:true}):options.ticket;
+ if(!RunaCardArrivals.current(ticket)){options.copy?.remove();return;}
+ try{return await RunaPresentation.play('transfer',{...options,ticket},animateNativeTransfer);}
+ finally{options.copy?.remove();if(RunaCardArrivals.finish(ticket))finishVisual(options.uid);}
+}
+async function animateNativeTransfer({uid,copy,rect,card,ticket,duration:customDuration,delay=0,destination=null}){
+ const generation=visualGeneration;let arrival=null,flight=null;
+ const stop=()=>{if(!RunaCardArrivals.current(ticket))for(const node of [flight,arrival]){node?.getAnimations?.().forEach(a=>a.cancel());node?.remove();}};
+ const unsubscribe=RunaCardArrivals.subscribe(stop);
+ try{
+  const target=destination?document.querySelector(destination):tableCard(uid);if(!target||!rect)return;
+  const changesFace=copy.classList.contains('combat-card')!==target.classList.contains('combat-card')||copy.classList.contains('spell-mark')||Boolean(target.closest?.('#self-emana,#opponent-emana'));
+  if(changesFace)await Promise.race([target.visualReady,pause(1800)]);if(generation!==visualGeneration||!RunaCardArrivals.current(ticket)||!target.isConnected&&target.isConnected!==undefined)return;
+  if(target.closest?.('.combat-emanation')&&typeof layoutCombatEmanations==='function')layoutCombatEmanations();
+  const end=target.getBoundingClientRect(),bounds=$('visual-layer').getBoundingClientRect();if(!end.width||!end.height)return;
+  target.style.visibility='hidden';
+  const dx=end.left+end.width/2-rect.left-rect.width/2,dy=end.top+end.height/2-rect.top-rect.height/2;
+  const make=(face,w,h)=>{const wrapper=document.createElement('div');wrapper.className='card-flight';Object.assign(wrapper.style,{left:(rect.left+rect.width/2-w/2-bounds.left)+'px',top:(rect.top+rect.height/2-h/2-bounds.top)+'px',width:w+'px',height:h+'px'});face.classList.remove('hand-card','opening-card','dragging-source','drag-preview','pending-arrival','selected','arrived','snapping','visual-hit','payable');face.classList.add('flight-face');face.removeAttribute('style');wrapper.append(face);$('visual-layer').append(wrapper);return wrapper;};
+  flight=make(copy,rect.width,rect.height);
+  document.querySelectorAll('.release-ghost').forEach(node=>node.remove());
+  const duration=customDuration??(720+weightOf(card)*180),options={duration,delay,easing:'cubic-bezier(.22,.65,.22,1)',fill:'both'};
+  const oldScale=end.width/rect.width,newScale=rect.width/end.width;if(oldScale>1.01)flight.classList.add('flight-grows');
+  if(!changesFace){
+   const animation=flight.animate([{transform:'translate(0,0) scale(1)'},{transform:'translate('+dx+'px,'+dy+'px) scale('+oldScale+')'}],options);await settleAnimation(animation,duration+delay);
+   if(generation===visualGeneration&&RunaCardArrivals.current(ticket))sound('place');return;
+  }
+  arrival=make(cloneVisual(target),end.width,end.height);
+  const departing=flight.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+dx*.15+'px,'+dy*.15+'px) scale('+(1+(oldScale-1)*.15)+')',opacity:1,offset:.15},{transform:'translate('+dx*.7+'px,'+dy*.7+'px) scale('+(1+(oldScale-1)*.7)+')',opacity:0,offset:.7},{transform:'translate('+dx+'px,'+dy+'px) scale('+oldScale+')',opacity:0}],options);
+  const arriving=arrival.animate([{transform:'translate(0,0) scale('+newScale+')',opacity:0},{transform:'translate('+dx*.15+'px,'+dy*.15+'px) scale('+(newScale+(1-newScale)*.15)+')',opacity:0,offset:.15},{transform:'translate('+dx*.7+'px,'+dy*.7+'px) scale('+(newScale+(1-newScale)*.7)+')',opacity:1,offset:.7},{transform:'translate('+dx+'px,'+dy+'px) scale(1)',opacity:1}],options);
+  await Promise.all([settleAnimation(departing,duration+delay),settleAnimation(arriving,duration+delay)]);if(generation===visualGeneration&&RunaCardArrivals.current(ticket))sound('place');
+ }catch(error){console.error(error);}finally{unsubscribe();flight?.remove();arrival?.remove();if(!flight)copy?.remove();}
+}
+function animateMulliganReturn(event){return RunaPresentation.play('mulliganReturn',event,animateNativeMulliganReturn);}
+async function animateNativeMulliganReturn(event){
+ const generation=visualGeneration,cards=mulliganDepartures.get(event.id)||[];mulliganDepartures.delete(event.id);
+ if(!cards.length){await pause(350);return;}
+ const end=center($('self-deck')),bounds=$('visual-layer').getBoundingClientRect();
+ await Promise.all(cards.map(async({copy,rect},i)=>{
+  const wrapper=document.createElement('div');wrapper.className='card-flight';Object.assign(wrapper.style,{left:(rect.left-bounds.left)+'px',top:(rect.top-bounds.top)+'px',width:rect.width+'px',height:rect.height+'px'});
+  copy.classList.remove('opening-card','hand-card','selected','pending-arrival','arrived','payable');copy.classList.add('flight-face');copy.removeAttribute('style');wrapper.append(copy);$('visual-layer').append(wrapper);
+  const dx=end.x-rect.left-rect.width/2,dy=end.y-rect.top-rect.height/2;
+  try{await settleAnimation(wrapper.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+dx+'px,'+dy+'px) scale(.28)',opacity:0}],{duration:600,delay:i*75,easing:'cubic-bezier(.4,0,.6,1)',fill:'both'}),600+i*75);}finally{wrapper.remove();}
+ }));if(generation===visualGeneration)sound('place');
+}
+async function animateOpeningToHand(cards){
+ const ticket=RunaCardArrivals.begin('opening-to-hand',{lock:true});
+ const batch=cards.map(item=>({...item,ticket:item.ticket===undefined?RunaCardArrivals.begin('transfer',{uid:item.uid,moving:true}):item.ticket}));
+ try{
+  await RunaPresentation.play('openingLayout',null,()=>{});if(!RunaCardArrivals.current(ticket))return;
+  const notice=visualMessage('MÃO CONFIRMADA','As cartas seguem para sua mão',1450);
+  await Promise.all(batch.map((item,index)=>animateTransfer({...item,destination:'#hand .card[data-uid="'+item.uid+'"]',duration:1150,delay:index*110})));await notice;
+ }finally{for(const item of batch){item.copy?.remove();if(RunaCardArrivals.finish(item.ticket))finishVisual(item.uid);}RunaCardArrivals.finish(ticket);}
+}
+// Abertura (09/11/2026): a moeda é lançada em primeiro plano (opening-toss.js) enquanto as cartas iniciais chegam. O
+// palco não segura a fila: o evento 'opening' do próprio jogador distribui as cartas e só então espera a moeda terminar.
+let openingToss=null,openingAwait=null;
+function startOpeningToss(event,player,generation){
+ const own=Boolean(state?.you&&event.playerId===state.you),watching=Boolean(state?.spectator),limit=seat()?.mulliganLimit;
+ const stage=RunaOpeningToss.start({back:Boolean(state?.you&&event.playerId&&!own),title:watching?`${player?.name||'Jogador'} joga primeiro`:own?'Você joga primeiro':'Você joga em segundo',
+  detail:watching||!limit?'':`Troque até ${limit} carta${limit===1?'':'s'}`,ready:Promise.all([...$('mulligan-cards').querySelectorAll('.card')].map(node=>node.visualReady)),alive:()=>generation===visualGeneration&&state?.phase==='mulligan',sound:()=>sound('coin')});
+ openingToss={generation,playerId:event.playerId,stage};if(openingAwait===generation)openingAwait=null;$('mulligan-overlay').classList.remove('opening-await');
+ stage.done.then(()=>{if(openingToss?.stage===stage)openingToss=null;});
+}
+function animateOpeningDeal(uids){const generation=visualGeneration;return RunaPresentation.play('openingDeal',{uids},async p=>{for(const uid of p.uids){if(generation!==visualGeneration)break;await animateNativeDraw(uid,true);}});}
+function animateDraw(uid,mine=true,options={}){return RunaPresentation.play('draw',{uid,mine,options},p=>animateNativeDraw(p.uid,p.mine));}
+async function animateNativeDraw(uid,mine=true){
+ const generation=visualGeneration,ticket=RunaCardArrivals.begin('draw',{uid,arrival:mine,lock:mine});if(!ticket)return;
+ const target=mine?(state?.phase==='mulligan'&&!seat()?.mulliganReady?[...$('mulligan-cards').querySelectorAll('.card')].find(n=>n.dataset.uid===uid):tableCard(uid)):($('opponent-hand')?.lastElementChild||$('opponent-hand')||$('opponent-head'));if(!target){if(RunaCardArrivals.finish(ticket)&&mine)revealArrival(uid);return;}
+ const from=center($(mine?'self-deck':'opponent-deck')),to=center(target),card=seat()?.hand?.find(c=>c.uid===uid),copy=mine&&card?cardEl(card):document.createElement('div');copy.classList.add('card');copy.classList.remove('pending-arrival');copy.classList.add('draw-flight');copy.style.left=(from.x-42)+'px';copy.style.top=(from.y-58)+'px';copy.style.width='84px';copy.style.height='116px';copy.style.visibility='';const front=[...copy.childNodes];copy.replaceChildren();copy.classList.remove('has-art','wounded','payable');copy.classList.add('back');copy.removeAttribute('data-uid');copy.removeAttribute('aria-label');const backImage=document.createElement('img');backImage.src='card-back.png';backImage.className='concealed-back-image';backImage.alt='Verso da carta';copy.append(backImage);$('visual-layer').append(copy);const dx=to.x-from.x,dy=to.y-from.y;
+ const flip=mine?'76deg':'0deg';const anim=copy.animate([{transform:'translate(0,0) rotateY(0deg) scale(.7)',opacity:0},{transform:`translate(${dx*.4}px,${dy*.4}px) rotateY(${flip}) scale(1)`,opacity:1,offset:.45},{transform:`translate(${dx}px,${dy}px) rotateY(0deg) scale(${mine?target.getBoundingClientRect().width/84:.7})`,opacity:1}],{duration:630,easing:'cubic-bezier(.25,.1,.25,1)',fill:'forwards'});sound('draw',0,{from,to,travelSeconds:.63});
+ setTimeout(()=>{if(mine&&generation===visualGeneration&&RunaCardArrivals.current(ticket)){copy.classList.remove('back');if(card?.imageKind==='card')copy.classList.add('has-art');copy.replaceChildren(...front);}},285);
+ try{await settleAnimation(anim,630);}finally{copy.remove();if(RunaCardArrivals.finish(ticket)&&mine&&generation===visualGeneration)revealArrival(uid);}
+}
+function attackSource(hit){RunaPresentation.ensureGeometry();return [...document.querySelectorAll('#lanes .lane-side .card')].find(node=>node.dataset.uid===hit.sourceId&&node.closest('.lane-side')?.dataset.owner===hit.owner)||null;}
+function attackTarget(hit){
+ RunaPresentation.ensureGeometry();
+ if(!hit.targetOwner||hit.targetOwner===hit.owner)return null;
+ if(hit.targetId){const node=[...document.querySelectorAll('#lanes .lane-side .card')].find(n=>n.dataset.uid===hit.targetId&&n.closest('.lane-side')?.dataset.owner===hit.targetOwner);return node||null;}
+ return tableCard('patron:'+hit.targetOwner)||[...document.querySelectorAll('#game .patron-card')].find(node=>node.dataset.owner===hit.targetOwner)||null;
+}
+async function animateLaneClash(entry){
+ const generation=visualGeneration,combatId=state?.combat?.id;
+ for(const card of entry.cards.filter(Boolean)){displayedAttack.set(card.uid,card.attack);const number=tableCard(card.uid)?.querySelector('.attack-value');if(number){number.textContent=String(card.attack);number.classList.toggle('attack-buffed',card.attack>Number(number.closest('.card').dataset.baseAttack));}}
+ const [left,right]=entry.cards,parts=entry.cards.map(card=>card?attackSource({sourceId:card.uid,owner:card.owner}):null);if(!parts.some(Boolean))return;
+ const weight=Math.max(...entry.cards.filter(Boolean).map(c=>c.attack>=4?1:weightOf(c)));const attackStrength=Math.max(...entry.cards.filter(Boolean).map(c=>c.attack||0));
+ if(left&&right){
+  if(!parts.every(Boolean))return;
+  const a=center(parts[0]),b=center(parts[1]),{dx,dy}=RunaMotion.contact(parts[0].getBoundingClientRect(),parts[1].getBoundingClientRect()),copies=parts.map(visualCard),duration=1350+weight*350;
+  const animations=copies.map((copy,i)=>copy.animate(RunaMotion.strikeFrames(i?-dx:dx,i?-dy:dy,{directionX:(b.x-a.x)*(i?-1:1),directionY:(b.y-a.y)*(i?-1:1),weight}),{duration,easing:'linear',fill:'forwards'}));
+  animationCue(animations[0],.42,()=>{copies.forEach((node,i)=>heavyCombatImpact(node,entry.cards[1-i].impactAttack??entry.cards[1-i].attack,entry.cards[1-i]));if(typeof applyEquipmentUpdates==='function')applyEquipmentUpdates(entry.equipmentUpdates);applyHealthUpdates(entry.healthUpdates||entry.cards.map((card,i)=>({uid:card.uid,hp:Math.max(0,card.health-entry.cards[1-i].attack),maxHp:state.players.flatMap(p=>p.reserve).find(c=>c.uid===card.uid)?.health||card.health})));entry.onContact?.();});
+  await Promise.all(animations.map(a=>settleAnimation(a,duration)));
+  if(generation!==visualGeneration||!combatPresentationCurrent(combatId)){copies.forEach(copy=>generation===visualGeneration?finishVisual(copy.dataset.uid,copy):copy.remove());return;}
+  copies.forEach((copy,i)=>{if(visuallyDefeated.has(entry.cards[i].uid)||(entry.healthUpdates?.find(u=>u.uid===entry.cards[i].uid)?.hp??(entry.cards[i].health-entry.cards[1-i].attack))<=0){copy.classList.add('visual-dead');deadVisuals.set(entry.cards[i].uid,{copy,owner:entry.cards[i].owner});}else finishVisual(entry.cards[i].uid,copy);});return;
+ }
+ const card=left||right,source=parts[left?0:1],targetOwner=entry.targetOwner||state.players.find(p=>p.id!==card.owner)?.id,patron=attackTarget({owner:card.owner,targetOwner,targetId:null});if(!source||!card.owner||!patron)return;
+ const copy=visualCard(source),motion=RunaMotion.contact(source.getBoundingClientRect(),patron.getBoundingClientRect(),false),duration=1550+weight*350;
+ const from=center(source),to=center(patron),hitAnimation=copy.animate(RunaMotion.strikeFrames(motion.dx,motion.dy,{directionX:to.x-from.x,directionY:to.y-from.y,weight}),{duration,easing:'linear',fill:'forwards'});animationCue(hitAnimation,.42,()=>{patronImpact(patron);damagePatron(targetOwner,card.attack);heavyCombatImpact(patron,card.attack,card);});try{await settleAnimation(hitAnimation,duration);}catch{}finally{if(generation===visualGeneration)finishVisual(card.uid,copy);else copy.remove();}return;
+
+}
+async function animateDirectedStrike(strike){
+ const generation=visualGeneration;
+ if(!strike.pair&&strike.amount<=0||strike.pair&&strike.amount<=0&&strike.pair.amount<=0)return;
+ if(strike.pair){const cards=[strike,strike.pair].map(hit=>{const c=state.combat.visual.flatMap(x=>x.cards.filter(Boolean)).find(x=>x.uid===hit.sourceId);return {...c,uid:hit.sourceId,owner:hit.owner,attack:hit.amount,impactAttack:c?.attack??hit.amount};});await animateLaneClash({lane:strike.lane,cards,healthUpdates:primaryStrikeUpdates(strike),equipmentUpdates:strike.equipmentUpdates,onContact:()=>combatDamageAftermath(strike)});if(generation!==visualGeneration)return;return;}
+
+ if(strike.blocked)return;const preview=state.combat?.visual?.flatMap(entry=>entry.cards.filter(Boolean)).find(c=>c.uid===strike.sourceId);if(preview){displayedAttack.set(preview.uid,preview.attack);const number=tableCard(preview.uid)?.querySelector('.attack-value');if(number){number.textContent=String(preview.attack);number.classList.toggle('attack-buffed',preview.attack>Number(number.closest('.card').dataset.baseAttack));}}const source=attackSource(strike),target=attackTarget(strike);if(!source||!target)return;
+ // A creature defeated earlier in this combat still strikes; its corpse copy performs the strike so the UID never has two copies.
+ const card=state.players.flatMap(p=>p.reserve).find(c=>c.uid===strike.sourceId),copy=deadVisuals.get(strike.sourceId)?.copy?.isConnected?deadVisuals.get(strike.sourceId).copy:visualCard(source),from=center(source),to=center(target),motion=RunaMotion.contact(source.getBoundingClientRect(),target.getBoundingClientRect(),false),dx=motion.dx,dy=motion.dy;
+ if(strike.initiative)copy.classList.add('initiative-strike');const animation=copy.animate(RunaMotion.strikeFrames(dx,dy,{directionX:to.x-from.x,directionY:to.y-from.y,weight:strike.amount>=4?1:weightOf(card||preview)}),{duration:1150,easing:'linear',fill:'forwards'});
+ animationCue(animation,.42,()=>{if(!strike.targetId)patronImpact(target);heavyCombatImpact(target,preview?.attack??strike.amount,card||preview);applyHealthUpdates(primaryStrikeUpdates(strike));if(typeof applyEquipmentUpdates==='function')applyEquipmentUpdates(strike.equipmentUpdates);combatDamageAftermath(strike);});
+ try{await settleAnimation(animation,1150);}catch{}finally{if(generation===visualGeneration){if(deadVisuals.get(strike.sourceId)?.copy!==copy)finishVisual(strike.sourceId,copy);}else copy.remove();}
+}
+function animateCasualties(battle){const generation=visualGeneration;
+ for(const card of battle.casualties||[]){let record=deadVisuals.get(card.uid);if(!record&&visuallyDefeated.has(card.uid))continue;if(!record){const source=tableCard(card.uid);if(!source)continue;record={copy:visualCard(source),owner:card.owner};record.copy.classList.add('visual-dead');}const {copy}=record,from=center(copy),to=center($(card.owner===seat()?.id?'self-grave':'opponent-grave'));
+ /* Formation addendum B: arc to the owner's Nartvanyr (death-arc.js), same start and duration. */(globalThis.RunaDeathArc?arcFlight(copy,()=>$(card.owner===seat()?.id?'self-grave':'opponent-grave'),{duration:850,endScale:.35,uid:card.uid,owner:card.owner}):safeFlight(copy,[{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${to.x-from.x}px,${to.y-from.y}px) scale(.35)`,opacity:0}],{duration:850,easing:'ease-in',fill:'forwards'},card.uid)).then(()=>{if(generation===visualGeneration)sound('grave');});deadVisuals.delete(card.uid);}
+}
+async function animateBanquet(event){const generation=visualGeneration,updates=event.healthUpdates||[];sound('heal');await Promise.all(updates.map(async(update,i)=>{await pause(i*70);if(generation!==visualGeneration)return;const target=tableCard(update.uid);if(target){healPulse(target);const r=target.getBoundingClientRect(),spark=document.createElement('div');spark.className='banquet-halo';spark.style.left=(r.left+r.width/2)+'px';spark.style.top=(r.top+r.height/2)+'px';document.body.append(spark);setTimeout(()=>spark.remove(),1500);}applyHealthUpdates([update]);}));}
+function playPatronVoice(player,kind,detail={}){const generation=visualGeneration;return globalThis.RunaPatronVoice?.play({base:gameBase,getAudioContext:()=>audioContext,player,kind,onCaption:kind==='power'?globalThis.RunaPatronCaptions?.create(()=>$(player?.id===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card')):undefined,valid:()=>generation===visualGeneration,...detail});}
+async function presentFatigue(event,mine,generation){return RunaDeckFeedback.fatigue(event,{source:$(mine?'self-deck':'opponent-deck'),victim:$(mine?'self-head':'opponent-head')?.querySelector('.patron-card'),layer:$('visual-layer'),onHit:()=>applyDamageHit(event.healthUpdates),valid:()=>generation===visualGeneration,sound,impact});}
+async function animateEvent(event,generation=visualGeneration){await noticeQueue;void Promise.resolve(warmSounds()).catch(()=>{});if(generation!==visualGeneration)return;const player=state?.players.find(p=>p.id===event.playerId);const mine=player?.id===seat()?.id;const from=patronDamageSource(player?.id);const target=event.targetPatronId?$(event.targetPatronId===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card'):event.targetId?spellTarget(event.targetId):null;
+   if(event.type==='fatigue'){await presentFatigue(event,mine,generation);return;}
+   const damageKind=damageSpellKind(event.card,event.op);const spellExit=event.type==='spell'&&event.card?await highlightUsedSpell(event.card,event.playerId,{readingOnly:Boolean(damageKind),effectMs:event.op==='return_to_hand'?500:1500+(event.op==='area_stat_buff'?Math.max(0,(event.healthUpdates?.length||0)-1)*70:0)}):null;
+   if(generation!==visualGeneration){if(spellExit)await spellExit();return;}
+   try{
+   if(event.type==='ether_reprisal'){if(target)await playDamageEffect('ember',from,target,()=>applyDamageHit(event.healthUpdates));else applyHealthUpdates(event.healthUpdates);return;}
+   if(['apprentice_damage','launcher_damage'].includes(event.type)){const source=damageTarget(event.sourceId),victim=event.targetPatronId?target:damageTarget(event.targetId);if(source&&victim)await playDamageEffect('ember',source,victim,()=>applyDamageHit(event.healthUpdates));else applyDamageHit(event.healthUpdates);return;}
+   if(event.type==='silence'&&typeof identityPlay==='function'){cardIdentityApplied.delete(event.targetId);cardIdentityFrost.delete(event.targetId);await identityPlay('silence',from,damageTarget(event.targetId),()=>{applyDamageHit(event.healthUpdates);syncCardIdentities();});return;}
+   if(event.type==='silence'){const target=damageTarget(event.targetId);target?.animate?.([{filter:'brightness(1)'},{filter:'grayscale(1) brightness(1.8) drop-shadow(0 0 14px #c8e1c8)'},{filter:'brightness(1)'}],{duration:750});sound('magic');await pause(550);if(generation===visualGeneration)applyDamageHit(event.healthUpdates);return;}
+   if(event.type==='apprentice_target'){tableCard(event.targetId)?.animate([{filter:'brightness(1)'},{filter:'brightness(1.6) drop-shadow(0 0 12px #83d1dc)'},{filter:'brightness(1)'}],{duration:650});return;}
+   if(event.type==='ability_notice'&&typeof presentIdentityNotice==='function'&&presentIdentityNotice(event)){await pause(900);return;}
+   if(event.type==='ability_notice'){await visualMessage('HABILIDADE',event.message,2200);return;}
+   if(event.type==='coin'){startOpeningToss(event,player,generation);}
+   else if(event.type==='first'){if(openingToss?.generation===generation&&openingToss.playerId===event.playerId)return;/* a moeda desta abertura já anuncia a ordem */visualMessage('ORDEM DEFINIDA',`${player?.name||'Jogador'} joga primeiro`,1500);await pause(1250);}
+   else if(event.type==='opening'){if(mine){const ids=event.cardIds||[...(seat()?.hand||[])].slice(0,event.count||5).map(c=>c.uid),toss=openingToss?.generation===generation?openingToss:null;if(toss)await toss.stage.begun;if(generation!==visualGeneration)return;const deal=animateOpeningDeal(ids);toss?.stage.waitFor(deal);await deal;if(toss)await toss.stage.done;if(generation===visualGeneration)$('mulligan-confirm')?.focus({preventScroll:true});}}
+   else if(event.type==='mulligan'){visualMessage('TROCA INICIAL',`${player?.name||'Jogador'} troca ${event.count} carta(s)`,950);await animateMulliganReturn(event);}
+   else if(event.type==='turn'){globalThis.RunaPreparationFeedback?.refill(event,{side:mine?'self':'opponent',affinity:player?.patron?.affinity});}
+   else if(event.type==='spell_cast'){globalThis.RunaPreparationFeedback?.place(event,{side:mine?'self':'opponent'});RunaMarikaEffects.cast(event);}
+   else if(event.type==='draw'&&event.sourcePower==='sumario-ecoante'){await RunaMarikaEffects.draw(event,mine);}
+   else if(event.type==='draw'){await animateDraw(event.cardId||RunaCardArrivals.pending[0],mine,openingReplacementDraws.delete(replacementMark(generation,event.id))?{presentation:'opening'}:undefined);}
+   else if(event.type==='burn'){visualMessage('CARTA QUEIMADA',`Mão cheia: ${event.name||'uma carta'} foi para o Nartvanyr`,3100);sound('burn');const publicCard=[...(player?.discard||[])].reverse().find(c=>c.name===event.name);if(publicCard)await RunaDrawBurn.play({card:cardEl(publicCard,{zoom:true,history:true}),from:$(mine?'self-deck':'opponent-deck'),to:$(mine?'self-grave':'opponent-grave'),alive:()=>generation===visualGeneration});else await pause(3100);}
+   else if(event.type==='return'){visualMessage('RETORNO À MÃO',event.name,1100);await presentReturn(event);}
+   else if(event.type==='death_burst'){await presentDeathBurst(event);}
+   else if(event.type==='hand_buff'){await presentHandBuff(event);}
+   else if(event.type==='spell'&&event.op==='return_to_hand'){if(!spellExit)visualMessage(event.name,'Criatura devolvida à mão',900);sound('magic');await pause(500);}
+   else if(event.type==='spell'){if(damageKind){await presentDamageSpell(event);return;}if(typeof presentIdentitySpell==='function'&&await presentIdentitySpell(event))return;if(event.patronHealing){const patron=$(event.patronHealing.patronId===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card');healPulse(patron);deferVisual(()=>applyHealthUpdates([event.patronHealing]),500);}if(!spellExit)visualMessage(event.name,event.op==='area_damage'?'Dano em área':event.op==='heal'?'Cura':event.op==='attack_modifier'?(event.amount<0?'Redução permanente de ataque':'Aprimoramento'):event.op==='area_attack_modifier'?'Redução de ataque em área':'Magia resolvida',1600);const destination=target||(event.targetId?null:$('lanes')),spellFrom=from;if(['area_stat_buff','graveyard_stat_buff'].includes(event.op)){await animateBanquet(event);}else if(['heal','choose_one'].includes(event.op)){healPulse(destination);deferVisual(()=>applyHealthUpdates(event.healthUpdates),500);}else if(['attack_modifier','stat_buff'].includes(event.op)&&event.amount>0){buffRise(destination,event.amount||2,event.attackAfter??null);deferVisual(()=>applyHealthUpdates(event.healthUpdates),500);}else{fly(event.op==='draw'?'▰':event.op==='area_damage'?'✷':'➶',spellFrom,destination,'spell',()=>{impact(destination);if(['damage','area_damage','ally_attack_damage','conditional_damage','defeat'].includes(event.op))applyDamageHit(event.healthUpdates);else applyHealthUpdates(event.healthUpdates);if(event.sourceHealthUpdate)applyHealthUpdates([event.sourceHealthUpdate]);sound('impact',event.amount||1);});}sound(spellSound(event.name,event.op==='choose_one'?'heal':event.op));await pause(1500);if(!spellExit)sound('grave');}
+   else if(event.type==='equipment_equipped'){if(typeof identityPlay==='function')await identityPlay('upgrade',from,target,()=>applyHealthUpdates(event.healthUpdates));else{applyHealthUpdates(event.healthUpdates);sound('buff');await pause(600);}}
+   else if(event.type==='forge_started'){void playPatronVoice(player,'power',{powerId:'forjar-arma',key:state.matchId+':power:'+event.id});await publicForgeHammer(event,'forjar-arma');}
+   else if(event.type==='patron_power'){if(event.powerId==='golpe-do-maioral'){await playDamageEffect('ember',from,target,()=>applyDamageHit(event.healthUpdates));return;}if(event.powerId==='convocar-carrasco')return;if(event.powerId==='represalia-de-eter'){from?.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)',offset:.4},{filter:'brightness(1)'}],{duration:650});return;}if(event.powerId==='sumario-ecoante')return;if(event.powerId==='estudos-avancados'){await RunaMarikaEffects.advance(event);return;}if(['sumario-ecoante','estudos-avancados'].includes(event.powerId)){const node=$(event.playerId===seat()?.id?'self-head':'opponent-head')?.querySelector('[data-power="'+event.powerId+'"]');node?.animate([{filter:'brightness(1)'},{filter:'brightness(1.5) drop-shadow(0 0 9px #9bcced)'},{filter:'brightness(1)'}],{duration:650});sound(event.powerId==='sumario-ecoante'?'draw':'magic');await pause(650);return;}if(event.powerId==='forjar-armadura'){void playPatronVoice(player,'power',{powerId:event.powerId,key:state.matchId+':power:'+event.id});await publicForgeHammer(event,event.powerId,{onImpact:()=>applyHealthUpdates(event.healthUpdates||[])});await pause(150);return;}if(event.amount>0)buffRise(target,event.amount,event.healthUpdates?.[0]?.attack);else if(target)target.animate([{filter:'brightness(1)'},{filter:'brightness(1.3) drop-shadow(0 0 10px #86c97a)'},{filter:'brightness(1)'}],{duration:650});deferVisual(()=>applyHealthUpdates(event.healthUpdates||[]),650);sound('buff');await pause(900);}
+   else if(event.type==='cleric_heal'){healPulse(target);sound('heal');applyHealthUpdates(event.healthUpdates||[]);await pause(800);}
+   else if(event.type==='creature'){await presentPublicCreatureEntry(event,generation);}
+  else if(event.type==='summon'&&typeof presentIdentitySummon==='function'&&await presentIdentitySummon(event)){speechBubble(event);}
+  else if(event.type==='summon'){visualMessage('CONVOCAÇÃO',event.name,950);fly('✦',from,$(mine?'self-reserve':'opponent-reserve'),'positive');speechBubble(event);await pause(900);}
+   else if(event.type==='expire'){sound('grave');fly('✧',from,$(mine?'self-grave':'opponent-grave'),'spell');await pause(500);}
+  }finally{if(spellExit)await spellExit();}
+}
+function clearBoardEffectMarks(){
+ const classes=['sealed-space','sleeping-space','anchored-space','lane-buffed','taunted-space','duel-stasis','fuse-impact','snapping'];
+ document.querySelectorAll(classes.map(name=>'#game .'+name).join(',')).forEach(node=>node.classList.remove(...classes));
+ document.querySelectorAll('#game .seal-space-mark,#game .sleep-space-mark,#game .anchor-mark,#game .taunt-space-mark,#game .taunt-source-mark').forEach(node=>node.remove());
+}
+// Release presentation resources together; the result scene has its own lifecycle.
+function clearTableEffects(){globalThis.RunaWeaponEntry?.clear();
+ globalThis.RunaPreparationFeedback?.clear();globalThis.RunaCreatureEntrances?.clear();globalThis.RunaCreatureDeath?.clear();globalThis.RunaPlatinumEntry?.clear();
+ globalThis.RunaCombatReturn?.cancel();globalThis.RunaPatronCaptions?.clear();globalThis.RunaHandBuff?.clear();globalThis.RunaMarikaEffects?.clear();globalThis.RunaCardEffects?.clear();globalThis.RunaDamageFX?.clear();globalThis.RunaLightFocus?.clear();globalThis.RunaTableAtmosphere?.clear();globalThis.RunaTurnClock?.clear();globalThis.RunaWeaponEntry?.clear();
+ if(typeof cancelForgeVisuals==='function')cancelForgeVisuals();
+ cleanupDrag();hideHover();
+ for(const id of ['visual-layer','notice-layer']){const layer=$(id);layer?.getAnimations?.({subtree:true}).forEach(a=>a.cancel());layer?.replaceChildren();}
+ document.querySelectorAll('.speech-bubble,.banquet-halo,.used-spell').forEach(node=>{node.getAnimations?.({subtree:true}).forEach(a=>a.cancel());node.remove();});
+ document.querySelectorAll('#game .card,#game .spell-mark').forEach(node=>{node.classList.remove('pending-arrival');node.style.visibility='';});
+}
+function finishMatchPresentation(){
+ matchEffectsEnded=true;visualGeneration++;clearMulliganReplacements();globalThis.RunaPatronVoice?.cancel();
+ selected=null;pendingSnap=null;spellTargets.clear();emanationChoices.clear();
+ if(typeof cancelPatronIntro==='function')cancelPatronIntro();
+ resetDamagePresentation();clearTableEffects();visualQueue.reset();noticeQueue.reset();RunaCardArrivals.reset(visualMatchKey);deadVisuals.clear();mulliganDepartures.clear();
+ lastVisualId=state?.eventId??state?.events?.at(-1)?.id??lastVisualId;
+ displayedHealth.clear();pendingHealth.clear();displayedAttack.clear();pendingAttack.clear();displayedPatronHealth.clear();pendingPatronHealth.clear();
+ syncAttackDisplay();syncHealthDisplay();renderBoard();
+ $('target-picker')?.open&&$('target-picker').close();
+}
+function resetVisualSession(){
+ if(typeof cancelForgeVisuals==='function'&&visualMatchKey!== (state?[state.code,state.you,state.matchId||'lobby'].join(':'):null))cancelForgeVisuals();
+ const key=state?[state.code,state.you,state.matchId||'lobby'].join(':'):null;if(key===visualMatchKey)return;const sameSeat=state&&visualMatchKey?.startsWith([state.code,state.you].join(':')+':'),previousId=lastVisualId,wasBooted=visualBooted;
+ globalThis.RunaPatronVoice?.cancel();if(typeof cancelPatronIntro==='function')cancelPatronIntro();visualMatchKey=key;visualGeneration++;clearMulliganReplacements();matchEffectsEnded=false;resetDamagePresentation();clearTableEffects();visualQueue.reset();noticeQueue.reset();visualBooted=Boolean(sameSeat&&wasBooted);lastVisualId=sameSeat?previousId:0;lastBattleStep='';selected=null;pendingSnap=null;handOrder=[];mulliganSelected.clear();autoMulliganKey='';emanationChoices.clear();spellTargets.clear();promptedEmanations.clear();displayedPatronExtraLife.clear();RunaCardArrivals.reset(visualMatchKey);deadVisuals.clear();displayedAttack.clear();pendingAttack.clear();displayedHealth.clear();pendingHealth.clear();displayedPatronHealth.clear();pendingPatronHealth.clear();spellTargetRects.clear();mulliganDepartures.clear();
+ for(const layer of ['visual-layer','notice-layer']){const node=$(layer);node?.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());node?.replaceChildren();}document.querySelectorAll('.speech-bubble,.banquet-halo,.used-spell').forEach(node=>node.remove());
+}
+function recoverVisualGap(){
+ const events=state?.events||[],newest=state?.eventId??events.at(-1)?.id??0;
+ if(!visualBooted||(state?.eventsFrom??events[0]?.id??newest+1)<=lastVisualId+1)return;
+ if(typeof cancelForgeVisuals==='function')cancelForgeVisuals();
+ globalThis.RunaPatronVoice?.cancel();globalThis.RunaCombatReturn?.cancel();globalThis.RunaPatronCaptions?.clear();visualGeneration++;clearMulliganReplacements();resetDamagePresentation();visualQueue.reset();noticeQueue.reset();RunaCardArrivals.reset(visualMatchKey);deadVisuals.clear();displayedHealth.clear();pendingHealth.clear();displayedAttack.clear();pendingAttack.clear();displayedPatronHealth.clear();pendingPatronHealth.clear();mulliganDepartures.clear();lastVisualId=newest;
+ document.querySelectorAll('.used-spell').forEach(node=>node.remove());const layer=$('visual-layer');layer?.getAnimations?.({subtree:true}).forEach(a=>a.cancel());layer?.replaceChildren();$('notice-layer')?.replaceChildren();document.querySelectorAll('#game .card,#game .spell-mark').forEach(node=>{node.classList.remove('pending-arrival');node.style.visibility='';});
+}
+
+const publicCreatureEntries=new Map();
+function presentPublicCreatureEntry(event,generation=visualGeneration,departure=null){
+ const key=[visualMatchKey,generation,event.id].join(':');if(publicCreatureEntries.has(key))return publicCreatureEntries.get(key);
+ const task=(async()=>{const player=state?.players.find(p=>p.id===event.playerId),mine=event.playerId===state?.you;
+ if(!mine){
+  const card=player?.reserve?.find(c=>c.uid===event.cardId),target=tableCard(event.cardId);
+  const source=$('opponent-hand')?.lastElementChild||$('opponent-deck');
+  const rect=(event.fromGrimoire&&RunaMarikaEffects.departure(card?.uid))||departure||source?.getBoundingClientRect();
+  if(card&&target&&rect?.width&&rect.height){
+   const copy=cardEl(card);target.style.visibility='hidden';
+   await animateTransfer({uid:card.uid,card,copy,rect});
+  }
+ }
+ for(let wait=0;wait<12&&cardInFlight(event.cardId)&&generation===visualGeneration;wait++)await pause(100);if(generation===visualGeneration){speechBubble(event);const entered=typeof identityCard==='function'?identityCard(event.cardId):player?.reserve?.find(c=>c.uid===event.cardId);if(entered?.rarity==='soberano')await globalThis.RunaPlatinumEntry?.play({card:entered,source:()=>tableCard(event.cardId),phase:'reserve',context:audioContext,key:state.matchId+':reserve:'+event.id,valid:()=>generation===visualGeneration&&!matchEffectsEnded&&state?.phase!=='resolving'});if(generation===visualGeneration&&typeof presentIdentityCreature==='function')presentIdentityCreature(event);}await pause(750);
+ })();publicCreatureEntries.set(key,task);if(publicCreatureEntries.size>100)publicCreatureEntries.delete(publicCreatureEntries.keys().next().value);return task;
+}
+function queuePublicCreatureEntries(departure){
+ if(!visualBooted||state?.phase==='resolving'||state?.phase==='finished')return;
+ for(const event of state.events||[])if(event.type==='creature'&&event.id>lastVisualId)void presentPublicCreatureEntry(event,visualGeneration,departure).catch(()=>{});
+}
+
+// S3: replacement draws of a mulligan share the opening-deal profile. They are tied to
+// the mulligan event by player and count when queued (not by the phase when played).
+// Marks belong to the visual generation that queued them and are dropped on every invalidation.
+const mulliganReplacementsDue=new Map(),openingReplacementDraws=new Set(),replacementMark=(generation,id)=>generation+':'+id;
+function clearMulliganReplacements(){mulliganReplacementsDue.clear();openingReplacementDraws.clear();}
+function tagMulliganReplacements(events,generation=0){for(const event of events){const pending=mulliganReplacementsDue.get(event.playerId);if(event.type==='mulligan'&&event.count>0)mulliganReplacementsDue.set(event.playerId,{after:event.id,left:event.count});else if(!pending||event.id<=pending.after)continue;else if(event.type==='draw'&&event.sourcePower)continue;else if(event.type==='draw'){openingReplacementDraws.add(replacementMark(generation,event.id));if(--pending.left<=0)mulliganReplacementsDue.delete(event.playerId);}else if(['burn','fatigue'].includes(event.type)){if(--pending.left<=0)mulliganReplacementsDue.delete(event.playerId);}else mulliganReplacementsDue.delete(event.playerId);}}
+function queueEvents(){const events=state?.events||[];const newest=state?.eventId??events.at(-1)?.id??0,generation=visualGeneration;if(matchEffectsEnded){lastVisualId=newest;return;}if(!visualBooted){lastVisualId=newest;visualBooted=true;for(const event of events.filter(e=>['creature','summon'].includes(e.type)&&Date.now()-serverClockOffset-e.at<3000))setTimeout(()=>{if(generation===visualGeneration)speechBubble(event);},850);return;}const fresh=events.filter(x=>x.id>lastVisualId),ordered=[],bursts=[],burstSources=new Set(fresh.filter(e=>['death_burst','hand_buff'].includes(e.type)).map(e=>e.sourceId));for(const event of fresh){if(event.type==='ability_notice'&&burstSources.has(event.sourceId))continue;if(['death_burst','hand_buff'].includes(event.type))bursts.push(event);else{ordered.push(event);if(event.type==='spell')ordered.push(...bursts.splice(0));}}ordered.push(...bursts);if(ordered.some(e=>e.type==='coin'))openingAwait=generation;tagMulliganReplacements(ordered,generation);for(const event of ordered){visualQueue.enqueue(()=>generation===visualGeneration?animateEvent(event,generation):null,event.id).catch(()=>{});}lastVisualId=newest;}
+function combatPlacements(){const placements=new Map();for(const p of state?.players||[])p.formation?.forEach((uid,lane)=>{if(uid)placements.set(uid,{owner:p.id,lane});});if(state?.phase==='resolving'&&state.combat){let start=0,elapsed=combatElapsed(state.combat);for(const step of state.combat.timeline){if(step.kind==='teleport'&&elapsed>=start+650)for(const movement of step.teleport.movements)placements.set(movement.uid,movement);if(step.kind==='magic'&&step.spell.op==='push_right'&&(presentedPushes.has(state.combat.id+':'+step.spell.cardId)?presentedPushes.get(state.combat.id+':'+step.spell.cardId):elapsed>=start+1974))for(const movement of visualPushMovements(step.spell))placements.set(movement.uid,movement);start+=step.duration;}}return placements;}
+// A later casualty can remove an earlier movement from the public preview.
+// Recover it only when the next activation actually found this UID in the
+// destination house. Never predict a push from an empty adjacent house alone.
+function visualPushMovements(spell){
+ const p=spell.push;if(!p)return [];
+ if(p.movements?.length||p.blocked||!spell.healthUpdates?.some(u=>u.uid===p.targetId&&u.hp>0))return p.movements||[];
+ const timeline=state.combat?.timeline||[],i=timeline.findIndex(step=>step.spell?.cardId===spell.cardId);
+ const next=i>=0?timeline[i+1]?.spell:null;
+ if(!next||next.targetSide!==p.owner||next.lane!==p.lane)return [];
+ const confirmed=next.push?next.push.targetId===p.targetId&&next.push.fromLane===p.lane:
+  next.op==='damage'&&next.healthUpdates?.length===1&&next.healthUpdates[0].uid===p.targetId;
+ return confirmed?[{uid:p.targetId,owner:p.owner,lane:p.lane}]:[];
+}
+function boardSeals(){const seals=[...(state?.seals||[])];if(state?.phase==='resolving'&&state.combat){let start=0,elapsed=combatElapsed(state.combat);for(const step of state.combat.timeline){if(step.ability?.op==='paired_seals'&&elapsed>=start&&!seals.some(s=>s.sourceId===step.ability.sourceId))seals.push(step.ability.seal);start+=step.duration;}}return seals.filter(s=>displayedHealth.get(s.sourceId)!==0);}
+function animatePortalExchange(teleport){const combatId=state.combat.id;for(const m of teleport.movements){const source=tableCard(m.uid),destination=document.querySelector('.lane-side[data-owner="'+m.owner+'"][data-lane="'+m.lane+'"]');if(!source||!destination)continue;const from=source.getBoundingClientRect(),to=destination.getBoundingClientRect(),copy=cloneVisual(source);copy.classList.add('portal-traveler');copy.dataset.combatId=combatId;copy.style.cssText='position:fixed;left:'+from.left+'px;top:'+from.top+'px;width:'+from.width+'px;height:'+from.height+'px;z-index:900;pointer-events:none;';$('visual-layer').append(copy);RunaCardArrivals.trackNode(RunaCardArrivals.begin('portal',{uid:m.uid,moving:true,replace:true}),copy);source.style.visibility='hidden';const dx=to.left+to.width/2-from.left-from.width/2,dy=to.top+to.height/2-from.top-from.height/2;const animation=copy.animate([{transform:'translate(0,0) scale(1)',opacity:1,filter:'brightness(1)'},{transform:'translate(0,0) scale(.2)',opacity:.7,filter:'brightness(3)',offset:.3},{transform:'translate('+dx+'px,'+dy+'px) scale(.2)',opacity:.9,filter:'brightness(3)',offset:.65},{transform:'translate('+dx+'px,'+dy+'px) scale(1)',opacity:1,filter:'brightness(1)'}],{duration:1100,easing:'cubic-bezier(.4,0,.15,1)',fill:'forwards'});animation.finished.catch(()=>{}).finally(()=>{const owned=RunaCardArrivals.current(copy.visualTicket);finishVisual(m.uid,copy);if(owned&&combatPresentationCurrent(combatId))renderBoard();});}sound('magic');deferVisual(()=>{if(combatPresentationCurrent(combatId)){renderBoard();applyHealthUpdates(teleport.healthUpdates||[]);}},700);}
+// Relógio de apresentação por combate: usa o menor offset observado (menor atraso de entrega), para o passo nunca regredir com o jitter entre polls.
+let combatClock={id:null,offset:0};
+function combatElapsed(battle){
+ const tutorial=state?.tutorial?.clock;
+ if(tutorial){
+  const previous=combatClock.id===battle.id?combatClock.elapsed||0:0;
+  if(combatClock.id!==battle.id||combatClock.epoch!==tutorial.epoch)combatClock={id:battle.id,offset:serverClockOffset,epoch:tutorial.epoch,elapsed:previous};
+  else if(!tutorial.paused)combatClock.offset=Math.min(combatClock.offset,serverClockOffset);
+  const now=tutorial.paused?tutorial.now:Date.now()-combatClock.offset;
+  return combatClock.elapsed=Math.max(previous,now-battle.startedAt);
+ }
+ if(combatClock.id!==battle.id)combatClock={id:battle.id,offset:serverClockOffset};else combatClock.offset=Math.min(combatClock.offset,serverClockOffset);
+ return Date.now()-combatClock.offset-battle.startedAt;
+}
+function tickCombat(){
+  globalThis.RunaCombatRecord?.tick?.();// S5: Registro entries follow the visual clock, not only server revisions.
+  const overlay=$('battle-overlay');if(!state?.combat||state.phase!=='resolving'){overlay.hidden=true;lastBattleStep='';for(const [uid,{copy}] of deadVisuals)finishVisual(uid,copy);deadVisuals.clear();for(const node of document.querySelectorAll('#visual-layer [data-combat-id]')){node.getAnimations?.({subtree:true}).forEach(a=>a.cancel());finishVisual(node.dataset.uid,node);if(damageRemnants.get(node.dataset.uid)===node)damageRemnants.delete(node.dataset.uid);}return;}
+  const battle=state.combat,elapsed=Math.max(0,combatElapsed(battle));let remaining=elapsed,index=0;for(;index<battle.timeline.length-1&&remaining>=battle.timeline[index].duration;index++)remaining-=battle.timeline[index].duration;
+  const key=`${battle.id}:${index}:${battle.revealStage??3}`;if(key===lastBattleStep)return;lastBattleStep=key;overlay.hidden=false;
+  const step=battle.timeline[index],lanes=[...document.querySelectorAll('.lane')];for(const lane of lanes){lane.classList.remove('battle-reveal','battle-magic','battle-revelation','battle-clash','battle-aftermath');for(const side of lane.querySelectorAll('.lane-side')){side.classList.remove('effect-positive','effect-negative');delete side.dataset.effect;}}
+  if(step.kind==='reveal'&&battle.revealStage==null){applyHealthUpdates(battle.auraHealthUpdates||[]);for(const p of state.players){const bonus=p.emanation.reduce((n,uid)=>{const c=p.reserve.find(c=>c.uid===uid);return n+(c?.modelId==='R05'?1:0)+(c?.effects||[]).filter(e=>e.op==='lane_attack_aura'&&e.lane===0&&(!e.subtypeIncludes||String(p.reserve.find(c=>c.uid===p.formation[0])?.subtype||'').toLowerCase().includes(e.subtypeIncludes.toLowerCase()))).reduce((sum,e)=>sum+e.amount,0);},0);if(bonus){const target=tableCard(p.formation[0]);if(target)buffRise(target,bonus);}}}
+  if(step.kind==='reveal'&&battle.revealStage==null&&typeof presentIdentityAuras==='function')presentIdentityAuras();
+  // The server has now revealed formations. Share this window with Platinas;
+  // patron_entry remains an authoritative timing slot, never a second launch.
+  if(step.kind==='reveal'){const entry=battle.timeline.find(s=>s.kind==='patron_entry');if(entry)presentPatronEntries(entry);}
+  if(step.kind==='reveal'&&remaining<step.duration-250){
+   const generation=visualGeneration,combatId=battle.id;
+   for(const player of state.players)for(const uid of player.formation){
+    const card=player.reserve.find(c=>c.uid===uid);if(card?.rarity!=='soberano'||card.type!=='creature')continue;
+    void globalThis.RunaPlatinumEntry?.play({card,source:()=>tableCard(uid),phase:'combat',context:audioContext,key:combatId+':combat:'+uid,duration:step.duration-120,elapsedMs:remaining,getElapsedMs:()=>combatElapsed(battle)-(elapsed-remaining),valid:()=>generation===visualGeneration&&combatPresentationCurrent(combatId)});
+   }
+  }
+
+  const classes={reveal:'battle-reveal',magic:'battle-magic',revelation:'battle-revelation',teleport:'battle-revelation',clash:'battle-clash',strike:'battle-clash',growth:'battle-revelation',death_burst:'battle-aftermath',hand_buff:'battle-aftermath',result:'battle-aftermath'};
+  let caption={reveal:'As formações deixam de ser segredo.',revelation:'Habilidades de Revelação entram em ação.',clash:'Criaturas se chocam; posições vazias expõem o Patrono.',result:'O resultado está sendo aplicado.'}[step.kind]||'';
+   if(step.kind==='patron_entry'){presentPatronEntries(step);caption='Os Patronos entram em combate.';}
+   if(step.kind==='magic'){presentPreparedMagic(step.spell).catch(console.error);caption=step.spell.name;}
+   if(step.kind==='death_burst'){presentDeathBurst(step.burst);caption='ÚLTIMO SUSPIRO';}
+   if(step.kind==='hand_buff'){presentHandBuff(step.buff);caption='ÚLTIMO SUSPIRO';}
+  if(step.kind==='teleport'){caption='Os selos trocam as criaturas de lado.';animatePortalExchange(step.teleport);}
+  else if(step.kind==='revelation'&&step.ability?.op==='paired_seals'){caption=step.ability.name+' · Selos vinculados';renderBoard();for(const node of document.querySelectorAll('.seal-space-mark'))node.animate([{opacity:0,transform:'scale(.2) rotate(-90deg)'},{opacity:1,transform:'scale(1) rotate(0)'}],{duration:850});sound('magic');}
+  else if(step.kind==='revelation'&&step.ability&&typeof presentIdentityRevelation==='function'&&presentIdentityRevelation(step.ability)){caption=step.ability.name;}
+  else if(step.kind==='revelation'&&step.ability?.op==='duel_stasis'){caption=step.ability.name+' · Duelo suspenso';const source=tableCard(step.ability.sourceId),target=lanes[step.ability.lane]?.querySelector('.lane-side[data-owner="'+step.ability.targetSide+'"] .card');for(const card of [source,target])if(card){card.classList.add('duel-stasis');card.animate([{filter:'brightness(1)'},{filter:'brightness(1.6) drop-shadow(0 0 12px #89cfdd)'},{filter:'brightness(1)'}],{duration:1000});}sound('magic');}
+  else if(step.kind==='revelation'&&step.ability?.op==='combat_protocol'){caption=`${step.ability.name} · ${step.ability.mode==='escort'?'Escolta':'Assalto'}`;for(const u of step.ability.healthUpdates||[]){const target=tableCard(u.uid);target?.closest('.lane-side')?.classList.add('lane-buffed');if(step.ability.mode==='escort')target?.animate([{boxShadow:'0 0 0 transparent'},{boxShadow:'0 0 20px #70ba83'},{boxShadow:'0 0 0 transparent'}],{duration:900});else buffRise(target,u.uid===step.ability.sourceId?2:1,u.attack);}deferVisual(()=>applyHealthUpdates(step.ability.healthUpdates),850);}
+  else if(step.kind==='revelation'&&step.ability?.op==='stat_buff'){caption=step.ability.name+' · Aliado à direita fortalecido';for(const u of step.ability.healthUpdates||[]){const target=tableCard(u.uid);buffRise(target,1,u.attack);target?.closest('.lane-side')?.classList.add('lane-buffed');}deferVisual(()=>applyHealthUpdates(step.ability.healthUpdates),850);}
+  else if(step.kind==='revelation'&&step.ability?.op==='damage_curse'){caption=`${step.ability.name} · Maldição pronta`;const source=tableCard(step.ability.sourceId);if(source)source.animate([{boxShadow:'0 0 0 transparent'},{boxShadow:'0 0 18px #a58cc0'},{boxShadow:'0 0 0 transparent'}],{duration:900});}
+  else if(step.kind==='revelation'&&step.ability?.op==='adjacent_attack_buff'){caption=`${step.ability.name} · Casas fortalecidas`;for(const u of step.ability.healthUpdates||[]){const target=tableCard(u.uid);target?.closest('.lane-side')?.classList.add('lane-buffed');buffRise(target,3,u.attack);}deferVisual(()=>applyHealthUpdates(step.ability.healthUpdates),1100);}
+  else if(step.kind==='revelation'&&step.ability){const ability=step.ability,source=tableCard(ability.sourceId),side=lanes[ability.lane]?.querySelector(`.lane-side[data-owner="${ability.targetSide}"]`),target=side?.querySelector('.card')||side;if(source&&target){const positive=ability.op==='attack_modifier'||ability.op==='heal';if(ability.op==='attack_modifier'&&ability.amount>0){const update=ability.healthUpdates?.find(u=>u.uid===target.dataset.uid);buffRise(target,ability.amount,update?.attack);}else if(ability.op==='heal')healPulse(target);else{if(ability.op==='damage')playDamageEffect('axe',source,target,()=>applyDamageHit(ability.healthUpdates));else fly('➶',source,target,'spell',()=>{impact(target,positive);applyHealthUpdates(ability.healthUpdates);sound('impact',ability.amount||1);});}sound(spellSound(ability.name,ability.op));}caption=`${ability.name} · Revelação · ${laneSymbols[ability.lane]}`;}
+  if(step.kind==='growth'){for(const update of step.updates){if(typeof identityPlay==='function')identityPlay('growth',tableCard(update.uid),tableCard(update.uid));else buffRise(tableCard(update.uid),update.amount,update.attack);}deferVisual(()=>applyHealthUpdates(step.updates),1100);caption='CRESCIMENTO PERMANENTE';}if(step.kind==='strike'){animateDirectedStrike(step.strike);caption=step.strike.initiative?'INICIATIVA':'CONFRONTO';}if(step.kind==='clash'){const entry=battle.visual?.find(entry=>entry.lane===step.lane);if(entry)animateLaneClash(entry);caption=`Posição ${laneSymbols[step.lane]} · confronto da esquerda para a direita`; }if(step.kind==='result')animateCasualties(battle);
+  lanes.forEach((lane,index)=>{if(!['clash','strike'].includes(step.kind)||index===step.lane)lane.classList.add(classes[step.kind]);});$('battle-banner').textContent={reveal:'FORMAÇÕES REVELADAS',magic:'MAGIA EM AÇÃO',revelation:'REVELAÇÃO',teleport:'SELOS',clash:'CONFRONTO',strike:'CONFRONTO',growth:'CRESCIMENTO',death_burst:'ÚLTIMO SUSPIRO',hand_buff:'ÚLTIMO SUSPIRO',result:'RESULTADO'}[step.kind];$('battle-caption').textContent=caption;
+}
+
+let finaleKey='',finaleGeneration=0;
+function scheduleFinale(){
+ if(state?.phase!=='finished'){if(finaleKey){globalThis.RunaPatronVoice?.cancel();finaleGeneration++;document.querySelector('.capture-scene')?.remove();}finaleKey='';return;}
+ const key=[state.code,state.matchId,state.round,state.winner||'draw'].join(':');if(finaleKey===key)return;if(finaleKey)document.querySelector('.capture-scene')?.remove();finaleKey=key;const generation=++finaleGeneration,winner=state.players.find(p=>p.id===state.winner),loser=state.players.find(p=>p.id!==state.winner);
+ // Let the final spell finish, then invalidate delayed combat callbacks before the result.
+ visualQueue.enqueue(async()=>{
+  await noticeQueue;
+  if(generation!==finaleGeneration||state?.phase!=='finished'||finaleKey!==key)return;
+  finishMatchPresentation();return animateFinale(winner,loser,generation);
+ }).catch(err);
+}
+async function animateFinale(winner,loser,generation){
+ if(generation!==finaleGeneration||state?.phase!=='finished')return;hideHover();$('target-picker').open&&$('target-picker').close();await warmSounds();
+ if(generation!==finaleGeneration||state?.phase!=='finished')return;
+ const scene=document.createElement('div');scene.className='capture-scene';scene.setAttribute('role','dialog');scene.setAttribute('aria-label','Resultado da caçada');const stage=document.createElement('div');stage.className='capture-stage';scene.append(stage);const title=text(scene,'h2','O CONTRATO SE FECHA','capture-title');
+ const makePortrait=p=>{const holder=document.createElement('div');holder.className='final-patron';const image=document.createElement('img');image.src=p.patron.image||'card-back.png';image.alt=p.patron.name;holder.append(image);text(holder,'strong',p.patron.name);return holder;};
+ document.body.append(scene);
+ const valid=()=>generation===finaleGeneration&&scene.isConnected;
+ async function finish(result,tail){
+  if(!valid())return;
+  text(scene,'p',result,'capture-result');
+  if(state.spectator){const wait=text(scene,'p','Aguardando a próxima partida.','capture-wait');wait.tabIndex=-1;wait.focus();}
+  else{const done=button(state?.tutorial?'Repetir treino':'Nova partida',()=>{selected=null;if(state?.tutorial)return globalThis.RunaTutorial?.start();command({type:'reset'});},'primary');done.classList.add('capture-done');scene.append(done);done.focus();}
+  // The rematch stays available while the last visible sparks finish. Never open a survey over them.
+  await tail;if(valid())document.dispatchEvent(new CustomEvent('runamarca:finale-complete',{detail:{code:state.code,matchId:state.matchId||null}}));
+ }
+ globalThis.RunaPatronVoice?.cancel();
+ if(!winner){
+  scene.classList.add('capture-draw');title.textContent='Empate';
+  for(const player of state.players)if(player.patron)stage.append(makePortrait(player));
+  return finish('Os dois Patronos caíram.',pause(1500));
+ }
+ const focus=RunaFinaleFocus.begin(scene,state.players,state.spectator?state.players[0].id:state.you,cloneVisual),focusedLoser=focus.portrait(loser.id);
+ let portrait=focusedLoser||makePortrait(loser);if(!focusedLoser)stage.append(portrait);
+ const stars=document.createElement('div');stars.className='wanted-stars';portrait.append(stars);
+ for(let i=0;i<6;i++){if(!valid())return;const star=text(stars,'span','★','wanted-star');const angle=(-150+i*60)*Math.PI/180;star.style.left=(50+61*Math.cos(angle))+'%';star.style.top=(50+53*Math.sin(angle))+'%';sound('coin');await pause(220);}
+ if(!valid())return;const sight=document.createElement('div');sight.className='capture-sight';portrait.append(sight);await pause(550);if(!valid())return;
+ const barrel=document.createElement('div');barrel.className='capture-barrel';scene.append(barrel);sound('capture');await fly('•',barrel,portrait,'capture-bullet',()=>{portrait.classList.add('capture-hit');void playPatronVoice(loser,'defeat',{key:finaleKey+':defeat',valid});}).finished.catch(()=>{});if(!valid())return;
+ stars.remove();focus.end();portrait=makePortrait(loser);stage.append(portrait);
+ const turn=portrait.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(90deg)'}],{duration:260,fill:'forwards'});await turn.finished.catch(()=>{});portrait.replaceChildren();portrait.classList.add('captured-scroll');text(portrait,'strong','CAPTURADO');text(portrait,'span',loser.patron.name);turn.cancel();await portrait.animate([{transform:'rotateY(-90deg)'},{transform:'rotateY(0deg)'}],{duration:300}).finished.catch(()=>{});await pause(700);if(!valid())return;
+ stars.remove();portrait.classList.remove('captured-scroll','capture-hit');portrait.replaceChildren();const jailedImage=document.createElement('img');jailedImage.src=loser.patron.image||'card-back.png';jailedImage.alt=loser.patron.name;portrait.append(jailedImage);text(portrait,'strong','CAPTURADO');portrait.classList.add('jailed-patron');
+ title.textContent=state.spectator?winner.name+' venceu a caçada':state.you===winner.id?'Vitória — recompensa conquistada':'Derrota — seu Patrono foi capturado';
+ const champion=makePortrait(winner);champion.classList.add('champion');stage.append(champion);void playPatronVoice(winner,'victory',{opponent:loser,key:finaleKey+':victory',valid});champion.animate([{transform:'scale(.35) translateY(70px)',opacity:0},{transform:'scale(1.12)',opacity:1},{transform:'scale(1)',opacity:1}],{duration:800,easing:'cubic-bezier(.2,.7,.25,1)'});
+ for(let burst=0;burst<6;burst++){if(!valid())return;const firework=document.createElement('div');firework.className='victory-firework';firework.style.left=(burst%2?78:22)+'%';firework.style.top=(20+(burst%3)*25)+'%';scene.append(firework);for(let i=0;i<18;i++){const spark=document.createElement('i');spark.style.setProperty('--a',i*20+'deg');spark.style.setProperty('--color',['#ffc76c','#8be3c3','#ffe9ac'][burst%3]);firework.append(spark);}sound('magic');setTimeout(()=>firework.remove(),1700);await pause(280);}
+ if(!valid())return;
+ const sparks=[...scene.querySelectorAll('.victory-firework')].flatMap(burst=>burst.getAnimations({subtree:true}));
+ return finish(state.spectator?'Patrono capturado: '+loser.patron.name+'.':winner.name+' venceu a caçada.',Promise.allSettled(sparks.map(a=>a.finished)));
+}
+
+function render(){globalThis.RunaTutorial?.beforeRender?.();try{return RunaPresentation.update(renderContent,renderEffects);}finally{globalThis.RunaTutorial?.afterRender?.();}}
+function renderContent(){if(pendingEntryPlacement&&!pendingEntryValid(pendingEntryPlacement))cancelPendingEntryPlacement();resetVisualSession();globalThis.RunaMatchSurvey?.sync?.();const reserveReturns=[...(globalThis.RunaCombatReturn?.capture(state,lastPhase,cloneVisual)||[]),...capturePatronReturns()];for(const item of reserveReturns)item.ticket=RunaCardArrivals.begin('reserve-return',{uid:item.uid,moving:true,replace:true});recoverVisualGap();if(!matchEffectsEnded){prepareOpeningArrivals();rememberSpellTargets();captureDamageSnapshots();prepareDamagePresentation();}cleanupDrag();if(!state||!state.players.some(p=>[...(p.hand||[]),...(p.reserve||[])].some(c=>c.uid===hoverUid)))hideHover();renderGate();lastRevision=state?.revision??-1;if(!state){globalThis.RunaMarikaEffects?.clear();if(typeof RunaCardEffects!=='undefined')RunaCardEffects.clear();if(typeof RunaTableAtmosphere!=='undefined')RunaTableAtmosphere.clear();scheduleFinale();lastPhase=null;handOrder=[];RunaCardArrivals.reset(visualMatchKey);mulliganSelected.clear();return;}if(lastPhase==='resolving'&&state.phase!=='resolving')visualMessage('CONFRONTO ENCERRADO',state.phase==='finished'?'Partida concluída':'A próxima rodada começa',1250);if(lastPhase&&lastPhase!==state.phase&&state.phase==='formation')visualMessage('COMBATE INICIADO','Posicione suas criaturas em segredo',1500);if(lastPhase&&lastPhase!==state.phase&&state.phase==='mulligan')mulliganSelected.clear();lastPhase=state.phase;syncAttackDisplay();syncHealthDisplay();
+ const rivalEntry=state.events?.some(e=>e.id>lastVisualId&&e.type==='creature'&&e.playerId!==state.you);
+ const departure=rivalEntry?$('opponent-hand')?.lastElementChild?.getBoundingClientRect():null;
+ renderBoard();renderPatronBindings();globalThis.RunaMarikaEffects?.sync();if(typeof schedulePatronIntro==='function')schedulePatronIntro();if(typeof renderWeapons==='function')renderWeapons();renderPendingEntryPlacement();queueSpeech();renderForceWindow();renderRetaliationPoints();renderSelection();renderActions();if(typeof renderRoundCircuit==='function')renderRoundCircuit();if(typeof renderPrototypeHistory==='function')renderPrototypeHistory();if(typeof renderCombatRecord==='function')renderCombatRecord();if(typeof RunaTurnClock!=='undefined')RunaTurnClock.sync();renderMulliganOverlay();return {reserveReturns,departure};}
+function renderEffects(context){if(!context)return;const {reserveReturns,departure}=context;tickCombat();if(reserveReturns.length){const generation=visualGeneration;void globalThis.RunaCombatReturn.play(reserveReturns,{getTarget:uid=>uid.startsWith('patron:')?patronPortraitNode(uid.slice(7)):tableCard(uid),clone:cloneVisual,release:uid=>{const item=reserveReturns.find(x=>x.uid===uid);if(RunaCardArrivals.finish(item?.ticket))finishVisual(uid);},valid:()=>generation===visualGeneration&&reserveReturns.some(item=>RunaCardArrivals.current(item.ticket)),sound:(kind,options)=>globalThis.RunaTableAudio?.effect(audioContext,kind,options)});}queuePublicCreatureEntries(departure);queueEvents();renderTargetLinks();scheduleAutomaticMulligan();promptApprenticeTarget();promptEmanationTarget();promptDiscard();if(typeof renderForge==='function')renderForge();scheduleFinale();if(!seat()?.pendingDiscard&&!((state.phase==='prep'&&state.turn===state.you)||(state.phase==='formation'&&!seat()?.ready))){$('target-picker').open&&$('target-picker').close();}}
+async function enter(mode){try{const name=$('player-name').value.trim();if(!name)throw Error('Informe seu nome.');const id=$('join-code').value.trim().toUpperCase();const role=isInvitation()?'auto':$('entry-role').value;if(id&&!/^[A-Z0-9]{6}$/.test(id))throw Error('O código da sala tem 6 letras ou números, sem acentos nem espaços.');const result=mode==='create'?await api('/api/create',{name,role,stake:document.getElementById('account-wager')?.value||'',...(id?{code:id}:{})}):await api(`/api/rooms/${id}/join`,{name,role});sessionStorage.setItem('runamarca-tutorial-seat',JSON.stringify({code:result.code,token:result.token}));history.replaceState(null,'',`${gameBase}?room=${result.code}`);state=result.state;serverClockOffset=Date.now()-state.serverNow;render();}catch(e){err(e);}}
+$('create').onclick=()=>enter('create');$('join').onclick=()=>enter('join');$('copy-link').onclick=async()=>{const link=`${location.origin}${gameBase}?room=${state.code}&invite=${state.inviteToken}`;try{await navigator.clipboard.writeText(link);err('Convite copiado. Quem receber o link entra sem código de acesso.');}catch{err(link);}};
+$('add-bot').onclick=()=>command({type:'addBot',deckId:$('bot-deck').value});
+$('leave-room').onclick=()=>command({type:'leave'});$('change-role').onclick=()=>command({type:state.spectator?'takeSeat':'spectate'});
+$('close-detail').onclick=()=>$('card-detail').close();$('rules-toggle').onclick=()=>$('rules-dialog').showModal();$('close-rules').onclick=()=>$('rules-dialog').close();
+$('close-cemetery').onclick=()=>$('cemetery-detail').close();
+$('art-import').onchange=async event=>{try{const data=JSON.parse(await event.target.files[0].text());if(data.format!=='runamarca-prototipo-editor'||!Array.isArray(data.cards))throw Error('Exporte o projeto editável no novo criador de cartas.');let count=0;for(const card of data.cards){if(!card.starterDeck)continue;const deck=models.decks.find(d=>d.id===card.starterDeck);const model=[...deck?.cards||[],deck?.patron].find(c=>c?.name===card.name);if(model){(importedArt[deck.id]??={})[model.id]={...(card.art?{image:card.art,kind:'illustration',artZoom:card.artZoom,artX:card.artX,artY:card.artY}:{}),speech:String(card.speech||'').slice(0,160),narrative:String(card.narrative||'').slice(0,1200)};count++;}}$('art-message').textContent=`${count} carta(s) com artes e textos prontos. Escolha o deck depois de importar.`;}catch(e){err(e);}event.target.value='';if(state?.phase==='lobby'){globalThis.RunaDeckCarousel?.refresh();renderGate();}};
+const slug=name=>String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+async function compactImage(file){const bitmap=await createImageBitmap(file);const scale=Math.min(1,900/bitmap.width,1260/bitmap.height);const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();return canvas.toDataURL('image/jpeg',.92);}
+$('art-files').onchange=async event=>{let count=0;try{for(const file of event.target.files){if(!['image/png','image/jpeg','image/webp'].includes(file.type))continue;const stem=slug(file.name.replace(/\.[^.]+$/,''));for(const deck of models.decks){const model=[...deck.cards,deck.patron].find(card=>slug(card.name)===stem);if(model){(importedArt[deck.id]??={})[model.id]={image:await compactImage(file),kind:'card'};count++;break;}}}$('art-message').textContent=`${count} imagem(ns) associada(s). Escolha o deck depois de importar. Os arquivos devem ter o nome da carta.`;}catch(e){err(e);}event.target.value='';if(state?.phase==='lobby'){globalThis.RunaDeckCarousel?.refresh();renderGate();}};
+async function init(){try{models=await (await fetch('cartas.json')).json();const room=new URLSearchParams(location.search).get('room');if(room)$('join-code').value=room.toUpperCase();const saved=sessionStorage.getItem('runamarca-tutorial-seat');if(room&&saved&&JSON.parse(saved).code!==room.toUpperCase())sessionStorage.removeItem('runamarca-tutorial-seat');await refresh();render();setInterval(refresh,500);setInterval(tickCombat,90);}catch(e){err(e);}}
+init();
+
+$('open-creator').onclick=()=>{const frame=$('creator-frame');if(!frame.getAttribute('src'))frame.src=gameBase+'criador/';$('creator-dialog').showModal();};$('close-creator').onclick=()=>$('creator-dialog').close();
+
+$('close-target-picker').onclick=()=>$('target-picker').close();$('target-picker').addEventListener('close',()=>{hideHover();document.querySelectorAll('.target-highlight').forEach(n=>n.classList.remove('target-highlight'));});

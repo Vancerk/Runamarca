@@ -16,11 +16,14 @@
   const box=document.createElement('div');box.id='round-circuit';box.className='round-circuit';box.setAttribute('role','img');
   const label=document.createElement('strong');label.className='round-circuit-label';
   const svg=document.createElementNS(NS,'svg');/* Round 3 (owner): symmetric circuit — rival light left, combat light on the panel axis, own light right; both paths
-     meet in the centre, so every element sits on the axis or mirrors its pair across it. */svg.setAttribute('viewBox','0 0 132 44');svg.setAttribute('aria-hidden','true');
-  svg.innerHTML='<path class="rc-path rc-path-rival" d="M23 22 C 34 22, 44 22, 55 22"/><path class="rc-path rc-path-ally" d="M109 22 C 98 22, 88 22, 77 22"/>'+
-   '<circle class="rc-light rc-rival" cx="14" cy="22" r="9"/><circle class="rc-light rc-ally" cx="118" cy="22" r="9"/>'+
-   '<text class="rc-light-tag rc-tag-rival" x="14" y="25.6" text-anchor="middle">R</text><text class="rc-light-tag rc-tag-ally" x="118" y="25.6" text-anchor="middle">V</text>'+
-   '<circle class="rc-light rc-combat" cx="66" cy="22" r="11"/><text class="rc-combat-symbol" x="66" y="26.5" text-anchor="middle">⚔</text>';
+     meet in the centre, so every element sits on the axis or mirrors its pair across it. *//* 10/11/2026 (dono): luz do rival em cima, a do jogador embaixo, cada uma com a cor do seu deck; a de combate fica no
+     ponto de chegada das duas. Cada luz tem o seu próprio caminho até ela, em trechos retos com mudança de direção
+     (sai para a direita, dobra em direção ao meio e entra na luz de combate). Caminhos discretos e apagados em repouso.
+     O conjunto ocupa de x=8 a x=100: o seu centro é o eixo do quadro (54). */svg.setAttribute('viewBox','0 0 108 72');svg.setAttribute('aria-hidden','true');
+  svg.innerHTML='<path class="rc-path rc-path-rival" d="M28 14 H54 V29 H78.5"/><path class="rc-path rc-path-ally" d="M28 58 H54 V43 H78.5"/>'+
+   '<circle class="rc-light rc-rival" cx="18" cy="14" r="10"/><circle class="rc-light rc-ally" cx="18" cy="58" r="10"/>'+
+   '<text class="rc-light-tag rc-tag-rival" x="18" y="17.8" text-anchor="middle">R</text><text class="rc-light-tag rc-tag-ally" x="18" y="61.8" text-anchor="middle">V</text>'+
+   '<circle class="rc-light rc-combat" cx="88" cy="36" r="12"/><text class="rc-combat-symbol" x="88" y="40.6" text-anchor="middle">⚔</text>';
   const caption=document.createElement('small');caption.className='round-circuit-state';
   box.append(label,svg,caption);return box;}
  function render(){
@@ -31,6 +34,8 @@
   const me=state.players.find(p=>p.id===state.you)||state.players[0],rival=state.players.find(p=>p.id!==me.id);
   const resolving=state.phase==='resolving'&&Boolean(state.combat),formation=state.phase==='formation',combat=resolving||formation,prep=state.phase==='prep';
   const active=prep?(state.turn===me.id?'ally':state.turn===rival?.id?'rival':null):null;
+  // cor de cada luz = afinidade do deck de quem ela representa
+  /* 11/11/2026 (dono): cores fixas, como na S5: a luz do aliado é sempre azul e a do rival sempre vermelha, qualquer que seja o deck (a cor do deck confundia: dois decks de forja deixavam as duas luzes laranja). */for(const name of ['--rc-ally','--rc-rival'])box.style.removeProperty(name);
   box.dataset.phase=state.phase;box.dataset.active=combat?'combat':active||'none';box.dataset.stage=formation?'formation':resolving?'combat':'';
   const symbol=box.querySelector('.rc-combat-symbol');if(symbol)symbol.textContent=formation?'☁':'⚔';
   let caption=box.querySelector('.round-circuit-state');if(!caption){caption=document.createElement('small');caption.className='round-circuit-state';box.append(caption);}const initial=p=>(p?.name||'?').trim().charAt(0).toUpperCase()||'?',tagAlly=box.querySelector('.rc-tag-ally'),tagRival=box.querySelector('.rc-tag-rival');if(tagAlly)tagAlly.textContent=state.spectator?initial(me):'V';if(tagRival)tagRival.textContent=state.spectator?initial(rival):'R';

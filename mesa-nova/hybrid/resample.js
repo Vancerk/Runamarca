@@ -34,9 +34,10 @@ function lanczos(data,sw,sh,dw,dh){
 // (no Lanczos step needed) or the pixels for the Lanczos step.
 function prepare(source,w,h){
  let cur=source,cw=source.width,ch=source.height;
- while(cw/2>=w*2&&ch/2>=h*2){const next=document.createElement('canvas');next.width=Math.round(cw/2);next.height=Math.round(ch/2);const ink=next.getContext('2d');ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';ink.drawImage(cur,0,0,next.width,next.height);cur=next;cw=next.width;ch=next.height;}
- if(cw<=w||ch<=h){const out=document.createElement('canvas');out.width=w;out.height=h;const ink=out.getContext('2d');ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';ink.drawImage(cur,0,0,w,h);return {canvas:out};}
- const read=cur===source||!(cur.getContext)?(()=>{const c=document.createElement('canvas');c.width=cw;c.height=ch;c.getContext('2d').drawImage(cur,0,0);return c;})():cur;
+ // Etapas de redução também na memória comum: nenhuma leitura volta da placa de vídeo.
+ while(cw/2>=w*2&&ch/2>=h*2){const next=document.createElement('canvas');next.width=Math.round(cw/2);next.height=Math.round(ch/2);const ink=next.getContext('2d',{willReadFrequently:true});ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';ink.drawImage(cur,0,0,next.width,next.height);cur=next;cw=next.width;ch=next.height;}
+ if(cw<=w||ch<=h){const out=document.createElement('canvas');out.width=w;out.height=h;const ink=out.getContext('2d',{willReadFrequently:true});ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';ink.drawImage(cur,0,0,w,h);return {canvas:out};}
+ const read=cur===source&&cur.getContext?cur:!(cur.getContext)?(()=>{const c=document.createElement('canvas');c.width=cw;c.height=ch;c.getContext('2d',{willReadFrequently:true}).drawImage(cur,0,0);return c;})():cur;
  return {pixels:read.getContext('2d',{willReadFrequently:true}).getImageData(0,0,cw,ch).data,cw,ch};
 }
 const finish=(data,w,h)=>{const out=document.createElement('canvas');out.width=w;out.height=h;out.getContext('2d').putImageData(new ImageData(data,w,h),0,0);return out;};
@@ -54,7 +55,10 @@ export function reduced(key,source,w,h){
 // With OffscreenCanvas the whole reduction (halving draws and the pixel read too, which on the main thread forced a
 // ~50 ms GPU read-back) happens in the worker from a transferred ImageBitmap; the main thread only puts the result.
 const WORKER_BITMAP='const fromBitmap=(bitmap,w,h)=>{let cur=bitmap,cw=bitmap.width,ch=bitmap.height;const canvas=(a,b)=>new OffscreenCanvas(a,b);while(cw/2>=w*2&&ch/2>=h*2){const next=canvas(Math.round(cw/2),Math.round(ch/2)),ink=next.getContext("2d");ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality="high";ink.drawImage(cur,0,0,next.width,next.height);cur=next;cw=next.width;ch=next.height;}if(cw<=w||ch<=h){const out=canvas(w,h),ink=out.getContext("2d",{willReadFrequently:true});ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality="high";ink.drawImage(cur,0,0,w,h);bitmap.close?.();return ink.getImageData(0,0,w,h).data;}const read=canvas(cw,ch),ink=read.getContext("2d",{willReadFrequently:true});ink.drawImage(cur,0,0);bitmap.close?.();return lanczos(ink.getImageData(0,0,cw,ch).data,cw,ch,w,h);};';
-const bitmapPath=typeof OffscreenCanvas==='function'&&typeof createImageBitmap==='function';
+// 11/11/2026 (fluidez): o caminho por ImageBitmap fazia o trabalhador ler pixels de volta da placa de vídeo (~120–145 ms
+// por face nova, com a GPU parada para a página inteira). As faces-mestras agora ficam na memória comum (app.js), e a
+// leitura deles é uma cópia simples; o trabalhador recebe os pixels prontos e faz só o Lanczos. Fica desligado.
+const bitmapPath=false;
 let worker=null,seq=0,workerMs=0;const waiting=new Map(),inflight=new Map();
 function getWorker(){
  if(worker!==null)return worker;
@@ -80,12 +84,20 @@ function offThread(id,source,w,h){
 // Faces are prepared one per task slice (budget ~8 ms), so a board that receives many new faces at once does not turn
 // them into a single long task. Each job resolves with its canvas; the same face and size in flight is shared.
 const jobs=[];let running=false,ran=0,totalMs=0;
-function pump(){running=true;const start=performance.now();while(jobs.length&&performance.now()-start<8){const job=jobs.shift();const t=performance.now();try{job.run().then(job.resolve,job.reject);}catch(e){job.reject(e);}totalMs+=performance.now()-t;ran++;}if(jobs.length)setTimeout(pump,0);else running=false;}
+// 11/11/2026 (fluidez): ler os pixels da face (getImageData) força o navegador a buscar de volta da placa de vídeo a
+// ilustração da carta (decodificada na GPU): ~60–70 ms parados, logo quando a carta nova está voando para a reserva —
+// a segunda pausa ao jogar uma criatura. A redução nítida não tem pressa: a carta já aparece com a redução comum do
+// navegador e troca para a nítida depois. Então os trabalhos esperam a mesa ficar quieta (sem voo, chegada, foco ou
+// combate em andamento) e um momento ocioso do navegador; nunca esperam mais que IDLE_MAX_MS.
+const IDLE_MAX_MS=2500;let waitingSince=0,deferred=0;
+const quiet=()=>{const f=globalThis.RunaHybridFlights?.stats,focus=globalThis.RunaHybridFocus;return !(f?.active?.length)&&!(f?.locked)&&!globalThis.RunaCardArrivals?.blocked&&!(focus&&focus.value>0&&focus.value<1)&&!(typeof state!=='undefined'&&state?.phase==='resolving')&&!document.querySelector('.hybrid-flight-carrier,.hybrid-motion-face,#visual-layer>.card-flight,.turn-flip,.opening-toss-stage');};
+function schedule(){if(running)return;running=true;const go=()=>{running=false;pump();};if(typeof requestIdleCallback==='function')requestIdleCallback(go,{timeout:400});else setTimeout(go,60);}
+function pump(){if(!jobs.length){waitingSince=0;return;}const now=performance.now();waitingSince||=now;if(!quiet()&&now-waitingSince<IDLE_MAX_MS){deferred++;setTimeout(schedule,120);return;}waitingSince=0;running=true;const start=performance.now();while(jobs.length&&performance.now()-start<8){const job=jobs.shift();const t=performance.now();try{job.run().then(job.resolve,job.reject);}catch(e){job.reject(e);}totalMs+=performance.now()-t;ran++;}running=false;if(jobs.length)schedule();}
 export function queued(key,source,w,h){
  const id=key+'|'+w+'x'+h,hit=cache.get(id);if(hit){cache.delete(id);cache.set(id,hit);return Promise.resolve(hit);}
  if(inflight.has(id))return inflight.get(id);
- const promise=new Promise((resolve,reject)=>{jobs.push({run:()=>offThread(id,source,w,h),resolve,reject});if(!running)setTimeout(pump,0);}).finally(()=>inflight.delete(id));
+ const promise=new Promise((resolve,reject)=>{jobs.push({run:()=>offThread(id,source,w,h),resolve,reject});schedule();}).finally(()=>inflight.delete(id));
  inflight.set(id,promise);return promise;
 }
-export const stats=()=>({entries:cache.size,max:MAX,ran,totalMs:+totalMs.toFixed(1),pending:jobs.length,worker:worker===null?'idle':worker?'on':'off',workerMs:+workerMs.toFixed(1),inWorker:waiting.size});
+export const stats=()=>({deferred,entries:cache.size,max:MAX,ran,totalMs:+totalMs.toFixed(1),pending:jobs.length,worker:worker===null?'idle':worker?'on':'off',workerMs:+workerMs.toFixed(1),inWorker:waiting.size});
 window.RunaResample={reduce,reduced,queued,get stats(){return stats();}};

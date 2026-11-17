@@ -179,7 +179,8 @@
 .hybrid-flight-carrier.reading{pointer-events:auto}
 .hybrid-flight-flipper{position:absolute;inset:0;transform-style:preserve-3d;backface-visibility:hidden}
 .hybrid-flight-face{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;transform:none!important;animation:none!important;transition:none!important;pointer-events:none!important;opacity:1!important;visibility:visible!important}
-.hybrid-motion-face{position:fixed!important;left:0;top:0;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;pointer-events:none!important;transform-origin:0 0;will-change:transform;filter:drop-shadow(1px 3px 2px #0007)}
+/* 11/11/2026 (fluidez): a sombra das cópias em movimento era filter:drop-shadow num elemento com matrix3d — o navegador refazia uma superfície de composição por carta a cada quadro (5–6 cartas da mão deslizando ao jogar uma criatura: ~40 ms de GPU por quadro). A mesma sombra como box-shadow é pintada uma vez na camada da carta. */
+.hybrid-motion-face{position:fixed!important;left:0;top:0;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:1px 3px 4px #0007!important;pointer-events:none!important;transform-origin:0 0;will-change:transform;filter:none}
 /* UI-owner revision, item 7: no wait/progress cursor. The lock still swallows input
    (pointerdown/click/keydown), the hand stays inert and aria-busy for assistive tech. */
 .hybrid-draw-lock{position:fixed;left:0;right:0;bottom:0;z-index:221;background:transparent;cursor:default;touch-action:none}

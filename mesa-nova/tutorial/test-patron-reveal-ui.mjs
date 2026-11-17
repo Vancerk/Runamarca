@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+const code=fs.readFileSync(new URL('./patron-combat-ui.js',import.meta.url),'utf8'),app=fs.readFileSync(new URL('./app.js',import.meta.url),'utf8');
+function setup(play=()=>Promise.resolve()){
+ const targets={p:{style:{visibility:'hidden'}}},calls=[];let now=1050;
+ const c=vm.createContext({state:{phase:'resolving',combat:{id:'battle',startedAt:1000}},Date:{now:()=>now},serverClockOffset:0,visualGeneration:1,audioContext:null,tableCard:id=>targets[id],document:{getElementById:()=>({querySelector:()=>({})})},combatPresentationCurrent:id=>c.state?.phase==='resolving'&&c.state.combat?.id===id,RunaWeaponEntry:{play:opts=>{calls.push(opts);return play(opts);}}});vm.runInContext(code,c);return {c,targets,calls,step:{participants:[{uid:'p',owner:'a',weapon:{cost:3}}]},setNow:n=>now=n};
+}
+const flush=async()=>{await new Promise(r=>setImmediate(r));};
+test('entrada começa na revelação, fora da fila posterior',()=>{assert.match(app,/if\(step.kind==='reveal'\)\{const entry=battle.timeline.find\(s=>s.kind==='patron_entry'\);if\(entry\)presentPatronEntries\(entry\);\}/);});
+test('repetir render/etapa não lança duas entradas; chegada recupera nó atual',async()=>{const x=setup();x.c.presentPatronEntries(x.step);x.c.presentPatronEntries(x.step);await flush();assert.equal(x.calls.length,1);assert.equal(x.calls[0].elapsedMs,50);assert.equal(x.targets.p.style.visibility,'');x.c.presentPatronEntries(x.step);await flush();assert.equal(x.calls.length,1);});
+test('formação secreta não dispara apresentação',async()=>{const x=setup();x.c.state.phase='formation';x.c.presentPatronEntries(x.step);await flush();assert.equal(x.calls.length,0);});
+test('falha ou ausência do apresentador não deixa carta invisível',async()=>{for(const missing of [false,true]){const x=setup(()=>Promise.reject(Error('asset indisponível')));if(missing)x.c.RunaWeaponEntry=null;x.c.presentPatronEntries(x.step);await flush();assert.equal(x.targets.p.style.visibility,'');}});
+test('callback antigo não modifica próximo combate; entrada atrasada usa relógio do combate',async()=>{let release;const x=setup(()=>new Promise(r=>release=r));x.setNow(3400);x.c.presentPatronEntries(x.step);await flush();assert.equal(x.calls[0].elapsedMs,2400);x.c.state.combat.id='next';release();await flush();assert.equal(x.targets.p.style.visibility,'hidden');assert.equal(x.calls[0].valid(),false);});

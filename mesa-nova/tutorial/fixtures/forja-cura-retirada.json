@@ -1,0 +1,128 @@
+[
+  {
+    "id": "FL07",
+    "name": "Elfo estudioso",
+    "type": "creature",
+    "affinity": "forja",
+    "cost": 4,
+    "quantity": 1,
+    "rarity": "padrao",
+    "subtype": "Elfo",
+    "attack": 1,
+    "health": 2,
+    "text": "Emanação — escolha uma criatura aliada ferida ou seu Patrono ferido. Ao encerrar a preparação, pague 1 mana para curar 1 de vida do alvo.",
+    "speech": "Do que precisa?",
+    "narrative": "Elfo estudioso? só isso? eu tenho nome e sobrenome, não quero ser resumido a minha raça e minha função — Elfo Estudioso",
+    "image": "art/oficina-lyrik/elfo-estudioso.jpg",
+    "artZoom": 120,
+    "artX": 63,
+    "artY": 21,
+    "fontName": 43,
+    "fontSubtype": 21,
+    "fontRules": 46,
+    "effects": [
+      {
+        "op": "heal",
+        "amount": 1,
+        "mana_cost": 1,
+        "timing": "emanation",
+        "target": "chosen_allied_creature",
+        "allow_patron": true
+      }
+    ],
+    "budgetEffects": [
+      {
+        "sourceIndex": 0,
+        "name": "heal",
+        "timing": "emanation",
+        "target": "ally",
+        "duration": "instant",
+        "condition": "none",
+        "amount": 1,
+        "count": 1,
+        "activationCost": 1,
+        "group": "choice",
+        "reason": "",
+        "effect": "heal"
+      },
+      {
+        "sourceIndex": 0,
+        "name": "heal",
+        "timing": "emanation",
+        "target": "patron",
+        "duration": "instant",
+        "condition": "none",
+        "amount": 1,
+        "count": 1,
+        "activationCost": 1,
+        "group": "choice",
+        "reason": "",
+        "effect": "heal"
+      }
+    ],
+    "budgetVersion": 3,
+    "authoredBy": "Grupo Elysium",
+    "budgetReview": "Efeitos compilados do texto; não rebalanceado automaticamente."
+  },
+  {
+    "id": "FL18",
+    "name": "Reparo de Emergência",
+    "type": "direct_spell",
+    "affinity": "forja",
+    "rarity": "padrao",
+    "quantity": 3,
+    "cost": 3,
+    "text": "Cause 1 de dano a uma criatura inimiga e cure 1 de vida do seu Patrono.",
+    "effects": [
+      {
+        "op": "damage",
+        "amount": 1
+      },
+      {
+        "op": "heal_patron",
+        "amount": 1,
+        "target": "own_patron"
+      }
+    ],
+    "enemyOnly": true,
+    "image": "art/oficina-lyrik/reforco-divino.jpg",
+    "imageKind": "illustration",
+    "artZoom": 100,
+    "artX": 50,
+    "artY": 50,
+    "fontRules": 36,
+    "authoredBy": "Grupo Elysium",
+    "budgetVersion": 3,
+    "budgetReview": "Ilustração provisória reutilizada; dano em criatura inimiga e cura no próprio Patrono.",
+    "budgetEffects": [
+      {
+        "sourceIndex": 0,
+        "name": "damage",
+        "timing": "direct",
+        "target": "enemy",
+        "duration": "instant",
+        "condition": "none",
+        "amount": 1,
+        "count": 1,
+        "activationCost": 0,
+        "group": "sum",
+        "reason": "",
+        "effect": "damage"
+      },
+      {
+        "sourceIndex": 1,
+        "name": "heal_patron",
+        "timing": "direct",
+        "target": "patron",
+        "duration": "instant",
+        "condition": "none",
+        "amount": 1,
+        "count": 1,
+        "activationCost": 0,
+        "group": "sum",
+        "reason": "",
+        "effect": "heal"
+      }
+    ]
+  }
+]

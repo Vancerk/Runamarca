@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {makeRoom,join,act} from './game.mjs';
+import {makeRoom,join,act,mulliganLimit} from './game.mjs';
 const catalog=JSON.parse(fs.readFileSync(new URL('./cartas.json',import.meta.url)));
 const app=fs.readFileSync(new URL('./app.js',import.meta.url),'utf8');
 const source=app.split('\n').filter(line=>/^const mulliganReplacementsDue=|^function clearMulliganReplacements\(|^function tagMulliganReplacements\(/.test(line)).join('\n');
@@ -22,10 +22,10 @@ test('S3: partial and total mulligan replacement draws are tagged opening; openi
  let mark=lastId(room);act(room,a,{type:'mulligan',cardIds:a.hand.slice(0,2).map(c=>c.uid)},catalog);
  const partial=since(room,mark);assert.deepEqual(partial.map(e=>e.type),['mulligan','draw','draw']);t.tag(partial);
  assert.deepEqual([...t.tagged],partial.filter(e=>e.type==='draw').map(e=>e.id));
- mark=lastId(room);act(room,b,{type:'mulligan',cardIds:b.hand.map(c=>c.uid)},catalog);
- const total=since(room,mark);assert.equal(total.filter(e=>e.type==='draw').length,5);t.tag(total);
+ const most=mulliganLimit(room,b);assert.equal(most,room.first===b.id?3:4);assert.throws(()=>act(room,b,{type:'mulligan',cardIds:b.hand.map(c=>c.uid)},catalog),/pode trocar até/);mark=lastId(room);act(room,b,{type:'mulligan',cardIds:b.hand.slice(0,most).map(c=>c.uid)},catalog);
+ const total=since(room,mark);assert.equal(total.filter(e=>e.type==='draw').length,most);t.tag(total);
  for(const e of total.filter(e=>e.type==='draw'))assert.ok(t.tagged.has(e.id),'total replacement draw tagged');
- assert.equal(t.tagged.size,7);assert.equal(t.due.size,0,'no dangling replacement debt');
+ assert.equal(t.tagged.size,2+most);assert.equal(t.due.size,0,'no dangling replacement debt');
  mark=lastId(room);act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);
  const later=since(room,mark);t.tag(later);
  const prepDraws=later.filter(e=>e.type==='draw');assert.ok(prepDraws.length>=1,'match start produces a normal Preparation draw');
@@ -90,9 +90,9 @@ for(const invalidation of ['resetVisualSession','recoverVisualGap','finishMatchP
 
 test('S3: phase changing before the real queue drains keeps the replacement profile only for replacements',async()=>{
  const c=presentation(),{room,a,b}=match();c.state=roomView(room,a);c.resetVisualSession();c.queueEvents();
- let hold;const gate=new Promise(r=>hold=r);c.visualQueue.enqueue(()=>gate);act(room,a,{type:'mulligan',cardIds:a.hand.map(x=>x.uid)},catalog);c.state=roomView(room,a);c.queueEvents();
+ let hold;const gate=new Promise(r=>hold=r);c.visualQueue.enqueue(()=>gate);const most=mulliganLimit(room,a);act(room,a,{type:'mulligan',cardIds:a.hand.slice(0,most).map(x=>x.uid)},catalog);c.state=roomView(room,a);c.queueEvents();
  const mark=lastId(room);act(room,a,{type:'confirmMulligan'},catalog);act(room,b,{type:'confirmMulligan'},catalog);c.state=roomView(room,a);assert.equal(c.state.phase,'prep');c.queueEvents();
  hold();await drain(c);
  const prep=new Set(since(room,mark).filter(e=>e.type==='draw').map(e=>e.id));assert.ok(prep.size>=1);
- assert.equal(c.played.filter(p=>p.opening).length,5);assert.ok(c.played.filter(p=>prep.has(p.id)).every(p=>!p.opening));assert.equal(c.marks.size,0);
+ assert.equal(c.played.filter(p=>p.opening).length,most);assert.ok(c.played.filter(p=>prep.has(p.id)).every(p=>!p.opening));assert.equal(c.marks.size,0);
 });

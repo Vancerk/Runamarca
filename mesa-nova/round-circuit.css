@@ -31,3 +31,24 @@
 .round-circuit .rc-light-tag{font:700 10px Georgia,serif;fill:#8f8272;pointer-events:none}
 .round-circuit[data-active="ally"] .rc-tag-ally,.round-circuit[data-active="rival"] .rc-tag-rival{fill:#120d09}
 .round-circuit-state[data-turn="ally"]{color:#9fd6ff}.round-circuit-state[data-turn="rival"]{color:#ffa497}
+/* 10/11/2026 (dono): circuito em dois caminhos. Luz do rival em cima e do jogador embaixo, na cor do deck de cada um
+   (--rc-rival / --rc-ally, postas por round-circuit.js); caminhos em trechos retos, finos e apagados em repouso (sem
+   aparência de madeira); no combate a energia corre pelos dois até a luz de combate. */
+.round-circuit svg{height:72px}
+.round-circuit .rc-path{stroke:#2c241d;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.round-circuit .rc-ally{fill:color-mix(in srgb,var(--rc-ally,#5fb7ff) 22%,#17120e)}
+.round-circuit .rc-rival{fill:color-mix(in srgb,var(--rc-rival,#ff5a4d) 22%,#17120e)}
+.round-circuit[data-active="ally"] .rc-ally{fill:var(--rc-ally,#5fb7ff);filter:drop-shadow(0 0 5px var(--rc-ally,#5fb7ff))}
+.round-circuit[data-active="ally"] .rc-path-ally{stroke:var(--rc-ally,#5fb7ff);opacity:1;filter:drop-shadow(0 0 3px var(--rc-ally,#5fb7ff))}
+.round-circuit[data-active="rival"] .rc-rival{fill:var(--rc-rival,#ff5a4d);filter:drop-shadow(0 0 5px var(--rc-rival,#ff5a4d))}
+.round-circuit[data-active="rival"] .rc-path-rival{stroke:var(--rc-rival,#ff5a4d);opacity:1;filter:drop-shadow(0 0 3px var(--rc-rival,#ff5a4d))}
+.round-circuit[data-active="combat"] .rc-path{opacity:1;stroke-dasharray:6 8;animation:rc-energy .7s linear infinite}
+.round-circuit[data-active="combat"] .rc-path-ally{stroke:color-mix(in srgb,var(--rc-ally,#5fb7ff) 55%,#ff8a5c)}
+.round-circuit[data-active="combat"] .rc-path-rival{stroke:color-mix(in srgb,var(--rc-rival,#ff5a4d) 55%,#ff8a5c)}
+@keyframes rc-energy{to{stroke-dashoffset:-14}}
+.round-circuit-state[data-turn="ally"]{color:color-mix(in srgb,var(--rc-ally,#5fb7ff) 70%,#fff)}
+.round-circuit-state[data-turn="rival"]{color:color-mix(in srgb,var(--rc-rival,#ff5a4d) 70%,#fff)}
+@media(prefers-reduced-motion:reduce){.round-circuit[data-active="combat"] .rc-path{animation:none}}
+html body.hybrid-active #game.camp-layout #round-circuit svg{width:126px!important;height:auto!important;aspect-ratio:108/72!important;margin:0 auto}
+@media (min-width:901px) and (max-height:820px){html body.hybrid-active #game.camp-layout #round-circuit svg{width:96px!important;height:auto!important;aspect-ratio:108/72!important}}
+html body.hybrid-active.hybrid-focus #game.camp-layout #round-circuit svg{width:96px!important;height:auto!important;aspect-ratio:108/72!important}

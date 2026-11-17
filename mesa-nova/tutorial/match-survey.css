@@ -1,0 +1,63 @@
+/* Leave the finished scene and its rematch button alive underneath this modeless dialog. */
+html:has(.capture-scene){overflow:hidden}
+/* The table normally keeps one scrollbar gutter to avoid shifting the board. Its fullscreen ending has none. */
+html:has(#game.camp-layout):has(.capture-scene){scrollbar-gutter:auto}
+.capture-scene :is(.capture-title,.capture-stage,.capture-result){transition:opacity 180ms ease}
+.capture-scene.survey-present :is(.capture-title,.capture-stage,.capture-result){opacity:0;visibility:hidden;transition:opacity 180ms ease,visibility 0s linear 180ms;pointer-events:none}
+.capture-scene.survey-present .capture-done{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));min-height:44px}
+.capture-title{max-width:calc(100% - 24px);text-wrap:balance;overflow-wrap:anywhere}
+.capture-draw .capture-stage{display:flex;justify-content:center;align-items:center;gap:12px}
+.capture-draw .final-patron{width:min(135px,36vw);height:auto;aspect-ratio:19/27}
+.capture-wait{margin:0;color:#edd7ae;text-align:center}
+.match-survey,.match-survey-retry{
+ position:fixed;inset:0;margin:auto;z-index:2400;box-sizing:border-box;
+ width:min(30rem,calc(100vw - 24px));height:fit-content;max-width:none;
+ max-height:calc(100vh - 116px);max-height:calc(100dvh - 116px);
+ padding:0;border:1px solid #b8985c;border-radius:12px;
+ background:linear-gradient(160deg,#342b23 0%,#221d19 58%,#282018 100%);color:#fcf2dc;
+ box-shadow:0 16px 52px #100b09ac,inset 0 0 0 3px #352d23;
+ overflow:auto;overscroll-behavior:contain;font:15px/1.42 'DM Sans',system-ui,sans-serif;color-scheme:dark;
+}
+.match-survey[open]{animation:survey-arrive 180ms ease-out 140ms both}
+@keyframes survey-arrive{from{opacity:0}to{opacity:1}}
+.match-survey [hidden]{display:none!important}
+.match-survey-form{display:flex;flex-direction:column;box-sizing:border-box;max-height:inherit;padding:18px 24px 22px;gap:0}
+.survey-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.survey-header h2{margin:0;color:#e2c48b;font:700 14px/1.3 Cinzel,Georgia,serif;letter-spacing:.06em}
+.match-survey button,.match-survey-retry button{min-height:44px;font:600 14px/1.25 'DM Sans',system-ui,sans-serif}
+.match-survey .survey-skip,.match-survey .survey-back{padding:.5rem .65rem;background:transparent;color:#f1dfb7;border:1px solid transparent;box-shadow:none}
+.match-survey .survey-skip{margin-inline-end:-.5rem}
+.match-survey .survey-back:hover,.match-survey .survey-skip:hover{border-color:#94794c;background:#403325}
+.survey-progress{display:flex;list-style:none;padding:0;margin:12px 0 6px;gap:5px}
+.survey-progress li{flex:1;height:7px;box-sizing:border-box;border:1px solid #8b7964;border-radius:3px}
+.survey-progress [data-state=done]{background:#d6b273;border-color:#d6b273}
+.survey-progress [data-state=current]{border:2px solid #ffe1a3;background:#5d482c}
+.survey-count,.survey-note,.match-survey-hint{font-size:13px;color:#ddccb1}
+.survey-count{margin:0 0 20px;font-variant-numeric:tabular-nums}
+.survey-pages{min-height:0;overflow:auto;overscroll-behavior:contain;scroll-padding:4px}
+.match-survey-q{min-width:0;border:0;padding:0;margin:0}
+.match-survey-q legend,.match-survey-comment{box-sizing:border-box;display:block;width:100%;margin:0 0 17px;padding:0;color:#fff3d9;font:600 clamp(20px,2.1vw,27px)/1.22 Georgia,serif;text-wrap:balance}
+.match-survey-options{display:grid;gap:7px;padding:3px}
+.match-survey-options label{box-sizing:border-box;min-height:44px;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #8e775c;border-radius:7px;color:#f6e9d2;background:#30271f;cursor:pointer}
+.match-survey-options input{margin:0;width:16px;height:16px;flex:none;accent-color:#eed198}
+.match-survey-options label:has(input:checked){color:#fff4da;border-color:#ffdc98;box-shadow:inset 0 0 0 1px #e7c073;background:#59442c}
+.match-survey-scale .match-survey-options{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.match-survey-scale label{position:relative;justify-content:center;padding:6px;font:700 21px/1 Georgia,serif}
+.match-survey-scale input,.survey-sr{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.match-survey :is(button,textarea):focus-visible,.match-survey-options label:has(input:focus-visible),.match-survey-retry button:focus-visible{outline:2px solid #a5e0ea;outline-offset:1px}
+.match-survey-hint{display:flex;justify-content:space-between;margin:3px 3px 0;gap:1em}
+.survey-note{margin:-8px 0 10px}
+.match-survey textarea{box-sizing:border-box;width:calc(100% - 6px);margin:3px;min-height:76px;max-height:24vh;resize:vertical;background:#1c1814;color:#fbf0d9;border:1px solid #98815d;border-radius:7px;padding:10px;font:inherit}
+.match-survey textarea::placeholder{color:#bdad95}
+.match-survey-actions{flex:none;margin-top:20px;border-top:1px solid #65533b;padding-top:12px}
+.match-survey-status{margin:0 0 10px;color:#ffe0a0;font-size:14px}
+.match-survey-status:empty{display:none}
+.match-survey-buttons{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.match-survey .survey-next,.match-survey-retry .primary{margin-left:auto;min-width:8rem;padding:8px 15px;border:1px solid #ebc887;border-radius:6px;color:#302115;background:#e9c78b}
+.match-survey .survey-next:disabled{opacity:.75}
+.survey-sent .match-survey-status{margin:0}
+.match-survey-retry{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:16px 20px}
+.match-survey-retry span{flex-basis:100%;font-weight:600}
+@media(max-width:430px){.match-survey-form{padding:12px 16px 16px}.survey-count{margin-bottom:14px}.match-survey-actions{margin-top:14px}}
+@media(max-height:480px){.match-survey-form{padding:6px 12px}.survey-count,.match-survey-q legend{margin-bottom:6px}.survey-progress,.match-survey-actions{margin-top:4px}.match-survey-actions{padding-top:4px}}
+@media(prefers-reduced-motion:reduce){.match-survey[open]{animation:none}.capture-scene :is(.capture-title,.capture-stage,.capture-result),.capture-scene.survey-present :is(.capture-title,.capture-stage,.capture-result){transition:none}}

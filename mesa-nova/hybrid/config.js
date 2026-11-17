@@ -39,7 +39,9 @@ export const HYBRID=Object.freeze({
  // 17 px keeps every back at least as visible as the initial checkout's worst case
  // (16.49 px, 1280×720) and above the 16-px floor of scripts/hybrid9-hands.mjs. The
  // first version (20 px) applied to the centre back only and left outer backs at 11.8 px.
- owner:Object.freeze({composition:1.10,hand:1.15,opening:1.25,rivalMinStrip:17}),
+ // rivalShow (11/11/2026, dono): fração da altura das costas da mão rival que fica à vista (antes só a pontinha, ~13%).
+ // Mesmo mecanismo de rivalMinStrip: a composição cresce só até onde a faixa pedida continua visível.
+ owner:Object.freeze({composition:1.10,hand:1.15,opening:1.25,rivalMinStrip:17,rivalShow:.5,compositionFloor:.8}),
  // Visual review V2 (03/11/2026), applied ONCE over the V1 composition above:
  //   combatLocal .85 / emanaLocal .75 — width of the combat and Emanation sockets in the field partition;
  //   global 1.25 — the general composition (play zoom: Patrons, panels, reserves, board cards) and the socket
@@ -72,7 +74,10 @@ export const HYBRID=Object.freeze({
  //   room limits it; gain 3 asks for three times that growth, taking the rest downward into the gap above the own
  //   reserve (ownGapPx kept); max raised so it does not cap the gain.
   // Round 3 (owner): twice the round-2 growth (gain 3 → 6, max 1.36 → 1.6); the rival band may rise to 30 px from the top.
- focus:Object.freeze({gain:6,ownGapPx:2,ownShiftMaxPx:26,max:1.6,ms:400,panelMarginPx:14,rivalGapPx:6,rivalTopPx:48,rivalTopGainPx:30,veil:.45,holdMaxMs:4500,mobileHandStripPx:44}),
+ // 10/11/2026 (dono): boost — o campo em foco fica 25% maior do que ficava (sobre o tamanho anterior do foco, não sobre
+ //   o campo reduzido), até onde houver espaço; approachMs/approachPx — ao arrastar uma carta que pode ir para o
+ //   campo, a menos de approachPx dele, o campo cresce até compose.dragScale em approachMs e volta ao soltar.
+ focus:Object.freeze({boost:1.25,approachMs:200,approachPx:150,gain:6,ownGapPx:2,ownShiftMaxPx:26,max:1.6,ms:400,panelMarginPx:14,rivalGapPx:6,rivalTopPx:48,rivalTopGainPx:30,veil:.45,holdMaxMs:4500,mobileHandStripPx:44}),
  camera:Object.freeze({tiltDegrees,tilt:radians(tiltDegrees),distance:Math.hypot(22,16),fovDegrees:43,fov:radians(43)}),
  // Relief and light (revision 12). With a near-vertical camera the side faces of the
  // boxes are almost invisible, so depth comes from cast shadows and edge shading.
@@ -84,6 +89,11 @@ export const HYBRID=Object.freeze({
  // cardThickness: height of the WebGL body under each board card face (world units).
  // bodyInsetPx: inset on all four sides, under the opaque rounded frame. Thin
  // card stock still casts a shadow without a second opaque plate around the face.
+ // Objetos da mesa (10/11/2026, dono): com o campo menor em repouso, os objetos crescem e chegam mais perto dele.
+ //   decorScale — fator sobre a vela/lanterna, os livros e os miúdos ao lado; cornerScale — sobre a esfera armilar e a
+ //   bússola; pull — quanto os objetos de cima se aproximam do centro da tela (1 = no canto; antes .85).
+ //   Em telas baixas (até 820 px de altura) valem os fatores *Short, menores, porque sobra menos madeira em volta (ali os objetos ficam do tamanho e no lugar de antes).
+ props:Object.freeze({decorScale:1.4,cornerScale:1.32,decorScaleShort:1,cornerScaleShort:1,pull:.8,pullShort:.85}),
  relief:Object.freeze({lampElevationDegrees:27,lampDistance:16,shadowMap:2048,shadowKeep:.48,edgeShade:.2,cardThickness:.025,bodyInsetPx:19}),
  // Hover of a hand card: the single enlarged copy is sized from the hand card and the
  // viewport (never above the native preview size) and sits low, overlapping the hand.
@@ -111,7 +121,9 @@ export const HYBRID=Object.freeze({
  // .935 at 1280×720 against < .93; .897 at .115). .085 keeps most of the reduction and
  // gives .923 / .899 / .876 at 1280×720 / 1920×900 / 1920×1080
  // (prototype-qa/ui-owner/tools/shadow-probe.mjs).
- panels:Object.freeze({sideGapPx:6,registerGapPx:5,outerInsetFraction:.085}),
+ // focusScale (11/11/2026, dono): no zoom do combate a Rodada, o Nartvanyr e o Registro crescem junto (até ×focusScale,
+ // acompanhando o valor do foco); o campo cede o espaço que os painéis maiores ocupam.
+ panels:Object.freeze({sideGapPx:6,registerGapPx:5,outerInsetFraction:.085,focusScale:1.3}),
  // Claude review (05/11/2026), owner request: concentrate the field and show the normal complete card in each
  // Emanation. Applied once over the partition above, presentation only.
  //   combatWidth — factor on the width of the six combat sockets. PROPOSAL chosen among measured variants
@@ -122,7 +134,10 @@ export const HYBRID=Object.freeze({
  //   emanaSlotDepth / emanaCenterGap — fraction of the field depth for each Emanation socket and for the gap with
  //     the "Emanação" plate (two sockets + gap + 2% border = 1). emanaMargin — margin around the card, as a
  //     fraction of the socket depth, equal on the four sides. label — the "Emanação" plate, below.
- compose:Object.freeze({combatWidth:(()=>{const v=Number(globalThis.__HYBRID_COMBAT_WIDTH);return Number.isFinite(v)&&v>=.6&&v<=1?v:.85;})(),emanaFullCard:true,emanaSlotDepth:.435,emanaCenterGap:.1,emanaMargin:.035,cardRatio:1260/900,
+ //   restScale (10/11/2026, dono) — fora do combate o campo inteiro (casas, Emanação e vãos) fica 25% menor, em torno do
+ //     próprio centro, para dar lugar aos objetos da mesa; dragScale — tamanho que ele alcança enquanto uma carta é
+ //     arrastada para perto (1 = o tamanho que o campo tinha antes da redução). Só em telas acima de 900 px.
+ compose:Object.freeze({/* restMatch 'reserve' (11/11): o repouso segue a largura da reserva aliada, até restMax; dragScale passa a ser relativo ao repouso, limitado pelo espaço dos painéis */restScale:.75,restMatch:'reserve',restMax:1.5,/* restGapPx (11/11, dono: combate sem zoom pequeno demais): em repouso o campo também se aprofunda, ocupando as faixas vazias até restGapPx das duas reservas (no máximo restMax) */restGapPx:6,dragScale:1.12,combatWidth:(()=>{const v=Number(globalThis.__HYBRID_COMBAT_WIDTH);return Number.isFinite(v)&&v>=.6&&v<=1?v:.85;})(),emanaFullCard:true,emanaSlotDepth:.435,emanaCenterGap:.1,emanaMargin:.035,/* 11/11/2026: face de combate (arte, ataque e vida), como na reserva */cardRatio:820/900,
   // "Emanação" plate (round 2, parametrised): minPx — minimum width on screen; depth — plate depth as a fraction of
   // the field depth; offsetX/offsetY — screen-pixel nudges from the socket axis (0 = centred); fontRatio — plate width
   // divided by the letter size (15 px cap). The plate is measured after placement and re-centred (bridge.js fitLabel).
@@ -142,7 +157,10 @@ export const HYBRID=Object.freeze({
  deck:Object.freeze({depth:.8,narrowDepth:.56,aspect:1.4,gap:.2,narrowGap:.08,holderMargin:.06,stagger:.014}),
  // Opening deal (the event that hands out the first five cards) runs at 25% of the
  // normal draw duration; later draws keep the normal profile.
- draw:Object.freeze({normal:Object.freeze({rise:190,flip:170,travel:420,read:1000,readReduced:600,arrive:300}),openingFactor:.25})
+ draw:Object.freeze({normal:Object.freeze({rise:190,flip:170,travel:420,read:1000,readReduced:600,arrive:300}),openingFactor:.25,
+  // Abertura (09/11/2026): as cartas iniciais chegam pela direita, já de frente. stagger = intervalo entre cartas,
+  // flight = duração de cada voo (ms), tilt = inclinação de partida em graus (0 com movimento reduzido).
+  deal:Object.freeze({stagger:150,flight:640,tilt:24})})
 });
-export function snapshot(){const c=HYBRID.camera;return {visualScale:HYBRID.visualScale,owner:{...HYBRID.owner},v2:{...HYBRID.v2},formA:{...HYBRID.formA},focus:{...HYBRID.focus},camera:{tiltDegrees:c.tiltDegrees,parameter:CAMERA_TILT_DEGREES,qaOverride:overridden?override:null,measuredFrom:'vertical',distance:c.distance,fovDegrees:c.fovDegrees,history:{...CAMERA_HISTORY}},relief:{...HYBRID.relief},hover:{...HYBRID.hover},hand:{...HYBRID.hand},field:{...HYBRID.field},panels:{...HYBRID.panels},compose:{...HYBRID.compose},emanaFace:{...HYBRID.emanaFace},deck:{...HYBRID.deck},draw:{normal:{...HYBRID.draw.normal},openingFactor:HYBRID.draw.openingFactor}};}
+export function snapshot(){const c=HYBRID.camera;return {visualScale:HYBRID.visualScale,owner:{...HYBRID.owner},v2:{...HYBRID.v2},formA:{...HYBRID.formA},focus:{...HYBRID.focus},camera:{tiltDegrees:c.tiltDegrees,parameter:CAMERA_TILT_DEGREES,qaOverride:overridden?override:null,measuredFrom:'vertical',distance:c.distance,fovDegrees:c.fovDegrees,history:{...CAMERA_HISTORY}},relief:{...HYBRID.relief},hover:{...HYBRID.hover},hand:{...HYBRID.hand},field:{...HYBRID.field},panels:{...HYBRID.panels},compose:{...HYBRID.compose},emanaFace:{...HYBRID.emanaFace},deck:{...HYBRID.deck},draw:{normal:{...HYBRID.draw.normal},openingFactor:HYBRID.draw.openingFactor,deal:{...HYBRID.draw.deal}}};}
 window.RunaHybridConfig={snapshot,get config(){return HYBRID;}};

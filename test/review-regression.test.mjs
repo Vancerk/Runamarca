@@ -47,8 +47,9 @@ test('Animação que não finaliza possui prazo de recuperação e é cancelada'
  await ctx.settleAnimation({finished:new Promise(()=>{}),cancel(){cancelled=true;}},100);assert.equal(cancelled,true);
 });
 test('Reiniciar durante a abertura interrompe as compras animadas restantes',async()=>{
- const draws=[],ctx={tableCard:()=>null,visualGeneration:0,noticeQueue:Promise.resolve(),warmSounds:async()=>{},state:{players:[{id:'me'}]},seat:()=>({id:'me',hand:[{uid:'one'},{uid:'two'}]}),$:()=>({querySelector:()=>null}),visualMessage(){},animateDraw:async uid=>{draws.push(uid);ctx.visualGeneration++;}};
- clientContext(ctx);vm.runInContext(damagePresentation,ctx);vm.runInContext(section(app,'async function animateEvent','function resetVisualSession'),ctx);
+ const draws=[],ctx={tableCard:()=>null,visualGeneration:0,noticeQueue:Promise.resolve(),warmSounds:async()=>{},state:{players:[{id:'me'}]},seat:()=>({id:'me',hand:[{uid:'one'},{uid:'two'}]}),$:()=>({querySelector:()=>null}),visualMessage(){},openingToss:null,RunaPresentation:{play:(kind,payload,fallback)=>fallback(payload)},animateNativeDraw:async uid=>{draws.push(uid);ctx.visualGeneration++;}};
+ // Abertura de 09/11/2026: as cartas iniciais saem por animateOpeningDeal (um lote); sem a mesa 3D, ele distribui uma a uma.
+ clientContext(ctx);vm.runInContext(damagePresentation,ctx);vm.runInContext(section(app,'function animateOpeningDeal','function animateDraw'),ctx);vm.runInContext(section(app,'async function animateEvent','function resetVisualSession'),ctx);
  await ctx.animateEvent({type:'opening',playerId:'me'});assert.deepEqual(draws,['one']);
 });
 test('Um Banquete pendente não altera a vida da partida seguinte',async()=>{

@@ -1,0 +1,33 @@
+{
+  "version": 4,
+  "energies": {
+    "forja": "audio/platinum-20261018/entrada-forja.mp3",
+    "fluxo": "audio/platinum-20261018/entrada-fluxo.mp3",
+    "ruptura": "audio/platinum-20261018/entrada-ruptura.mp3"
+  },
+  "cards": {
+    "FL12": {
+      "audio": "audio/entrances-mix2-20261018/cataclisma-completo.mp3",
+      "text": "Combate não! Execução!",
+      "duration": 5.8,
+      "voiceStart": 0.85,
+      "voiceEnd": 3.56
+    },
+    "FL21": {
+      "audio": "audio/entrances-mix2-20261018/runico-eficiente.mp3",
+      "duration": 2.3,
+      "kind": "voice"
+    },
+    "FL04": {
+      "audio": "audio/entrances-mix2-20261018/sintetico-prospero.mp3",
+      "duration": 2.88,
+      "kind": "voice"
+    },
+    "FL09": {
+      "audio": "audio/entrances-mix4-20261018/golias-buzina-transatlantico.mp3",
+      "duration": 3.8,
+      "kind": "ship-horn",
+      "source": "https://www.epidemicsound.com/sound-effects/tracks/463af07a-e0b5-41be-9019-008d70e379e2/"
+    }
+  }
+}

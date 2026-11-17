@@ -112,6 +112,31 @@ export function installFlights({sync,lifecycle}){
   }finally{finish(e);}
  };
 
+ // Abertura (09/11/2026): as cartas iniciais chegam em sequência pela direita, já de frente, inclinadas e em curva, e
+ // pousam nas casas da mão inicial enquanto a moeda é lançada (opening-toss.js). Um bilhete de chegada por carta, como
+ // nas compras. A face em voo é uma cópia da própria casa de destino, já pintada no tamanho final (nenhuma carta é
+ // pintada de novo durante o voo), sem will-change, para não ampliar um bitmap menor. As cinco ficam prontas antes de a
+ // primeira partir: o custo de preparação fica antes do movimento, não no meio dele.
+ async function openingDeal({uids=[]}){
+  const D=HYBRID.draw.deal,list=uids.map(uid=>begin('draw',true,uid)).filter(e=>e.ticket);if(!list.length)return;
+  for(const e of list)e.profile='deal';hideHover();cleanupDrag();RunaTargeting?.cancel('draw');updateLock();
+  try{
+   await arrivals.waitFor('opening-to-hand');await new Promise(requestAnimationFrame);layoutHands();sync();
+   const quiet=reduce(),edge=document.documentElement.clientWidth;
+   const prepared=Promise.race([Promise.all(list.map(e=>destination(e.uid,true)?.visualReady)),pause(1600)]).then(()=>new Promise(requestAnimationFrame));
+   await Promise.all(list.map(async(e,i)=>{
+    try{
+     if(!valid(e))return;await prepared;if(!valid(e)||!await hold(e,quiet?0:i*D.stagger))return;
+     const target=destination(e.uid,true),r=box(target);if(!r)return;
+     const end=rectPose(r),c=carrier(e,end.w,end.h,cloneVisual(target)),from=edge+end.w*.75,span=from-end.x,tilt=quiet?0:D.tilt;c.n.style.willChange='auto';
+     const start={x:from,y:end.y-end.h*.42,w:end.w*.82,h:end.h*.82,angle:tilt},mid={x:end.x+span*.42,y:end.y+end.h*.1,w:end.w*.93,h:end.h*.93,angle:tilt*.55},over={x:end.x-end.w*.035,y:end.y-end.h*.012,w:end.w*1.03,h:end.h*1.03,angle:tilt*-.14};
+     c.n.style.transform=transform(c,start);stage(e,'deal',start);sound('draw',0,{from:start,to:end,travelSeconds:D.flight/1000});
+     if(await animate(e,c.n,quiet?[frame(c,{...end,x:end.x+end.w*.4},{opacity:0}),frame(c,end,{opacity:1})]:[frame(c,start),{...frame(c,mid),offset:.46},{...frame(c,over),offset:.84},frame(c,end)],duration(D.flight),0,'cubic-bezier(.22,.7,.3,1)'))stage(e,'land',end);
+    }finally{finish(e);}
+   }));
+  }finally{for(const e of list)if(entries.has(e))finish(e);updateLock();}
+ }
+
  async function mulliganReturn(event){
   const cards=mulliganDepartures.get(event.id)||[];mulliganDepartures.delete(event.id);const e=begin('mulligan-return',true);updateLock();
   try{const endBox=deck(true);if(!endBox)return;const end=rectPose(endBox);stage(e,'deck-target',end);
@@ -143,7 +168,7 @@ export function installFlights({sync,lifecycle}){
  }
  RunaPresentation.register('hybrid-transfers',{
   active:()=>document.body.classList.contains('hybrid-active'),
-  animations:{transfer,draw,return:returnToHand,mulliganReturn,async openingLayout(){await new Promise(requestAnimationFrame);layoutHands();sync();}},
+  animations:{transfer,draw,openingDeal,return:returnToHand,mulliganReturn,async openingLayout(){await new Promise(requestAnimationFrame);layoutHands();sync();}},
  });
 
  const cancelReason=()=>{paused=document.hidden;cancelAll();};

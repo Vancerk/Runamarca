@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="136" viewBox="0 0 64 136" preserveAspectRatio="none">
+ <!-- Abertura (09/11/2026): ponta esquerda do pergaminho da mão inicial. O papel enrola numa haste de nogueira com
+      ponteiras de bronze; a direita usa a mesma peça espelhada. Arte procedural, sem recurso externo. -->
+ <defs>
+  <linearGradient id="roll" x1="0" x2="1"><stop stop-color="#7a6038"/><stop offset=".16" stop-color="#c2a673"/><stop offset=".42" stop-color="#f3e3bf"/><stop offset=".66" stop-color="#d5bc8c"/><stop offset=".9" stop-color="#8d7145"/><stop offset="1" stop-color="#5e4727"/></linearGradient>
+  <linearGradient id="rod" x1="0" x2="1"><stop stop-color="#2a170c"/><stop offset=".35" stop-color="#7a4a26"/><stop offset=".55" stop-color="#93603a"/><stop offset="1" stop-color="#2f1a0e"/></linearGradient>
+  <linearGradient id="bronze" x1="0" x2="1"><stop stop-color="#5a3d17"/><stop offset=".3" stop-color="#d9b67b"/><stop offset=".5" stop-color="#f6e0a8"/><stop offset=".72" stop-color="#b98a45"/><stop offset="1" stop-color="#4f3413"/></linearGradient>
+  <linearGradient id="cast" x1="0" x2="1"><stop stop-color="#1c1008" stop-opacity=".5"/><stop offset="1" stop-color="#1c1008" stop-opacity="0"/></linearGradient>
+  <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".5 .03" numOctaves="2" seed="5"/><feColorMatrix type="matrix" values="0 0 0 0 .2  0 0 0 0 .12  0 0 0 0 .05  0 0 0 -1.4 .78"/></filter>
+ </defs>
+ <!-- haste e ponteiras -->
+ <rect x="19" y="3" width="18" height="130" rx="3" fill="url(#rod)"/>
+ <rect x="16" y="1" width="24" height="11" rx="4" fill="url(#bronze)"/><rect x="16" y="124" width="24" height="11" rx="4" fill="url(#bronze)"/>
+ <rect x="16" y="9" width="24" height="2" fill="#3b260e" opacity=".7"/><rect x="16" y="124" width="24" height="2" fill="#3b260e" opacity=".7"/>
+ <!-- sombra do rolo sobre a folha -->
+ <rect x="46" y="15" width="18" height="106" fill="url(#cast)"/>
+ <!-- rolo de pergaminho -->
+ <rect x="6" y="13" width="44" height="110" rx="7" fill="#3a2714"/>
+ <rect x="7" y="14" width="42" height="108" rx="6" fill="url(#roll)"/>
+ <rect x="7" y="14" width="42" height="108" rx="6" filter="url(#grain)" opacity=".5"/>
+ <path d="M8 19Q28 15 48 19M8 117Q28 121 48 117" fill="none" stroke="#5c4424" stroke-width="1" opacity=".6"/>
+ <path d="M44 16V120" stroke="#4a361b" stroke-width="1" opacity=".55"/>
+</svg>

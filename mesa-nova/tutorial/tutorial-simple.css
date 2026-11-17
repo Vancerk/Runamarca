@@ -1,0 +1,69 @@
+/* One explanation, one confirmation. Camera and responsive fit share a stable
+   viewport. The stage clips only camera scenery; targets and controls are fitted. */
+html.tutorial-focus-viewport{height:100%;overflow:hidden}
+html.tutorial-focus-viewport body{height:100%;min-height:0;overflow:hidden}
+body.tutorial-active main{height:100dvh;min-height:0}
+#tutorial-panel{box-sizing:border-box;inset:auto;width:var(--tutorial-panel-width,320px);max-height:none;padding:16px 18px;overflow:visible;border-radius:6px 16px 16px 6px;border-left:3px solid #e9c579;background:linear-gradient(125deg,#242a25f7,#131c1af7);box-shadow:0 8px 28px #0008;font-size:14px;line-height:1.48}
+#tutorial-panel h2{font-size:22px;margin:0 0 9px}
+#tutorial-panel #tutorial-text{margin:0 0 12px}
+#tutorial-panel .tutorial-buttons{margin-top:12px;justify-content:flex-end}
+#tutorial-panel button{min-height:44px;padding:8px 22px;font-size:13px}
+#tutorial-panel button:focus-visible,#tutorial-tools button:focus-visible{outline:3px solid #a9f7db;outline-offset:3px}
+#tutorial-panel #tutorial-error:empty{display:none}
+#tutorial-tools{position:fixed;right:12px;top:12px;z-index:100020;display:flex;gap:3px;padding:4px 6px;border:1px solid #b99b5f70;border-radius:30px;background:#17201dd9;box-shadow:0 3px 14px #0006}
+#tutorial-tools[hidden]{display:none}
+#tutorial-tools button{border:0;border-radius:20px;background:transparent;color:#fff3da;min-height:38px;padding:6px 12px;font:12px system-ui,sans-serif;cursor:pointer}
+#tutorial-shield{background:transparent}
+#tutorial-focus-map{position:fixed;inset:0;width:100%;height:100%;z-index:100025;pointer-events:none;overflow:hidden}
+#tutorial-focus-map[hidden]{display:none!important}
+.tutorial-spotlight{fill:#05100c66}.tutorial-connector{fill:none;stroke:#f3d899;stroke-width:2;filter:drop-shadow(0 1px 3px #000)}.tutorial-anchor{fill:#fff0bb;stroke:#a7813c;stroke-width:1.5}
+.tutorial-focus{outline:2px solid #f3d899!important;outline-offset:6px;animation:none;filter:none}
+body.tutorial-active #game.tutorial-camera-focused,body.tutorial-active #mulligan-overlay.tutorial-camera-focused{transform-origin:0 0!important;transform:translate(var(--tutorial-camera-x),var(--tutorial-camera-y)) scale(var(--tutorial-camera-scale))!important;transition:none!important}
+body.tutorial-active #game.tutorial-camera-animate,body.tutorial-active #mulligan-overlay.tutorial-camera-animate{transition:transform 280ms cubic-bezier(.2,.65,.2,1)!important}
+.tutorial-sr-only{position:fixed;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.tutorial-camera-obscured,.tutorial-camera-obscured *{visibility:hidden!important}
+.tutorial-camera-focused #lanes.tutorial-field-raised{z-index:90!important}
+body #game.tutorial-camera-focused .lane-side.tutorial-field-focus{background:#2d3029f5!important;box-shadow:inset 0 0 22px #c49f441f!important}
+body #game.tutorial-camera-focused .lane-side.tutorial-field-focus:after{content:attr(data-tutorial-house)!important;display:block!important;position:absolute!important;inset:6px 2px auto!important;height:auto!important;border:0!important;box-shadow:none!important;font:600 12px/1.4 system-ui,sans-serif!important;color:#ffe7af!important;text-align:center;pointer-events:none;z-index:6}
+@media(max-width:700px){#tutorial-panel{padding:12px 14px;font-size:13px;max-height:none}#tutorial-panel h2{font-size:20px}#tutorial-panel .tutorial-buttons{margin-top:9px}}
+@media(max-height:450px){#tutorial-panel{padding:10px 14px;font-size:13px}#tutorial-panel h2{font-size:19px;margin-bottom:6px}#tutorial-panel #tutorial-text{margin-bottom:7px}#tutorial-panel .tutorial-buttons{margin-top:7px}}
+@media(prefers-reduced-motion:reduce){body.tutorial-active #game.tutorial-camera-animate,body.tutorial-active #mulligan-overlay.tutorial-camera-animate{transition:none!important}.tutorial-focus{animation:none!important}}
+/* Compact start screen; progress remains automatic and available on the menu. */
+.tutorial-preview #welcome{min-height:100dvh;height:auto;padding:24px;gap:24px}
+.tutorial-preview #welcome .hero h1{font-size:clamp(28px,4vw,54px);margin:8px 0}
+.tutorial-preview #welcome .hero span:empty{display:none}
+.tutorial-preview #welcome .entry{padding:22px}
+.tutorial-preview #welcome .entry{margin:0}
+.tutorial-back{color:#e4ce9e;font:inherit}
+.tutorial-preview #welcome .hero{padding:0}
+.tutorial-preview #welcome #welcome-error:empty{display:none}
+.tutorial-preview #welcome #entry-title{font-size:22px;margin:0 0 6px}
+.tutorial-preview #welcome #entry-note{font-size:12px;margin:0 0 10px}
+.tutorial-preview #tutorial-menu{gap:8px;margin:10px 0 0}
+.tutorial-preview .tutorial-choice{padding:10px 12px}
+.tutorial-preview .tutorial-choice h3{font-size:18px;margin:0 0 4px}
+.tutorial-preview .tutorial-choice p{margin:0;font-size:12px}
+.tutorial-preview .tutorial-choice span:empty,.tutorial-preview #tutorial-menu-error:empty{display:none}
+.tutorial-preview .tutorial-choice-buttons{margin-top:8px}
+.tutorial-preview #welcome .entry>label:has(#player-name){display:none}
+@media(max-width:700px){.tutorial-preview #welcome{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:12px}.tutorial-preview #welcome .hero{align-self:stretch}.tutorial-preview #welcome .hero p{margin:0;font-size:10px}.tutorial-preview #welcome .hero h1{font-size:28px;margin:4px 0}.tutorial-preview #welcome .entry{width:100%;padding:14px}.tutorial-preview #welcome #entry-title{font-size:18px}.tutorial-preview .tutorial-choice h3{font-size:17px}}
+@media(min-width:701px) and (max-height:550px){.tutorial-preview #welcome{display:block;padding:12px}.tutorial-preview #welcome .hero{display:none}.tutorial-preview #welcome .entry{max-width:none;width:100%;padding:14px}.tutorial-preview #tutorial-menu{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}.tutorial-preview .tutorial-choice{display:flex;flex-direction:column}.tutorial-preview .tutorial-choice-buttons{margin-top:auto;padding-top:8px}}
+@media(max-width:700px) and (max-height:650px){.tutorial-preview .tutorial-choice p{display:none}.tutorial-preview .tutorial-choice{padding:8px 10px}.tutorial-preview #welcome .entry{padding:10px}.tutorial-preview #welcome .hero h1{font-size:25px}.tutorial-preview #welcome #entry-title{font-size:17px}.tutorial-preview #welcome #entry-note{margin-bottom:4px}.tutorial-preview .tutorial-choice-buttons button{min-height:44px;padding:7px 12px}}
+
+/* Action guides stay interactive. Only informational pauses take focus. */
+#tutorial-panel.tutorial-action-guide{padding:12px 15px;font-size:13px;border-radius:12px;background:#17221ff5}
+#tutorial-panel.tutorial-action-guide h2{font-size:19px;margin-bottom:6px}
+#tutorial-panel.tutorial-action-guide #tutorial-text{margin:0}
+#tutorial-panel.tutorial-action-guide .tutorial-buttons:has(button[hidden]){display:none}
+#tutorial-panel button[hidden]{display:none!important}
+.tutorial-connector{stroke:#fff0bb;stroke-width:3;filter:drop-shadow(0 2px 2px #000);stroke-linecap:round;stroke-linejoin:round}
+.tutorial-action-guide~#tutorial-focus-map .tutorial-spotlight{fill:#05100c3d}
+body.tutorial-camera-mode #registro-trilho,body.tutorial-camera-mode #registro-trilho-detalhe,body.tutorial-camera-mode #camp-log,body.tutorial-camera-mode #game>.rail{visibility:hidden!important;pointer-events:none!important}
+body.tutorial-camera-mode #registro-trilho-detalhe{display:none!important}
+
+.tutorial-heart-map .tutorial-spotlight{fill:#05100cdb}
+/* The camera compensates fixed hands synchronously before measuring. Native
+   translate transitions otherwise return an intermediate offset and cancel
+   the gap above the fan. The parent camera retains its own smooth transition. */
+body.tutorial-active #game #hand,body.tutorial-active #game #opponent-hand{transition:filter .2s ease-out!important}
+body.tutorial-camera-mode #tutorial-tools{top:auto;bottom:12px}

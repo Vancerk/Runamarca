@@ -1,0 +1,125 @@
+/* Claude review (05/11/2026): composition of the 3D table on desktop. Presentation only; loaded last.
+   With the narrower combat sockets (hybrid/config.js HYBRID.compose) the side panels follow the field edges, so the
+   two side columns now frame the field band symmetrically:
+   - left: Registro + Nartvanyr inside the field band (the Registro used to sit above it, at the height of the rival
+     reserve shelf, which the narrower field would make it overlap);
+   - right: the round / turn / action panel spans the same band, with a fixed axis: title and circuit at the top, the
+     action at the bottom. Its height no longer changes with the caption or the number of buttons, so nothing jumps
+     between "sua vez", "vez do rival", voting, formation, waiting and combat.
+   - both side columns have the same width, which also centres the field on the screen. */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .board{grid-template-columns:132px minmax(0,1fr) 132px!important}
+ /* Both side columns take exactly the band of the field: the lanes box height (--hybrid-lane-height, layout.js),
+    centred like the lanes; contain:size so their content can never enlarge the row. */
+ body.hybrid-active #game.camp-layout .board>.nartvanyr{align-self:center!important;margin-top:38px!important;min-height:0!important;height:calc(var(--hybrid-lane-height) - 38px)!important;contain:size}
+ body.hybrid-active #game.camp-layout .board>#center-actions{contain:size;min-height:0!important;align-self:center!important;height:var(--hybrid-lane-height)!important;box-sizing:border-box!important;justify-content:space-evenly!important;gap:0!important}
+ /* Round 2 (owner): space distributed evenly between title/circuit/caption block and the action, not a gap above the
+    action. The plate keeps its constant band height, so the plate itself never jumps. */
+ body.hybrid-active #game.camp-layout .board>#center-actions>#phase-actions{margin-top:0!important}
+ body.hybrid-active #game.camp-layout .board>#center-actions>#match-status:empty{display:none}
+ /* Caption on one line; the direction arrow hangs to the left so the words themselves are on the panel axis. */
+ body.hybrid-active #game.camp-layout #round-circuit .round-circuit-state{white-space:nowrap;position:relative;align-self:center}
+ body.hybrid-active #game.camp-layout #round-circuit .rc-arrow{position:absolute;right:100%;margin-right:.35em}
+ /* Prepared spells (traps): stacked vertically at the socket's left edge, slightly smaller tokens, so one or more
+    keep clear of the card in the narrower socket. Hit area stays above 24 px. */
+ body.hybrid-active #game .lane-side .spell-dock{flex-direction:column!important;gap:3px!important;left:2px!important}
+ body.hybrid-active #game .lane-side .spell-dock>.spell-mark{width:17px!important;min-width:0!important;height:23px!important;font-size:13px!important;border-radius:4px!important;box-sizing:border-box!important}
+ body.hybrid-active #game .lane-side .spell-dock>.spell-mark.hidden-spell::after{font-size:11px}
+}
+/* Short desktop screens (1366×768): the panel band is ~207 px, so the circuit drawing, paddings and button heights are
+   reduced (as the focus already did) to keep two vote choices inside the plate. Letter sizes are unchanged. */
+@media (min-width:901px) and (max-height:820px){
+ body.hybrid-active #game.camp-layout .board>#center-actions{padding:7px 8px!important;gap:3px!important}
+ body.hybrid-active #game.camp-layout #round-circuit{gap:3px!important}
+ body.hybrid-active #game.camp-layout #round-circuit svg{width:88px!important;height:40px!important;aspect-ratio:auto!important;margin:0 auto}
+ body.hybrid-active #game.camp-layout #phase-actions{gap:5px!important}
+ body.hybrid-active #game.camp-layout #phase-actions button{min-height:32px!important;padding:4px 6px!important;line-height:1.15!important}
+}
+/* Claude review — card shadows (all widths). Measured before: the combat card had only a 4-px, ~20% teal-grey fade
+   (CSS filter drop-shadow #00171999) and no contact with the table; the WebGL body shadow sits mostly under the card.
+   Now one layered shadow drawn by the face itself (so it is pixel-aligned with the sample and travels with it):
+   a thin contact line hugging the edge, a short dense occlusion and a soft cast toward the lower left, away from
+   the candle (upper right). Warm near-black instead of grey/teal; no extra plate between face and shadow. */
+body.hybrid-active #game.camp-layout .lane-side .card.mini.combat-card{filter:none!important}
+body.hybrid-active #game .hybrid-surface-card>.hybrid-card-face:before{inset:.8%!important;border-radius:4.2%!important;
+ box-shadow:0 0 0 1px #0e070370,-1px 2px 3px #0c0602a8,-5px 8px 10px #10080380,-10px 16px 22px #10080340!important}
+body.hybrid-active #game .combat-emanation .hybrid-surface-card>.hybrid-card-face:before{
+ box-shadow:0 0 0 1px #0e07039c,-1px 2px 3px #0c0602a0,-3px 4px 6px #10080366!important}
+/* Round 2 (owner): the reserve uses exactly the combat shadow (rule above, no reserve override any more). During
+   strikes, clashes and transfers the table card is hidden and a copy moves in the visual layer, outside #game, where no
+   face shadow applied — the shadow vanished in the conflict. The copy now carries the same shadow, attached to its
+   moving face, so it follows the motion and the lift/scale of the animation. */
+body.hybrid-active .visual-card .hybrid-card-face:before,body.hybrid-active .card-flight .hybrid-card-face:before{content:'';position:absolute;inset:.8%;border-radius:4.2%;pointer-events:none;z-index:-1;
+ box-shadow:0 0 0 1px #0e070370,-1px 2px 3px #0c0602a8,-5px 8px 10px #10080380,-10px 16px 22px #10080340}
+body.hybrid-active .visual-card.card-flight:not(.visual-dead),body.hybrid-active .card-flight:not(.visual-dead){filter:none!important}
+/* Round 2 (owner): end of match and post-match questionnaire in the table's current control language — the same
+   one-piece SVG controls (face, bevel and thickness together) used by the menu, voting and choices. Primary actions in
+   red leather, auxiliary choices on parchment (selected = leather), discreet actions in quiet leather. */
+body .capture-done,body .capture-scene button.primary,body #game .finished-actions button.primary,body .board button.primary.rematch{
+ --r-button-art:url('../assets/ui/control-leather.svg');border:1px solid transparent!important;border-image:var(--r-button-art) 12 fill / 12px / 0 stretch!important;
+ background:none!important;border-radius:7px;padding:10px 26px!important;min-height:46px;color:#fff0d4!important;font:700 15px/1.2 var(--r-font)!important;
+ box-shadow:0 2px 3px #140b0866!important;text-shadow:0 1px 1px #1c100c!important;outline-offset:3px}
+body .capture-done:hover,body .capture-scene button.primary:hover{box-shadow:0 0 0 1px #cba66b66,0 3px 5px #140b0866!important;filter:none!important}
+body .capture-done:active,body .capture-scene button.primary:active{filter:brightness(.92)!important;translate:0 1px}
+body .match-survey .match-survey-options label{border:1px solid transparent!important;border-image:url('../assets/ui/control-parchment.svg') 12 fill / 10px / 0 stretch!important;
+ background:none!important;color:#302217!important;text-shadow:0 1px #efddbc55;box-shadow:0 2px 3px #140b0855!important;border-radius:6px}
+body .match-survey .match-survey-options label:has(input:checked){border-image:url('../assets/ui/control-leather.svg') 12 fill / 10px / 0 stretch!important;color:#fff0d4!important;text-shadow:0 1px 1px #1c100c;box-shadow:0 0 0 2px #e1c18a,0 2px 3px #140b0855!important}
+body .match-survey .match-survey-options label:has(input:focus-visible){outline:2px solid var(--r-focus);outline-offset:3px}
+body .match-survey .survey-back,body .match-survey .survey-skip,body .match-survey-retry button:not(.primary){--r-button-art:url('../assets/ui/control-quiet.svg');border:1px solid transparent!important;border-image:var(--r-button-art) 12 fill / 12px / 0 stretch!important;background:none!important;color:var(--r-text)!important;padding:6px 14px!important;border-radius:7px;box-shadow:0 2px 3px #140b0866!important}
+body .match-survey-retry{border:2px solid transparent;border-image:url('../assets/ui/bronze-frame.svg') 18 / 8px / 0 stretch;background:var(--r-surface)!important;box-shadow:var(--r-shadow)!important}
+body .match-survey .survey-progress li{height:8px;border:1px solid #6d5034;background:var(--r-inset);box-shadow:inset 0 1px 2px #000a;border-radius:4px}
+body .match-survey .survey-progress [data-state=done]{background:linear-gradient(#f0d08e,#b98a45 60%,#8d6330);border-color:#5e3f22;box-shadow:inset 0 1px #fff2c470}
+body .match-survey .survey-progress [data-state=current]{background:linear-gradient(#6b4a2c,#3d2a1b);border:1px solid #e9c987;box-shadow:0 0 0 1px #2a1a10,0 0 6px #e9c98766}
+/* Round 3 (owner): no text selection anywhere in the game (see no-select.js); editable fields keep normal selection. */
+html,body,body *{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+body input,body textarea,body select,body [contenteditable]:not([contenteditable="false"]){-webkit-user-select:text;user-select:text}
+body img,body canvas,body svg{-webkit-user-drag:none}
+/* Round 3 (owner): symmetric round circuit (round-circuit.js) — its drawing is 132×44 and centred on the panel axis. */
+body.hybrid-active #game.camp-layout #round-circuit svg{width:100%!important;height:auto!important;aspect-ratio:132/44!important;margin:0 auto}
+@media (min-width:901px) and (max-height:820px){body.hybrid-active #game.camp-layout #round-circuit svg{width:112px!important;height:auto!important;aspect-ratio:132/44!important}}
+/* Round 3 (owner): buttons in solid wood — no flat metal outline. One-piece SVG (face, bevel, thickness, procedural grain
+   and a thin inlay of polished silver). Lettering carved: dark cut with a lit lower lip on light oak; pale inlay with a
+   shadowed upper lip on dark walnut. Same slices/sizes as the previous controls, so hit areas do not change. */
+body :is(:is(.entry-buttons,.room-menu-dialog #table-tools) button,.room-menu-dialog .account-bar a,.room-menu-close,.creator-entry,.camp-menu-trigger,.match-survey .survey-next,.match-survey-retry .primary,.table-recovery button,.connection-status button,.hybrid-active #phase-actions button,.match-survey .survey-back,.match-survey .survey-skip,.match-survey-retry button){
+ --r-button-art:url('../assets/ui/control-wood-dark.svg')!important;border-image:var(--r-button-art) 12 fill / 12px / 0 stretch!important;color:#f3e1c0!important;
+ text-shadow:0 -1px 0 #0b0502d9,0 1px 0 #ffd9a826!important;letter-spacing:.02em}
+body :is(.entry-buttons button.primary,.room-menu-dialog .room-menu-close,.match-survey .survey-next:not(:disabled),.match-survey-retry .primary,.hybrid-active #phase-actions button.primary:not(:disabled),.capture-done,.capture-scene button.primary){
+ --r-button-art:url('../assets/ui/control-wood.svg')!important;border-image:var(--r-button-art) 12 fill / 12px / 0 stretch!important;color:#2a1508!important;
+ text-shadow:0 1px 0 #ffe6bd80,0 -1px 0 #0000005c!important}
+body :is(.hybrid-active #phase-actions button:disabled,.match-survey .survey-next:disabled){--r-button-art:url('../assets/ui/control-wood-dark.svg')!important;color:#c9b597!important;text-shadow:0 -1px 0 #0b0502b3!important;filter:saturate(.7) brightness(.85)!important}
+/* Menu tools share the dark walnut of the other secondary controls (no parchment: the owner asked for wood only). */
+/* Round 3 (owner): turn button flip (button-flip.js). Same wood pieces as the buttons; back face in dark walnut. */
+.turn-flip{position:fixed;z-index:4700;pointer-events:none;perspective:600px}
+.turn-flip-card{position:absolute;inset:0;transform-style:preserve-3d}
+.turn-flip-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px 10px;box-sizing:border-box;backface-visibility:hidden;border:1px solid transparent;border-radius:7px;border-image:url('../assets/ui/control-wood-dark.svg') 12 fill / 12px / 0 stretch;color:#f3e1c0;text-shadow:0 -1px 0 #0b0502d9,0 1px 0 #ffd9a826;box-shadow:0 3px 6px #0008}
+.turn-flip-front.is-primary{border-image:url('../assets/ui/control-wood.svg') 12 fill / 12px / 0 stretch;color:#2a1508;text-shadow:0 1px 0 #ffe6bd80,0 -1px 0 #0000005c}
+.turn-flip-back{transform:rotateX(180deg)}
+/* Round 3 (owner): windows without boxes — the table behind is blurred and darkened instead of a coloured square panel.
+   Modal dialogs use ::backdrop; the opening hand uses its overlay; the non-modal questionnaire gets a soft blurred halo
+   behind its content. Controls keep their wood/parchment pieces; text gets a shadow for legibility. */
+body dialog:not(.choice-stage),body .room-menu-dialog,body #target-picker,body #card-detail{background:transparent!important;border:0!important;border-image:none!important;box-shadow:none!important}
+body dialog::backdrop,body .room-menu-dialog::backdrop{background:#0b0704b3!important;backdrop-filter:blur(7px) saturate(.85)!important;-webkit-backdrop-filter:blur(7px) saturate(.85)!important}
+body dialog :is(h2,h3,p,legend,small,span,strong,label,.room-code),body #mulligan-overlay :is(h2,h3,p,small,span,strong){text-shadow:0 1px 2px #000,0 0 10px #000c}
+body #mulligan-overlay:not([hidden]){background:#0b0704a6!important;backdrop-filter:blur(7px) saturate(.85);-webkit-backdrop-filter:blur(7px) saturate(.85)}
+body #mulligan-overlay .mulligan-panel,body #mulligan-overlay .opening-panel{background:transparent!important;border:0!important;border-image:none!important;box-shadow:none!important}
+body .match-survey{background:transparent!important;border:0!important;border-image:none!important;box-shadow:none!important;isolation:isolate}
+body .match-survey::before{content:'';position:absolute;inset:-48px;z-index:-1;pointer-events:none;background:radial-gradient(closest-side,#0b0704d9 62%,#0b070400);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);-webkit-mask-image:radial-gradient(closest-side,#000 64%,transparent);mask-image:radial-gradient(closest-side,#000 64%,transparent)}
+/* Round 3 (owner): the bluish Estudos Avançados counter is 30% smaller. */
+body.hybrid-active .player-band .power-caption .study-progress{zoom:.7}
+/* Round 3: choice options and the "Usar" action (target picker) in the same solid wood, carved lettering. */
+body #target-picker.choice-stage .choice-option,body.hybrid-prototype #target-picker.choice-stage .choice-option,body #target-picker button.primary,body #target-picker .taunt-options button{
+ border:1px solid transparent!important;border-image:url('../assets/ui/control-wood.svg') 12 fill / 12px / 0 stretch!important;background:none!important;box-shadow:0 3px 6px #0009!important;color:#2a1508!important;text-shadow:0 1px 0 #ffe6bd80,0 -1px 0 #0000005c!important}
+body #target-picker.choice-stage .choice-option *,body #target-picker .taunt-options button *{color:inherit!important;text-shadow:inherit!important}
+body #target-picker.choice-stage .choice-option:focus-visible,body #target-picker button.primary:focus-visible{outline:2px solid var(--r-focus)!important;outline-offset:3px}
+/* Round 3 (owner): the reserve rests on a thick plank toward its Patron (hybrid/table-craft.js) and breathes away from
+   the Patron band instead of touching it. Own shelf: room for the plank below the cards plus a gap above the band;
+   rival shelf: the same plank on its Patron side (top). */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .reserve-camp.self-camp{padding-bottom:8px!important;margin-bottom:6px!important}
+ body.hybrid-active #game.camp-layout .reserve-camp.opponent-camp{padding-top:21px!important}
+}
+/* Round 3 (owner): smoke puffs of the combat reveal (reveal-smoke.js), from the project's own fog sprites. */
+.reveal-smoke{position:fixed;z-index:4200;pointer-events:none}
+.reveal-smoke>i{position:absolute;inset:0;background:center/contain no-repeat;transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:.85;filter:sepia(.25) brightness(1.08)}
+/* Carved dark lettering on light oak needs the heavier cut to read at menu size. */
+body .room-menu-dialog .room-menu-close{font-weight:700}

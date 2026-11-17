@@ -12,7 +12,11 @@ function speechBubble(event){
  if(shownSpeechEvents.has(event.id))return;
  const anchor=()=>[...document.querySelectorAll('#game .card')].find(n=>n.dataset.uid===event.cardId&&n.getBoundingClientRect().width>0);
  if(!anchor())return;shownSpeechEvents.add(event.id);const creature=(state.players||[]).flatMap(p=>[...(p.reserve||[]),...(p.discard||[])]).find(c=>c.uid===event.cardId);globalThis.RunaCreatureEntrances?.play({card:creature,key:[state.code,state.matchId,event.cardId].join(':'),context:audioContext,to:anchor(),valid:()=>Boolean(state&&!['lobby','finished'].includes(state.phase))});const box=document.createElement('div');box.className='speech-bubble live-speech';box.textContent=globalThis.RunaCreatureEntrances?.text(creature,event.speech||'Estou a postos!')||event.speech||'Estou a postos!';box.dataset.eventId=event.id;document.body.append(box);
- const start=performance.now();const follow=now=>{const card=anchor();if(!card||now-start>3600||!box.isConnected){box.remove();return;}const r=card.getBoundingClientRect();box.style.left=Math.max(box.offsetWidth/2+8,Math.min(innerWidth-box.offsetWidth/2-8,r.left+r.width/2))+'px';box.style.top=Math.max(box.offsetHeight+12,r.top-10)+'px';requestAnimationFrame(follow);};requestAnimationFrame(follow);
+ // 11/11/2026 (fluidez): o balão seguia a carta procurando-a entre todas as cartas da mesa e medindo-as a cada quadro,
+ // logo depois de escrever a posição do próprio balão — cada quadro forçava um novo cálculo de layout da página inteira
+ // (≈210 ms somados nos 3,6 s depois de jogar uma criatura, em duas pausas de 165 e 254 ms). Agora a carta é procurada
+ // só quando o nó some, o tamanho do balão é lido uma vez e a posição só é escrita quando muda.
+ const start=performance.now(),half=box.offsetWidth/2,height=box.offsetHeight;let card=anchor(),lastX=NaN,lastY=NaN;const follow=now=>{if(!card?.isConnected)card=anchor();if(!card||now-start>3600||!box.isConnected){box.remove();return;}const r=card.getBoundingClientRect(),x=Math.round(Math.max(half+8,Math.min(innerWidth-half-8,r.left+r.width/2))),y=Math.round(Math.max(height+12,r.top-10));if(x!==lastX){box.style.left=x+'px';lastX=x;}if(y!==lastY){box.style.top=y+'px';lastY=y;}requestAnimationFrame(follow);};requestAnimationFrame(follow);
 }
 function renderForceWindow(){
  clearInterval(forceClock);document.getElementById('force-window-clock')?.remove();if(state?.phase!=='formation'||!state.forceWindow||Date.now()-serverClockOffset>=state.forceWindow.until)return;
