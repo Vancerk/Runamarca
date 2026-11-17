@@ -61,12 +61,16 @@ const avatar=(seat)=>seat?.patron?.affinity==='ruptura'?'◆':seat?.patron?.affi
 const seat=()=>state?.players.find(p=>p.id===state.you)||(state?.spectator?state?.players[0]:null);
 const rival=()=>state?.players.find(p=>p.id!==seat()?.id);
 const err=error=>{const message=error?.message||String(error);$('welcome-error').textContent=message;const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);};
+function tutorialAccessReply(response,result){
+ if(response.status===403&&result.code==='ACCESS_REQUIRED'){location.assign('/runamarca/access?next='+encodeURIComponent(gameBase+location.search));throw Object.assign(Error('Acesso necessário.'),{code:'ACCESS_REQUIRED'});}
+ return result;
+}
 async function api(route,data,method='POST'){
  if(method==='POST'&&data&&/\/api\/rooms\/[^/]+\/act$/.test(route)&&state?.tutorial)data={id:crypto.randomUUID(),version:state.tutorial.version,action:data};
  const controller=method==='GET'?new AbortController():null,timer=controller?setTimeout(()=>controller.abort(),route.includes('wait=1')?25000:10000):null;
  try{
   const headers={'Content-Type':'application/json'};const saved=sessionStorage.getItem('runamarca-tutorial-seat');if(saved)headers['x-player-token']=JSON.parse(saved).token;
-  const response=await fetch(gameBase+route.replace(/^\//,''),{method,headers,...(controller?{signal:controller.signal}:{}),...(data?{body:JSON.stringify(data)}:{})});if(response.status===204)return null;const result=await response.json();if(response.status===403&&result.code==='ACCESS_REQUIRED'){location.assign('/runamarca/access');throw Object.assign(Error('Acesso necessário.'),{code:'ACCESS_REQUIRED'});}if(!response.ok)throw Object.assign(Error(result.error||'Ação não concluída.'),{code:result.code,status:response.status});return result;
+  const response=await fetch(gameBase+route.replace(/^\//,''),{method,headers,...(controller?{signal:controller.signal}:{}),...(data?{body:JSON.stringify(data)}:{})});if(response.status===204)return null;const result=tutorialAccessReply(response,await response.json());if(!response.ok)throw Object.assign(Error(result.error||'Ação não concluída.'),{code:result.code,status:response.status});return result;
  }finally{clearTimeout(timer);}
 }
 function trackArrivals(previous,next){

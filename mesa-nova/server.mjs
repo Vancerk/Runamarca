@@ -3,6 +3,7 @@ import http from 'node:http';
 import {createAsyncGameBotBridge} from '../bot/game-bridge/async-bridge.mjs';
 import {enableMusicClock,stopMusicClock} from './music-director.mjs';
 import {createAccessSessions} from './access-session.mjs';
+import {tutorialAccessReturn} from './access-return.mjs';
 import {waitRevision} from './wait-revision.mjs';
 import {registerGame,bindParticipant,assertUniqueAccount,verifyParticipant,persistMatch,normalizeWager} from '../accounts.mjs';
 import {readFile} from 'node:fs/promises';
@@ -69,7 +70,8 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       const data=await payload(req);const supplied=createHash('sha256').update(String(data.code||'')).digest();const expected=Buffer.from(accessHash,'hex');
       if(!timingSafeEqual(supplied,expected)){record.count++;attempts.set(ip,record);return json(res,403,{error:'Código incorreto.'});}
       attempts.delete(ip);accessSessions.grant(req,res,base);
-      res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true}));return;
+      const returnTo=tutorialAccessReturn(data.returnTo,base);
+      res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({ok:true,...(returnTo?{returnTo}:{})}));return;
     }
     let invited=false;
     if(!accessSessions.has(req,base)&&req.method==='GET'&&routePath==='/'&&url.searchParams.has('room')&&url.searchParams.has('invite')){
@@ -77,10 +79,10 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       if(room&&typeof invite==='string'&&invite.length===room.inviteToken.length&&timingSafeEqual(Buffer.from(invite),Buffer.from(room.inviteToken))){accessSessions.grant(req,res,base);invited=true;}
     }
     if(!accessSessions.has(req,base)&&!invited){
-      if(req.method==='GET'&&!routePath.startsWith('/api/')&&!routePath.startsWith('/tutorial/api/')){res.writeHead(302,{Location:`${base}/access`,'Cache-Control':'no-store'});res.end();return;}
+      if(req.method==='GET'&&!routePath.startsWith('/api/')&&!routePath.startsWith('/tutorial/api/')){const returnTo=tutorialAccessReturn(url.pathname+url.search,base);res.writeHead(302,{Location:`${base}/access`+(returnTo?'?next='+encodeURIComponent(returnTo):''),'Cache-Control':'no-store'});res.end();return;}
       return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.',code:'ACCESS_REQUIRED'});
     }
-    if(routePath==='/tutorial'){res.writeHead(308,{Location:base+'/tutorial/','Cache-Control':'no-store'});res.end();return;}
+    if(routePath==='/tutorial'){res.writeHead(308,{Location:tutorialAccessReturn(url.pathname+url.search,base)||base+'/tutorial/','Cache-Control':'no-store'});res.end();return;}
     if(routePath.startsWith('/tutorial/'))return await integratedTutorial(req,res,url);
     if(routePath==='/api/create'&&req.method==='POST'){
       // 11/11/2026 (dono): quem cria a sala pode escolher o código (6 letras ou números, sem acento); sem código, o servidor sorteia.
