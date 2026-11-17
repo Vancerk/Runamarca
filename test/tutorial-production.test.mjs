@@ -90,6 +90,9 @@ test('full portal gate, normal room routes and menu assets coexist with tutorial
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`,cookie=createTestAccess({headers:{host:new URL(origin).host}},'/runamarca');
  try{
   assert.equal((await fetch(origin+endpoint,{redirect:'manual'})).status,302);
+  for(const route of [endpoint+'api/tutorial/progress',endpoint+'api/rooms/UNKNOWN/state','/runamarca/api/rooms/UNKNOWN/state']){
+   const denied=await fetch(origin+route,{redirect:'manual'});assert.equal(denied.status,403,route);assert.equal(denied.headers.get('location'),null);assert.equal((await denied.json()).code,'ACCESS_REQUIRED');
+  }
   const headers={cookie,Origin:origin,'Content-Type':'application/json'};
   const page=await fetch(origin+'/runamarca/',{headers});assert.match(await page.text(),/tutorial-entry.js/);
   for(const url of [endpoint,endpoint+'app.js','/dados','/'])assert.equal((await fetch(origin+url,{headers})).status,200,url);

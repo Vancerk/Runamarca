@@ -77,7 +77,7 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       if(room&&typeof invite==='string'&&invite.length===room.inviteToken.length&&timingSafeEqual(Buffer.from(invite),Buffer.from(room.inviteToken))){accessSessions.grant(req,res,base);invited=true;}
     }
     if(!accessSessions.has(req,base)&&!invited){
-      if(req.method==='GET'&&!routePath.startsWith('/api/')){res.writeHead(302,{Location:`${base}/access`,'Cache-Control':'no-store'});res.end();return;}
+      if(req.method==='GET'&&!routePath.startsWith('/api/')&&!routePath.startsWith('/tutorial/api/')){res.writeHead(302,{Location:`${base}/access`,'Cache-Control':'no-store'});res.end();return;}
       return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.',code:'ACCESS_REQUIRED'});
     }
     if(routePath==='/tutorial'){res.writeHead(308,{Location:base+'/tutorial/','Cache-Control':'no-store'});res.end();return;}
