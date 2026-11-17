@@ -1,0 +1,10 @@
+.platinum-entry-scene{position:fixed;inset:0;z-index:4250;overflow:hidden;pointer-events:none;isolation:isolate}
+.platinum-entry-scene>canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.platinum-actor-masked{opacity:0!important}
+.platinum-protocol-scene{position:fixed;inset:0;z-index:4260;pointer-events:none;overflow:hidden}
+.protocol-link{position:absolute;height:5px;transform-origin:left center;background:linear-gradient(#ffd1a8,#a24c23,#f5bb87);box-shadow:0 0 8px #f77d3244}
+.protocol-plate{position:absolute;width:26px;height:63px;background:linear-gradient(110deg,#f4cf98,#6a3322 38%,#ce7948 58%,#292a28);filter:drop-shadow(0 3px 4px #0009)}
+.protocol-arrow{clip-path:polygon(50% 0,100% 35%,70% 35%,70% 100%,30% 100%,30% 35%,0 35%)}
+.protocol-shield{clip-path:polygon(0 0,100% 0,100% 65%,50% 100%,0 65%);background:linear-gradient(110deg,#d4efd3,#496556 38%,#89ae96 58%,#26382e)}
+.intro-patron{z-index:1}.intro-controls,.intro-caption{z-index:2}
+.damage-remnant.visual-dead{filter:sepia(1) saturate(5) hue-rotate(320deg) brightness(.9)!important;box-shadow:0 0 22px #e63626!important}

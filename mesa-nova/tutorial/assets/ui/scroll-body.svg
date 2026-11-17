@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="136" viewBox="0 0 480 136" preserveAspectRatio="none">
+ <!-- Abertura (09/11/2026): folha do pergaminho da mão inicial (estica na horizontal entre as duas pontas). -->
+ <defs>
+  <linearGradient id="sheet" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b79c6c"/><stop offset=".07" stop-color="#e9d6ae"/><stop offset=".5" stop-color="#dcc698"/><stop offset=".93" stop-color="#cdb486"/><stop offset="1" stop-color="#9c8052"/></linearGradient>
+  <radialGradient id="glow" cx=".5" cy=".3" r=".75"><stop stop-color="#fff3d4" stop-opacity=".34"/><stop offset="1" stop-color="#fff3d4" stop-opacity="0"/></radialGradient>
+  <filter id="fibre" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".035 .4" numOctaves="3" seed="17" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 .3  0 0 0 0 .2  0 0 0 0 .1  0 0 0 -1.5 .8"/></filter>
+  <filter id="stain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012 .03" numOctaves="2" seed="3" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 .36  0 0 0 0 .24  0 0 0 0 .1  0 0 0 -2.4 1.05"/></filter>
+ </defs>
+ <rect y="15" width="480" height="106" fill="#3a2714"/>
+ <rect y="16" width="480" height="104" fill="url(#sheet)"/>
+ <rect y="16" width="480" height="104" filter="url(#stain)" opacity=".5"/>
+ <rect y="16" width="480" height="104" filter="url(#fibre)" opacity=".45"/>
+ <rect y="16" width="480" height="104" fill="url(#glow)"/>
+ <path d="M0 24H480M0 112H480" stroke="#7b5c3d" stroke-width="1" opacity=".55"/>
+ <path d="M0 26.5H480M0 109.5H480" stroke="#fff1cf" stroke-width="1" opacity=".3"/>
+</svg>

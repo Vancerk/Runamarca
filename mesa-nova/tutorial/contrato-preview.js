@@ -1,0 +1,18 @@
+(async function(){
+ const data=await(await fetch('cartas.json')).json(),decks=data.decks,base='/runamarca/',select=document.getElementById('preview-opponent');let ctx=null;
+ const musicCatalog=await(await fetch('music-catalog.json?v=20261017-library')).json();let openingIndex=0;
+ const musicPlayer=RunaMusicPlayer.create({catalog:musicCatalog,base,now:()=>Date.now(),duck:()=>document.body.classList.contains('patron-intro-active')?.28:1,
+  createAudio:()=>{const audio=document.createElement('audio');audio.hidden=true;audio.dataset.previewMusic='true';document.body.append(audio);return audio;}});
+ const musicTimer=setInterval(()=>musicPlayer.tick(),50);window.addEventListener('pagehide',()=>{clearInterval(musicTimer);musicPlayer.dispose();});
+ const image=d=>({forja:'patrons/bigorna-desperta-nova.png',fluxo:'patrons/olho-dos-pactos-novo.png',ruptura:'patrons/dom-maioral.png'})[d.affinity];
+ const el=(tag,cls,txt)=>{const x=document.createElement(tag);x.className=cls||'';if(txt)x.textContent=txt;return x;};
+ decks.forEach(d=>{const o=el('option','',d.name);o.value=d.id;select.append(o);});select.value=decks[1].id;
+ function pack(d){const x=el('article','deck-option deck-pack '+d.affinity);x.dataset.deckId=d.id;const w=el('div','deck-pack-wrap'),p=el('div','deck-pack-patron'),img=el('img');img.src=image(d);img.alt=d.patron.name;p.append(img,el('strong','',d.patron.name));const r=el('div','deck-pack-ribbon');r.append(el('h2','',d.name));const foot=el('div','deck-pack-foot'),energy=el('div','deck-pack-energy'),icon=el('img');icon.src='energy-icons/'+d.affinity+'.png';icon.alt='';energy.append(icon,el('strong','',d.affinity));foot.append(energy);w.append(p,r,foot);x.append(w);return x;}
+ const player=(d,id)=>({id,name:id==='self'?'Você':'Rival',patron:{...d.patron,affinity:d.affinity,image:image(d)}});
+ async function launch(deck){if(!ctx)ctx=new AudioContext();await ctx.resume();await globalThis.RunaSfx?.preload(ctx);const rival=decks.find(d=>d.id===select.value),players=[player(deck,'self'),player(rival,'rival')],capture=RunaDeckCarousel.takeCapture(),frame=document.getElementById('preview-moment').value,reducedMotion=document.getElementById('preview-reduced').checked;
+ if(frame===''){const openings=musicCatalog.tracks.filter(t=>t.enabled!==false&&(t.stages||[t.suggestedStage]).includes('opening')),track=openings[openingIndex++%openings.length],now=Date.now();musicPlayer.update({matchKey:'preview-'+now,trackId:track?.id||null,ambienceId:'crowded-tavern',since:now,ambienceSince:now,playing:true,playbackReady:true,musicVolume:.17,ambienceVolume:.07,crossfadeMs:700});musicPlayer.unlock();}
+ document.getElementById('lobby').hidden=true;players.forEach(p=>{const target=document.getElementById('preview-'+p.id),img=el('img');img.src=p.patron.image;target.replaceChildren(img);});let dialogue=null;const intro=()=>{if(document.getElementById('preview-dialogue').checked&&frame==='')dialogue??=RunaPatronIntro.play({players,selfId:'self',firstId:'self',matchKey:'preview-'+Date.now(),base,getAudioContext:()=>ctx,getHome:id=>document.getElementById('preview-'+id)});};
+ await RunaContractOpening.play({players,base,capture,getAudioContext:()=>ctx,reducedMotion,previewFrameMs:frame===''?undefined:Number(frame),onReveal:intro});if(frame===''){intro();await dialogue;}document.getElementById('preview-result').classList.add('visible');}
+ function show(){musicPlayer.update(null);document.getElementById('preview-result').classList.remove('visible');document.getElementById('lobby').hidden=false;RunaDeckCarousel.reset();RunaDeckCarousel.render(document.getElementById('deck-options'),decks,pack,launch,null);}
+ document.getElementById('preview-replay').onclick=show;show();
+})();

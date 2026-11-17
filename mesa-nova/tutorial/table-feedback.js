@@ -1,0 +1,70 @@
+// Avisos públicos independentes de áudio e da fila de animações.
+const spokenEvents=new Set(),shownSpeechEvents=new Set();let speechSession='',forceClock=null,retaliationSession='';const retaliationCounts=new Map();
+function queueSpeech(){
+ if(!state||['lobby','finished'].includes(state.phase))return;
+ const key=state?[state.code,state.matchId||'lobby'].join(':'):'';if(key!==speechSession){spokenEvents.clear();shownSpeechEvents.clear();speechSession=key;document.querySelectorAll('.live-speech').forEach(n=>n.remove());}
+ for(const event of state?.events||[])if(['creature','summon'].includes(event.type)&&Date.now()-serverClockOffset-event.at<8000&&!spokenEvents.has(event.id)){
+  spokenEvents.add(event.id);const generation=visualGeneration;setTimeout(()=>{if(generation===visualGeneration)speechBubble(event);},1050);
+ }
+}
+function speechBubble(event){
+ if(!state||['lobby','finished'].includes(state.phase))return;
+ if(shownSpeechEvents.has(event.id))return;
+ const anchor=()=>[...document.querySelectorAll('#game .card')].find(n=>n.dataset.uid===event.cardId&&n.getBoundingClientRect().width>0);
+ if(!anchor())return;shownSpeechEvents.add(event.id);const creature=(state.players||[]).flatMap(p=>[...(p.reserve||[]),...(p.discard||[])]).find(c=>c.uid===event.cardId);globalThis.RunaCreatureEntrances?.play({card:creature,key:[state.code,state.matchId,event.cardId].join(':'),context:audioContext,to:anchor(),valid:()=>Boolean(state&&!['lobby','finished'].includes(state.phase))});const box=document.createElement('div');box.className='speech-bubble live-speech';box.textContent=globalThis.RunaCreatureEntrances?.text(creature,event.speech||'Estou a postos!')||event.speech||'Estou a postos!';box.dataset.eventId=event.id;document.body.append(box);
+ // 11/11/2026 (fluidez): o balão seguia a carta procurando-a entre todas as cartas da mesa e medindo-as a cada quadro,
+ // logo depois de escrever a posição do próprio balão — cada quadro forçava um novo cálculo de layout da página inteira
+ // (≈210 ms somados nos 3,6 s depois de jogar uma criatura, em duas pausas de 165 e 254 ms). Agora a carta é procurada
+ // só quando o nó some, o tamanho do balão é lido uma vez e a posição só é escrita quando muda.
+ const start=performance.now(),half=box.offsetWidth/2,height=box.offsetHeight;let card=anchor(),lastX=NaN,lastY=NaN;const follow=now=>{if(!card?.isConnected)card=anchor();if(!card||now-start>3600||!box.isConnected){box.remove();return;}const r=card.getBoundingClientRect(),x=Math.round(Math.max(half+8,Math.min(innerWidth-half-8,r.left+r.width/2))),y=Math.round(Math.max(height+12,r.top-10));if(x!==lastX){box.style.left=x+'px';lastX=x;}if(y!==lastY){box.style.top=y+'px';lastY=y;}requestAnimationFrame(follow);};requestAnimationFrame(follow);
+}
+function renderForceWindow(){
+ clearInterval(forceClock);document.getElementById('force-window-clock')?.remove();if(state?.phase!=='formation'||!state.forceWindow||Date.now()-serverClockOffset>=state.forceWindow.until)return;
+ const notice=document.createElement('div');notice.id='force-window-clock';notice.className='force-window-clock';notice.setAttribute('role','status');const label=document.createElement('span'),track=document.createElement('div'),line=document.createElement('i');track.append(line);notice.append(label,track);$('lanes').append(notice);
+ const tick=()=>{const ms=Math.max(0,state.forceWindow.until-(Date.now()-serverClockOffset));label.textContent=`Vultobreve · ${(ms/1000).toFixed(1)}s`;line.style.width=(ms/50)+'%';if(!ms||state.phase!=='formation'){notice.remove();clearInterval(forceClock);}};tick();forceClock=setInterval(tick,80);
+}
+function paintRetaliation(uid,count){const card=tableCard(uid);if(!card)return;let points=card.querySelector('.retaliation-points');if(!points){points=document.createElement('span');points.className='retaliation-points';for(let i=0;i<4;i++)points.append(document.createElement('i'));card.append(points);}points.setAttribute('aria-label',`${Math.min(4,count)} de 4 Retaliações`);points.title=`Retaliação: ${Math.min(4,count)}/4`;[...points.children].forEach((dot,i)=>dot.classList.toggle('active',i<count));}
+function renderRetaliationPoints(){const key=state?.combat?.id||'outside';if(key!==retaliationSession){retaliationCounts.clear();retaliationSession=key;}for(const p of state?.players||[])for(const uid of p.emanation){const c=p.reserve.find(c=>c.uid===uid);if(c?.effects?.some(e=>e.op==='retaliation'))paintRetaliation(uid,retaliationCounts.get(uid)??state.players.find(s=>s.id!==p.id)?.patron?.retaliation??0);}}
+function applyRetaliationUpdates(updates=[]){for(const u of updates){retaliationCounts.set(u.sourceId,u.count);paintRetaliation(u.sourceId,u.count);if(u.count>=u.threshold)deferVisual(()=>{const source=tableCard(u.sourceId),target=$(u.targetOwner===seat()?.id?'self-head':'opponent-head')?.querySelector('.patron-card');if(source&&target)fly('✷',source,target,'spell',()=>{patronImpact(target);if(u.damage)damagePatron(u.targetOwner,u.damage);});retaliationCounts.set(u.sourceId,0);paintRetaliation(u.sourceId,0);},450);}}
+async function highlightUsedSpell(card,owner,{effectMs=0,readingOnly=false}={}){
+ const generation=visualGeneration,node=cardEl(card,{zoom:true});let closed=false;
+ node.classList.add('used-spell',owner===seat()?.id?'own-used-spell':'rival-used-spell');node.onmouseenter=node.onmousemove=node.onmouseleave=node.onclick=null;
+ const current=()=>generation===visualGeneration&&node.isConnected;
+ try{
+  await node.visualReady;
+  if(generation!==visualGeneration){node.remove();return async()=>{};}
+  document.body.append(node);
+  const arrival=node.animate([{transform:'translate(-50%,-50%) scale(.86)',opacity:0},{transform:'translate(-50%,-50%) scale(1)',opacity:1}],{duration:140,easing:'ease-out',fill:'forwards'});
+  await settleAnimation(arrival,140);
+  // Reduce the reading window by 33%; effects still complete before the exit.
+  await pause(readingOnly?654:Math.round(1.005*(140+650+effectMs)-140-effectMs));
+ }catch(error){node.remove();throw error;}
+ return async()=>{
+  if(closed)return;closed=true;
+  try{
+   if(!current())return;
+   const grave=$(owner===seat()?.id?'self-grave':'opponent-grave');if(!grave)return;
+   const r=node.getBoundingClientRect(),end=center(grave),dx=end.x-(r.left+r.width/2),dy=end.y-(r.top+r.height/2);
+   const flight=node.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:1},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.12)`,opacity:0}],{duration:400,easing:'ease-in',fill:'forwards'});
+   await settleAnimation(flight,400);if(current())sound('grave');
+  }finally{node.remove();}
+ };
+}
+let forgingClickBusy=false;
+async function choosePatronPower(power){
+ if(typeof hidePatronPowerZoom==='function')hidePatronPowerZoom();
+ const self=seat();if(!self||state.spectator||state.phase!=='prep'||state.turn!==self.id)return;const clickSession=[state.code,state.matchId,state.round,state.turn].join(':');
+ if(forgingClickBusy||commandBusy)return;
+ if(typeof hidePatronPowerZoom==='function')hidePatronPowerZoom();
+ if(['forjar-armadura','forjar-arma'].includes(power.id)){forgingClickBusy=true;try{await playForgeHammer(self.id,power.id,{localClick:true,onImpact:()=>{if(state?.phase!=='prep'||state.turn!==self.id||state.spectator||clickSession!==[state.code,state.matchId,state.round,state.turn].join(':'))return;if(power.id==='forjar-arma')showForgePicker('cost',null,power);else void command({type:'patronPower',powerId:power.id});}});}finally{forgingClickBusy=false;}return;}
+ if(power.id==='estudos-avancados'){showStudyPower(power);return;}
+ if(['sumario-ecoante','convocar-carrasco','represalia-de-eter'].includes(power.id)){command({type:'patronPower',powerId:power.id});return;}
+ if(power.id==='golpe-do-maioral'){showTargetPicker(power,[...state.players.flatMap(p=>p.reserve.filter(c=>c.damage<c.health).map(c=>c.uid)),...state.players.map(p=>'patron:'+p.id)],targetId=>command({type:'patronPower',powerId:power.id,targetId}));return;}
+ if(power.id==='forjar-arma'){showForgePicker('cost',null,power);return;}
+ if(power.id==='forjar-armadura'){command({type:'patronPower',powerId:power.id});return;}
+ showTargetPicker(power,self.reserve.filter(c=>c.damage<c.health).map(c=>c.uid),targetId=>{
+  if(power.id!=='potencializar'){command({type:'patronPower',powerId:power.id,targetId});return;}
+  const dialog=$('target-picker'),content=$('target-picker-content');content.replaceChildren();text(content,'h2','Potencializar');const row=document.createElement('div');row.className='taunt-options';
+  for(const [attribute,label] of [['attack','+1 Ataque'],['health','+1 Vida']])row.append(button(label,()=>{dialog.close();command({type:'patronPower',powerId:power.id,targetId,attribute});}));content.append(row);dialog.showModal();
+ });
+}

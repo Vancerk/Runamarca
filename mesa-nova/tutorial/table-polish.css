@@ -1,0 +1,32 @@
+/* Preserve face size and hover zoom; only reduce the centre-to-centre advance. */
+.hand-zone #hand{gap:0}
+.hand-zone #hand>.hand-card{margin-left:-80px}
+.hand-zone #hand>.hand-card:first-child{margin-left:0}
+@media(max-width:750px){.hand-zone #hand>.hand-card:not(:first-child){margin-left:-65.625px}}
+
+/* The portrait and socket share concentric arches on both sides of the table. */
+.player-band .patron-avatar{--portrait-arch:32px;--portrait-foot:10px}
+.player-band.lower-zone .patron-avatar{--portrait-arch:35px;--portrait-foot:12px}
+.player-band .patron-avatar .patron-card{box-sizing:border-box;display:block;padding:0;min-width:0;min-height:0;border-radius:var(--portrait-arch) var(--portrait-arch) var(--portrait-foot) var(--portrait-foot);isolation:isolate}
+.player-band .patron-avatar .patron-card>img{display:block;width:100%;height:100%;min-width:0;min-height:0;object-fit:cover;object-position:50% 50%}
+.player-band .patron-avatar .patron-socket{border-radius:calc(var(--portrait-arch) + 6px) calc(var(--portrait-arch) + 6px) calc(var(--portrait-foot) + 6px) calc(var(--portrait-foot) + 6px)}
+
+/* Powers, names and progress share a reserved column, clear of the reserve. */
+.player-band{--power-panel-width:142px;--power-panel-gap:18px}
+.player-band .patron-equipment{left:calc(100% + var(--power-panel-gap));top:6px;width:var(--power-panel-width)}
+.player-band .patron-equipment .patron-powers{display:grid;grid-template-columns:minmax(0,1fr);width:100%;gap:9px}
+.player-band .patron-power-wrap{display:grid;grid-template-columns:42px minmax(0,1fr);column-gap:9px;align-items:center;width:100%;height:auto;min-height:44px;border-radius:8px}
+.player-band .patron-power-wrap>.patron-power{grid-column:1;grid-row:1}
+.player-band .power-caption{grid-column:2;grid-row:1;display:grid;gap:4px;min-width:0;text-align:left;color:#efdbb6}
+.player-band .power-caption>strong{font:600 10px/1.25 Cinzel,Georgia,serif;overflow-wrap:break-word}
+.player-band .power-caption .forge-progress{margin:0;font:10px/1.2 system-ui,sans-serif;color:#f0c579}
+.player-band .power-caption .study-progress{position:static;white-space:normal;font:700 12px/1.1 Georgia,serif;color:#cce4ee}
+.player-band .power-caption .study-progress small{display:inline;margin:0 0 0 6px;font-size:9px;letter-spacing:0}
+.player-band .fighter::before{right:calc(-1 * (var(--power-panel-width) + var(--power-panel-gap) + 9px));top:2px;bottom:-1px}
+.player-band .band-right{padding-left:calc(var(--power-panel-width) + var(--power-panel-gap) + 18px)}
+@media(max-width:1100px){.player-band .band-right{padding-left:0}}
+@media(max-width:750px){
+ .player-band{--power-panel-width:125px;--power-panel-gap:14px}
+ .player-band.lower-zone .patron-avatar{--portrait-arch:30px;--portrait-foot:10px}
+ .player-band .power-caption>strong{font-size:9px}
+}

@@ -1,0 +1,174 @@
+/* Rodada 4 (11/11/2026, dono). Carregada por último. */
+/* Camadas de tela cheia na largura de innerWidth (viewport-width.js): com a barra de rolagem visível, 100vw é menor
+   que a largura usada pela projeção e pelos desenhos, e tudo saía deslocado para a esquerda. */
+.hybrid-canvas,.hybrid-focus-veil,.formation-fog-canvas,.damage-fx-canvas,.light-focus-veil{width:var(--full-vw,100vw)!important;right:auto!important}
+/* Colunas laterais da mesa mais largas em telas largas: Nartvanyr (com o Registro) e Rodada maiores, usando a sobra
+   horizontal. O campo continua definido pela composição 3D. */
+@media (min-width:1400px){
+ body.hybrid-active #game.camp-layout .board{grid-template-columns:156px minmax(0,1fr) 156px!important}
+}
+/* Nartvanyr (dono, 11/11/2026): uma peça só. Título, e para cada lado um nicho com a miniatura da carta do topo e o
+   número de cartas numa caixinha de bronze, sem "carta(s)". O conteúdo encosta no aro de metal da placa, com a mesma
+   folga nos quatro lados; os nichos são recortes escuros no couro, sem moldura própria. */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .board>.nartvanyr{padding:3px 8px 8px!important;grid-template-rows:auto minmax(0,1fr) minmax(0,1fr)!important;row-gap:4px;border:0!important}
+ body.hybrid-active #game.camp-layout .nartvanyr>strong{font:700 12px/1 Cinzel,serif;letter-spacing:.1em;padding:5px 0 5px;border-bottom:1px solid #b98b4f88}
+ body.hybrid-active #game.camp-layout .nartvanyr>div{display:grid!important;grid-template-rows:auto minmax(0,1fr);gap:2px;padding:0!important;border:0!important;font:600 9px/1.2 var(--r-font,sans-serif);letter-spacing:.14em;color:#d9c39b}
+ body.hybrid-active #game.camp-layout .nartvanyr button{display:flex!important;align-items:center;justify-content:center;gap:12px;width:100%;height:100%;padding:4px 8px!important;border:0!important;border-radius:4px!important;
+  background:linear-gradient(180deg,#120c08,#21170f)!important;box-shadow:inset 0 2px 6px #000c,inset 0 -1px 0 #c9995a33!important}
+ body.hybrid-active #game.camp-layout .nartvanyr button:hover{box-shadow:inset 0 2px 6px #000c,inset 0 0 0 1px #d8ad6a88!important}
+ body.hybrid-active #game.camp-layout .nartvanyr button img,body.hybrid-active #game.camp-layout .nartvanyr button>span{flex:none;height:100%!important;max-height:100%;width:auto!important;max-width:none;aspect-ratio:38/55;object-fit:cover;border-radius:3px;border:1px solid #b98b4f;box-shadow:0 2px 4px #000b}
+ body.hybrid-active #game.camp-layout .nartvanyr button>span{display:grid;place-items:center;border-style:dashed;border-color:#b98b4f77;box-shadow:none;color:#b98b4fcc;font-size:18px}
+ body.hybrid-active #game.camp-layout .nartvanyr .grave-count{flex:none;min-width:34px;padding:4px 6px 3px;border:1px solid #c69a5a;border-radius:3px;
+  background:linear-gradient(180deg,#3a2a1c,#1a110b);box-shadow:inset 0 1px 0 #f2cf9255,0 2px 3px #000b;font:700 20px/1 Cinzel,serif;color:#ffe2a6;text-align:center;text-shadow:0 1px 2px #000}
+}
+/* O nicho mede a própria altura (container) e a caixinha do número acompanha: em telas baixas (1366×768) o nicho tem
+   ~30 px e a caixinha não pode passar dele. Título e rótulos encolhem um pouco para sobrar altura aos nichos. */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .nartvanyr button{container-type:size}
+ body.hybrid-active #game.camp-layout .nartvanyr .grave-count{font-size:clamp(11px,58cqh,22px);min-width:1.7em;padding:.14em .3em .1em;max-height:92%}
+ body.hybrid-active #game.camp-layout .nartvanyr button{gap:clamp(6px,12cqh,12px)}
+}
+@media (min-width:901px) and (max-height:820px){
+ body.hybrid-active #game.camp-layout .nartvanyr>strong{font-size:10px;padding:3px 0}
+ body.hybrid-active #game.camp-layout .nartvanyr>div{font-size:8px;gap:1px}
+ body.hybrid-active #game.camp-layout .board>.nartvanyr{row-gap:2px;padding-top:2px!important}
+}
+/* Circuito da Rodada (dono, 11/11/2026): aliado sempre azul, rival sempre vermelho — também apagadas, com tom
+   suficiente para cada luz ser reconhecida pela cor antes de acender. */
+.round-circuit{--rc-ally:#5fb7ff;--rc-rival:#ff5a4d}
+.round-circuit .rc-ally{fill:color-mix(in srgb,#5fb7ff 38%,#120e0b)!important}
+.round-circuit .rc-rival{fill:color-mix(in srgb,#ff5a4d 38%,#120e0b)!important}
+.round-circuit[data-active="ally"] .rc-ally{fill:#5fb7ff!important}
+.round-circuit[data-active="rival"] .rc-rival{fill:#ff5a4d!important}
+/* Reservas (dono, 11/11/2026): as duas estantes têm o apoio claro embaixo (hybrid/bridge.js) e as cartas ficam
+   ALOJADAS nele, como livros numa estante: a fileira desce até a borda do apoio (a base da carta entra ~2 px atrás
+   dele) em vez de flutuar no meio do nicho. O apoio ocupa ~13% da altura da estante (90 px → ~12 px). */
+@media (min-width:901px){
+ body.hybrid-prototype #game.camp-layout.hybrid-compact .reserve-camp{display:flex!important;flex-direction:column;justify-content:flex-end;padding-bottom:10px!important}
+ body.hybrid-prototype #game.camp-layout.hybrid-compact .reserve-camp .card-row{flex:none;align-items:flex-end}
+}
+@media (min-width:901px) and (max-height:820px){
+ body.hybrid-prototype #game.camp-layout.hybrid-compact .reserve-camp{padding-bottom:8px!important}
+}
+/* A estante aliada tem ~2 px a mais de altura útil: a fileira desce um pouco mais para encostar no apoio igual à rival. */
+@media (min-width:901px){body.hybrid-prototype #game.camp-layout.hybrid-compact .reserve-camp.self-camp{padding-bottom:6px!important}}
+@media (min-width:901px) and (max-height:820px){body.hybrid-prototype #game.camp-layout.hybrid-compact .reserve-camp.self-camp{padding-bottom:5px!important}}
+/* Rodada no zoom do combate (dono, 11/11/2026): o circuito encolhia de 126 para 96 px no foco (regra antiga em
+   round-circuit.css), anulando o aumento ×1,3 do painel — só o título e o botão pareciam crescer. Agora o circuito
+   mantém o tamanho de repouso e cresce junto com o painel inteiro. */
+html body.hybrid-active.hybrid-focus #game.camp-layout #round-circuit svg{width:126px!important;height:auto!important;aspect-ratio:108/72!important}
+@media (min-width:901px) and (max-height:820px){html body.hybrid-active.hybrid-focus #game.camp-layout #round-circuit svg{width:96px!important}}
+/* Registro vertical (registro-trilho.js; dono, 11/11/2026; referência: histórico do Hearthstone). Calha de nogueira
+   escavada, pedras quadradas com a arte do lance; sem rolagem. */
+.registro-trilho{position:fixed;z-index:30;box-sizing:border-box;padding:10px;border-radius:30px;
+ background:linear-gradient(90deg,#1b0f07,#3a2212 22%,#2a170b 50%,#3a2212 78%,#1b0f07);
+ box-shadow:inset 0 0 0 1px #b98b4f66,inset 0 0 0 3px #1a0d05,inset 0 6px 10px #000b,inset 0 -6px 10px #000b,3px 6px 12px #000a;
+ animation:registro-trilho-entra .35s ease-out both}
+.registro-trilho[hidden]{display:none}
+.registro-trilho::before,.registro-trilho::after{content:"";position:absolute;left:50%;width:18px;height:6px;margin-left:-9px;border-radius:3px;background:linear-gradient(#f2cf8f,#9b6c33);box-shadow:0 1px 2px #000a}
+.registro-trilho::before{top:-3px}.registro-trilho::after{bottom:-3px}
+.registro-trilho-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;height:100%;overflow:hidden}
+.registro-pedra{flex:none;width:46px;height:46px}
+.registro-pedra.entrando{animation:registro-pedra-entra .42s cubic-bezier(.2,1.2,.3,1) both}
+.registro-pedra-botao{all:unset;box-sizing:border-box;display:grid;place-items:center;width:46px;height:46px;border-radius:7px;overflow:hidden;cursor:help;position:relative;
+ background:radial-gradient(circle at 50% 35%,#4a3524,#1d130b);border:2px solid var(--pedra,#c9a15e);box-shadow:0 0 0 1px #000c,inset 0 0 0 1px #ffffff22,0 3px 5px #000b,0 0 8px -1px var(--pedra,#c9a15e);transition:transform .12s ease-out}
+.registro-pedra-botao img{width:100%;height:100%;object-fit:cover;object-position:50% 25%;display:block}
+.registro-pedra-botao:hover,.registro-pedra-botao:focus-visible{transform:scale(1.08);box-shadow:0 0 0 1px #000c,0 0 14px 1px var(--pedra,#c9a15e)}
+.registro-pedra-botao:focus-visible{outline:2px solid #ffe2a3;outline-offset:2px}
+.registro-pedra-icone{font:700 20px/1 Georgia,serif;color:#f1d79a;text-shadow:0 1px 2px #000}
+.registro-pedra.lado-aliado{--pedra:#4fa8ff}.registro-pedra.lado-rival{--pedra:#ff4f43}.registro-pedra.lado-mesa{--pedra:#d6ab62}
+.registro-trilho-detalhe{position:fixed;z-index:4700;width:210px;box-sizing:border-box;padding:10px 12px 12px;border-radius:10px;pointer-events:none;
+ background:linear-gradient(180deg,#2c1f15f5,#17100af5);border:2px solid var(--pedra,#c9a15e);box-shadow:0 10px 24px #000c;color:#f3e3c2;font:500 13px/1.35 var(--r-font,Georgia,serif);animation:registro-detalhe .16s ease-out both}
+.registro-trilho-detalhe[hidden]{display:none}
+.registro-trilho-detalhe.lado-aliado{--pedra:#4fa8ff}.registro-trilho-detalhe.lado-rival{--pedra:#ff4f43}.registro-trilho-detalhe.lado-mesa{--pedra:#d6ab62}
+.registro-trilho-detalhe img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:50% 25%;border-radius:6px;border:1px solid #b98b4f;margin-bottom:8px}
+.registro-trilho-detalhe strong{display:block;font:700 14px/1.2 Cinzel,Georgia,serif;color:#ffe2a6}
+.registro-trilho-detalhe small{display:block;margin:3px 0 6px;color:#cdb68f;font-size:11px;letter-spacing:.04em}
+.registro-trilho-detalhe p{margin:0}
+.registro-detalhe-icone{display:block;font:700 30px/1 Georgia,serif;color:#f1d79a;margin-bottom:4px}
+@keyframes registro-trilho-entra{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+@keyframes registro-pedra-entra{from{opacity:0;transform:translateY(-18px) scale(.6)}to{opacity:1;transform:none}}
+@keyframes registro-detalhe{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.registro-trilho,.registro-pedra.entrando,.registro-trilho-detalhe{animation:none}}
+/* Com o Registro vertical, a gaveta antiga some e o Nartvanyr ocupa o lugar dela: mais alto (sobe até o topo da antiga
+   gaveta) e mais estreito (largura pela palavra NARTVANYR), encostado no campo. */
+body.registro-vertical #camp-log{visibility:hidden!important;pointer-events:none!important}
+@media (min-width:901px){
+ body.registro-vertical.hybrid-active #game.camp-layout .board>.nartvanyr{margin-top:0!important;height:calc(100% + 42px)!important;align-self:end!important;width:126px!important;justify-self:end}
+ body.registro-vertical.hybrid-active #game.camp-layout .nartvanyr>strong{font-size:11.5px;letter-spacing:.08em}
+ body.registro-vertical.hybrid-active #game.camp-layout .nartvanyr button{gap:8px!important;padding:5px 6px!important}
+}
+/* Encaixe vazio da calha do Registro (ainda sem lance). */
+.registro-pedra.vazia{border-radius:7px;background:radial-gradient(circle at 50% 40%,#2a1a0e,#140b05);box-shadow:inset 0 2px 4px #000c,inset 0 -1px 0 #b98b4f33}
+/* Moeda (dono, 12/11/2026): ela gira em torno do eixo horizontal (rotateX); a face de trás estava montada com rotateY e
+   chegava de cabeça para baixo (rotateX 180 · rotateY 180 = giro de 180 no plano). Montada com rotateX, a lua pousa
+   em pé, como numa moeda real: sol de um lado, lua do outro. */
+.coin-cap-back{transform:rotateX(180deg) translateZ(15px)!important}
+/* Carta arrastada encolhe com suavidade perto da reserva ou da Emanação (app.js reserveFit / emanationFit). */
+.drag-preview{transition:transform .12s ease-out}
+/* Faixa do Patrono (dono, 12/11/2026): mais justa e como uma peça só (referência: o retrato do herói no Hearthstone).
+   · A placa perde a sobra das pontas: ela abraça o éter, o retrato e os poderes (390 → 368 px; o éter maior pede quase toda a largura de volta, como o dono previu).
+   · O éter cresce ~25% (pontos de 12 → 15 px, contagem maior).
+   · Uma calha escura com fio de bronze corre por trás do éter e dos poderes e passa sob o retrato: o retrato vira o
+     medalhão que une as duas asas, em vez de um retângulo, um quadrado e um círculo soltos. */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .player-band{width:368px!important;position:relative}
+ body.hybrid-active #game.camp-layout .player-band::before{content:"";position:absolute;left:7px;right:7px;top:50%;height:50px;margin-top:-25px;border-radius:25px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,#0f0a06e6,#21160ee6 55%,#140d08e6);
+  box-shadow:inset 0 0 0 1px #c69a5a66,inset 0 3px 6px #000c,inset 0 -2px 0 #e8c07a22,0 1px 0 #ffffff10}
+ body.hybrid-active #game.camp-layout .player-band>*{position:relative;z-index:1}
+ body.hybrid-active #game.camp-layout .player-band .patron-avatar{z-index:3}
+ body.hybrid-active #game.camp-layout .player-band .fighter>.patron-ether{right:calc(100% + 2px)!important;width:auto!important;padding:2px 6px 2px 14px!important;gap:7px!important;z-index:2;align-items:center}
+ body.hybrid-active #game.camp-layout .player-band .patron-ether .ether-count{font-size:20px!important;line-height:1!important}
+ body.hybrid-active #game.camp-layout .player-band .patron-ether .ether-points{grid-template-columns:repeat(var(--ether-columns,5),15px)!important;gap:2px!important}
+ body.hybrid-active #game.camp-layout .player-band .patron-ether .ether-point{width:15px!important;height:15px!important}
+ body.hybrid-active #game.camp-layout .player-band .patron-equipment{left:calc(100% + 2px)!important;z-index:2}
+}
+/* Estudo de design (12/11/2026): com a faixa mais justa, o lobo direito do coração entrava ~4,5 px no aro do 1º poder
+   em telas largas (1907×945) e tomava os cliques dessa borda; em 1366×768 encostava (0,4 px). O coração entra 5 px no
+   retrato e os poderes se afastam 3 px: a vida e o poder passam a ter folga própria, nas duas faixas. A caixa do coração
+   (47×45) ainda cobria ~1,4% do disco em 1907: só o desenho pintado recebe o ponteiro, e o title continua no span. */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .player-band .patron-heart{right:-14px}
+ body.hybrid-active #game.camp-layout .player-band .patron-heart,body.hybrid-active #game.camp-layout .player-band .patron-heart svg{pointer-events:none}
+ body.hybrid-active #game.camp-layout .player-band .patron-heart path,body.hybrid-active #game.camp-layout .player-band .patron-heart text{pointer-events:visiblePainted}
+ body.hybrid-active #game.camp-layout .player-band .patron-equipment{left:calc(100% + 5px)!important}
+}
+/* Estudos Avançados da Marika (dono, 12/11/2026): o contador X/30 ficava embaixo do círculo, esticava o poder para
+   cima e vazava da faixa. Agora ele fica sobre a borda de baixo do círculo — como o custo, sobre a de cima — em uma
+   pílula curta (os pontos de estágio seguem no rótulo acessível e no detalhe do poder), tudo dentro da faixa. */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .player-band .patron-power-wrap .power-caption:has(.study-progress){display:block!important;position:absolute!important;left:50%;bottom:-3px;top:auto;transform:translateX(-50%);z-index:4;margin:0!important;padding:0!important;width:auto!important;pointer-events:none}
+ body.hybrid-active #game.camp-layout .player-band .power-caption .study-progress{zoom:1!important;display:block!important;font:800 12px/1 Georgia,serif!important;padding:3px 6px 3px!important;border-radius:9px!important;white-space:nowrap!important;box-shadow:0 1px 3px #000c!important}
+ body.hybrid-active #game.camp-layout .player-band .power-caption .study-progress small{display:none!important}
+}
+/* Magias preparadas nos cantos das casas de combate (dono, 12/11/2026): proporcionais à altura da casa (--side-h,
+   escrita por hybrid/bridge.js), para crescerem junto no zoom do combate. Em repouso ficam no tamanho de antes
+   (17×23 px numa casa de ~80 px, como em hybrid/composition.css). */
+@media (min-width:901px){
+ body.hybrid-active #game .lane-side .spell-dock{gap:calc(var(--side-h,80px)*.06)}
+ body.hybrid-active #game .lane-side .spell-dock>.spell-mark{height:calc(var(--side-h,80px)*.29)!important;width:calc(var(--side-h,80px)*.21)!important;font-size:calc(var(--side-h,80px)*.16)!important}
+ body.hybrid-active #game .lane-side .spell-dock>.spell-mark.hidden-spell::after{font-size:calc(var(--side-h,80px)*.19)}
+}
+/* Pedra do Registro ao passar o mouse: não cresce mais para fora da calha; acende por dentro. */
+.registro-pedra-botao:hover,.registro-pedra-botao:focus-visible{transform:none!important;box-shadow:0 0 0 1px #000c,inset 0 0 0 2px var(--pedra,#c9a15e),inset 0 0 12px var(--pedra,#c9a15e)!important}
+.registro-pedra-botao:hover img,.registro-pedra-botao:focus-visible img{filter:brightness(1.18) saturate(1.1)}
+.registro-pedra-botao{box-shadow:0 0 0 1px #000c,inset 0 0 0 1px #ffffff22,0 2px 3px #000b!important}
+/* Telas baixas (≤ 820 px): a faixa é mais baixa; o contador dos Estudos sobe para dentro dela. */
+@media (min-width:901px) and (max-height:820px){
+ body.hybrid-active #game.camp-layout .player-band .patron-power-wrap .power-caption:has(.study-progress){bottom:8px}
+ body.hybrid-active #game.camp-layout .player-band .power-caption .study-progress{font-size:10.5px!important;padding:2px 5px!important}
+}
+/* Camadas do HUD (12/11/2026): as caixas das zonas de mão (z 12 e 30) são transparentes, mas avançavam sobre as faixas
+   e tomavam o ponteiro do disco do 1º poder, do coração e da Vida Extra. A caixa deixa passar; os filhos (#hand, cartas
+   do rival, baralhos) continuam alvos de hover, arrasto e soltura. Com o zoom da faixa (1907 px), o teste de clique
+   do aro perdia até 0,35 px para patron-powers: um halo de 1 px no próprio botão devolve o aro ao poder. No desabilitado
+   (botão sem ponteiro, sem ação) só o halo recebe o ponteiro; um pseudo no wrap alterava o antialias do retrato vizinho. */
+@media (min-width:901px){
+ body.hybrid-active #game.camp-layout .hand-zone,body.hybrid-active #game.camp-layout .opponent-hand-zone{pointer-events:none}
+ body.hybrid-active #game.camp-layout .hand-zone>*,body.hybrid-active #game.camp-layout .opponent-hand-zone>*{pointer-events:auto}
+ body.hybrid-active #game.camp-layout .player-band .patron-power-wrap>.patron-power{position:relative}
+ body.hybrid-active #game.camp-layout .player-band .patron-power-wrap>.patron-power::after{content:'';position:absolute;inset:-1px;border-radius:50%}
+ body.hybrid-active #game.camp-layout .player-band .patron-power-wrap>.patron-power:disabled::after{pointer-events:auto}
+}

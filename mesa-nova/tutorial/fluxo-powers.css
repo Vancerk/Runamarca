@@ -1,0 +1,23 @@
+.study-progress{position:absolute;left:49px;top:7px;white-space:nowrap;font:700 14px Georgia,serif;color:#cce4ee;text-shadow:0 1px 2px #000}
+/* The hand fan may rise visually, but must not cover Patron controls. */
+.player-band.lower-zone{z-index:4}
+.study-progress small{display:block;font:9px system-ui;color:#b4c6cb;margin-top:3px;letter-spacing:.08em}
+.patron-power-wrap:has(.study-progress){position:relative}
+.illustrated-power.fluxo-icon{background:#f0e7d4}
+/* Zoom is painted inside the front face, rather than scaling a nested 3D layer. */
+.illustrated-power.fluxo-icon .power-icon-crop{position:absolute;inset:0;border-radius:50%;background-color:#efe7d4;background-repeat:no-repeat;background-position:50% 50%;background-size:129.8% auto;transform:translateZ(.5px);backface-visibility:hidden}
+.illustrated-power.fluxo-icon[data-power="estudos-avancados"] .power-icon-crop{background-position:52% 50%;background-size:210% auto}
+.illustrated-power.fluxo-icon .power-icon-crop img{opacity:0;pointer-events:none;transform:none!important}
+.patron-power:disabled .power-icon-crop{filter:saturate(.6) brightness(.75)}
+.study-note{color:#b8daea;font-size:13px}
+.study-grimoire-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;max-height:55vh;overflow:auto;padding:12px 6px}
+#target-picker:has(.study-grimoire-grid){width:960px;max-width:94vw}
+.study-grimoire-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px;border:1px solid #96764c55;border-radius:8px;background:#241e19;color:#ead7b6;text-align:center}
+.study-grimoire-card .card{width:115px!important;height:161px!important;min-width:115px;flex:none;margin:0!important;transform:none!important}
+.study-grimoire-card strong{font:600 13px Georgia,serif;line-height:1.2}
+.study-grimoire-card small{font-size:11px}
+.study-grimoire-card button{font-size:11px;width:100%;padding:8px}
+.study-grimoire-card.selected{border-color:#aad5e5;background:#30424b;box-shadow:inset 0 0 0 1px #aad5e566}
+.study-grimoire-card [role=button]{cursor:pointer;outline-offset:3px}
+.study-grimoire-card [role=button]:focus-visible{outline:2px solid #bbe4ef}
+.study-grimoire-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #997c51}

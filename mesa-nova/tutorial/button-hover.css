@@ -1,0 +1,18 @@
+/* Hover dos botões de madeira (button-hover.js): peças decorativas postas sobre a face do botão enquanto o ponteiro
+   está nele. --wood-inset e --wood-radius (distância e raio da face por dentro do aro) vêm do script. */
+.wood-hover{position:absolute;display:block;pointer-events:none;z-index:1;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;text-shadow:inherit;font-style:normal}
+.wood-hover>i,.wood-hover-face>i{position:absolute;display:block;font-style:normal}
+/* rebaixo escuro: aparece nas bordas quando a face inclina */
+.wood-hover-well{inset:0;clip-path:inset(var(--wood-inset) round var(--wood-radius));background:linear-gradient(#0d0703,#221309)}
+/* clarão quente em volta da face; não desloca nem redimensiona o aro */
+.wood-hover-halo{inset:var(--wood-inset);border-radius:var(--wood-radius);box-shadow:0 0 9px 1px #ffd98a8c,0 0 20px 3px #f2b45a40}
+/* a face: mesma arte do botão, recortada por dentro do aro (a moldura da cópia fica de fora) */
+.wood-hover-face{inset:0;box-sizing:border-box;border:1px solid transparent;clip-path:inset(var(--wood-inset) round var(--wood-radius));transform-origin:50% 50%;backface-visibility:hidden}
+.wood-hover-light{inset:0;background:radial-gradient(ellipse 70% 95% at 50% 42%,#fff6d8e6 0,#ffe3a199 42%,#ffcf7a33 74%,#ffcf7a00 100%);mix-blend-mode:soft-light}
+.wood-hover-light::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 62% 80% at 50% 40%,#fff1c359 0,#ffd98a26 55%,#ffd98a00 100%);mix-blend-mode:screen}
+.wood-hover-text{display:flex;align-items:center;justify-content:center;white-space:nowrap;text-align:center}
+.wood-hover-text::after{content:attr(data-label);white-space:pre}
+/* nogueira escura: a letra clara acende junto com a face */
+.wood-hover.is-dark .wood-hover-text{color:#fff3d6;text-shadow:0 -1px 0 #0b0502d9,0 0 7px #ffd98a80}
+.wood-hover.is-dark .wood-hover-light{background:radial-gradient(ellipse 70% 95% at 50% 42%,#ffe9bdcc 0,#f0b96a80 45%,#f0b96a00 100%)}
+@media(forced-colors:active){.wood-hover{display:none}}

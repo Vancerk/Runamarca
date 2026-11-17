@@ -14,6 +14,11 @@ import {observe,snapshot} from './match-context.mjs';
 import {createFeedbackStore} from './feedback-store.mjs';
 import {handleFeedback} from './feedback-api.mjs';
 
+let tutorialHandler;
+async function integratedTutorial(req,res,url){
+ if(!tutorialHandler)tutorialHandler=import('./tutorial/production-server.mjs').then(m=>m.createProductionTutorial()).catch(error=>{tutorialHandler=null;throw error;});
+ return (await tutorialHandler).handle(req,res,url);
+}
 const root=path.dirname(fileURLToPath(import.meta.url));
 const catalog=JSON.parse(await readFile(path.join(root,'cartas.json'),'utf8'));
 const sharedBot=await createAsyncGameBotBridge({
@@ -75,10 +80,13 @@ export async function handleNewGame(req,res,url=new URL(req.url,'http://localhos
       if(req.method==='GET'&&!routePath.startsWith('/api/')){res.writeHead(302,{Location:`${base}/access`,'Cache-Control':'no-store'});res.end();return;}
       return json(res,403,{error:'Informe o código de acesso antes de entrar no RunaMarca.',code:'ACCESS_REQUIRED'});
     }
+    if(routePath==='/tutorial'){res.writeHead(308,{Location:base+'/tutorial/','Cache-Control':'no-store'});res.end();return;}
+    if(routePath.startsWith('/tutorial/'))return await integratedTutorial(req,res,url);
     if(routePath==='/api/create'&&req.method==='POST'){
-      const data=await payload(req);let id;do{id=code();}while(rooms.has(id));const room=makeRoom(id,data.name,data.role==='spectator'?'spectator':'player');room.stake=normalizeWager(data.stake);room.simulation=process.env.RUNAMARCA_SIMULATION==='1'?'env':data.simulation===true||req.headers['x-runamarca-run']==='simulation'?'request':null;room.onChange=()=>{observe(room,{store:feedbackStore});scheduleBot(room);void persistMatch(room,'runamarca');};const p=room.players[0]||room.spectators[0];await bindParticipant(req,room,p);rooms.set(id,room);enableMusicClock(room);return json(res,200,{code:id,token:p.token,state:view(room,p)});
+      // 11/11/2026 (dono): quem cria a sala pode escolher o código (6 letras ou números, sem acento); sem código, o servidor sorteia.
+      const data=await payload(req),wanted=typeof data.code==='string'?data.code.trim().toUpperCase():'';if(wanted&&!/^[A-Z0-9]{6}$/.test(wanted))return json(res,400,{error:'O código da sala tem 6 letras ou números, sem acentos nem espaços.',code:'ROOM_CODE_INVALID'});if(wanted&&rooms.has(wanted))return json(res,409,{error:'Esse código já está em uso. Escolha outro ou entre na sala.',code:'ROOM_CODE_TAKEN'});let id=wanted;if(!id)do{id=code();}while(rooms.has(id));const room=makeRoom(id,data.name,data.role==='spectator'?'spectator':'player');room.stake=normalizeWager(data.stake);room.simulation=process.env.RUNAMARCA_SIMULATION==='1'?'env':data.simulation===true||req.headers['x-runamarca-run']==='simulation'?'request':null;room.onChange=()=>{observe(room,{store:feedbackStore});scheduleBot(room);void persistMatch(room,'runamarca');};const p=room.players[0]||room.spectators[0];await bindParticipant(req,room,p);rooms.set(id,room);enableMusicClock(room);return json(res,200,{code:id,token:p.token,state:view(room,p)});
     }
-    const route=routePath.match(/^\/api\/rooms\/([A-F0-9]{6})\/(join|state|act|feedback)$/);
+    const route=routePath.match(/^\/api\/rooms\/([A-Z0-9]{6})\/(join|state|act|feedback)$/);
     if(route){const room=rooms.get(route[1]);if(!room)throw Object.assign(Error('Sala não encontrada.'),{code:'ROOM_NOT_FOUND'});const operation=route[2];
       if(operation==='join'&&req.method==='POST'){const data=await payload(req);const role=data.role==='spectator'||(data.role==='auto'&&(room.phase!=='lobby'||room.players.length>=2))?'spectator':'player';const probe={};await bindParticipant(req,room,probe);assertUniqueAccount(room,probe);const p=join(room,probe.name||data.name,role);p.discordId=probe.discordId;return json(res,200,{code:room.code,token:p.token,state:view(room,p)});}
       const p=auth(req,room);await verifyParticipant(req,p);room.updatedAt=Date.now();

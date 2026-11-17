@@ -1,0 +1,14 @@
+/* Entrada dos pop-ups (09/11/2026). O painel nasce pequeno junto ao topo central, cresce, passa um pouco do tamanho
+   final e assenta — como no vídeo de referência do menu. Só a entrada: fechamento, foco, Esc e controles continuam
+   os do <dialog> nativo; o fundo (::backdrop) não ganha desfoque novo por causa desta animação.
+   Sem preenchimento posterior: ao terminar, o painel fica sem transform (não cria bloco de contenção nem borra texto).
+   Fica de fora o criador de cartas, que ocupa a tela inteira dentro de um iframe. */
+@keyframes popup-entrance{
+ 0%{transform:scale(.3);opacity:0}
+ 18%{opacity:1}
+ 58%{transform:scale(1.05)}
+ 80%{transform:scale(.988)}
+ 100%{transform:scale(1)}
+}
+dialog[open]:not(#creator-dialog){transform-origin:50% 0;animation:popup-entrance .3s cubic-bezier(.3,.6,.35,1) backwards}
+@media(prefers-reduced-motion:reduce){dialog[open]:not(#creator-dialog){animation:none}}

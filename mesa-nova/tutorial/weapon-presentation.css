@@ -1,0 +1,16 @@
+/* Equipment becomes an engraved seal; the full card remains its inspection view. */
+.equipped-weapon.weapon-medallion{position:absolute;right:-16px;top:42%;width:48px;height:48px;box-sizing:border-box;padding:0;border:3px double #c8a570;border-radius:50%;background:radial-gradient(circle at 34% 25%,#71604a,#30291f 58%,#171812);box-shadow:inset 0 0 0 3px #211b16,inset 0 1px 5px #ffedbf55,0 4px 6px #0008;transform:translateY(-50%);overflow:visible;cursor:zoom-in;isolation:isolate}
+.weapon-medallion::before{content:'';position:absolute;inset:3px;border:1px dashed #c5ab735c;border-radius:50%;pointer-events:none}
+.weapon-medallion.weapon-dagger{background:radial-gradient(circle at 30% 20%,#345b54,#202c28 65%,#161b18)}
+.weapon-medallion.weapon-hammer{background:radial-gradient(circle at 30% 20%,#6b3e2e,#2d2522 65%,#191819)}
+.weapon-medallion.weapon-sword{background:radial-gradient(circle at 30% 20%,#596582,#253146 65%,#191c25)}
+.weapon-seal-art{position:absolute;inset:3px 10px;display:block;transform:rotate(26deg);pointer-events:none;filter:drop-shadow(1px 2px 1px #0009)}
+.weapon-hammer .weapon-seal-art{inset:3px 7px;transform:rotate(-25deg)}
+.weapon-seal-art svg{display:block;width:100%;height:100%}
+.weapon-medallion b.weapon-bonus,.weapon-medallion b.weapon-durability{position:absolute;bottom:-7px;min-width:21px;height:21px;box-sizing:border-box;padding:0 2px;border:1px solid #c9ae72;border-radius:50%;background:#3a2c18;color:#fff0c5;font:700 13px/19px Georgia,serif;text-align:center;text-shadow:0 1px 1px #000}
+.weapon-medallion b.weapon-bonus{left:-7px;right:auto;background:#544024}
+.weapon-medallion b.weapon-durability{right:-7px;left:auto;background:#34424c}
+.weapon-medallion.weapon-worn b.weapon-durability{border-color:#ca8767;background:#563730}
+.weapon-medallion:focus-visible{outline:2px solid #fff0bd;outline-offset:3px}
+.card.draggable .weapon-medallion{pointer-events:auto}
+.weapon-medallion *{pointer-events:none}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="72" viewBox="0 0 192 72">
+ <defs>
+  <linearGradient id="rim" x2="0" y2="1"><stop stop-color="#80694a"/><stop offset=".3" stop-color="#59452f"/><stop offset="1" stop-color="#2a1c15"/></linearGradient>
+  <linearGradient id="face" x1="0" y1="0" x2=".16" y2="1"><stop stop-color="#5c4937"/><stop offset=".46" stop-color="#433529"/><stop offset="1" stop-color="#32261e"/></linearGradient>
+  <radialGradient id="polish" cx=".27" cy=".18" r=".85"><stop stop-color="#967b58" stop-opacity=".24"/><stop offset="1" stop-color="#967b58" stop-opacity="0"/></radialGradient>
+  <clipPath id="inset"><path d="M10 5H182Q187 5 187 10V61Q187 65 182 65H10Q5 65 5 61V10Q5 5 10 5Z"/></clipPath>
+  <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".12 .3" numOctaves="2" seed="23" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".065"/></feComponentTransfer></filter>
+ </defs>
+ <!-- The lower two pixels are thickness, not another decorative ring. -->
+ <path d="M9 1H183Q191 1 191 9V63Q191 71 183 71H9Q1 71 1 63V9Q1 1 9 1Z" fill="#1d130f"/>
+ <path d="M9 1H183Q190 1 190 8V61Q190 68 183 68H9Q2 68 2 61V8Q2 1 9 1Z" fill="url(#rim)"/>
+ <path d="M10 5H182Q187 5 187 10V61Q187 65 182 65H10Q5 65 5 61V10Q5 5 10 5Z" fill="url(#face)"/>
+ <g clip-path="url(#inset)">
+  <path d="M-4 10Q36 18 71 6T139 11T198 4V27Q167 19 128 24T58 18T-4 32Z" fill="#967b58" opacity=".075"/>
+  <path d="M-8 55Q32 47 62 60T128 56T198 49V76H-8Z" fill="#28170f" opacity=".09"/>
+  <path d="M14 15Q31 12 47 16M146 60Q161 57 176 59M11 47L13 40M179 12L181 19" fill="none" stroke="#967b58" opacity=".19" stroke-width=".8"/>
+  <rect x="4" y="4" width="184" height="62" fill="url(#polish)"/>
+  <rect x="4" y="4" width="184" height="62" filter="url(#grain)"/>
+ </g>
+ <!-- One lit upper bevel and one short lower contact shadow. -->
+ <path d="M5 18V10Q5 5 11 5H180Q186 5 187 10" fill="none" stroke="#967b58" opacity=".65" stroke-width="1"/>
+ <path d="M5 59Q5 65 11 65H181Q187 65 187 59" fill="none" stroke="#23160f" opacity=".7" stroke-width="1.2"/>
+ <path d="M9 2L17 2M37 2L45 2M180 3L185 5M3 12V17M187 62L184 65" fill="none" stroke="#967b58" opacity=".58" stroke-width=".8"/>
+</svg>

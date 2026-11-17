@@ -126,9 +126,10 @@ function book(){
  segment(g,-.12,0,0,-.17,.241,.019,highlight);segment(g,0,-.17,.12,0,.241,.019,highlight);
  segment(g,.12,0,0,.17,.241,.019,highlight);segment(g,0,.17,-.12,0,.241,.019,highlight);
  // Clasp and a short ribbon remain inside the previously reserved prop bounds.
+ // Design study S2 (12/11): the ribbon is dark leather, not a cold blue dot beside the bronze bookmark.
  slab(g,.57,.237,.04,.30,.035,.18,darkBronze,3,.014,.035);
  rivet(g,.62,.261,.04,.027);
- g.box(.30,.034,.93,.10,.015,.19,[.035,.06,.12]);
+ g.box(.30,.034,.93,.10,.015,.19,[.075,.03,.018]);
  return g;
 }
 let bookMesh,bookStack;

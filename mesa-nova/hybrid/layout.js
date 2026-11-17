@@ -10,7 +10,8 @@ import {HYBRID} from './config.js';
 // so the fit cannot silently absorb the requested growth.
 const root=document.documentElement,game=document.getElementById('game');let cached='',scale=1,stats={};
 const number=(s,k)=>parseFloat(s[k])||0;
-function apply(fit,visual=1,composition=1){const value=fit*visual;scale=value;root.style.setProperty('--hybrid-owner-composition',String(composition));const table=game.querySelector('.table'),style=getComputedStyle(table),available=table.clientWidth-number(style,'paddingLeft')-number(style,'paddingRight'),desktop=innerWidth>900,boardAvailable=available-(desktop?16:0),baseLaneH=(innerHeight<=820?180:240)*visual,baseBoardH=(innerHeight<=820?202:250)*visual,baseWidth=Math.max(1,Math.min(1420,boardAvailable)-249.6),sidePhysical=desktop?Math.min(116*value,Math.max(116*visual,(boardAvailable-baseWidth*visual-17.6)/2)):0,laneWidth=desktop?Math.min(baseWidth*1.15*visual,boardAvailable-sidePhysical*2-17.6):boardAvailable,boardWidth=desktop?laneWidth+sidePhysical*2+17.6:boardAvailable;
+function apply(fit,visual=1,composition=1){const value=fit*visual;scale=value;const table=game.querySelector('.table'),style=getComputedStyle(table),available=table.clientWidth-number(style,'paddingLeft')-number(style,'paddingRight'),desktop=innerWidth>900,boardAvailable=available-(desktop?16:0),baseLaneH=(innerHeight<=820?180:240)*visual,baseBoardH=(innerHeight<=820?202:250)*visual,baseWidth=Math.max(1,Math.min(1420,boardAvailable)-249.6),sidePhysical=desktop?Math.min(116*value,Math.max(116*visual,(boardAvailable-baseWidth*visual-17.6)/2)):0,laneWidth=desktop?Math.min(baseWidth*1.15*visual,boardAvailable-sidePhysical*2-17.6):boardAvailable,boardWidth=desktop?laneWidth+sidePhysical*2+17.6:boardAvailable;
+ root.style.setProperty('--hybrid-owner-composition',String(composition));
  for(const [key,v] of Object.entries({'--hybrid-play-scale':value,'--hybrid-ui-width':available/value+'px','--hybrid-board-width':boardWidth/value+'px','--hybrid-side-width':sidePhysical/value+'px','--hybrid-board-height':baseBoardH/value+'px','--hybrid-lane-height':baseLaneH/value+'px','--hybrid-base-lane-height':baseLaneH}))root.style.setProperty(key,String(v));
  // Flow height reserved for each fixed hand: its visible strip plus the configured
  // gap to the Patron band. Read from the count-independent nine-card envelope.
@@ -30,14 +31,16 @@ function sizePatrons(){const A=HYBRID.formA;root.style.setProperty('--hybrid-rin
   if(cols.length===3&&cols.every(Number.isFinite))band.style.gridTemplateColumns=`minmax(0,1fr) ${cols[1]+dw}px minmax(0,1fr)`;band.style.height=bh+dh+'px';band.style.minHeight=bh+dh+'px';}}
 export function fitLayout(){const key=innerWidth+'x'+innerHeight+':'+game.classList.contains('is-obscured');if(key===cached)return scale;const trials=[];let chosen=1.15;sizePatrons();
  // Responsive fit with the unchanged revision-10 composition.
- game.classList.remove('hybrid-compact');apply(chosen);if(innerWidth>900){let lo=1,hi=1.15;for(let i=0;i<9;i++){const v=i===0?1.15:(lo+hi)/2;apply(v);const e=envelope(),ok=e.primaryTop>=e.rivalVisible+8&&e.primaryBottom<=innerHeight-e.ownVisible-10&&e.flowBottom<=innerHeight-4;trials.push({scale:v,...e,ok});if(ok){lo=v;if(v===1.15){lo=1.15;break;}}else hi=v;}chosen=Math.floor(lo*1000)/1000;}
+ game.classList.remove('hybrid-compact');apply(chosen);if(innerWidth>900){let lo=1,hi=1.15;for(let i=0;i<9;i++){const v=i===0?1.15:(lo+hi)/2;if(i!==0)apply(v);const e=envelope(),ok=e.primaryTop>=e.rivalVisible+8&&e.primaryBottom<=innerHeight-e.ownVisible-10&&e.flowBottom<=innerHeight-4;trials.push({scale:v,...e,ok});if(ok){lo=v;if(v===1.15){lo=1.15;break;}}else hi=v;}chosen=Math.floor(lo*1000)/1000;}
  // Requested growth, once, then the compact desktop composition.
  if(innerWidth>900)game.classList.add('hybrid-compact');
  // If the grown flow no longer fits, the excess goes to the top (rival side), never
  // under the own hand: own Patron, powers and reserve stay reachable. The rival fan
  // then shows a shorter strip above its band; QA reports that crop explicitly.
  const O=HYBRID.owner,rivalBand=()=>game.querySelector('#opponent-head')?.closest('.player-band')?.getBoundingClientRect().top??Infinity;
- const grow=composition=>{game.classList.remove('hybrid-overflow');const plan=apply(chosen,HYBRID.visualScale*composition,composition);let overflow=0;if(innerWidth>900){overflow=Math.max(0,game.querySelector('.hand-zone').getBoundingClientRect().bottom-innerHeight);if(overflow>.5){game.classList.add('hybrid-overflow');layoutHands();}}return {plan,overflow};};
+ // Reuse only consecutive identical trials inside this synchronous fit. No DOM can change between them.
+ let lastGrowComposition=null,lastGrowResult=null;
+ const grow=composition=>{if(composition===lastGrowComposition)return lastGrowResult;game.classList.remove('hybrid-overflow');const plan=apply(chosen,HYBRID.visualScale*composition,composition);let overflow=0;if(innerWidth>900){overflow=Math.max(0,game.querySelector('.hand-zone').getBoundingClientRect().bottom-innerHeight);if(overflow>.5){game.classList.add('hybrid-overflow');layoutHands();}}lastGrowComposition=composition;return lastGrowResult={plan,overflow};};
  // UI-owner revision: the composition factor (HYBRID.owner.composition) is applied in
  // full unless the overflow would push the rival Patron band within rivalMinStrip of
  // the top (its name, ether and powers must stay on screen, with a strip of the rival
@@ -56,12 +59,24 @@ export function fitLayout(){const key=innerWidth+'x'+innerHeight+':'+game.classL
  const etherInView=()=>[...game.querySelectorAll('.player-band .patron-ether')].every(n=>{const r=n.getBoundingClientRect();return !r.width||(r.left>=-.5&&r.right<=innerWidth+.5);});
  // Sub-pixel text boxes (Range), not scrollWidth, which rounds to whole CSS px.
  const graveyardsFit=()=>innerWidth>900||[...game.querySelectorAll('.board>.nartvanyr>div')].every(d=>{const c=d.getBoundingClientRect(),range=document.createRange();return [...d.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim()).every(n=>{range.selectNodeContents(n);const r=range.getBoundingClientRect();return r.left>=c.left-.5&&r.right<=c.right+.5;});});
- const limit=()=>O.rivalMinStrip+HYBRID.hand.rivalGap+rivalEdgeLift(9),fits=()=>(innerWidth<=900||rivalBand()>=limit())&&document.documentElement.scrollWidth<=document.documentElement.clientWidth+.5&&etherInView()&&graveyardsFit();
+ const limit=()=>Math.max(O.rivalMinStrip,(window.RunaHybridFan?.stats?.rival?.height||0)*(O.rivalShow||0))+HYBRID.hand.rivalGap+rivalEdgeLift(9),fits=()=>(innerWidth<=900||rivalBand()>=limit())&&document.documentElement.scrollWidth<=document.documentElement.clientWidth+.5&&etherInView()&&graveyardsFit();
  // V2: the general factor (HYBRID.v2.global) is requested once on top of the V1 composition and limited by the
  // same fit; stats report the request, the applied factor and the part of the V2 factor that fitted.
  const requested=O.composition*HYBRID.v2.global;
  let composition=requested,result=grow(composition),compositionTrials=[];
- if(!fits()){let lo=1,hi=requested;for(let i=0;i<8;i++){const c=(lo+hi)/2;grow(c);const ok=fits();compositionTrials.push({composition:c,bandTop:innerWidth>900?rivalBand():null,scrollWidth:document.documentElement.scrollWidth,ok});if(ok)lo=c;else hi=c;}composition=Math.floor(lo*1000)/1000;result=grow(composition);}
+ /* 11/11/2026: se nem a composição 1 deixa a mão rival à vista (telas baixas), desce até O.compositionFloor.
+    Com a faixa da mão rival exigida (owner.rivalShow) a busca passou a rodar em quase toda tela; cada passo refaz o
+    layout inteiro, e 9 passos por ajuste de janela deixavam a mesa sem quadros durante redimensionamentos. Agora, no
+    computador, a folga da faixa rival (posição da banda − limite) é quase linear na composição: dois pontos dão a
+    estimativa (secante) e no máximo três passos confirmam — 3 a 5 refações em vez de 9. Celulares mantêm a bissecção. */
+ if(!fits()){let lo=1,hi=requested;if(innerWidth>900){grow(1);if(!fits()){lo=O.compositionFloor||1;hi=1;}}
+  const margin=()=>rivalBand()-limit(),record=(c,ok)=>compositionTrials.push({composition:c,bandTop:innerWidth>900?rivalBand():null,scrollWidth:document.documentElement.scrollWidth,ok});
+  if(innerWidth>900){grow(hi);const mHi=margin();grow(lo);const mLo=margin(),okLo=fits();record(lo,okLo);
+   let best=okLo?lo:null,guess=mLo===mHi?lo:lo+(hi-lo)*Math.max(0,Math.min(1,mLo/(mLo-mHi)));
+   for(let i=0;i<3;i++){const c=Math.floor(Math.max(lo,Math.min(hi,guess))*1000)/1000;grow(c);const ok=fits();record(c,ok);if(ok){best=Math.max(best??c,c);break;}guess=c-(hi-lo)*.03*(i+1);}
+   composition=best??lo;}
+  else{for(let i=0;i<8;i++){const c=(lo+hi)/2;grow(c);const ok=fits();record(c,ok);if(ok)lo=c;else hi=c;}composition=Math.floor(lo*1000)/1000;}
+  result=grow(composition);}
  const {plan,overflow}=result;
  cached=key;const after=innerWidth>900?envelope():null;
  stats={requested:1.15,fit:chosen,scale:chosen,limited:chosen<1.15,visualScale:HYBRID.visualScale,composition,compositionRequested:requested,compositionLimited:composition<requested,compositionV1:O.composition,v2GlobalApplied:composition/O.composition,compositionTrials,rivalBandTop:innerWidth>900?rivalBand():null,rivalBandLimit:innerWidth>900?limit():null,rivalEdgeLift:rivalEdgeLift(9),zoom:plan.zoom,compact:innerWidth>900,overflow,plan,trials,after};return scale;}

@@ -13,11 +13,30 @@ const ownerComposition=()=>Number(rootVar('--hybrid-owner-composition'))||1;
 // depends only on the viewport, the root variables and the classes involved, so it is kept per that key and measured
 // again only when one of them changes.
 const baseSizes=new Map();
-function dimensions(nodes,isOwn,scale){
+function dimensionRequest(nodes,isOwn,scale){
  const first=nodes[0];
  const sizeKey=first?[isOwn,innerWidth,innerHeight,devicePixelRatio,scale,document.documentElement.getAttribute('style'),document.documentElement.className,document.body.className,document.getElementById('game')?.className,first.parentElement?.className,first.className].join('|'):null;
+ return {first,sizeKey};
+}
+// Only the fixed, independently positioned hands use this preparation. Clear both
+// cold base sizes before reading either; dimensions() still reads and inserts in
+// the original order, including the >64 eviction rule. Predict a first miss that
+// clears the cache so a formerly warm rival entry is prepared as well.
+function prepareBaseReads(ownNodes,rivalNodes,scale){
+ const prepared=new Set();let cleared=false,size=baseSizes.size;
+ for(const [nodes,isOwn] of [[ownNodes,true],[rivalNodes,false]]){
+  const {first,sizeKey}=dimensionRequest(nodes,isOwn,scale);
+  if(first&&!(cleared?null:baseSizes.get(sizeKey))){
+   first.style.removeProperty('width');first.style.removeProperty('height');prepared.add(first);
+   if(size>64){cleared=true;size=0;}size++;
+  }
+ }
+ return prepared;
+}
+function dimensions(nodes,isOwn,scale,prepared){
+ const {first,sizeKey}=dimensionRequest(nodes,isOwn,scale);
  let cached=sizeKey?baseSizes.get(sizeKey):null;
- if(first&&!cached){first.style.removeProperty('width');first.style.removeProperty('height');const css=getComputedStyle(first);cached={w:parseFloat(css.width),h:parseFloat(css.height)};if(baseSizes.size>64)baseSizes.clear();baseSizes.set(sizeKey,cached);}
+ if(first&&!cached){if(!prepared?.has(first)){first.style.removeProperty('width');first.style.removeProperty('height');}const css=getComputedStyle(first);cached={w:parseFloat(css.width),h:parseFloat(css.height)};if(baseSizes.size>64)baseSizes.clear();baseSizes.set(sizeKey,cached);}
  const baseW=cached?cached.w:isOwn?(innerWidth<=600?102:innerHeight<=820?86:108):(innerWidth<=600?54:innerHeight<=820?54:64);
  const baseH=cached?cached.h:baseW*(isOwn?1.4:1.40625);
  const viewport=document.documentElement.clientWidth||innerWidth;
@@ -35,8 +54,8 @@ function dimensions(nodes,isOwn,scale){
 }
 const fanAngle=count=>count<=1?0:Math.min(innerWidth<=600?10:18,Math.max(6,(count-1)*2.2));
 const fanSag=(count,isOwn)=>Math.min(isOwn?24:16,Math.max(0,count-1)*(isOwn?3:2));
-function fan(nodes,isOwn,scale){
- const row=isOwn?own:rival,viewport=document.documentElement.clientWidth||innerWidth,{w,h,previousWidth,growth,ownerFactor}=dimensions(nodes,isOwn,scale),count=nodes.length,mid=(count-1)/2;
+function measureFan(nodes,isOwn,scale,prepared){
+ const row=isOwn?own:rival,viewport=document.documentElement.clientWidth||innerWidth,{w,h,previousWidth,growth,ownerFactor}=dimensions(nodes,isOwn,scale,prepared),count=nodes.length,mid=(count-1)/2;
  const maxAngle=fanAngle(count);
  const angle=maxAngle*Math.PI/180;
  const halfEdge=w/2*Math.cos(angle)+h*Math.sin(angle);
@@ -50,6 +69,12 @@ function fan(nodes,isOwn,scale){
  const focusing=innerWidth>900&&(document.body.classList.contains('hybrid-focus')||(globalThis.RunaHybridFocus?.value||0)>0);
  let shown=visible;if(!isOwn&&(focusing||document.getElementById('game').classList.contains('hybrid-overflow'))){const band=document.getElementById('opponent-head')?.closest('.player-band');if(band){const top=focusing?Math.min(...[band,...band.querySelectorAll('.patron-avatar,.patron-power,.patron-ether')].map(n=>n.getBoundingClientRect().top)):band.getBoundingClientRect().top,limit=top+scrollY-HYBRID.hand.rivalGap;if(limit<visible)shown=Math.max(0,limit);}}
  const top=isOwn?innerHeight-visible:shown-h-scrollY;
+ // Both fixed hands are measured before either is positioned. Base dimensions
+ // still use the original full cache key and current zoom; never reuse across scales.
+ return {row,nodes,isOwn,scale,viewport,w,h,step,mid,maxAngle,top,visible,count,stats:{count,width:w,height:h,step,maxAngle,visible:shown,designVisible:visible,overflowCrop:visible-shown,previousVisible,previousWidth,requestedGrowth:1.25,historicalGrowth:growth/ownerFactor,effectiveGrowth:growth,ownerFactor,responsiveCap:innerWidth<=600?(viewport-28)/(isOwn?2.8:4.4)*HYBRID.visualScale*ownerFactor:null,top,viewport}};
+}
+function commitFan(plan){
+ const {row,nodes,isOwn,scale,viewport,w,h,step,mid,maxAngle,top,visible,count}=plan;
  Object.assign(row.style,{zoom:String(1/scale),width:viewport+'px',left:'0px',top:isOwn?'auto':top+'px',bottom:isOwn?'0px':'auto',height:(isOwn?visible:0)+'px'});
  nodes.forEach((node,i)=>{
   const relative=mid?(i-mid)/mid:0,sag=fanSag(count,isOwn);
@@ -58,11 +83,19 @@ function fan(nodes,isOwn,scale){
   node.style.left=(viewport/2+(i-mid)*step-w/2)+'px';node.style.top='0px';
   node.style.setProperty('--hybrid-fan-angle',rotation+'deg');node.style.setProperty('--hybrid-fan-rise',rise+'px');
  });
- return {count,width:w,height:h,step,maxAngle,visible:shown,designVisible:visible,overflowCrop:visible-shown,previousVisible,previousWidth,requestedGrowth:1.25,historicalGrowth:growth/ownerFactor,effectiveGrowth:growth,ownerFactor,responsiveCap:innerWidth<=600?(viewport-28)/(isOwn?2.8:4.4)*HYBRID.visualScale*ownerFactor:null,top,viewport};
+ return plan.stats;
 }
+function fan(nodes,isOwn,scale){return commitFan(measureFan(nodes,isOwn,scale));}
 export function layoutHands(){
  const scale=Number(rootVar('--hybrid-play-scale'))||1;
- stats={own:fan([...own.querySelectorAll(':scope>.hand-card:not([data-hybrid-waiting])')],true,scale),rival:fan([...rival.querySelectorAll(':scope>.rival-hand-back')],false,scale),scale,intentionalEdgeCrop:true};
+ const ownNodes=[...own.querySelectorAll(':scope>.hand-card:not([data-hybrid-waiting])')],rivalNodes=[...rival.querySelectorAll(':scope>.rival-hand-back')];
+ // bridge.css fixes both rows and absolutely positions their cards: changing the
+ // own fan cannot change the rival's flow constraints. Other layouts stay sequential.
+ if(own.matches('.hybrid-prototype #game.camp-layout #hand')&&rival.matches('.hybrid-prototype #game.camp-layout #opponent-hand')){
+  const prepared=prepareBaseReads(ownNodes,rivalNodes,scale);
+  const ownPlan=measureFan(ownNodes,true,scale,prepared),rivalPlan=measureFan(rivalNodes,false,scale,prepared);
+  stats={own:commitFan(ownPlan),rival:commitFan(rivalPlan),scale,intentionalEdgeCrop:true};
+ }else stats={own:fan(ownNodes,true,scale),rival:fan(rivalNodes,false,scale),scale,intentionalEdgeCrop:true};
  return stats;
 }
 // Reframe only the rival backs after the formation focus moves its Patron band.
