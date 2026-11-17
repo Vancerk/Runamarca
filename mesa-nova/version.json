@@ -1,10 +1,10 @@
 {
-  "version": "26.1.0",
+  "version": "26.1.1",
   "label": "V26",
   "channel": "release",
   "releasedAt": "2026-11-17",
   "startedAt": "2026-11-01",
   "base": "V25 (d1420a6)",
   "interface": "Mesa 3D · abertura, fluidez e tutorial de três duelos",
-  "note": "Tutorial integrado com progresso persistente e acesso pela mesa. Validação de publicação em CPU; evidência visual da prévia preservada."
+  "note": "Tutorial integrado com entrada guiada, retorno após acesso e progresso persistente."
 }

@@ -26,7 +26,7 @@
   try{
    const token=saved()?.token;
    const result=await fetch(gameBase+'api/tutorial',{method:'POST',headers:{'Content-Type':'application/json',...(token?{'x-player-token':token}:{})},body:JSON.stringify({duel,resume,name:get('player-name').value||'Aprendiz'})});
-   const reply=await result.json();if(!result.ok)throw Error(reply.error);
+   const reply=tutorialAccessReply(result,await result.json());if(!result.ok)throw Error(reply.error);
    remember(reply);sessionStorage.setItem('runamarca-tutorial-seat',JSON.stringify({code:reply.code,token:reply.token}));
    history.replaceState({},'',gameBase+'?room='+reply.code);state=reply.state;lastRevision=-1;serverClockOffset=Date.now()-state.serverNow;help=false;lastKey='';render();sync();
   }catch(error){menuError.textContent=error.message;get('tutorial-error').textContent=error.message;}finally{busy=false;}
@@ -113,7 +113,7 @@
   const focusKey=panel.hidden||actionable?null:note?.key||(finished?t.status:frozen?'paused':help?'help':null);if(focusKey&&previousFocus!==focusKey&&!get('tutorial-continue').disabled){previousFocus=focusKey;get('tutorial-continue').focus({preventScroll:true});}else if(!focusKey)previousFocus=null;
  }
  panel.addEventListener('keydown',event=>{if(!state?.tutorial?.clock.paused||event.key!=='Tab')return;const buttons=[...panel.querySelectorAll('button,input')].filter(b=>!b.hidden&&!b.disabled&&b.getClientRects().length),index=buttons.indexOf(document.activeElement);if(event.shiftKey&&index<=0){event.preventDefault();buttons.at(-1)?.focus();}else if(!event.shiftKey&&index===buttons.length-1){event.preventDefault();buttons[0]?.focus();}});
- async function loadProgress(){const token=saved()?.token;if(!token)return;try{const result=await fetch(gameBase+'api/tutorial/progress',{headers:{'x-player-token':token}}),data=await result.json();if(!result.ok)throw Error(data.error);campaign=data.campaign;menuSync();}catch(error){menuError.textContent=error.message;}}
+ async function loadProgress(){const token=saved()?.token;if(!token)return;try{const result=await fetch(gameBase+'api/tutorial/progress',{headers:{'x-player-token':token}}),data=tutorialAccessReply(result,await result.json());if(!result.ok)throw Error(data.error);campaign=data.campaign;menuSync();}catch(error){menuError.textContent=error.message;}}
  // Request a safe pause when leaving. The server also pauses abandoned sessions
  // after a missed heartbeat; rehydration after a server restart is always paused.
  addEventListener('pagehide',()=>{if(!state?.tutorial||state.tutorial.status!=='active')return;const token=saved()?.token;if(!token)return;void fetch(gameBase+`api/rooms/${state.code}/act`,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','x-player-token':token},body:JSON.stringify({id:crypto.randomUUID(),version:state.tutorial.version,action:{type:'tutorialPause'}})}).catch(()=>{});});
